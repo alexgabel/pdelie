@@ -27,6 +27,10 @@ def build_translation_basis(field: FieldBatch) -> dict[str, np.ndarray]:
 
 def normalize_translation_coefficients(coefficients: np.ndarray) -> np.ndarray:
     coefficients = np.asarray(coefficients, dtype=float)
+    if coefficients.ndim != 1 or coefficients.size != len(POLYNOMIAL_TRANSLATION_BASIS):
+        raise ShapeValidationError(
+            f"Translation coefficients must be a one-dimensional array of length {len(POLYNOMIAL_TRANSLATION_BASIS)}."
+        )
     norm = np.linalg.norm(coefficients)
     if norm == 0.0:
         raise ShapeValidationError("Translation coefficients must not be the zero vector.")
@@ -59,6 +63,8 @@ def apply_pointwise_translation(field: FieldBatch, xi: np.ndarray, epsilon: floa
     xi = np.asarray(xi, dtype=float)
     if xi.shape != field.values.shape:
         raise ScopeValidationError("Pointwise translation xi must match the FieldBatch shape.")
+    if field.metadata["boundary_conditions"].get("x") != "periodic":
+        raise ScopeValidationError("Pointwise translation requires periodic boundary conditions in x.")
 
     x = field.coords["x"]
     dx = float(x[1] - x[0])
@@ -67,6 +73,7 @@ def apply_pointwise_translation(field: FieldBatch, xi: np.ndarray, epsilon: floa
 
     transformed = np.empty_like(field.values)
     xp = x
+    xp_ext = np.concatenate((xp - period, xp, xp + period))
 
     for batch_index in range(field.values.shape[0]):
         for time_index in range(field.values.shape[1]):
@@ -74,7 +81,6 @@ def apply_pointwise_translation(field: FieldBatch, xi: np.ndarray, epsilon: floa
                 row = field.values[batch_index, time_index, :, var_index]
                 shift = epsilon * xi[batch_index, time_index, :, var_index]
                 query = ((x - shift - x0) % period) + x0
-                xp_ext = np.concatenate((xp - period, xp, xp + period))
                 fp_ext = np.concatenate((row, row, row))
                 transformed[batch_index, time_index, :, var_index] = np.interp(query, xp_ext, fp_ext)
 

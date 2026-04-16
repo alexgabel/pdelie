@@ -17,6 +17,8 @@ DEFAULT_RELATIVE_L2_NORM = "relative_l2"
 
 
 def _apply_uniform_translation(field: FieldBatch, shift: float) -> FieldBatch:
+    if field.metadata["boundary_conditions"].get("x") != "periodic":
+        raise ScopeValidationError("Uniform translation requires periodic boundary conditions in x.")
     x = field.coords["x"]
     dx = float(x[1] - x[0])
     x_axis = field.dims.index("x")
@@ -70,7 +72,9 @@ def verify_translation_generator(
     generator.validate()
 
     if field.values.shape[0] < min_heldout_initial_conditions:
-        raise ScopeValidationError("Held-out verification requires at least 3 unseen initial conditions in V0.1.")
+        raise ScopeValidationError(
+            f"Held-out verification requires at least {min_heldout_initial_conditions} unseen initial conditions in V0.1."
+        )
 
     epsilon_values = DEFAULT_EPSILON_VALUES if epsilon_values is None else np.asarray(epsilon_values, dtype=float)
     span_distance = translation_span_distance(generator.coefficients)

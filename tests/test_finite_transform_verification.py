@@ -47,5 +47,31 @@ def test_translation_verification_requires_three_heldout_initial_conditions() ->
     training = generate_heat_1d_field_batch(batch_size=4, num_times=33, num_points=64, seed=26)
     heldout = generate_heat_1d_field_batch(batch_size=2, num_times=33, num_points=64, seed=27)
     generator = fit_translation_generator(training, HeatResidualEvaluator(), epsilon=1e-4)
-    with pytest.raises(ScopeValidationError):
+    with pytest.raises(ScopeValidationError, match="at least 3 unseen initial conditions"):
+        verify_translation_generator(heldout, generator, HeatResidualEvaluator())
+
+
+def test_translation_verification_reports_custom_heldout_requirement() -> None:
+    training = generate_heat_1d_field_batch(batch_size=4, num_times=33, num_points=64, seed=28)
+    heldout = generate_heat_1d_field_batch(batch_size=3, num_times=33, num_points=64, seed=29)
+    generator = fit_translation_generator(training, HeatResidualEvaluator(), epsilon=1e-4)
+    with pytest.raises(ScopeValidationError, match="at least 4 unseen initial conditions"):
+        verify_translation_generator(
+            heldout,
+            generator,
+            HeatResidualEvaluator(),
+            min_heldout_initial_conditions=4,
+        )
+
+
+def test_translation_verification_rejects_nonperiodic_boundary_conditions() -> None:
+    heldout = generate_heat_1d_field_batch(batch_size=3, num_times=33, num_points=64, seed=30)
+    heldout.metadata["boundary_conditions"] = {"x": "dirichlet"}
+    generator = GeneratorFamily(
+        parameterization="polynomial_translation_affine",
+        coefficients=np.array([1.0, 0.0, 0.0, 0.0]),
+        normalization="l2_unit",
+        diagnostics={"basis": ["1", "t", "x", "u"]},
+    )
+    with pytest.raises(ScopeValidationError, match="periodic boundary conditions in x"):
         verify_translation_generator(heldout, generator, HeatResidualEvaluator())
