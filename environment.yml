@@ -1,0 +1,8 @@
+name: pdelie-v0_1
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+      - -e .
