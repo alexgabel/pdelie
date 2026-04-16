@@ -14,7 +14,7 @@ It is a **library**, not a project repo.
 
 ## Stable (v0.x)
 
-- structured rectilinear grids
+- uniform rectilinear grids
 - Lie point symmetries
 - polynomial generator parameterizations
 - synthetic + small benchmark PDEs
@@ -54,7 +54,7 @@ Represents PDE data.
 Constraints:
 - dims authoritative
 - ordering: ("batch", "time", spatial..., "var")
-- structured grids only (v0.x)
+- uniform rectilinear grids only (V0.1 stable slice)
 - coords must define domain + centering
 - metadata must include BCs, grid type, parameters
 

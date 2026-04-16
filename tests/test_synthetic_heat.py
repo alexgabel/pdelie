@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
-from pdelie.data import generate_heat_1d_field_batch
+from pdelie import ShapeValidationError
+from pdelie.data import evaluate_heat_fourier_series, generate_heat_1d_field_batch
 
 
 def test_heat_generator_is_reproducible_by_seed() -> None:
@@ -32,3 +34,14 @@ def test_heat_generator_exhibits_expected_energy_decay() -> None:
     field = generate_heat_1d_field_batch(batch_size=2, num_times=11, seed=11)
     energy = np.sum(field.values[..., 0] ** 2, axis=2)
     assert np.all(energy[:, -1] <= energy[:, 0] + 1e-10)
+
+
+def test_heat_fourier_series_rejects_mismatched_coefficients() -> None:
+    with pytest.raises(ShapeValidationError):
+        evaluate_heat_fourier_series(
+            x=np.linspace(0.0, 2.0 * np.pi, 8, endpoint=False),
+            t=np.linspace(0.0, 0.2, 4),
+            cosine_coefficients=np.ones((2, 2), dtype=float),
+            sine_coefficients=np.ones((2, 3), dtype=float),
+            diffusivity=0.1,
+        )

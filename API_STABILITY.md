@@ -5,8 +5,10 @@
 - FieldBatch
 - DerivativeBatch
 - `DerivativeBatch.backend="spectral_fd"`
+- ResidualBatch
 - ResidualEvaluator
 - GeneratorFamily (polynomial only)
+- VerificationReport
 - basic verification tools
 - typed validation errors (`PDELieValidationError`, `SchemaValidationError`, `ShapeValidationError`, `ScopeValidationError`)
 

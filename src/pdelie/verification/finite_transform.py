@@ -3,6 +3,7 @@ from __future__ import annotations
 import numpy as np
 
 from pdelie.contracts import FieldBatch, GeneratorFamily, VerificationReport
+from pdelie.errors import ScopeValidationError
 from pdelie.residuals.base import ResidualEvaluator
 from pdelie.symmetry.parameterization.polynomial_translation import (
     apply_pointwise_translation,
@@ -69,7 +70,7 @@ def verify_translation_generator(
     generator.validate()
 
     if field.values.shape[0] < min_heldout_initial_conditions:
-        raise ValueError("Held-out verification requires at least 3 unseen initial conditions in V0.1.")
+        raise ScopeValidationError("Held-out verification requires at least 3 unseen initial conditions in V0.1.")
 
     epsilon_values = DEFAULT_EPSILON_VALUES if epsilon_values is None else np.asarray(epsilon_values, dtype=float)
     span_distance = translation_span_distance(generator.coefficients)

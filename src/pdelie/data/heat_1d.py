@@ -3,6 +3,7 @@ from __future__ import annotations
 import numpy as np
 
 from pdelie.contracts import FieldBatch
+from pdelie.errors import ShapeValidationError
 
 
 DEFAULT_DOMAIN_LENGTH = 2.0 * np.pi
@@ -35,9 +36,9 @@ def evaluate_heat_fourier_series(
     sine_coefficients = np.asarray(sine_coefficients, dtype=float)
 
     if cosine_coefficients.shape != sine_coefficients.shape:
-        raise ValueError("cosine_coefficients and sine_coefficients must match.")
+        raise ShapeValidationError("cosine_coefficients and sine_coefficients must match.")
     if cosine_coefficients.ndim != 2:
-        raise ValueError("Coefficient arrays must have shape (batch, num_modes).")
+        raise ShapeValidationError("Coefficient arrays must have shape (batch, num_modes).")
 
     modes = np.arange(1, cosine_coefficients.shape[1] + 1, dtype=float)
     spatial_cos = np.cos(np.outer(modes, x))
@@ -86,4 +87,3 @@ def generate_heat_1d_field_batch(
         },
         preprocess_log=[],
     )
-

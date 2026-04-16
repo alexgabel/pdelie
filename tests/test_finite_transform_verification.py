@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
-from pdelie import GeneratorFamily
+from pdelie import GeneratorFamily, ScopeValidationError
 from pdelie.data import generate_heat_1d_field_batch
 from pdelie.residuals import HeatResidualEvaluator
 from pdelie.symmetry.fitting import fit_translation_generator
@@ -41,3 +42,10 @@ def test_translation_verification_is_reproducible() -> None:
     np.testing.assert_allclose(first.error_curve, second.error_curve)
     assert first.classification == second.classification
 
+
+def test_translation_verification_requires_three_heldout_initial_conditions() -> None:
+    training = generate_heat_1d_field_batch(batch_size=4, num_times=33, num_points=64, seed=26)
+    heldout = generate_heat_1d_field_batch(batch_size=2, num_times=33, num_points=64, seed=27)
+    generator = fit_translation_generator(training, HeatResidualEvaluator(), epsilon=1e-4)
+    with pytest.raises(ScopeValidationError):
+        verify_translation_generator(heldout, generator, HeatResidualEvaluator())

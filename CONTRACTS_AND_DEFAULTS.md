@@ -23,6 +23,7 @@ All canonical objects MUST:
 
 Validation failures MUST raise typed errors:
 
+- `PDELieValidationError`
 - `SchemaValidationError`
 - `ShapeValidationError`
 - `ScopeValidationError`
@@ -209,6 +210,11 @@ Then:
 - exact → e_small ≤ 1e-6 and stable curve  
 - approximate → e_small ≤ 1e-2 and bounded  
 - failed → otherwise  
+
+For V0.1 verification:
+
+- stable curve = monotone nondecreasing error curve with e_max ≤ 1e-4
+- bounded = e_max ≤ 1e-1
 
 Raw curves MUST always be reported.
 

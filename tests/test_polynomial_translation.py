@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
-from pdelie import GeneratorFamily
+from pdelie import GeneratorFamily, ShapeValidationError
 from pdelie.data import generate_heat_1d_field_batch
 from pdelie.residuals import HeatResidualEvaluator
 from pdelie.symmetry.fitting import fit_translation_generator
-from pdelie.symmetry.parameterization import translation_span_distance
+from pdelie.symmetry.parameterization import normalize_translation_coefficients, translation_span_distance
 
 
 def test_translation_baseline_recovers_spatial_translation_span() -> None:
@@ -32,3 +33,7 @@ def test_wrong_control_does_not_match_translation_span() -> None:
     )
     assert translation_span_distance(wrong.coefficients) > 1.0
 
+
+def test_zero_translation_coefficients_raise_typed_error() -> None:
+    with pytest.raises(ShapeValidationError):
+        normalize_translation_coefficients(np.zeros(4, dtype=float))

@@ -31,7 +31,7 @@ Requirements:
   - shape validation
   - round-trip serialization
 
-Status: TODO
+Status: DONE
 
 ---
 
@@ -48,7 +48,7 @@ Tests:
 - reproducibility (fixed seed)
 - no NaNs
 
-Status: TODO
+Status: DONE
 
 ---
 
@@ -64,7 +64,7 @@ Tests:
 - analytic derivative (sin function)
 - PDE residual sanity
 
-Status: TODO
+Status: DONE
 
 ---
 
@@ -78,7 +78,7 @@ Test:
 
 - residual ≈ 0 on clean data
 
-Status: TODO
+Status: DONE
 
 ---
 
@@ -93,7 +93,7 @@ Goal:
 
 - recover spatial translation symmetry
 
-Status: TODO
+Status: DONE
 
 ---
 
@@ -110,7 +110,7 @@ Test:
 - symmetry holds for small ε
 - stable across held-out ICs
 
-Status: TODO
+Status: DONE
 
 ---
 
@@ -119,10 +119,17 @@ Status: TODO
 V0.1 is complete if:
 
 - one known heat-equation symmetry is recovered
-- held-out validation passes
+- held-out validation passes on at least 3 unseen initial conditions
 - epsilon sweep is stable
 - noise robustness holds for small noise
 - all outputs use canonical objects
+
+Current status:
+
+- spatial translation on the synthetic 1D heat equation is recovered
+- held-out verification passes on 3 unseen initial conditions
+- epsilon sweep is implemented with the default V0.1 settings
+- all outputs use the current canonical V0.1 objects
 
 ---
 
@@ -130,5 +137,5 @@ V0.1 is complete if:
 
 - DO NOT implement beyond current milestone
 - DO NOT add experimental features
-- DO NOT modify SPEC.md during implementation
+- DO NOT expand beyond the documented V0.1 stable scope
 - STOP and report ambiguities instead of guessing

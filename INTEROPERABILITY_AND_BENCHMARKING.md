@@ -1,5 +1,5 @@
 This document is non-normative.
-All contracts are defined in SPECmd.
+All contracts are defined in SPEC.md.
 
 # INTEROPERABILITY & BENCHMARKING CONTEXT
 

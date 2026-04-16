@@ -80,7 +80,7 @@ Minimum gate:
 
 - recover spatial translation on the heat equation from synthetic data
 - pass the default epsilon sweep
-- pass held-out evaluation
+- pass held-out evaluation on at least 3 unseen initial conditions
 - remain stable under a defined small-noise condition
 - produce a `VerificationReport` with reproducible classification across runs
 - keep all work within the frozen V0.1 contracts

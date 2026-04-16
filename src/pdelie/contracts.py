@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass, fields
+from dataclasses import dataclass
 from typing import Any, ClassVar, Mapping
 
 import numpy as np
@@ -421,4 +421,3 @@ class VerificationReport:
             classification=str(payload["classification"]),
             diagnostics=dict(payload["diagnostics"]),
         )
-

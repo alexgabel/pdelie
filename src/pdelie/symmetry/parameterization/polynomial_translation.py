@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 
 from pdelie.contracts import FieldBatch
-from pdelie.errors import ScopeValidationError
+from pdelie.errors import ScopeValidationError, ShapeValidationError
 
 
 POLYNOMIAL_TRANSLATION_BASIS = ("1", "t", "x", "u")
@@ -29,7 +29,7 @@ def normalize_translation_coefficients(coefficients: np.ndarray) -> np.ndarray:
     coefficients = np.asarray(coefficients, dtype=float)
     norm = np.linalg.norm(coefficients)
     if norm == 0.0:
-        raise ValueError("Translation coefficients must not be the zero vector.")
+        raise ShapeValidationError("Translation coefficients must not be the zero vector.")
     normalized = coefficients / norm
     if normalized[0] < 0.0:
         normalized = -normalized
@@ -87,4 +87,3 @@ def apply_pointwise_translation(field: FieldBatch, xi: np.ndarray, epsilon: floa
         preprocess_log=list(field.preprocess_log),
         mask=None if field.mask is None else field.mask.copy(),
     )
-
