@@ -1,0 +1,68 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  editable-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install package and test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .[test]
+      - name: Check dependencies
+        run: python -m pip check
+      - name: Run test suite
+        run: python -m pytest
+      - name: Example smoke (editable install)
+        run: python -m pdelie.examples.heat_vertical_slice
+  package-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install packaging frontend
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install build
+      - name: Build sdist and wheel
+        run: python -m build --sdist --wheel
+      - name: Install built wheel into a clean venv
+        run: |
+          python -m venv /tmp/pdelie-rc-venv
+          /tmp/pdelie-rc-venv/bin/python -m pip install --upgrade pip
+          /tmp/pdelie-rc-venv/bin/python -m pip install dist/*.whl
+      - name: Check dependencies (wheel env)
+        run: /tmp/pdelie-rc-venv/bin/python -m pip check
+      - name: Stable import smoke
+        run: |
+          /tmp/pdelie-rc-venv/bin/python -c "from pdelie import FieldBatch, DerivativeBatch, ResidualBatch, ResidualEvaluator, GeneratorFamily, VerificationReport; print('stable-import-ok')"
+      - name: Example smoke and determinism
+        run: |
+          /tmp/pdelie-rc-venv/bin/python - <<'PY'
+          import json
+          import subprocess
+
+          def run_example():
+              completed = subprocess.run(
+                  ["/tmp/pdelie-rc-venv/bin/python", "-m", "pdelie.examples.heat_vertical_slice"],
+                  check=True,
+                  capture_output=True,
+                  text=True,
+              )
+              return json.loads(completed.stdout)
+
+          first = run_example()
+          second = run_example()
+          assert first == second, "example output is not deterministic across repeated runs"
+          assert first["verification_classification"] == "exact"
+          print("example-smoke-ok")
+          PY
