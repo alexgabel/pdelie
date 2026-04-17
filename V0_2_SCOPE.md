@@ -118,11 +118,13 @@ These may be explored experimentally, but they do not define `v0.2`.
 
 `v0.2` should benchmark the current stable symmetry pipeline across two PDEs, not yet benchmark downstream utility claims.
 
+This milestone adds an internal benchmark / release-gate layer, not a reusable public benchmarking API.
+
 Required controls:
 
 - fixed train/test split conventions
 - fixed verification defaults
-- fixed noise condition
+- fixed low-noise held-out condition shared across Heat and Burgers
 - fixed derivative backend assumptions
 - comparable fitting and verification settings across Heat and Burgers where meaningful
 
@@ -131,6 +133,7 @@ Required outputs:
 - symmetry recovery result on Heat
 - symmetry recovery result on Burgers
 - held-out verification on both
+- one matched noisy held-out robustness check shared across both PDEs
 - reproducible `VerificationReport` on both
 - no regression in the existing Heat path
 
@@ -143,6 +146,8 @@ Required outputs:
 - the v0.1 Heat path still passes cleanly
 - Burgers works end to end through the stable pipeline
 - the chosen Burgers symmetry target is recovered and verified under held-out evaluation
+- matched clean Heat / Burgers benchmark checks are `exact`
+- matched noisy held-out Heat / Burgers benchmark checks are `exact` or `approximate`
 - the current stable contracts remain coherent across both PDEs
 - no deferred or experimental feature is required for the stable release path
 

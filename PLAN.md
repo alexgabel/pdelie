@@ -1,60 +1,57 @@
-# PDELie — Execution Plan (V0.2 Milestone 1)
+# PDELie — Execution Plan (V0.2 Milestone 2)
 
 ## Goal
 
-Add synthetic 1D Burgers as the second stable PDE under the existing pipeline:
-
-FieldBatch → DerivativeBatch → ResidualBatch → GeneratorFamily → VerificationReport
-
-while preserving the current Heat path with no regressions.
+Harden the current stable Heat and Burgers symmetry pipeline with a controlled internal benchmark / release-gate layer under matched settings.
 
 ---
 
 ## Frozen Decisions
 
-- Burgers form: viscous 1D Burgers with fixed `nu`
-- grid: uniform periodic 1D grid
-- first stable Burgers target: spatial translation
-- derivative backend: keep `spectral_fd`
-- stable canonical object set: unchanged from V0.1
+- no new canonical stable objects
+- no new public API
+- benchmark logic stays in the test layer
+- reuse `spectral_fd`, current translation fitting, and current verification defaults
+- fixed low additive Gaussian noise (`noise_std_fraction = 2e-4`) applies to held-out data only
 
 ---
 
-## Milestone 1
+## Milestone 2
 
 Implement:
 
-- synthetic 1D Burgers generator
-- analytic Burgers residual evaluator
-- minimal broadening of the current translation fitter / verifier to support Burgers
-- cross-PDE tests that keep Heat exact and make Burgers exact under the same stable path
+- internal cross-PDE benchmark helper for Heat and Burgers
+- matched clean benchmark checks across both PDEs
+- matched noisy held-out benchmark checks across both PDEs
+- explicit release-gate tests for config reuse and reproducibility
 
 Status: DONE
 
 Implemented:
 
-- `generate_burgers_1d_field_batch(...)`
-- `BurgersResidualEvaluator`
-- translation-basis scope checks generalized from Heat-only wording to stable 1D periodic scalar inputs
-- translation fitter fallback retained as an internal Milestone 1 safeguard, with explicit diagnostics for whether the fallback path was used
-- Burgers unit tests, verification tests, and cross-PDE vertical-slice coverage
+- test-only benchmark helper with one frozen benchmark config shared by Heat and Burgers
+- clean cross-PDE benchmark gate (`exact` on Heat and Burgers)
+- noisy held-out cross-PDE benchmark gate (`exact` or `approximate` on Heat and Burgers)
+- reproducibility and config-drift protection around the matched benchmark layer
 
 ---
 
-## Milestone 1 Gate
+## Milestone 2 Gate
 
-Milestone 1 is complete only if:
+Milestone 2 is complete only if:
 
 - Heat still verifies as `exact`
 - Burgers verifies as `exact`
-- both PDEs use the existing stable pipeline and contracts
+- clean matched benchmark checks are `exact` for both PDEs
+- noisy held-out matched benchmark checks are `exact` or `approximate` for both PDEs
+- both PDEs use the same fixed verification defaults and fixed noise condition
 - no invariant, weak-form, operator, or adapter work is required
 
 Current status:
 
 - Heat still passes the existing vertical slice
-- Burgers now passes the same stable translation pipeline
-- cross-PDE tests protect the Heat result and validate the Burgers result
+- Burgers still passes the same stable translation pipeline
+- the matched benchmark / release-gate layer now checks both PDEs under shared settings
 
 ---
 
