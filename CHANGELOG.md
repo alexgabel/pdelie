@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.0
+
+First final release for the frozen V0.1 MVP slice.
+
+- scientifically identical to `0.1.0rc1`
+- final release metadata and release-readiness docs updated for `0.1.0`
+
 ## 0.1.0rc1
 
 First release candidate for the frozen V0.1 MVP slice.
