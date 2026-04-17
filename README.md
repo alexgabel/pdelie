@@ -2,7 +2,7 @@
 
 Numerical discovery and verification of Lie symmetries for PDE data.
 
-The current repository implements the current stable V0.x core with two synthetic PDE paths:
+The current repository implements the stable V0.x core with two synthetic PDE paths:
 
 - synthetic 1D heat equation
 - synthetic 1D Burgers equation
