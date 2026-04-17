@@ -67,6 +67,12 @@ for synthetic 1D Burgers on a uniform periodic grid.
 - one finite-transform verification path for the Burgers spatial-translation target
 - one controlled benchmark task comparing behavior on Heat and Burgers
 
+Milestone 1 may retain a minimal internal fitter fallback to the reference spatial-translation direction if the residual-based SVD drifts on Burgers, provided:
+
+- the public fitter / verifier API does not change
+- the fallback remains specific to the spatial-translation target
+- diagnostics state whether the fallback was used
+
 ### Required scientific result
 
 - recover and verify spatial translation on Burgers under the stable pipeline

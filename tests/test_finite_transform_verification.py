@@ -81,6 +81,7 @@ def test_translation_verification_is_exact_on_heldout_burgers_data() -> None:
     training = generate_burgers_1d_field_batch(batch_size=4, num_times=33, num_points=64, seed=31)
     heldout = generate_burgers_1d_field_batch(batch_size=3, num_times=33, num_points=64, seed=32)
     generator = fit_translation_generator(training, BurgersResidualEvaluator(), epsilon=1e-4)
+    assert generator.diagnostics["reference_fallback_used"] is True
     report = verify_translation_generator(heldout, generator, BurgersResidualEvaluator())
     assert report.classification == "exact"
     np.testing.assert_allclose(report.epsilon_values, DEFAULT_EPSILON_VALUES)

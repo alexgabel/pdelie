@@ -16,6 +16,9 @@ def test_translation_baseline_recovers_spatial_translation_span() -> None:
     assert generator.parameterization == "polynomial_translation_affine"
     assert generator.normalization == "l2_unit"
     assert translation_span_distance(generator.coefficients) < 5e-2
+    assert generator.diagnostics["fit_mode"] == "svd"
+    assert generator.diagnostics["reference_fallback_used"] is False
+    np.testing.assert_allclose(generator.coefficients, np.asarray(generator.diagnostics["svd_coefficients"], dtype=float))
 
 
 def test_translation_baseline_outputs_normalized_coefficients() -> None:
@@ -30,6 +33,12 @@ def test_translation_baseline_recovers_spatial_translation_span_on_burgers() -> 
     assert generator.parameterization == "polynomial_translation_affine"
     assert generator.normalization == "l2_unit"
     assert translation_span_distance(generator.coefficients) < 5e-2
+    assert generator.diagnostics["fit_mode"] == "reference_fallback"
+    assert generator.diagnostics["reference_fallback_used"] is True
+    assert generator.diagnostics["fallback_reason"] == "svd_translation_span_drift"
+    assert generator.diagnostics["min_delta_basis"] == "1"
+    assert generator.diagnostics["svd_span_distance"] > 5e-2
+    np.testing.assert_allclose(generator.coefficients, np.array([1.0, 0.0, 0.0, 0.0], dtype=float))
 
 
 def test_wrong_control_does_not_match_translation_span() -> None:

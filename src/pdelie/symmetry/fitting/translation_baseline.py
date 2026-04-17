@@ -13,6 +13,27 @@ from pdelie.symmetry.parameterization.polynomial_translation import (
     translation_span_distance,
 )
 
+TRANSLATION_FALLBACK_SPAN_TOLERANCE = 5e-2
+
+
+def _select_translation_coefficients(
+    svd_coefficients: np.ndarray,
+    basis_delta_norms: dict[str, float],
+) -> tuple[np.ndarray, str, bool, str | None, str]:
+    svd_span_distance = translation_span_distance(svd_coefficients)
+    min_delta_basis = min(basis_delta_norms, key=basis_delta_norms.get)
+
+    if svd_span_distance > TRANSLATION_FALLBACK_SPAN_TOLERANCE and min_delta_basis == "1":
+        return (
+            translation_reference_coefficients(),
+            "reference_fallback",
+            True,
+            "svd_translation_span_drift",
+            min_delta_basis,
+        )
+
+    return svd_coefficients, "svd", False, None, min_delta_basis
+
 
 def fit_translation_generator(
     field: FieldBatch,
@@ -38,11 +59,10 @@ def fit_translation_generator(
     _, singular_values, vh = np.linalg.svd(design, full_matrices=False)
     svd_coefficients = normalize_translation_coefficients(vh[-1])
 
-    coefficients = svd_coefficients
-    fit_mode = "svd"
-    if translation_span_distance(svd_coefficients) > 5e-2 and basis_delta_norms["1"] <= min(basis_delta_norms.values()):
-        coefficients = translation_reference_coefficients()
-        fit_mode = "reference_fallback"
+    coefficients, fit_mode, reference_fallback_used, fallback_reason, min_delta_basis = _select_translation_coefficients(
+        svd_coefficients,
+        basis_delta_norms,
+    )
 
     return GeneratorFamily(
         parameterization="polynomial_translation_affine",
@@ -51,9 +71,13 @@ def fit_translation_generator(
         diagnostics={
             "basis": list(POLYNOMIAL_TRANSLATION_BASIS),
             "basis_delta_norms": basis_delta_norms,
+            "fallback_reason": fallback_reason,
             "fit_mode": fit_mode,
             "fit_residual": float(singular_values[-1]),
+            "min_delta_basis": min_delta_basis,
+            "reference_fallback_used": reference_fallback_used,
             "svd_coefficients": svd_coefficients.tolist(),
+            "svd_span_distance": float(translation_span_distance(svd_coefficients)),
             "training_epsilon": float(epsilon),
         },
     )

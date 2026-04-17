@@ -36,7 +36,7 @@ Implemented:
 - `generate_burgers_1d_field_batch(...)`
 - `BurgersResidualEvaluator`
 - translation-basis scope checks generalized from Heat-only wording to stable 1D periodic scalar inputs
-- translation fitter fallback that preserves the spatial-translation target on Burgers without changing the public symmetry API
+- translation fitter fallback retained as an internal Milestone 1 safeguard, with explicit diagnostics for whether the fallback path was used
 - Burgers unit tests, verification tests, and cross-PDE vertical-slice coverage
 
 ---
