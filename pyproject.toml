@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pdelie"
-version = "0.1.0rc1"
+version = "0.1.0"
 description = "Stable V0.1 vertical slice for PDE Lie symmetry discovery"
 requires-python = ">=3.11"
 dependencies = [

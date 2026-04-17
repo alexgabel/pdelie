@@ -2,8 +2,8 @@
 
 ## Release Target
 
-- package version: `0.1.0rc1`
-- git tag: `v0.1.0rc1`
+- package version: `0.1.0`
+- git tag: `v0.1.0`
 
 ## Done
 
@@ -16,7 +16,7 @@
 - finite-transform verification path implemented
 - test suite passing from repo root
 - environment setup, README, MVP example module, and CI workflow added
-- RC validation covers editable install, built wheel install, stable imports, and the packaged example path
+- final release validation covers editable install, built wheel install, stable imports, and the packaged example path
 
 ## Explicitly Deferred
 
@@ -27,11 +27,11 @@
 - broad dataset adapters or interoperability work
 - paper-specific experiment logic
 
-## Release Candidate View
+## Final Release View
 
-The current repository is release-candidate ready for the documented V0.1 MVP slice, subject to CI passing on the default branch.
+The current repository is ready for the final `0.1.0` release for the documented V0.1 MVP slice, subject to CI passing on the release PR and the merge commit on `main`.
 
-There are no known code or contract blockers for tagging a V0.1 release candidate inside the current scope.
+There are no known code or contract blockers for tagging the final V0.1 release inside the current scope.
 
 ## Packaging And Public API Notes
 
@@ -40,13 +40,14 @@ There are no known code or contract blockers for tagging a V0.1 release candidat
 - The example module path documented in the README is now part of CI validation, including deterministic repeated output checks.
 - `conda env create -f environment.yml` remains a manual RC checklist item outside CI.
 
-## Tag Checklist
+## Final Tag Checklist
 
-Before tagging `v0.1.0rc1`:
+Before tagging `v0.1.0`:
 
 - run `python -m pytest` from the repo root
 - run `python -m build --sdist --wheel`
 - install the built wheel into a clean environment and verify stable imports
 - run `python -m pdelie.examples.heat_vertical_slice`
-- confirm GitHub Actions jobs `editable-tests` and `package-smoke` pass on the release commit
-- tag the release commit as `v0.1.0rc1`
+- confirm GitHub Actions jobs `editable-tests` and `package-smoke` pass on the release PR commit
+- merge the release PR into `main`
+- tag the merged `main` commit as `v0.1.0`
