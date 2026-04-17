@@ -72,9 +72,7 @@ def verify_translation_generator(
     generator.validate()
 
     if field.values.shape[0] < min_heldout_initial_conditions:
-        raise ScopeValidationError(
-            f"Held-out verification requires at least {min_heldout_initial_conditions} unseen initial conditions in V0.1."
-        )
+        raise ScopeValidationError(f"Held-out verification requires at least {min_heldout_initial_conditions} unseen initial conditions.")
 
     epsilon_values = DEFAULT_EPSILON_VALUES if epsilon_values is None else np.asarray(epsilon_values, dtype=float)
     span_distance = translation_span_distance(generator.coefficients)

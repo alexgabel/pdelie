@@ -14,6 +14,14 @@ Instead, it asks a narrower and more important question:
 
 The second PDE for `v0.2` is **1D Burgers**.
 
+For Milestone 1, the Burgers target is frozen as:
+
+- viscous 1D Burgers with fixed `nu`
+- uniform periodic grid on `x in [0, 2π)`
+- spatial translation as the first stable recovery / verification target
+- no new canonical stable objects
+- no new stable derivative backend
+
 ---
 
 ## Must Implement
@@ -48,20 +56,20 @@ Add a second end-to-end stable path:
 
 `FieldBatch -> DerivativeBatch -> ResidualBatch -> GeneratorFamily -> VerificationReport`
 
-for synthetic 1D Burgers on a uniform grid.
+for synthetic 1D Burgers on a uniform periodic grid.
 
 ### Required components
 
 - one synthetic 1D Burgers dataset generator
 - one trusted Burgers residual evaluator
 - derivative support that works within the existing stable numerical assumptions
-- one broadened polynomial fitting path that is not heat-translation-specific
-- one finite-transform verification path suitable for the chosen Burgers symmetry target
+- one broadened translation fitting path that works for Heat and Burgers under the current stable slice
+- one finite-transform verification path for the Burgers spatial-translation target
 - one controlled benchmark task comparing behavior on Heat and Burgers
 
 ### Required scientific result
 
-- recover and verify at least one known Burgers symmetry target under the stable pipeline
+- recover and verify spatial translation on Burgers under the stable pipeline
 - maintain the existing Heat result without regressions
 
 ---
@@ -71,8 +79,8 @@ for synthetic 1D Burgers on a uniform grid.
 1. freeze `v0.2` scope
 2. add synthetic 1D Burgers data
 3. add Burgers residual evaluator
-4. broaden polynomial fitting just enough for the second PDE
-5. add/adjust verification for the Burgers symmetry target
+4. broaden the current translation fitting path just enough for the second PDE
+5. add/adjust verification for the Burgers spatial-translation target
 6. add cross-PDE tests and release-gate checks
 
 ---

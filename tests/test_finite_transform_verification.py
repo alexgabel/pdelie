@@ -4,8 +4,8 @@ import numpy as np
 import pytest
 
 from pdelie import GeneratorFamily, ScopeValidationError
-from pdelie.data import generate_heat_1d_field_batch
-from pdelie.residuals import HeatResidualEvaluator
+from pdelie.data import generate_burgers_1d_field_batch, generate_heat_1d_field_batch
+from pdelie.residuals import BurgersResidualEvaluator, HeatResidualEvaluator
 from pdelie.symmetry.fitting import fit_translation_generator
 from pdelie.verification import DEFAULT_EPSILON_VALUES, verify_translation_generator
 
@@ -75,3 +75,36 @@ def test_translation_verification_rejects_nonperiodic_boundary_conditions() -> N
     )
     with pytest.raises(ScopeValidationError, match="periodic boundary conditions in x"):
         verify_translation_generator(heldout, generator, HeatResidualEvaluator())
+
+
+def test_translation_verification_is_exact_on_heldout_burgers_data() -> None:
+    training = generate_burgers_1d_field_batch(batch_size=4, num_times=33, num_points=64, seed=31)
+    heldout = generate_burgers_1d_field_batch(batch_size=3, num_times=33, num_points=64, seed=32)
+    generator = fit_translation_generator(training, BurgersResidualEvaluator(), epsilon=1e-4)
+    report = verify_translation_generator(heldout, generator, BurgersResidualEvaluator())
+    assert report.classification == "exact"
+    np.testing.assert_allclose(report.epsilon_values, DEFAULT_EPSILON_VALUES)
+    assert report.diagnostics["heldout_initial_conditions"] == 3
+
+
+def test_translation_verification_fails_for_wrong_burgers_generator() -> None:
+    heldout = generate_burgers_1d_field_batch(batch_size=3, num_times=33, num_points=64, seed=33)
+    wrong = GeneratorFamily(
+        parameterization="polynomial_translation_affine",
+        coefficients=np.array([0.0, 0.0, 1.0, 0.0]),
+        normalization="l2_unit",
+        diagnostics={"basis": ["1", "t", "x", "u"]},
+    )
+    report = verify_translation_generator(heldout, wrong, BurgersResidualEvaluator())
+    assert report.classification == "failed"
+    assert report.diagnostics["span_distance"] > report.diagnostics["span_tolerance"]
+
+
+def test_translation_verification_is_reproducible_on_burgers() -> None:
+    training = generate_burgers_1d_field_batch(batch_size=4, num_times=33, num_points=64, seed=34)
+    heldout = generate_burgers_1d_field_batch(batch_size=3, num_times=33, num_points=64, seed=35)
+    generator = fit_translation_generator(training, BurgersResidualEvaluator(), epsilon=1e-4)
+    first = verify_translation_generator(heldout, generator, BurgersResidualEvaluator())
+    second = verify_translation_generator(heldout, generator, BurgersResidualEvaluator())
+    np.testing.assert_allclose(first.error_curve, second.error_curve)
+    assert first.classification == second.classification

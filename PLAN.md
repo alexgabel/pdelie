@@ -1,141 +1,67 @@
-# PDELie — Execution Plan (V0.1)
+# PDELie — Execution Plan (V0.2 Milestone 1)
 
 ## Goal
 
-Prove the vertical slice:
+Add synthetic 1D Burgers as the second stable PDE under the existing pipeline:
 
-FieldBatch → DerivativeBatch → Residual → Generator → Verification
+FieldBatch → DerivativeBatch → ResidualBatch → GeneratorFamily → VerificationReport
 
-on the 1D heat equation.
+while preserving the current Heat path with no regressions.
 
 ---
 
-## Milestones
+## Frozen Decisions
 
-### Milestone 1 — Canonical objects
+- Burgers form: viscous 1D Burgers with fixed `nu`
+- grid: uniform periodic 1D grid
+- first stable Burgers target: spatial translation
+- derivative backend: keep `spectral_fd`
+- stable canonical object set: unchanged from V0.1
+
+---
+
+## Milestone 1
 
 Implement:
 
-- FieldBatch
-- DerivativeBatch
-- ResidualBatch
-- GeneratorFamily
-- VerificationReport
-
-Requirements:
-
-- validation rules
-- to_dict / from_dict
-- tests:
-  - schema validation
-  - shape validation
-  - round-trip serialization
+- synthetic 1D Burgers generator
+- analytic Burgers residual evaluator
+- minimal broadening of the current translation fitter / verifier to support Burgers
+- cross-PDE tests that keep Heat exact and make Burgers exact under the same stable path
 
 Status: DONE
 
----
+Implemented:
 
-### Milestone 2 — Synthetic heat dataset
-
-Implement:
-
-- 1D heat equation generator
-- uniform periodic grid
-
-Tests:
-
-- shape correctness
-- reproducibility (fixed seed)
-- no NaNs
-
-Status: DONE
+- `generate_burgers_1d_field_batch(...)`
+- `BurgersResidualEvaluator`
+- translation-basis scope checks generalized from Heat-only wording to stable 1D periodic scalar inputs
+- translation fitter fallback that preserves the spatial-translation target on Burgers without changing the public symmetry API
+- Burgers unit tests, verification tests, and cross-PDE vertical-slice coverage
 
 ---
 
-### Milestone 3 — Derivatives
+## Milestone 1 Gate
 
-Implement:
+Milestone 1 is complete only if:
 
-- spectral spatial derivative
-- finite time derivative
-
-Tests:
-
-- analytic derivative (sin function)
-- PDE residual sanity
-
-Status: DONE
-
----
-
-### Milestone 4 — Residual evaluator
-
-Implement:
-
-- analytic heat residual
-
-Test:
-
-- residual ≈ 0 on clean data
-
-Status: DONE
-
----
-
-### Milestone 5 — Generator fitting
-
-Implement:
-
-- polynomial generator basis
-- simple regression-based fitting
-
-Goal:
-
-- recover spatial translation symmetry
-
-Status: DONE
-
----
-
-### Milestone 6 — Verification
-
-Implement:
-
-- finite ε transformation
-- epsilon sweep
-- VerificationReport
-
-Test:
-
-- symmetry holds for small ε
-- stable across held-out ICs
-
-Status: DONE
-
----
-
-## Release Gate
-
-V0.1 is complete if:
-
-- one known heat-equation symmetry is recovered
-- held-out validation passes on at least 3 unseen initial conditions
-- epsilon sweep is stable
-- noise robustness holds for small noise
-- all outputs use canonical objects
+- Heat still verifies as `exact`
+- Burgers verifies as `exact`
+- both PDEs use the existing stable pipeline and contracts
+- no invariant, weak-form, operator, or adapter work is required
 
 Current status:
 
-- spatial translation on the synthetic 1D heat equation is recovered
-- held-out verification passes on 3 unseen initial conditions
-- epsilon sweep is implemented with the default V0.1 settings
-- all outputs use the current canonical V0.1 objects
+- Heat still passes the existing vertical slice
+- Burgers now passes the same stable translation pipeline
+- cross-PDE tests protect the Heat result and validate the Burgers result
 
 ---
 
 ## Rules
 
-- DO NOT implement beyond current milestone
-- DO NOT add experimental features
-- DO NOT expand beyond the documented V0.1 stable scope
-- STOP and report ambiguities instead of guessing
+- DO NOT add invariants in this milestone
+- DO NOT add weak-form methods
+- DO NOT add operator methods
+- DO NOT broaden adapters or ecosystem scope
+- DO NOT add new canonical stable objects unless forced by a later milestone
