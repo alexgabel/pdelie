@@ -6,7 +6,6 @@ import numpy as np
 
 from pdelie.contracts import FieldBatch, GeneratorFamily, VerificationReport
 from pdelie.data import generate_burgers_1d_field_batch, generate_heat_1d_field_batch
-from pdelie.derivatives import compute_spectral_fd_derivatives
 from pdelie.residuals import BurgersResidualEvaluator, HeatResidualEvaluator
 from pdelie.symmetry.fitting import fit_translation_generator
 from pdelie.verification import DEFAULT_EPSILON_VALUES, DEFAULT_RELATIVE_L2_NORM, verify_translation_generator
@@ -103,7 +102,6 @@ def _pipeline_for_pde(
             seed=noise_seed,
         )
 
-    derivatives = compute_spectral_fd_derivatives(training)
     generator = fit_translation_generator(training, residual_evaluator, epsilon=1e-4)
     report = verify_translation_generator(
         heldout,
@@ -122,7 +120,7 @@ def _pipeline_for_pde(
         "noise_seed": int(noise_seed),
         "heldout_batch_size": int(CROSS_PDE_BENCHMARK_CONFIG["heldout_batch_size"]),
         "epsilon_values": np.asarray(CROSS_PDE_BENCHMARK_CONFIG["epsilon_values"], dtype=float),
-        "backend": derivatives.backend,
+        "backend": str(CROSS_PDE_BENCHMARK_CONFIG["backend"]),
         "heldout_field": heldout,
     }
 

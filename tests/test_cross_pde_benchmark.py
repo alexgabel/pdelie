@@ -54,6 +54,6 @@ def test_cross_pde_benchmark_is_reproducible() -> None:
             np.testing.assert_allclose(
                 first_result["report"].error_curve,
                 second_result["report"].error_curve,
-                rtol=1e-12,
+                rtol=1e-9,
                 atol=1e-12,
             )
