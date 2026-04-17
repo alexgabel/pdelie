@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.2.0rc1
+
+First release candidate for the frozen V0.2 stable core.
+
+- extends the stable core from Heat-only to matched Heat and Burgers coverage
+- stable pipeline remains:
+  `FieldBatch -> DerivativeBatch -> ResidualBatch -> GeneratorFamily -> VerificationReport`
+- synthetic 1D Burgers added as the second stable PDE under the existing contracts
+- current translation fitting and finite-transform verification paths hardened across Heat and Burgers
+- matched cross-PDE benchmark / release-gate layer added in the test surface under shared defaults and shared low-noise held-out conditions
+- release metadata, packaging text, and user-facing docs aligned with the implemented V0.2 state
+
+Explicitly deferred for this release candidate:
+
+- invariant pipelines as a stable feature
+- weak-form methods
+- operator methods
+- broad adapters or interoperability expansion
+- new canonical objects beyond the current stable slice
+
 ## 0.1.0
 
 First final release for the frozen V0.1 MVP slice.
