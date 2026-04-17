@@ -7,7 +7,23 @@ from pdelie import GeneratorFamily, ScopeValidationError
 from pdelie.data import generate_burgers_1d_field_batch, generate_heat_1d_field_batch
 from pdelie.residuals import BurgersResidualEvaluator, HeatResidualEvaluator
 from pdelie.symmetry.fitting import fit_translation_generator
+from pdelie.symmetry.fitting.translation_baseline import TRANSLATION_FALLBACK_SPAN_TOLERANCE
+from pdelie.symmetry.parameterization.polynomial_translation import DEFAULT_TRANSLATION_SPAN_TOLERANCE
 from pdelie.verification import DEFAULT_EPSILON_VALUES, verify_translation_generator
+
+
+def test_translation_span_tolerance_defaults_are_shared() -> None:
+    assert TRANSLATION_FALLBACK_SPAN_TOLERANCE == DEFAULT_TRANSLATION_SPAN_TOLERANCE
+
+    heldout = generate_heat_1d_field_batch(batch_size=3, num_times=33, num_points=64, seed=20)
+    wrong = GeneratorFamily(
+        parameterization="polynomial_translation_affine",
+        coefficients=np.array([0.0, 0.0, 1.0, 0.0]),
+        normalization="l2_unit",
+        diagnostics={"basis": ["1", "t", "x", "u"]},
+    )
+    report = verify_translation_generator(heldout, wrong, HeatResidualEvaluator())
+    assert report.diagnostics["span_tolerance"] == DEFAULT_TRANSLATION_SPAN_TOLERANCE
 
 
 def test_translation_verification_is_exact_on_heldout_heat_data() -> None:

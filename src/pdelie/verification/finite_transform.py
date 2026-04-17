@@ -6,6 +6,7 @@ from pdelie.contracts import FieldBatch, GeneratorFamily, VerificationReport
 from pdelie.errors import ScopeValidationError
 from pdelie.residuals.base import ResidualEvaluator
 from pdelie.symmetry.parameterization.polynomial_translation import (
+    DEFAULT_TRANSLATION_SPAN_TOLERANCE,
     apply_pointwise_translation,
     evaluate_translation_xi,
     translation_span_distance,
@@ -66,7 +67,7 @@ def verify_translation_generator(
     *,
     epsilon_values: np.ndarray | None = None,
     min_heldout_initial_conditions: int = 3,
-    span_tolerance: float = 5e-2,
+    span_tolerance: float = DEFAULT_TRANSLATION_SPAN_TOLERANCE,
 ) -> VerificationReport:
     field.validate()
     generator.validate()

@@ -5,6 +5,7 @@ import numpy as np
 from pdelie.contracts import FieldBatch, GeneratorFamily
 from pdelie.residuals.base import ResidualEvaluator
 from pdelie.symmetry.parameterization.polynomial_translation import (
+    DEFAULT_TRANSLATION_SPAN_TOLERANCE,
     POLYNOMIAL_TRANSLATION_BASIS,
     apply_pointwise_translation,
     build_translation_basis,
@@ -13,7 +14,7 @@ from pdelie.symmetry.parameterization.polynomial_translation import (
     translation_span_distance,
 )
 
-TRANSLATION_FALLBACK_SPAN_TOLERANCE = 5e-2
+TRANSLATION_FALLBACK_SPAN_TOLERANCE = DEFAULT_TRANSLATION_SPAN_TOLERANCE
 
 
 def _select_translation_coefficients(

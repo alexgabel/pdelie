@@ -7,6 +7,7 @@ from pdelie.errors import ScopeValidationError, ShapeValidationError
 
 
 POLYNOMIAL_TRANSLATION_BASIS = ("1", "t", "x", "u")
+DEFAULT_TRANSLATION_SPAN_TOLERANCE = 5e-2
 
 
 def build_translation_basis(field: FieldBatch) -> dict[str, np.ndarray]:
