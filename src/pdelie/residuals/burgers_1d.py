@@ -28,7 +28,22 @@ class BurgersResidualEvaluator(ResidualEvaluator):
 
         diffusivity = self.diffusivity
         if diffusivity is None:
-            diffusivity = float(field.metadata["parameter_tags"]["nu"])
+            parameter_tags = field.metadata.get("parameter_tags")
+            if not isinstance(parameter_tags, dict):
+                raise SchemaValidationError(
+                    "BurgersResidualEvaluator requires field.metadata['parameter_tags']['nu'] when diffusivity is not provided."
+                )
+            nu = parameter_tags.get("nu")
+            if nu is None:
+                raise SchemaValidationError(
+                    "BurgersResidualEvaluator requires field.metadata['parameter_tags']['nu'] when diffusivity is not provided."
+                )
+            try:
+                diffusivity = float(nu)
+            except (TypeError, ValueError) as exc:
+                raise SchemaValidationError(
+                    "BurgersResidualEvaluator requires field.metadata['parameter_tags']['nu'] to be castable to float."
+                ) from exc
 
         u = np.asarray(field.values, dtype=float)
         residual = derivatives.derivatives["u_t"] + u * derivatives.derivatives["u_x"] - diffusivity * derivatives.derivatives["u_xx"]
