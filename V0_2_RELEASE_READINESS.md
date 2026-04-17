@@ -2,8 +2,8 @@
 
 ## Release Target
 
-- package version: `0.2.0rc1`
-- git tag: `v0.2.0rc1`
+- package version: `0.2.0`
+- git tag: `v0.2.0`
 
 ## Done
 
@@ -29,11 +29,13 @@
 - new canonical stable objects beyond the current slice
 - paper-specific experiment logic
 
-## Release-Candidate View
+## Final Release View
 
-The current repository is ready for the `0.2.0rc1` release candidate for the frozen V0.2 stable core, subject to the release-path checks passing on the release branch and CI passing on the release PR.
+The current repository is ready for the final `0.2.0` release for the frozen V0.2 stable core, subject to the release-path checks passing on the release branch and CI passing on the release PR.
 
 There are no known scientific-scope blockers inside the current V0.2 slice.
+
+`0.2.0` remains scientifically and functionally identical to `0.2.0rc1` unless a real release blocker is found.
 
 ## Benchmark And Release-Gate Notes
 
@@ -42,9 +44,9 @@ There are no known scientific-scope blockers inside the current V0.2 slice.
 - Matched noisy held-out benchmark checks must classify as `exact` or `approximate` on both PDEs.
 - The benchmark/release-gate layer remains internal to the test surface and is not a public API.
 
-## RC Tag Checklist
+## Final Tag Checklist
 
-Before tagging `v0.2.0rc1`:
+Before tagging `v0.2.0`:
 
 - run `python -m pytest` from the repo root
 - run `python -m build --sdist --wheel`
@@ -52,4 +54,4 @@ Before tagging `v0.2.0rc1`:
 - run `python -m pdelie.examples.heat_vertical_slice`
 - confirm GitHub Actions jobs `editable-tests` and `package-smoke` pass on the release PR commit
 - merge the release PR into `main`
-- tag the merged `main` commit as `v0.2.0rc1`
+- tag the merged `main` commit as `v0.2.0`
