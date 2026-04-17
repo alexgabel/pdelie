@@ -2,9 +2,10 @@
 
 Numerical discovery and verification of Lie symmetries for PDE data.
 
-The current repository implements the V0.1 MVP slice only:
+The current repository implements the stable V0.x core with two synthetic PDE paths:
 
 - synthetic 1D heat equation
+- synthetic 1D Burgers equation
 - uniform periodic grid
 - `FieldBatch -> DerivativeBatch -> ResidualBatch -> GeneratorFamily -> VerificationReport`
 - one stable derivative backend: `spectral_fd`
@@ -49,7 +50,7 @@ python -m pdelie.examples.heat_vertical_slice
 
 That exact command is validated in CI both after editable install and after built-wheel packaging smoke checks.
 
-The example performs the full V0.1 path:
+The packaged example currently demonstrates the Heat path only:
 
 1. generate synthetic heat-equation data
 2. compute `spectral_fd` derivatives
@@ -71,13 +72,11 @@ print(result["verification_classification"])
 Included in the current MVP:
 
 - canonical V0.1 objects and typed validation errors
-- synthetic heat data only
+- synthetic heat and Burgers data
 - polynomial translation baseline only
 - finite-transform verification only
 
 Explicitly deferred:
-
-- Burgers
 - operator symmetry
 - weak-form features
 - broad adapters and interoperability work

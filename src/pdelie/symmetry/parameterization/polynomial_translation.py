@@ -7,12 +7,17 @@ from pdelie.errors import ScopeValidationError, ShapeValidationError
 
 
 POLYNOMIAL_TRANSLATION_BASIS = ("1", "t", "x", "u")
+DEFAULT_TRANSLATION_SPAN_TOLERANCE = 5e-2
 
 
 def build_translation_basis(field: FieldBatch) -> dict[str, np.ndarray]:
     field.validate()
     if field.dims != ("batch", "time", "x", "var"):
-        raise ScopeValidationError("The V0.1 translation basis only supports 1D heat FieldBatch inputs.")
+        raise ScopeValidationError("The stable translation basis only supports dims ('batch', 'time', 'x', 'var').")
+    if len(field.var_names) != 1:
+        raise ScopeValidationError("The stable translation basis only supports a single scalar variable.")
+    if field.metadata["boundary_conditions"].get("x") != "periodic":
+        raise ScopeValidationError("The stable translation basis requires periodic boundary conditions in x.")
 
     ones = np.ones_like(field.values)
     time_values = field.coords["time"][None, :, None, None]
