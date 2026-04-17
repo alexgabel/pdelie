@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.0
+
+First final release for the frozen V0.2 stable core.
+
+- scientifically/functionally identical to `0.2.0rc1`
+- final release metadata and release-readiness docs updated for `0.2.0`
+
 ## 0.2.0rc1
 
 First release candidate for the frozen V0.2 stable core.
