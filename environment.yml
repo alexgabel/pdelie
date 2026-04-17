@@ -1,4 +1,4 @@
-name: pdelie-v0_1
+name: pdelie
 channels:
   - conda-forge
 dependencies:

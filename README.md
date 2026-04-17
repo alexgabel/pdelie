@@ -2,7 +2,7 @@
 
 Numerical discovery and verification of Lie symmetries for PDE data.
 
-The current repository implements the stable V0.x core with two synthetic PDE paths:
+The current repository implements the stable V0.2 core with two synthetic PDE paths:
 
 - synthetic 1D heat equation
 - synthetic 1D Burgers equation
@@ -19,7 +19,7 @@ From the repo root:
 
 ```bash
 conda env create -f environment.yml
-conda activate pdelie-v0_1
+conda activate pdelie
 ```
 
 ### Editable install
@@ -42,7 +42,7 @@ python -m pytest
 
 ## Minimal End-To-End Example
 
-Run the packaged MVP example module from the repo root:
+Run the packaged example module from the repo root:
 
 ```bash
 python -m pdelie.examples.heat_vertical_slice
@@ -69,12 +69,13 @@ print(result["verification_classification"])
 
 ## Current Scope
 
-Included in the current MVP:
+Included in the current stable core:
 
-- canonical V0.1 objects and typed validation errors
+- stable canonical objects and typed validation errors
 - synthetic heat and Burgers data
 - polynomial translation baseline only
 - finite-transform verification only
+- matched Heat/Burgers benchmark and release-gate checks in the test layer
 
 Explicitly deferred:
 - operator symmetry
