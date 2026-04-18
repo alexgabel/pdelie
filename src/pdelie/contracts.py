@@ -428,13 +428,19 @@ class InvariantMapSpec:
 
     @classmethod
     def from_dict(cls, payload: Mapping[str, Any]) -> "InvariantMapSpec":
+        inverse_available = payload["inverse_available"]
+        if not isinstance(inverse_available, bool):
+            raise SchemaValidationError(
+                "InvariantMapSpec.inverse_available must be a boolean"
+            )
+
         return cls(
             schema_version=str(payload["schema_version"]),
             generator_metadata=dict(payload["generator_metadata"]),
             construction_method=str(payload["construction_method"]),
             parameters=dict(payload["parameters"]),
             domain_validity=str(payload["domain_validity"]),
-            inverse_available=bool(payload["inverse_available"]),
+            inverse_available=inverse_available,
             diagnostics=dict(payload["diagnostics"]),
         )
 
