@@ -131,7 +131,34 @@ GeneratorFamily(
 
 ---
 
-## 1.6 VerificationReport
+## 1.6 InvariantMapSpec
+
+~~~python
+InvariantMapSpec(
+    schema_version: str,
+    generator_metadata: Dict[str, Any],
+    construction_method: str,
+    parameters: Dict[str, Any],
+    domain_validity: str,
+    inverse_available: bool,
+    diagnostics: Dict[str, Any]
+)
+~~~
+
+### Required rules
+
+- `domain_validity ∈ {"local", "global", "unknown"}`
+- `generator_metadata` MUST include a non-empty `parameterization`
+- non-global maps MUST include explicit validity diagnostics
+- approximate maps MUST include explicit approximation diagnostics
+
+Runtime-only, not canonical:
+
+- `InvariantApplier`
+
+---
+
+## 1.7 VerificationReport
 
 ~~~python
 VerificationReport(
