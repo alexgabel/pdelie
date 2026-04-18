@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.3.0rc1
+
+First release candidate for the frozen V0.3 invariant/downstream utility core.
+
+- stable canonical pipeline extended with `InvariantMapSpec`
+- runtime-only `pdelie.invariants.InvariantApplier` added for the frozen single-generator periodic `x` uniform-translation path
+- runtime-only `pdelie.discovery.to_pysindy_trajectories` added as the narrow backend-specific PySINDy bridge
+- controlled four-branch downstream benchmark / release-gate layer added internally under frozen settings:
+  `vanilla`, `known_invariant`, `discovered_invariant`, `nuisance`
+- release metadata, package description, README, and release-readiness docs aligned with the implemented V0.3 state
+
+Explicitly deferred for this release candidate:
+
+- weak-form methods
+- operator methods
+- multi-generator invariant machinery
+- broad adapters or interoperability expansion
+- new canonical objects beyond the current V0.3 slice
+
 ## 0.2.0
 
 First final release for the frozen V0.2 stable core.
