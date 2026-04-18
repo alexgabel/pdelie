@@ -67,6 +67,10 @@ Add the smallest downstream utility path that proves the new invariant layer can
 This milestone does **not** add the full downstream benchmark layer yet.  
 It adds only the minimum bridge required for the later controlled benchmark/release-gate milestone.
 
+### Status
+
+**COMPLETE**
+
 ### Frozen Decisions
 
 - one thin downstream bridge only
@@ -82,15 +86,16 @@ It adds only the minimum bridge required for the later controlled benchmark/rele
 - stable derivative backend remains:
   - `spectral_fd`
 - stable symmetry/invariant path remains the current single-generator translation-oriented path
-- the downstream bridge may be narrow and backend-specific
-- the downstream bridge should remain as thin as possible, likely PySINDy first
+- the downstream bridge is runtime-only, backend-specific, and exposed only as `pdelie.discovery.to_pysindy_trajectories`
+- the flattened trajectory format is a bridge format only, not a PDELie canonical downstream representation
+- the downstream bridge remains as thin as possible, using PySINDy only for a fit smoke path
 
 ### Milestone 2
 
 Implement:
 
-- one thin downstream bridge for the current invariant-transformed stable path
-- one minimal end-to-end downstream smoke path using the existing invariant layer
+- one thin runtime-only PySINDy bridge for the current invariant-transformed stable path
+- one minimal end-to-end downstream fit smoke path using the existing invariant layer
 - regression protection ensuring Heat and Burgers stable symmetry paths remain unchanged
 - explicit documentation of what the bridge does and does not guarantee
 
@@ -107,7 +112,7 @@ This milestone is complete only if the downstream bridge is:
 
 ### 1. Thin downstream bridge
 
-Add one narrow bridge, likely PySINDy-based, that can consume the current transformed data path.
+Add one narrow bridge that consumes the current transformed data path.
 
 The bridge must:
 
@@ -115,6 +120,9 @@ The bridge must:
 - avoid becoming a general discovery framework
 - avoid introducing a new stable canonical result object unless absolutely necessary
 - avoid widening stable scope beyond one backend and one path
+- remain out of root `pdelie` imports
+- stay runtime-level only
+- use a flattened-trajectory bridge format only for PySINDy
 
 ### 2. One frozen utility path
 
@@ -140,22 +148,19 @@ Keep the existing stable core intact:
 
 ---
 
-## Exact Files To Create Or Modify
+## Exact Files Created Or Modified
 
-Likely create:
+Created:
 
-- one downstream bridge module in `src/pdelie/discovery/` or similarly narrow downstream location
-- one new focused test file for the bridge smoke path
+- `src/pdelie/discovery/__init__.py`
+- `src/pdelie/discovery/pysindy_bridge.py`
+- `tests/test_pysindy_bridge.py`
 
-Likely modify only if required:
+Modified:
 
-- `src/pdelie/invariants/`
-- `src/pdelie/__init__.py`
-- `README.md`
-- `SPEC.md`
-- `CONTRACTS_AND_DEFAULTS.md`
+- `pyproject.toml`
+- `tests/test_public_api.py`
 - `API_STABILITY.md`
-- `ROADMAP.md`
 - `V0_3_SCOPE.md`
 - `PLAN.md`
 
@@ -183,6 +188,7 @@ Add tests showing:
 - the downstream bridge can consume the current invariant-transformed path
 - the bridge behaves reproducibly under fixed inputs
 - invalid or unsupported uses fail with typed errors or explicit scope errors
+- the optional PySINDy dependency fails with a clear install hint when unavailable
 
 ### 2. Stable-path compatibility tests
 
@@ -210,7 +216,7 @@ At milestone completion, run:
 - the narrow bridge tests
 - invariant tests
 - current Heat/Burgers stable tests
-- full `python -m pytest`
+- full `pytest`
 
 ---
 
@@ -227,6 +233,19 @@ Milestone 2 is complete only if:
 - no new stable canonical object was added unless unavoidable and explicitly documented
 
 If these are not satisfied, Milestone 2 is not complete.
+
+### Milestone 2 Completion Gate
+
+Milestone 2 passed because:
+
+- one thin runtime-only downstream bridge exists for the frozen stable path
+- the bridge works end to end on the single-generator invariant workflow
+- the bridge remains out of root `pdelie` imports
+- no new stable canonical object was added
+- Heat and Burgers still pass the current stable symmetry pipeline
+- invariant application still passes unchanged
+- no full benchmark layer was required
+- no deferred or experimental feature was required
 
 ---
 
@@ -245,5 +264,5 @@ If these are not satisfied, Milestone 2 is not complete.
 ## Status
 
 - Milestone 1: **COMPLETE**
-- Milestone 2: **TODO**
+- Milestone 2: **COMPLETE**
 - Milestone 3: **NOT STARTED**

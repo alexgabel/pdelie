@@ -8,12 +8,16 @@ version = "0.2.0"
 description = "Stable V0.2 core for PDE Lie symmetry discovery on synthetic Heat and Burgers data"
 requires-python = ">=3.11"
 dependencies = [
-  "numpy>=1.24",
+  "numpy>=1.24,<2",
 ]
 
 [project.optional-dependencies]
+downstream = [
+  "pysindy>=1.7.5,<2",
+]
 test = [
   "build>=1.2",
+  "pysindy>=1.7.5,<2",
   "pytest>=7.4",
 ]
 

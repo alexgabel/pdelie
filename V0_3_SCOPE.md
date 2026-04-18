@@ -39,6 +39,19 @@ Completed scope:
 
 This milestone introduced the first stable invariant-layer contract without broadening the public API beyond the narrow single-generator path.
 
+### Milestone 2 — Complete
+
+`v0.3` Milestone 2 is complete.
+
+Completed scope:
+
+- runtime-only `pdelie.discovery.to_pysindy_trajectories`
+- one narrow flattened-trajectory bridge for PySINDy only
+- one minimal downstream fit smoke path for the current invariant-transformed stable slice
+- no new stable canonical object
+
+This milestone added a backend-specific runtime bridge, not a canonical PDE-discovery representation.
+
 ---
 
 ## Must Implement
@@ -126,7 +139,7 @@ Frozen scope:
 - no benchmark expansion yet
 
 ### Milestone 2 — Thin downstream bridge
-**Status:** Next committed step
+**Status:** Complete
 
 Frozen scope:
 - one thin downstream bridge only
@@ -137,7 +150,7 @@ Frozen scope:
 - no operator methods
 - no broad adapters
 
-Expected outcome:
+Completed outcome:
 - transformed data from the current single-generator invariant path can feed one downstream workflow cleanly under stable contracts
 
 ### Milestone 3 — Controlled downstream benchmark / release-gate layer
