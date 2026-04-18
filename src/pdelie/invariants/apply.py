@@ -17,16 +17,30 @@ def _validate_supported_field(field: FieldBatch) -> None:
         raise ScopeValidationError("InvariantApplier requires periodic boundary conditions in x.")
 
 
+def _apply_uniform_translation(
+    values: np.ndarray,
+    axis: int,
+    grid_size: int,
+    dx: float,
+    shift: float,
+) -> np.ndarray:
+    wavenumbers = 2.0 * np.pi * np.fft.fftfreq(grid_size, d=dx)
+    phase = np.exp(-1j * wavenumbers * shift)
+    reshape = [1] * values.ndim
+    reshape[axis] = grid_size
+    return np.real(np.fft.ifft(np.fft.fft(values, axis=axis) * phase.reshape(tuple(reshape)), axis=axis))
+
+
 def _shift_field_values(field: FieldBatch, shift: float) -> np.ndarray:
     x = field.coords["x"]
     dx = float(x[1] - x[0])
     x_axis = field.dims.index("x")
-    wavenumbers = 2.0 * np.pi * np.fft.fftfreq(x.size, d=dx)
-    phase = np.exp(-1j * wavenumbers * shift)
-    reshape = [1] * field.values.ndim
-    reshape[x_axis] = x.size
-    return np.real(
-        np.fft.ifft(np.fft.fft(field.values, axis=x_axis) * phase.reshape(tuple(reshape)), axis=x_axis)
+    return _apply_uniform_translation(
+        values=field.values,
+        axis=x_axis,
+        grid_size=x.size,
+        dx=dx,
+        shift=shift,
     )
 
 
