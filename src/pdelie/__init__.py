@@ -2,6 +2,7 @@ from pdelie.contracts import (
     DerivativeBatch,
     FieldBatch,
     GeneratorFamily,
+    InvariantMapSpec,
     ResidualBatch,
     VerificationReport,
 )
@@ -17,6 +18,7 @@ __all__ = [
     "DerivativeBatch",
     "FieldBatch",
     "GeneratorFamily",
+    "InvariantMapSpec",
     "PDELieValidationError",
     "ResidualBatch",
     "ResidualEvaluator",
@@ -25,4 +27,3 @@ __all__ = [
     "ShapeValidationError",
     "VerificationReport",
 ]
-

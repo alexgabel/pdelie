@@ -8,9 +8,18 @@
 - ResidualBatch
 - ResidualEvaluator
 - GeneratorFamily (polynomial only)
+- InvariantMapSpec (single-generator only)
 - VerificationReport
 - basic verification tools
 - typed validation errors (`PDELieValidationError`, `SchemaValidationError`, `ShapeValidationError`, `ScopeValidationError`)
+
+Stable public import path for the invariant canonical object:
+
+- `pdelie.InvariantMapSpec`
+
+Runtime public API for the frozen `v0.3` Milestone 1 slice:
+
+- `pdelie.invariants.InvariantApplier` for single-generator periodic `x` uniform translation only
 
 These must not change without version bump.
 
@@ -22,6 +31,7 @@ These must not change without version bump.
 - weak-form methods
 - operator symmetry
 - advanced invariant maps
+- multi-generator invariant machinery
 
 These may change without warning.
 

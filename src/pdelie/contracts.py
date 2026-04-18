@@ -23,6 +23,7 @@ REQUIRED_METADATA_KEYS = (
 ALLOWED_DERIVATIVE_BACKENDS = frozenset({"spectral_fd", "spectral", "finite", "weak"})
 ALLOWED_RESIDUAL_TYPES = frozenset({"analytic", "weak", "surrogate", "operator"})
 ALLOWED_CLASSIFICATIONS = frozenset({"exact", "approximate", "failed"})
+ALLOWED_DOMAIN_VALIDITIES = frozenset({"local", "global", "unknown"})
 SPATIAL_DIMS = ("x", "y", "z")
 
 
@@ -363,6 +364,77 @@ class GeneratorFamily:
             parameterization=str(payload["parameterization"]),
             coefficients=np.asarray(payload["coefficients"], dtype=float),
             normalization=str(payload["normalization"]),
+            diagnostics=dict(payload["diagnostics"]),
+        )
+
+
+@dataclass(slots=True)
+class InvariantMapSpec:
+    schema_version: str = "0.1"
+    generator_metadata: dict[str, Any] = None  # type: ignore[assignment]
+    construction_method: str = ""
+    parameters: dict[str, Any] = None  # type: ignore[assignment]
+    domain_validity: str = ""
+    inverse_available: bool = False
+    diagnostics: dict[str, Any] = None  # type: ignore[assignment]
+
+    SCHEMA_VERSION: ClassVar[str] = "0.1"
+
+    def __post_init__(self) -> None:
+        self.generator_metadata = dict(_validate_mapping(self.generator_metadata, "generator_metadata"))
+        self.parameters = dict(_validate_mapping(self.parameters, "parameters"))
+        self.diagnostics = dict(_validate_mapping(self.diagnostics, "diagnostics"))
+        self.validate()
+
+    def validate(self) -> None:
+        if self.schema_version != self.SCHEMA_VERSION:
+            raise SchemaValidationError("Unsupported InvariantMapSpec schema_version.")
+        if not self.generator_metadata:
+            raise SchemaValidationError("generator_metadata must not be empty.")
+        parameterization = self.generator_metadata.get("parameterization")
+        if not isinstance(parameterization, str) or not parameterization:
+            raise SchemaValidationError("generator_metadata must include a non-empty 'parameterization'.")
+        if not isinstance(self.construction_method, str) or not self.construction_method:
+            raise SchemaValidationError("construction_method must be a non-empty string.")
+        if self.domain_validity not in ALLOWED_DOMAIN_VALIDITIES:
+            raise SchemaValidationError(f"Unsupported domain_validity: {self.domain_validity}.")
+        if not isinstance(self.inverse_available, bool):
+            raise SchemaValidationError("inverse_available must be a boolean.")
+
+        approximate = self.diagnostics.get("approximate", False)
+        if not isinstance(approximate, bool):
+            raise SchemaValidationError("diagnostics['approximate'] must be a boolean when provided.")
+        if self.domain_validity != "global":
+            validity_note = self.diagnostics.get("validity_note")
+            if not isinstance(validity_note, str) or not validity_note:
+                raise SchemaValidationError("Non-global invariant specs must include diagnostics['validity_note'].")
+        if approximate:
+            approximation_note = self.diagnostics.get("approximation_note")
+            if not isinstance(approximation_note, str) or not approximation_note:
+                raise SchemaValidationError("Approximate invariant specs must include diagnostics['approximation_note'].")
+
+        _validate_json_round_trip(self.to_dict())
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "schema_version": self.schema_version,
+            "generator_metadata": _json_safe(self.generator_metadata),
+            "construction_method": self.construction_method,
+            "parameters": _json_safe(self.parameters),
+            "domain_validity": self.domain_validity,
+            "inverse_available": self.inverse_available,
+            "diagnostics": _json_safe(self.diagnostics),
+        }
+
+    @classmethod
+    def from_dict(cls, payload: Mapping[str, Any]) -> "InvariantMapSpec":
+        return cls(
+            schema_version=str(payload["schema_version"]),
+            generator_metadata=dict(payload["generator_metadata"]),
+            construction_method=str(payload["construction_method"]),
+            parameters=dict(payload["parameters"]),
+            domain_validity=str(payload["domain_validity"]),
+            inverse_available=bool(payload["inverse_available"]),
             diagnostics=dict(payload["diagnostics"]),
         )
 

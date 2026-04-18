@@ -213,4 +213,4 @@ If these are not satisfied, Milestone 1 is not complete.
 
 ## Status
 
-Status: TODO
+Status: COMPLETE

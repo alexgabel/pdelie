@@ -35,9 +35,7 @@ FieldBatch
 → DerivativeBatch
 → ResidualBatch (via ResidualEvaluator)
 → GeneratorFamily
-→ InvariantMap
-→ InvariantLibrary
-→ DiscoveryResult
+→ InvariantMapSpec
 → VerificationReport
 ```
 
@@ -98,20 +96,18 @@ Defines symmetry target.
 
 ---
 
-## InvariantMap
+## InvariantMapSpec
 
-- generator(s)
-- mapping definition
-- validity (local/global)
+- single-generator metadata
+- construction method
+- parameters
+- validity (local/global/unknown)
+- inverse availability
+- diagnostics
 
----
+Runtime-only for the stable `v0.3` Milestone 1 slice:
 
-## DiscoveryResult
-
-- discovered model
-- coefficients
-- feature library
-- validation metrics
+- `InvariantApplier`
 
 ---
 
