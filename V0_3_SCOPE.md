@@ -2,7 +2,7 @@
 
 ## Summary
 
-`v0.3` is the smallest next release that expands PDELie in a disciplined way after the two-PDE stable core established in `v0.2`.
+`v0.3` is the first downstream-utility release for PDELie.
 
 It does **not** introduce a new numerical regime.  
 It does **not** widen the ecosystem surface broadly.  
@@ -10,9 +10,9 @@ It does **not** bring operator methods into the stable library.
 
 Instead, it asks a narrower and more important question:
 
-> Can the current stable symmetry pipeline support one minimal invariant/downstream utility path without widening stable scope beyond what is necessary?
+> Can the current stable symmetry pipeline support one minimal invariant/downstream utility path under controlled benchmark conditions?
 
-`v0.3` is therefore the first **downstream utility** release, not the first **broad ecosystem** release.
+`v0.3` is therefore the first **invariant/downstream utility** release, not the first **broad ecosystem** or **operator** release.
 
 The downstream target for `v0.3` is frozen as:
 
@@ -21,6 +21,54 @@ The downstream target for `v0.3` is frozen as:
 - one **controlled benchmark layer** only
 - Heat and Burgers remain the only stable PDEs
 - the current stable derivative backend remains `spectral_fd`
+
+---
+
+## Current State
+
+### Milestone 1 — Complete
+
+`v0.3` Milestone 1 is complete.
+
+Completed scope:
+
+- stable `InvariantMapSpec`
+- runtime-only `InvariantApplier`
+- one frozen invariant application path for the current stable symmetry slice
+- regression protection showing Heat and Burgers still pass the existing stable pipeline
+
+This milestone introduced the first stable invariant-layer contract without broadening the public API beyond the narrow single-generator path.
+
+### Milestone 2 — Complete
+
+`v0.3` Milestone 2 is complete.
+
+Completed scope:
+
+- runtime-only `pdelie.discovery.to_pysindy_trajectories`
+- one narrow flattened-trajectory bridge for PySINDy only
+- one minimal downstream fit smoke path for the current invariant-transformed stable slice
+- no new stable canonical object
+
+This milestone added a backend-specific runtime bridge, not a canonical PDE-discovery representation.
+
+### Milestone 3 — Complete
+
+`v0.3` Milestone 3 is complete.
+
+Completed scope:
+
+- one internal four-branch downstream benchmark:
+  - vanilla
+  - known_invariant
+  - discovered_invariant
+  - nuisance
+- one frozen benchmark-local alignment rule for the current single-generator translation slice
+- one explicit frozen PySINDy configuration for the downstream release gate
+- reproducibility, matched-settings, and release-gate tests
+- no new public API and no new stable canonical object
+
+This milestone proves a controlled downstream utility signal for the current invariant/downstream path relative to a nuisance baseline. It does not claim broader discovery-quality superiority.
 
 ---
 
@@ -33,13 +81,12 @@ The downstream target for `v0.3` is frozen as:
 - polynomial generators only
 - single-generator invariant workflows only
 - one thin downstream bridge only
+- one controlled benchmark layer only
 - verification-first development
 - Heat and Burgers remain supported
 - no new numerical backend is required for the stable path
 
 ### Stable canonical objects for `v0.3`
-
-The stable canonical object set grows only where necessary for the first invariant/downstream utility release.
 
 Stable in `v0.3`:
 
@@ -77,8 +124,8 @@ for Heat and Burgers under the current stable translation-targeted symmetry slic
 ### Required components
 
 - one stable `InvariantMapSpec` for the single-generator case
-- one runtime `InvariantApplier` that applies the frozen single-generator invariant transform to a `FieldBatch`
-- one thin PySINDy bridge or equivalent downstream export path
+- one runtime `InvariantApplier`
+- one thin downstream bridge, likely PySINDy
 - one controlled benchmark comparing:
   - vanilla downstream path
   - known-invariant downstream path
@@ -90,35 +137,71 @@ for Heat and Burgers under the current stable translation-targeted symmetry slic
 
 - the known-invariant and discovered-invariant downstream paths both run end to end under the stable contracts
 - the benchmark is reproducible and matched
-- the discovered-invariant path is at least meaningfully distinguishable from a nuisance baseline under matched controls
+- the invariant-aware downstream path is at least meaningfully distinguishable from a nuisance baseline under matched controls
 - Heat and Burgers remain regression-free under the existing stable symmetry pipeline
 
-`v0.3` is a utility release, not yet a “strong superiority claim” release.
+`v0.3` is a utility release, not yet a broad superiority-claim release.
 
 ---
 
-## Frozen Decisions
+## Frozen Milestones
 
-For the stable `v0.3` path:
+### Milestone 1 — Invariant layer
+**Status:** Complete
 
-- only the **single-generator** case is supported
-- the stable downstream bridge is **thin**, not a new discovery framework
-- benchmark logic may live in an internal helper / test-oriented layer unless and until a public API is justified
-- known-invariant and discovered-invariant paths must be compared under the same feature budget, regularization budget, and split policy
-- one nuisance baseline is mandatory
+Frozen scope:
+- stable `InvariantMapSpec`
+- runtime-only `InvariantApplier`
+- one narrow application path
+- no downstream bridge yet
+- no benchmark expansion yet
 
-If a broader invariant representation or richer downstream result object becomes necessary, that belongs to a later release unless the need is minimal and unavoidable.
+### Milestone 2 — Thin downstream bridge
+**Status:** Complete
+
+Frozen scope:
+- one thin downstream bridge only
+- no broad system-identification framework
+- no new canonical stable object unless absolutely required
+- no benchmark expansion yet beyond the minimal bridge smoke path
+- no weak-form methods
+- no operator methods
+- no broad adapters
+
+Completed outcome:
+- transformed data from the current single-generator invariant path can feed one downstream workflow cleanly under stable contracts
+
+### Milestone 3 — Controlled downstream benchmark / release-gate layer
+**Status:** Complete
+
+Frozen scope:
+- one controlled benchmark comparing:
+  - vanilla
+  - known-invariant
+  - discovered-invariant
+  - nuisance baseline
+- matched feature budget
+- matched regularization budget
+- matched split policy
+- reproducible benchmark outputs
+- no broad benchmark zoo
+- no new public benchmark API unless clearly justified
+
+Completed outcome:
+- `v0.3` release gate can be stated in terms of a reproducible downstream utility benchmark, not just symmetry recovery
+- known_invariant and discovered_invariant are expected to be numerically equivalent in the frozen Milestone 3 slice
+- the nuisance baseline is the actual utility comparison branch for this release gate
 
 ---
 
 ## Development Order
 
 1. freeze `v0.3` scope
-2. define and implement `InvariantMapSpec` for the single-generator case
-3. add runtime `InvariantApplier`
+2. implement `InvariantMapSpec`
+3. implement `InvariantApplier`
 4. add one thin downstream bridge
 5. add the controlled downstream benchmark layer
-6. add nuisance/conditioning control baseline
+6. add nuisance / conditioning control baseline
 7. add release-gate tests and documentation
 
 ---
@@ -175,7 +258,7 @@ Required outputs:
 The benchmark must distinguish:
 - correctness of the invariant/downstream mechanism
 - conditioning effects
-- genuine symmetry-related benefit
+- a controlled downstream utility signal relative to the nuisance baseline
 
 ---
 
@@ -186,7 +269,7 @@ The benchmark must distinguish:
 - the `v0.2` Heat path still passes cleanly
 - the `v0.2` Burgers path still passes cleanly
 - the single-generator `InvariantMapSpec` and `InvariantApplier` work end to end on the frozen stable path
-- the downstream bridge works for the frozen stable task
+- the thin downstream bridge works for the frozen stable task
 - the controlled benchmark runs reproducibly under matched settings
 - the nuisance baseline is included
 - no deferred or experimental feature is required for the stable release path

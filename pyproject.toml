@@ -8,12 +8,21 @@ version = "0.2.0"
 description = "Stable V0.2 core for PDE Lie symmetry discovery on synthetic Heat and Burgers data"
 requires-python = ">=3.11"
 dependencies = [
-  "numpy>=1.24",
+  "numpy>=1.24,<2",
 ]
 
+# Optional downstream bridge path is currently validated on the
+# PySINDy 1.x / scikit-learn 1.2.x line only.
+# Broader Python 3.12+ compatibility is intentionally not claimed until validated.
 [project.optional-dependencies]
+downstream = [
+  "pysindy>=1.7.5,<2; python_version < '3.12'",
+  "scikit-learn>=1.2.2,<1.3; python_version < '3.12'",
+]
 test = [
   "build>=1.2",
+  "pysindy>=1.7.5,<2; python_version < '3.12'",
+  "scikit-learn>=1.2.2,<1.3; python_version < '3.12'",
   "pytest>=7.4",
 ]
 
