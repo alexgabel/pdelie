@@ -1,6 +1,30 @@
-# PDELie — Execution Plan (V0.3 Milestone 1)
+# PDELie — Execution Plan (V0.3)
 
-## Goal
+## Current Active Milestone
+
+**V0.3 Milestone 2 — Thin downstream bridge**
+
+This file is the active execution plan for the current `v0.3` release series.
+
+It should contain:
+
+- a short record of completed milestones
+- the frozen plan for the current active milestone
+- milestone-specific rules and gates
+
+It should **not** redefine package contracts or roadmap commitments. Those belong in:
+
+- `SPEC.md`
+- `CONTRACTS_AND_DEFAULTS.md`
+- `API_STABILITY.md`
+- `ROADMAP.md`
+- `V0_3_SCOPE.md`
+
+---
+
+## Milestone 1 — Invariant layer
+
+### Goal
 
 Add the first stable invariant layer in the narrowest possible form:
 
@@ -8,127 +32,131 @@ Add the first stable invariant layer in the narrowest possible form:
 
 for the **single-generator case only**, while preserving the current stable Heat and Burgers paths with no regressions.
 
-This milestone does **not** add downstream benchmarking yet.  
-It only adds the minimum invariant representation and runtime application layer required for the later `v0.3` downstream utility release.
+### Status
+
+**COMPLETE**
+
+### Implemented
+
+- `InvariantMapSpec` as a stable canonical object for the single-generator case
+- runtime `InvariantApplier`
+- one frozen invariant application path for the current stable symmetry slice
+- regression protection ensuring Heat and Burgers still pass the current stable symmetry pipeline
+- explicit typed scope-guard failures for unsupported invariant applications
+
+### Milestone 1 Gate
+
+Milestone 1 passed because:
+
+- `InvariantMapSpec` exists as a stable canonical object
+- `InvariantApplier` works end to end on the frozen single-generator path
+- transformed outputs remain valid `FieldBatch` objects
+- transform provenance is recorded
+- Heat and Burgers still pass the current stable symmetry pipeline
+- no downstream bridge was required
+- no deferred or experimental feature was required
 
 ---
 
-## Frozen Decisions
+## Milestone 2 — Thin downstream bridge
 
-- single-generator case only
+### Goal
+
+Add the smallest downstream utility path that proves the new invariant layer can feed one downstream workflow without expanding scope beyond the frozen `v0.3` axis.
+
+This milestone does **not** add the full downstream benchmark layer yet.  
+It adds only the minimum bridge required for the later controlled benchmark/release-gate milestone.
+
+### Frozen Decisions
+
+- one thin downstream bridge only
 - no new numerical backend
 - no weak-form methods
 - no operator methods
 - no broad adapters
-- no new public downstream API
-- `InvariantMapSpec` becomes stable in `v0.3`
-- `InvariantApplier` remains runtime-only
+- no broad benchmark expansion
+- no new stable canonical object unless absolutely required
 - stable PDEs remain:
   - Heat
   - Burgers
 - stable derivative backend remains:
   - `spectral_fd`
-- stable symmetry target remains translation-oriented for the first invariant path unless a minimal extension is explicitly required
+- stable symmetry/invariant path remains the current single-generator translation-oriented path
+- the downstream bridge may be narrow and backend-specific
+- the downstream bridge should remain as thin as possible, likely PySINDy first
 
----
-
-## Milestone 1
+### Milestone 2
 
 Implement:
 
-- `InvariantMapSpec` as a stable canonical object for the single-generator case
-- runtime `InvariantApplier`
-- one simple invariant application path for the current stable symmetry slice
-- regression protection ensuring Heat and Burgers still pass the current stable symmetry pipeline
+- one thin downstream bridge for the current invariant-transformed stable path
+- one minimal end-to-end downstream smoke path using the existing invariant layer
+- regression protection ensuring Heat and Burgers stable symmetry paths remain unchanged
+- explicit documentation of what the bridge does and does not guarantee
 
-This milestone is complete only if the invariant layer is:
+This milestone is complete only if the downstream bridge is:
 
 - contract-compliant
-- provenance-preserving
-- numerically stable enough for the frozen single-generator path
+- minimal in scope
 - non-disruptive to the existing stable core
+- sufficient for one later controlled benchmark path
 
 ---
 
 ## Required Components
 
-### 1. Stable `InvariantMapSpec`
+### 1. Thin downstream bridge
 
-Add a stable canonical object with at least:
+Add one narrow bridge, likely PySINDy-based, that can consume the current transformed data path.
 
-- `schema_version`
-- generator reference / generator metadata
-- construction method
-- parameters
-- domain validity (`local` / `global` / `unknown`)
-- inverse availability flag
-- diagnostics
-- serialization support:
-  - `.to_dict()`
-  - `.from_dict()`
+The bridge must:
 
-This object must remain narrow and must not assume multi-generator charts.
+- work with the current single-generator invariant layer
+- avoid becoming a general discovery framework
+- avoid introducing a new stable canonical result object unless absolutely necessary
+- avoid widening stable scope beyond one backend and one path
 
----
+### 2. One frozen utility path
 
-### 2. Runtime `InvariantApplier`
-
-Add a runtime utility that:
-
-- accepts an `InvariantMapSpec`
-- applies the transform to a `FieldBatch`
-- returns a transformed `FieldBatch`
-- appends the transform to `preprocess_log`
-
-`InvariantApplier` is not a canonical stable artifact; it is a runtime interface.
-
----
-
-### 3. One frozen application path
-
-Implement one minimal supported transform path for the current stable symmetry slice.
+Implement one minimal supported downstream path for the current stable symmetry slice.
 
 That path must:
 
 - work on the existing stable Heat/Burgers setting
-- preserve `FieldBatch` contract compliance
-- preserve provenance
+- preserve current contracts
+- remain provenance-aware where applicable
 - avoid introducing a new numerical regime
-- avoid pretending that global invariant charts are available when they are not
+- avoid implying broad downstream support that does not yet exist
 
-If the transform is only valid locally or approximately, that must be explicit in diagnostics.
-
----
-
-### 4. Regression protection
+### 3. Regression protection
 
 Keep the existing stable core intact:
 
 - Heat path still works
 - Burgers path still works
 - no regression in symmetry verification
-- no new canonical stable objects beyond what `v0.3` froze
+- no regression in invariant application
+- no new canonical stable objects unless absolutely necessary
 
 ---
 
 ## Exact Files To Create Or Modify
 
-Create:
+Likely create:
 
-- `src/pdelie/invariants/__init__.py`
-- `src/pdelie/invariants/spec.py`
-- `src/pdelie/invariants/apply.py`
-- `tests/test_invariant_map_spec.py`
-- `tests/test_invariant_applier.py`
+- one downstream bridge module in `src/pdelie/discovery/` or similarly narrow downstream location
+- one new focused test file for the bridge smoke path
 
-Modify only if required:
+Likely modify only if required:
 
-- `src/pdelie/contracts.py`
+- `src/pdelie/invariants/`
 - `src/pdelie/__init__.py`
+- `README.md`
 - `SPEC.md`
 - `CONTRACTS_AND_DEFAULTS.md`
 - `API_STABILITY.md`
 - `ROADMAP.md`
+- `V0_3_SCOPE.md`
 - `PLAN.md`
 
 Do **not** modify:
@@ -138,8 +166,9 @@ Do **not** modify:
 - residual evaluators
 - translation fitter logic
 - verification core
-- downstream bridge code
-- benchmark harness code
+- broad benchmark harness code
+- operator code
+- weak-form code
 
 unless a minimal contract-consistency fix is required.
 
@@ -147,55 +176,57 @@ unless a minimal contract-consistency fix is required.
 
 ## Minimal Test Plan
 
-### 1. Contract tests
+### 1. Bridge smoke tests
 
-Add tests for `InvariantMapSpec`:
+Add tests showing:
 
-- valid construction
-- required fields enforced
-- invalid domain-validity rejected
-- serialization round-trip
+- the downstream bridge can consume the current invariant-transformed path
+- the bridge behaves reproducibly under fixed inputs
+- invalid or unsupported uses fail with typed errors or explicit scope errors
 
-### 2. Runtime application tests
-
-Add tests for `InvariantApplier`:
-
-- transformed object remains a valid `FieldBatch`
-- `preprocess_log` is appended correctly
-- metadata / dims / coords stay contract-compliant
-- invalid input raises typed validation error
-
-### 3. Stable-path compatibility tests
+### 2. Stable-path compatibility tests
 
 Add tests showing:
 
 - Heat still passes existing stable path unchanged
 - Burgers still passes existing stable path unchanged
-- invariant application does not corrupt the current stable data model
+- invariant application still behaves as before
+- the bridge does not corrupt the current stable data model
 
-### 4. Reproducibility / diagnostics tests
+### 3. Narrow end-to-end utility test
 
-Add tests ensuring:
+Add one narrow test showing:
 
-- invariant application diagnostics are deterministic for fixed input
-- local/global validity is explicitly recorded
-- transform provenance is retained in the output `FieldBatch`
+- stable symmetry path
+- stable invariant path
+- thin downstream bridge path
+
+work together end to end for the frozen single-generator case
+
+### 4. Full regression check
+
+At milestone completion, run:
+
+- the narrow bridge tests
+- invariant tests
+- current Heat/Burgers stable tests
+- full `python -m pytest`
 
 ---
 
-## Milestone 1 Gate
+## Milestone 2 Gate
 
-Milestone 1 is complete only if:
+Milestone 2 is complete only if:
 
-- `InvariantMapSpec` exists as a stable canonical object
-- `InvariantApplier` works end to end on the frozen single-generator path
-- transformed outputs remain valid `FieldBatch` objects
-- transform provenance is recorded
+- one thin downstream bridge exists for the frozen stable path
+- the bridge works end to end on the single-generator invariant workflow
 - Heat and Burgers still pass the current stable symmetry pipeline
-- no downstream bridge is required yet
+- invariant application still passes unchanged
+- no broad benchmark layer is required yet
 - no deferred or experimental feature is required
+- no new stable canonical object was added unless unavoidable and explicitly documented
 
-If these are not satisfied, Milestone 1 is not complete.
+If these are not satisfied, Milestone 2 is not complete.
 
 ---
 
@@ -205,12 +236,14 @@ If these are not satisfied, Milestone 1 is not complete.
 - DO NOT add operator methods
 - DO NOT add broad adapters
 - DO NOT add multi-generator invariant machinery
-- DO NOT add downstream benchmark logic
-- DO NOT add a broad invariant public API
+- DO NOT add the full downstream benchmark layer in this milestone
+- DO NOT add a broad downstream public API
 - DO NOT change the current stable Heat/Burgers symmetry path unless required by a minimal contract-consistency fix
 
 ---
 
 ## Status
 
-Status: COMPLETE
+- Milestone 1: **COMPLETE**
+- Milestone 2: **TODO**
+- Milestone 3: **NOT STARTED**
