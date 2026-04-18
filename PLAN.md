@@ -1,16 +1,16 @@
 # PDELie — Execution Plan (V0.3)
 
-## Current Active Milestone
+## Current Release Phase
 
-**V0.3 Milestone 3 — Controlled downstream benchmark / release-gate layer**
+**Post–Milestone 3 RC hardening / release-surface alignment**
 
 This file is the active execution plan for the current `v0.3` release series.
 
 It should contain:
 
 - a short record of completed milestones
-- the frozen plan for the current active milestone
-- milestone-specific rules and gates
+- the frozen plan for the current release phase
+- release-phase-specific rules and gates
 
 It should **not** redefine package contracts or roadmap commitments. Those belong in:
 
@@ -352,3 +352,4 @@ Milestone 3 passed because:
 - Milestone 1: **COMPLETE**
 - Milestone 2: **COMPLETE**
 - Milestone 3: **COMPLETE**
+- Current phase: **RC hardening / release-surface alignment**

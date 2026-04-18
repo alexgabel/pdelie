@@ -12,8 +12,6 @@ from pdelie import (
     ResidualEvaluator,
     VerificationReport,
 )
-from pdelie.discovery import to_pysindy_trajectories
-from pdelie.invariants import InvariantApplier
 
 
 def test_stable_public_api_is_importable() -> None:
@@ -24,6 +22,12 @@ def test_stable_public_api_is_importable() -> None:
     assert GeneratorFamily is not None
     assert InvariantMapSpec is not None
     assert VerificationReport is not None
+
+
+def test_runtime_package_api_is_importable() -> None:
+    from pdelie.discovery import to_pysindy_trajectories
+    from pdelie.invariants import InvariantApplier
+
     assert InvariantApplier is not None
     assert to_pysindy_trajectories is not None
 
