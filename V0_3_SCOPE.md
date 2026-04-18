@@ -52,6 +52,24 @@ Completed scope:
 
 This milestone added a backend-specific runtime bridge, not a canonical PDE-discovery representation.
 
+### Milestone 3 — Complete
+
+`v0.3` Milestone 3 is complete.
+
+Completed scope:
+
+- one internal four-branch downstream benchmark:
+  - vanilla
+  - known_invariant
+  - discovered_invariant
+  - nuisance
+- one frozen benchmark-local alignment rule for the current single-generator translation slice
+- one explicit frozen PySINDy configuration for the downstream release gate
+- reproducibility, matched-settings, and release-gate tests
+- no new public API and no new stable canonical object
+
+This milestone proves a controlled downstream utility signal for the current invariant/downstream path relative to a nuisance baseline. It does not claim broader discovery-quality superiority.
+
 ---
 
 ## Must Implement
@@ -119,7 +137,7 @@ for Heat and Burgers under the current stable translation-targeted symmetry slic
 
 - the known-invariant and discovered-invariant downstream paths both run end to end under the stable contracts
 - the benchmark is reproducible and matched
-- the discovered-invariant path is at least meaningfully distinguishable from a nuisance baseline under matched controls
+- the invariant-aware downstream path is at least meaningfully distinguishable from a nuisance baseline under matched controls
 - Heat and Burgers remain regression-free under the existing stable symmetry pipeline
 
 `v0.3` is a utility release, not yet a broad superiority-claim release.
@@ -154,7 +172,7 @@ Completed outcome:
 - transformed data from the current single-generator invariant path can feed one downstream workflow cleanly under stable contracts
 
 ### Milestone 3 — Controlled downstream benchmark / release-gate layer
-**Status:** Planned inside `v0.3`
+**Status:** Complete
 
 Frozen scope:
 - one controlled benchmark comparing:
@@ -169,8 +187,10 @@ Frozen scope:
 - no broad benchmark zoo
 - no new public benchmark API unless clearly justified
 
-Expected outcome:
+Completed outcome:
 - `v0.3` release gate can be stated in terms of a reproducible downstream utility benchmark, not just symmetry recovery
+- known_invariant and discovered_invariant are expected to be numerically equivalent in the frozen Milestone 3 slice
+- the nuisance baseline is the actual utility comparison branch for this release gate
 
 ---
 
@@ -238,7 +258,7 @@ Required outputs:
 The benchmark must distinguish:
 - correctness of the invariant/downstream mechanism
 - conditioning effects
-- genuine symmetry-related benefit
+- a controlled downstream utility signal relative to the nuisance baseline
 
 ---
 

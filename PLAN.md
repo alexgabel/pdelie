@@ -2,7 +2,7 @@
 
 ## Current Active Milestone
 
-**V0.3 Milestone 2 — Thin downstream bridge**
+**V0.3 Milestone 3 — Controlled downstream benchmark / release-gate layer**
 
 This file is the active execution plan for the current `v0.3` release series.
 
@@ -249,15 +249,101 @@ Milestone 2 passed because:
 
 ---
 
+## Milestone 3 — Controlled downstream benchmark / release-gate layer
+
+### Goal
+
+Add the smallest controlled downstream benchmark and release-gate layer for the current stable symmetry, invariant, and runtime-only PySINDy bridge path.
+
+This milestone must stay internal to `tests/_helpers` and `tests/`.
+It must not add public API, new canonical objects, or broader downstream machinery.
+
+### Status
+
+**COMPLETE**
+
+### Frozen Decisions
+
+- one internal four-branch benchmark only:
+  - `vanilla`
+  - `known_invariant`
+  - `discovered_invariant`
+  - `nuisance`
+- no new public API
+- no new stable canonical object
+- no weak-form methods
+- no operator methods
+- no broad adapters
+- no benchmark zoo
+- use the current runtime-only `InvariantApplier` unchanged
+- use the current runtime-only PySINDy bridge unchanged
+- known and discovered branches are expected to be numerically equivalent in this milestone
+- the nuisance branch is the actual utility comparison branch
+- PySINDy configuration is frozen explicitly for the release gate
+
+### Implemented
+
+- internal helper `tests/_helpers/downstream_benchmark.py`
+- internal test module `tests/test_downstream_benchmark.py`
+- explicit frozen PySINDy configuration for fit/score
+- benchmark-local per-sample alignment using the frozen `argmax(values[0, 0, :, 0])` rule
+- reproducibility, matched-settings, known/discovered-equivalence, nuisance-distinctness, and release-gate tests
+
+### Exact Files Created Or Modified
+
+Created:
+
+- `tests/_helpers/downstream_benchmark.py`
+- `tests/test_downstream_benchmark.py`
+
+Modified:
+
+- `V0_3_SCOPE.md`
+- `PLAN.md`
+
+Do **not** modify:
+
+- `ROADMAP.md`
+- public API files
+- invariant/runtime bridge code
+
+unless a minimal contract-consistency fix is required.
+
+### Minimal Test Plan
+
+- run `tests/test_downstream_benchmark.py` first
+- then run the full suite with `pytest`
+- benchmark tests must confirm:
+  - reproducibility
+  - matched settings
+  - known/discovered trajectory equivalence
+  - nuisance branch distinctness
+  - release-gate ordering on Burgers against nuisance
+
+### Milestone 3 Completion Gate
+
+Milestone 3 passed because:
+
+- the four-branch internal benchmark runs on Heat and Burgers
+- settings are frozen and matched across branches
+- known and discovered branches are numerically equivalent in the frozen slice
+- the nuisance baseline is included and reproducible
+- the Burgers invariant-aware branches beat the nuisance branch under the frozen release-gate configuration
+- Heat and Burgers stable symmetry paths still pass unchanged
+- no public API and no stable canonical object were added
+
+---
+
 ## Rules
 
 - DO NOT add weak-form methods
 - DO NOT add operator methods
 - DO NOT add broad adapters
 - DO NOT add multi-generator invariant machinery
-- DO NOT add the full downstream benchmark layer in this milestone
 - DO NOT add a broad downstream public API
+- DO NOT add new stable canonical objects
 - DO NOT change the current stable Heat/Burgers symmetry path unless required by a minimal contract-consistency fix
+- DO NOT modify `ROADMAP.md` in this milestone
 
 ---
 
@@ -265,4 +351,4 @@ Milestone 2 passed because:
 
 - Milestone 1: **COMPLETE**
 - Milestone 2: **COMPLETE**
-- Milestone 3: **NOT STARTED**
+- Milestone 3: **COMPLETE**
