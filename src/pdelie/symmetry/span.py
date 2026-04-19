@@ -64,7 +64,6 @@ def _basis_term_gram_matrix(generator: GeneratorFamily) -> np.ndarray:
 
 
 def _ambient_gram_matrix(generator: GeneratorFamily) -> tuple[np.ndarray, dict[str, float]]:
-    num_components = len(generator.basis_spec["component_names"])
     term_gram = _basis_term_gram_matrix(generator)
     component_weights = {str(name): 1.0 for name in generator.basis_spec["component_names"]}
     block_weights = np.diag([component_weights[str(name)] for name in generator.basis_spec["component_names"]])
