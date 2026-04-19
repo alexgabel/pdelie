@@ -136,10 +136,28 @@ GeneratorFamily(
     schema_version: str,
     parameterization: str,
     coefficients: ArrayLike,
+    basis_spec: Dict[str, Any],
     normalization: str,
+    generator_names: Optional[List[str]] = None,
     diagnostics: Dict[str, Any]
 )
 ~~~
+
+### Required rules
+
+- canonical `v0.4` family output uses `schema_version = "0.2"`
+- canonical output MUST serialize `coefficients` in family-shaped 2D form
+- canonical output MUST include explicit `basis_spec`
+- canonical meaning depends only on:
+  - `schema_version`
+  - `parameterization`
+  - `coefficients`
+  - `basis_spec`
+  - `normalization`
+  - optional `generator_names`
+- `diagnostics` is optional and non-authoritative
+- legacy `0.1` single-generator translation payloads may be accepted as compatibility input only
+- compatibility input MUST upgrade to canonical `0.2` output on serialization
 
 ---
 
