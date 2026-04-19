@@ -13,9 +13,23 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install package and test dependencies
+        shell: bash
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install -e .[test]
+          retry() {
+            local attempts="$1"
+            shift
+            local count=1
+            until "$@"; do
+              if [ "${count}" -ge "${attempts}" ]; then
+                return 1
+              fi
+              count=$((count + 1))
+              echo "Retrying (${count}/${attempts}): $*"
+              sleep 5
+            done
+          }
+          retry 3 python -m pip install --upgrade pip
+          retry 3 python -m pip install -e .[test]
       - name: Check dependencies
         run: python -m pip check
       - name: Run test suite
@@ -30,16 +44,44 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install packaging frontend
+        shell: bash
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install build
+          retry() {
+            local attempts="$1"
+            shift
+            local count=1
+            until "$@"; do
+              if [ "${count}" -ge "${attempts}" ]; then
+                return 1
+              fi
+              count=$((count + 1))
+              echo "Retrying (${count}/${attempts}): $*"
+              sleep 5
+            done
+          }
+          retry 3 python -m pip install --upgrade pip
+          retry 3 python -m pip install build
       - name: Build sdist and wheel
         run: python -m build --sdist --wheel
       - name: Install built wheel into a clean venv
+        shell: bash
         run: |
+          retry() {
+            local attempts="$1"
+            shift
+            local count=1
+            until "$@"; do
+              if [ "${count}" -ge "${attempts}" ]; then
+                return 1
+              fi
+              count=$((count + 1))
+              echo "Retrying (${count}/${attempts}): $*"
+              sleep 5
+            done
+          }
           python -m venv /tmp/pdelie-rc-venv
-          /tmp/pdelie-rc-venv/bin/python -m pip install --upgrade pip
-          /tmp/pdelie-rc-venv/bin/python -m pip install dist/*.whl
+          retry 3 /tmp/pdelie-rc-venv/bin/python -m pip install --upgrade pip
+          retry 3 /tmp/pdelie-rc-venv/bin/python -m pip install dist/*.whl
       - name: Check dependencies (wheel env)
         run: /tmp/pdelie-rc-venv/bin/python -m pip check
       - name: Stable import smoke
