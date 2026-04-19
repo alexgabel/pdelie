@@ -36,6 +36,10 @@ Runtime public API for the frozen `v0.4` Milestone 2 slice:
 - `pdelie.symmetry.render_generator_family` for deterministic runtime-only symbolic display of the stored generator basis
 - `pdelie.symmetry.to_sympy_component_expressions` for optional runtime-only SymPy component expressions when `sympy` is installed
 
+Runtime public API for the frozen `v0.4` Milestone 3 slice:
+
+- `pdelie.symmetry.compare_generator_spans` for runtime-only algebraic span comparison of canonical polynomial `GeneratorFamily` objects under the frozen normalized polynomial inner product
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 

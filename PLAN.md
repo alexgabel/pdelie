@@ -2,7 +2,7 @@
 
 ## Current Active Milestone
 
-**V0.4 Milestone 2 — Runtime symbolic normalization and display**
+**V0.4 Milestone 3 — Runtime span diagnostics**
 
 This file is the active execution plan for the current `v0.4` release series.
 
@@ -38,57 +38,58 @@ Completed outcome:
 
 ---
 
-## Milestone 2 — Runtime Symbolic Normalization And Display
+## Milestone 3 — Runtime Span Diagnostics
 
 ### Goal
 
-Add deterministic runtime-only symbolic rendering for canonical `GeneratorFamily` objects without changing canonical storage, fitting behavior, or the Heat/Burgers stable paths.
+Add deterministic runtime-only algebraic span comparison for canonical `GeneratorFamily` objects without changing canonical storage, fitting behavior, or the Heat/Burgers stable paths.
 
 ### Frozen Decisions
 
 - `GeneratorFamily` canonical core from Milestone 1 remains unchanged
-- symbolic display is runtime-only and must not mutate stored coefficients or normalization
-- default display normalization is `"anchor"`
-- display normalization is separate from canonical numerical normalization
-- rendering is deterministic for the given basis only
-- optional SymPy support is lazy-imported and not part of the core install contract
-- no heuristic basis simplification in this milestone
-- no fitting changes in M2
-- no span metrics in M2
-- no closure diagnostics in M2
-- no visualization in M2
+- span diagnostics are runtime-only and must not mutate stored coefficients or normalization
+- principal angles are the primary span metric
+- projection residual is the paired derived diagnostic
+- `normalized_polynomial_l2` is the only supported M3 inner-product mode
+- exact polynomial comparison is frozen only for the current algebraic/runtime polynomial scope
+- structurally equivalent `basis_spec` semantics are required; raw dictionary identity is not
+- no fitting changes in M3
+- no closure diagnostics in M3
+- no visualization in M3
 
 ### Deliverables
 
-- runtime-only symbolic rendering helpers under `pdelie.symmetry`
-- deterministic sign, component ordering, and term ordering from canonical `basis_spec`
-- runtime-only display normalization modes `"anchor"` and `"none"`
-- optional SymPy component-expression helper with clear missing-dependency error
-- regression protection for canonical single-row translation families and legacy-upgraded translation payloads
+- runtime-only span comparison helper under `pdelie.symmetry`
+- deterministic principal-angle diagnostics for canonical polynomial generator families
+- deterministic projection residual diagnostics under the frozen normalized polynomial inner product
+- basis-spec structural-equivalence checks for span comparison
+- regression protection for canonical translation families, legacy-upgraded translation payloads, and controlled algebraic fixtures
 
 ### Acceptance Criteria
 
-Milestone 2 is complete only if:
+Milestone 3 is complete only if:
 
 - existing Heat/Burgers stable paths still pass unchanged
 - canonical `GeneratorFamily` contracts remain unchanged
-- canonical single-row translation families render deterministically
-- legacy translation payloads upgraded through `from_dict()` render identically to canonical family-shaped construction
-- runtime display normalization does not mutate stored coefficients
-- missing SymPy raises a clear runtime error for the SymPy helper only
+- identical spans compare with zero principal angles and zero projection residual summary
+- same spans under basis change compare as equivalent
+- structurally non-equivalent basis semantics fail with typed validation errors
+- zero-rank effective spans fail with typed validation errors
 - no new canonical object is introduced
-- no public downstream, invariant, span, closure, or visualization semantics are broadened
+- no public fitting, invariant, closure, or visualization semantics are broadened
 
 ### Test Plan
 
 Run at minimum:
 
-- runtime symbolic rendering tests
+- runtime span comparison tests
 - runtime public API import tests
-- canonical single-row translation rendering tests
-- legacy-upgraded translation rendering tests
-- deterministic sign / ordering / zero-tolerance tests
-- optional SymPy missing-dependency and installed-path tests
+- canonical single-row translation span tests
+- legacy-upgraded translation span tests
+- basis-change equivalence tests
+- strict-containment residual tests
+- basis-spec structural-equivalence and mismatch tests
+- zero-rank span tests
 - existing Heat/Burgers regression tests
 - full `pytest`
 
@@ -98,7 +99,6 @@ Run at minimum:
 
 Strict sequencing for `v0.4`:
 
-- Milestone 3: span diagnostics under the frozen inner-product policy
 - Milestone 4: closure diagnostics with exact bracket preferred
 - Milestone 5: minimal visualization as renderers only and deferrable
 - Milestone 6: algebra-span release gate
@@ -128,8 +128,8 @@ Hard sequencing rules:
 
 - `v0.3`: **COMPLETE**
 - Milestone 1: **COMPLETE**
-- Milestone 2: **ACTIVE**
-- Milestone 3: **PLANNED**
+- Milestone 2: **COMPLETE**
+- Milestone 3: **ACTIVE**
 - Milestone 4: **PLANNED**
 - Milestone 5: **PLANNED**
 - Milestone 6: **PLANNED**
