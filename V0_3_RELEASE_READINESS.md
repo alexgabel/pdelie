@@ -2,8 +2,8 @@
 
 ## Release Target
 
-- package version: `0.3.0rc1`
-- git tag: `v0.3.0rc1`
+- package version: `0.3.0`
+- git tag: `v0.3.0`
 
 ## Done
 
@@ -30,9 +30,11 @@
 - new canonical stable objects beyond the current V0.3 slice
 - paper-specific experiment logic
 
-## RC View
+## Final Release View
 
-The current repository is ready for the first `0.3.0rc1` release candidate for the frozen V0.3 stable core, subject to the release-path checks passing on the release branch and CI passing on the release PR.
+The current repository is ready for the final `0.3.0` release for the frozen V0.3 stable core, subject to the release-path checks passing on the release branch and CI passing on the release PR.
+
+`0.3.0` is functionally identical to `0.3.0rc1` unless a release blocker required a minimal fix.
 
 There are no known scientific-scope blockers inside the current V0.3 slice.
 
@@ -43,9 +45,9 @@ There are no known scientific-scope blockers inside the current V0.3 slice.
 - the optional PySINDy bridge path is currently validated on the PySINDy 1.x / scikit-learn 1.2.x line under Python `<3.12`
 - the four-branch downstream benchmark / release-gate layer remains internal to the test surface and is not a public API
 
-## RC Tag Checklist
+## Final Tag Checklist
 
-Before tagging `v0.3.0rc1`:
+Before tagging `v0.3.0`:
 
 - run `python -m pytest` from the repo root
 - run `python -m build --sdist --wheel`
@@ -53,4 +55,4 @@ Before tagging `v0.3.0rc1`:
 - run `python -m pdelie.examples.heat_vertical_slice`
 - confirm GitHub Actions jobs `editable-tests` and `package-smoke` pass on the release PR commit
 - merge the release PR into `main`
-- tag the merged `main` commit as `v0.3.0rc1`
+- tag the merged `main` commit as `v0.3.0`
