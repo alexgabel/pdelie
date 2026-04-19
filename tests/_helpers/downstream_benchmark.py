@@ -121,9 +121,22 @@ def _require_downstream_dependencies():
 def _known_translation_generator_metadata() -> dict[str, object]:
     generator = GeneratorFamily(
         parameterization="polynomial_translation_affine",
-        coefficients=np.array([1.0, 0.0, 0.0, 0.0]),
+        coefficients=np.array([[1.0, 0.0, 0.0, 0.0]]),
+        basis_spec={
+            "variables": ["t", "x", "u"],
+            "component_names": ["xi"],
+            "basis_terms": [
+                {"label": "1", "powers": [0, 0, 0]},
+                {"label": "t", "powers": [1, 0, 0]},
+                {"label": "x", "powers": [0, 1, 0]},
+                {"label": "u", "powers": [0, 0, 1]},
+            ],
+            "component_ordering": ["xi"],
+            "term_ordering": ["1", "t", "x", "u"],
+            "layout": "component_major",
+        },
         normalization="l2_unit",
-        diagnostics={"basis": ["1", "t", "x", "u"]},
+        diagnostics={},
     )
     return generator.to_dict()
 

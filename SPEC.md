@@ -90,11 +90,24 @@ Defines symmetry target.
 ## GeneratorFamily
 
 - parameterization type
+- schema_version (`"0.2"` for canonical `v0.4` family output)
 - family-shaped coefficients
-- basis_spec
+- explicit basis_spec
 - normalization
 - optional generator names
 - diagnostics are non-authoritative summaries/provenance
+
+Canonical meaning depends only on:
+
+- schema_version
+- parameterization
+- coefficients
+- basis_spec
+- normalization
+- optional generator names
+
+`v0.4` direct construction is canonical-only.
+Legacy single-generator translation payloads are a narrow `from_dict()` compatibility path only.
 
 ---
 

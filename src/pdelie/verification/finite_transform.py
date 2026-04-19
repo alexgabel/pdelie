@@ -7,6 +7,7 @@ from pdelie.errors import ScopeValidationError
 from pdelie.residuals.base import ResidualEvaluator
 from pdelie.symmetry.parameterization.polynomial_translation import (
     DEFAULT_TRANSLATION_SPAN_TOLERANCE,
+    _coerce_translation_coefficients,
     apply_pointwise_translation,
     evaluate_translation_xi,
     translation_span_distance,
@@ -75,17 +76,18 @@ def verify_translation_generator(
     if field.values.shape[0] < min_heldout_initial_conditions:
         raise ScopeValidationError(f"Held-out verification requires at least {min_heldout_initial_conditions} unseen initial conditions.")
 
+    translation_coefficients = _coerce_translation_coefficients(generator.coefficients)
     epsilon_values = DEFAULT_EPSILON_VALUES if epsilon_values is None else np.asarray(epsilon_values, dtype=float)
-    span_distance = translation_span_distance(generator.coefficients)
+    span_distance = translation_span_distance(translation_coefficients)
     baseline_residual = residual_evaluator.evaluate(field).residual
 
-    xi = evaluate_translation_xi(field, generator.coefficients)
+    xi = evaluate_translation_xi(field, translation_coefficients)
     use_uniform_translation = span_distance <= span_tolerance
     batch_errors: list[list[float]] = []
 
     for epsilon in epsilon_values:
         if use_uniform_translation:
-            transformed = _apply_uniform_translation(field, float(epsilon * generator.coefficients[0]))
+            transformed = _apply_uniform_translation(field, float(epsilon * translation_coefficients[0]))
         else:
             transformed = apply_pointwise_translation(field, xi, float(epsilon))
 

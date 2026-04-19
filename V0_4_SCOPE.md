@@ -135,7 +135,8 @@ Coefficient interpretation rule:
 
 ### Legacy compatibility and canonical serialization
 
-- legacy `0.1` single-generator translation payloads remain accepted as backward-compatible input
+- direct construction without `basis_spec` is invalid in `v0.4`
+- legacy `0.1` single-generator translation payloads remain accepted only via `GeneratorFamily.from_dict()`
 - legacy payloads without `basis_spec` are accepted only when they match the frozen translation parameterization
 - those payloads are upgraded in memory to canonical `0.2` family form
 - `to_dict()` always emits canonical `0.2` output
@@ -144,6 +145,30 @@ Coefficient interpretation rule:
 - round-trip tests must cover:
   - legacy input -> canonical in-memory form -> canonical output
   - canonical input -> canonical output
+
+Frozen canonical translation compatibility target:
+
+```json
+{
+  "schema_version": "0.2",
+  "parameterization": "polynomial_translation_affine",
+  "coefficients": [[1.0, 0.0, 0.0, 0.0]],
+  "basis_spec": {
+    "variables": ["t", "x", "u"],
+    "component_names": ["xi"],
+    "basis_terms": [
+      {"label": "1", "powers": [0, 0, 0]},
+      {"label": "t", "powers": [1, 0, 0]},
+      {"label": "x", "powers": [0, 1, 0]},
+      {"label": "u", "powers": [0, 0, 1]}
+    ],
+    "component_ordering": ["xi"],
+    "term_ordering": ["1", "t", "x", "u"],
+    "layout": "component_major"
+  },
+  "normalization": "l2_unit"
+}
+```
 
 ---
 

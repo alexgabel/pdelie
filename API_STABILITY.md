@@ -7,11 +7,17 @@
 - `DerivativeBatch.backend="spectral_fd"`
 - ResidualBatch
 - ResidualEvaluator
-- GeneratorFamily (polynomial only)
+- GeneratorFamily (polynomial only; canonical `v0.4` family semantics with explicit `basis_spec`)
 - InvariantMapSpec (single-generator only)
 - VerificationReport
 - basic verification tools
 - typed validation errors (`PDELieValidationError`, `SchemaValidationError`, `ShapeValidationError`, `ScopeValidationError`)
+
+Stable `GeneratorFamily` note:
+
+- canonical `v0.4` output uses `schema_version = "0.2"` and family-shaped 2D coefficients
+- direct construction is canonical-only and requires explicit `basis_spec`
+- legacy `0.1` single-generator translation payloads are a narrow `from_dict()` compatibility path only
 
 Stable public import path for the invariant canonical object:
 

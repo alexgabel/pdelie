@@ -10,6 +10,21 @@ POLYNOMIAL_TRANSLATION_BASIS = ("1", "t", "x", "u")
 DEFAULT_TRANSLATION_SPAN_TOLERANCE = 5e-2
 
 
+def _coerce_translation_coefficients(coefficients: np.ndarray) -> np.ndarray:
+    coefficients = np.asarray(coefficients, dtype=float)
+    if coefficients.ndim == 1 and coefficients.size == len(POLYNOMIAL_TRANSLATION_BASIS):
+        return coefficients
+    if coefficients.ndim == 2 and coefficients.shape == (1, len(POLYNOMIAL_TRANSLATION_BASIS)):
+        return coefficients[0]
+    if coefficients.ndim == 2 and coefficients.shape[0] != 1:
+        raise ShapeValidationError("Stable translation helpers only support a single translation generator row.")
+    raise ShapeValidationError(
+        "Translation coefficients must be a one-dimensional array of length "
+        f"{len(POLYNOMIAL_TRANSLATION_BASIS)} or a two-dimensional single-row array "
+        f"of shape (1, {len(POLYNOMIAL_TRANSLATION_BASIS)})."
+    )
+
+
 def build_translation_basis(field: FieldBatch) -> dict[str, np.ndarray]:
     field.validate()
     if field.dims != ("batch", "time", "x", "var"):
@@ -31,11 +46,7 @@ def build_translation_basis(field: FieldBatch) -> dict[str, np.ndarray]:
 
 
 def normalize_translation_coefficients(coefficients: np.ndarray) -> np.ndarray:
-    coefficients = np.asarray(coefficients, dtype=float)
-    if coefficients.ndim != 1 or coefficients.size != len(POLYNOMIAL_TRANSLATION_BASIS):
-        raise ShapeValidationError(
-            f"Translation coefficients must be a one-dimensional array of length {len(POLYNOMIAL_TRANSLATION_BASIS)}."
-        )
+    coefficients = _coerce_translation_coefficients(coefficients)
     norm = np.linalg.norm(coefficients)
     if norm == 0.0:
         raise ShapeValidationError("Translation coefficients must not be the zero vector.")

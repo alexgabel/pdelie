@@ -156,8 +156,33 @@ GeneratorFamily(
   - `normalization`
   - optional `generator_names`
 - `diagnostics` is optional and non-authoritative
-- legacy `0.1` single-generator translation payloads may be accepted as compatibility input only
+- direct construction without `basis_spec` is invalid in `v0.4`
+- legacy `0.1` single-generator translation payloads may be accepted via `GeneratorFamily.from_dict()` only
 - compatibility input MUST upgrade to canonical `0.2` output on serialization
+
+### Canonical translation compatibility target
+
+~~~json
+{
+  "schema_version": "0.2",
+  "parameterization": "polynomial_translation_affine",
+  "coefficients": [[1.0, 0.0, 0.0, 0.0]],
+  "basis_spec": {
+    "variables": ["t", "x", "u"],
+    "component_names": ["xi"],
+    "basis_terms": [
+      {"label": "1", "powers": [0, 0, 0]},
+      {"label": "t", "powers": [1, 0, 0]},
+      {"label": "x", "powers": [0, 1, 0]},
+      {"label": "u", "powers": [0, 0, 1]}
+    ],
+    "component_ordering": ["xi"],
+    "term_ordering": ["1", "t", "x", "u"],
+    "layout": "component_major"
+  },
+  "normalization": "l2_unit"
+}
+~~~
 
 ---
 
