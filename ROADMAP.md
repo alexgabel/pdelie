@@ -85,7 +85,7 @@ on the synthetic 1D heat equation with:
 
 ---
 
-## Next Release Target
+## Previous Release Target
 
 ### `v0.2` — Second PDE under the current pipeline
 **Status:** Committed
@@ -126,50 +126,112 @@ Its purpose is:
 
 ---
 
+## Current Completed Release
+
+### `v0.3` — First invariant/downstream utility release
+**Status:** Committed
+
+`v0.3` is the first release where PDELie demonstrates stable downstream usefulness, not just symmetry recovery.
+
+Completed scope:
+
+- stable `InvariantMapSpec`
+- runtime-only `InvariantApplier`
+- one thin backend-specific downstream bridge
+- one controlled internal downstream benchmark / release gate
+- strict regression protection for the Heat/Burgers stable paths
+
+This release expands the invariant/downstream utility axis without widening the stable library into weak-form methods, operator methods, or broad adapters.
+
+---
+
+## Next Release Target
+
+### `v0.4` — Lie-algebra span, symbolic reporting, and visual diagnostics
+**Status:** Committed
+
+`v0.4` is the next stable release target.
+
+Its purpose is:
+
+> prove that PDELie can represent, normalize, compare, diagnose, and inspect small polynomial generator families, not just one frozen generator.
+
+### In scope for `v0.4`
+
+- `GeneratorFamily` family semantics with `basis_spec`
+- canonical serialization and migration policy for `GeneratorFamily`
+- symbolic generator display
+- span comparison with principal angles and projection residual
+- closure / structure-constant diagnostics
+- minimal optional visualization
+- Heat/Burgers regression protection
+- controlled algebraic family fixtures
+
+### Out of scope for `v0.4`
+
+- no weak-form stable backend
+- no operator symmetry
+- no neural generators as stable API
+- no broad dataset adapters
+- no stable 2D PDE pipeline
+- no stable multi-generator PDE fitting
+- no research-loss or representative-loss machinery
+
+### Release Gate for `v0.4`
+
+`v0.4` is complete only if:
+
+- Heat and Burgers still pass the existing stable paths unchanged
+- family-shaped `GeneratorFamily` serialization is backward-compatible with the current translation slice
+- symbolic display is deterministic for a given basis
+- span diagnostics are reproducible under a frozen inner-product policy
+- closure diagnostics prefer exact mode and document fallback mode when exact mode is unavailable
+- visualization remains optional and consumes existing reports/diagnostics only
+
+---
+
 ## Planned Next Step
 
-### `v0.3` — First downstream utility release
+### `v0.5` — Downstream compatibility and prediction utility
 **Status:** Planned
 
-`v0.3` is the first release where PDELie should demonstrate stable downstream usefulness, not just symmetry recovery.
+`v0.5` is the next planned release after `v0.4`.
 
-### Candidate scope for `v0.3`
+Its purpose is:
 
-- minimal single-generator invariant map support
-- one downstream bridge, likely PySINDy
-- one controlled benchmark:
-  - vanilla downstream method
-  - known-invariant downstream method
-  - discovered-invariant downstream method
-- one nuisance / conditioning control baseline
+> make learned or externally supplied generator families portable and useful in controlled downstream workflows.
 
-### Why this is not `v0.2`
+### Candidate scope for `v0.5`
 
-Because this release expands a new axis:
+- generator-family export manifest
+- stronger downstream compatibility semantics
+- one controlled system-identification adapter
+- one simple prediction-facing utility task
+- generic benchmark templates
 
-- representation layer
-- invariant semantics
-- downstream benchmark meaning
+### Out of scope for `v0.5`
 
-That should happen only after the current pipeline is proven across more than one PDE.
+- no operator-level stable API
+- no broad adapter ecosystem
+- no neural-operator workflow as stable scope
+- no weak-form expansion unless deliberately chosen as the single release axis
 
 ---
 
 ## Medium-Term Horizon
 
-### `v0.4+`
+### `v0.6+`
 **Status:** Experimental / Deferred
 
-The following are promising directions, but not yet committed stable roadmap items:
+The following remain promising later directions:
 
 - weak-form derivatives / weak residual workflows
-- broader invariant machinery
-- multiple-generator Lie algebra tooling
-- broader interoperability
+- broader dataset interoperability
+- operator-level symmetry discovery
 - larger external datasets
 - nonuniform grid support in practice
-- operator-level symmetry discovery
 - neural generator fields as public stable methods
+- broader representation-theoretic extensions
 
 These may exist in experimental namespaces or downstream repos before they enter the stable roadmap.
 
@@ -207,5 +269,7 @@ It should **not** be edited every time a new idea appears.
 
 - `v0.1.x` = stabilize the proven heat-equation vertical slice
 - `v0.2` = add Burgers under the same stable pipeline
-- `v0.3` = first stable downstream utility via invariants
-- `v0.4+` = broader numerics, broader data, operator methods, and other experimental directions
+- `v0.3` = first stable invariant/downstream utility via invariants
+- `v0.4` = Lie-algebra span, symbolic reporting, and visual diagnostics
+- `v0.5` = downstream compatibility and prediction utility
+- `v0.6+` = broader numerics, broader data, operator methods, and other experimental directions

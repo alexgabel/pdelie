@@ -28,6 +28,18 @@ Validation failures MUST raise typed errors:
 - `ShapeValidationError`
 - `ScopeValidationError`
 
+## 1.0 Schema Version Policy
+
+`schema_version` values are **object-schema epochs**, not package versions.
+
+Rules:
+
+- a schema version changes only when the contract for that canonical object changes
+- different canonical objects may advance schema versions independently
+- `GeneratorFamily.schema_version = "0.2"` means “post-family-semantics GeneratorFamily”
+- other canonical objects may remain at `"0.1"` until their schemas actually change
+- package versions and schema versions must not be assumed to match numerically
+
 ---
 
 ## 1.1 FieldBatch
