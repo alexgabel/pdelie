@@ -211,6 +211,10 @@ Paired derived metric:
 
 - projection residual
 
+Comparison precondition:
+
+- compared families must have structurally equivalent `basis_spec` semantics
+
 Freeze one default inner-product policy:
 
 - normalized variable domain
@@ -220,20 +224,27 @@ Freeze one default inner-product policy:
 
 Preferred computation mode:
 
-- exact polynomial inner product where straightforward for the supported `basis_spec`
+- exact polynomial inner product for the current algebraic/runtime polynomial scope
 
-Accepted fallback:
+Deferred later work:
 
-- deterministic sampled inner product on the normalized domain
+- field-aware scaling for PDE-associated learned spans
+- deterministic sampled fallback modes for broader comparison settings
 
-Every span report must store:
+Required core span report fields:
 
-- evaluation mode
+- inner_product
+- evaluation_mode
 - domain
-- variable scaling
-- component weights
+- component_weights
+- reference_rank
+- candidate_rank
+- comparison_rank
+- principal_angles_radians
+- projection_residual
 - conditioning
-- orthonormalization method
+
+Additional runtime diagnostic fields may be included, but are not frozen in `v0.4` Milestone 3 unless promoted later.
 
 ### Closure / structure-constant policy
 
@@ -286,7 +297,7 @@ Rotation-style fixtures must be coefficient-level algebra fixtures, not PDE/data
 ## Frozen Milestones
 
 ### Milestone 1 — `GeneratorFamily` representation semantics
-**Status:** Planned
+**Status:** Complete
 
 - freeze family-shaped `GeneratorFamily`
 - add required `basis_spec`
@@ -296,15 +307,15 @@ Rotation-style fixtures must be coefficient-level algebra fixtures, not PDE/data
 - no visualization
 
 ### Milestone 2 — Symbolic normalization and display
-**Status:** Planned
+**Status:** Complete
 
 - deterministic symbolic rendering
 - runtime-only display normalization
 - optional SymPy output
-- optional heuristic basis simplification helper
+- no heuristic basis simplification helper in the completed M2 slice
 
 ### Milestone 3 — Span diagnostics
-**Status:** Planned
+**Status:** Active
 
 - principal angles
 - projection residual
