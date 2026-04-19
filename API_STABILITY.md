@@ -31,6 +31,11 @@ Runtime public API for the frozen `v0.3` Milestone 2 slice:
 
 - `pdelie.discovery.to_pysindy_trajectories` for a backend-specific, narrow, flattened-trajectory PySINDy bridge
 
+Runtime public API for the frozen `v0.4` Milestone 2 slice:
+
+- `pdelie.symmetry.render_generator_family` for deterministic runtime-only symbolic display of the stored generator basis
+- `pdelie.symmetry.to_sympy_component_expressions` for optional runtime-only SymPy component expressions when `sympy` is installed
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 
