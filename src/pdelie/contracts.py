@@ -483,8 +483,19 @@ class GeneratorFamily:
         parameterization = str(payload["parameterization"])
         coefficients = np.asarray(payload["coefficients"], dtype=float)
         normalization = str(payload["normalization"])
-        diagnostics = dict(payload.get("diagnostics", {}))
-        generator_names = None if payload.get("generator_names") is None else list(payload["generator_names"])
+        raw_diagnostics = payload.get("diagnostics")
+        if raw_diagnostics is None:
+            diagnostics = {}
+        else:
+            diagnostics = dict(_validate_mapping(raw_diagnostics, "diagnostics"))
+
+        raw_generator_names = payload.get("generator_names")
+        if raw_generator_names is None:
+            generator_names = None
+        elif isinstance(raw_generator_names, (list, tuple)):
+            generator_names = list(raw_generator_names)
+        else:
+            raise SchemaValidationError("generator_names must be a list or tuple when provided.")
 
         if schema_version == "0.1":
             if (

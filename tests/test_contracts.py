@@ -161,6 +161,55 @@ def test_generator_family_accepts_canonical_family_payload() -> None:
     assert generator.basis_spec == _translation_generator_basis_spec()
 
 
+def test_generator_family_from_dict_treats_missing_or_null_diagnostics_as_empty_mapping() -> None:
+    payload = {
+        "schema_version": "0.2",
+        "parameterization": "polynomial_translation_affine",
+        "coefficients": [[1.0, 0.0, 0.0, 0.0]],
+        "basis_spec": _translation_generator_basis_spec(),
+        "normalization": "l2_unit",
+        "diagnostics": None,
+    }
+
+    generator = GeneratorFamily.from_dict(payload)
+
+    assert generator.diagnostics == {}
+
+    del payload["diagnostics"]
+    generator = GeneratorFamily.from_dict(payload)
+
+    assert generator.diagnostics == {}
+
+
+def test_generator_family_from_dict_rejects_non_mapping_diagnostics() -> None:
+    with pytest.raises(SchemaValidationError, match="diagnostics must be a mapping"):
+        GeneratorFamily.from_dict(
+            {
+                "schema_version": "0.2",
+                "parameterization": "polynomial_translation_affine",
+                "coefficients": [[1.0, 0.0, 0.0, 0.0]],
+                "basis_spec": _translation_generator_basis_spec(),
+                "normalization": "l2_unit",
+                "diagnostics": "not-a-mapping",
+            }
+        )
+
+
+def test_generator_family_from_dict_rejects_non_sequence_generator_names() -> None:
+    with pytest.raises(SchemaValidationError, match="generator_names must be a list or tuple"):
+        GeneratorFamily.from_dict(
+            {
+                "schema_version": "0.2",
+                "parameterization": "polynomial_translation_affine",
+                "coefficients": [[1.0, 0.0, 0.0, 0.0]],
+                "basis_spec": _translation_generator_basis_spec(),
+                "normalization": "l2_unit",
+                "diagnostics": {},
+                "generator_names": "gen",
+            }
+        )
+
+
 def test_generator_family_rejects_missing_basis_spec_on_direct_construction() -> None:
     with pytest.raises(SchemaValidationError, match="basis_spec must be provided"):
         GeneratorFamily(
