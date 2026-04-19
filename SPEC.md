@@ -90,9 +90,11 @@ Defines symmetry target.
 ## GeneratorFamily
 
 - parameterization type
-- coefficients
+- family-shaped coefficients
+- basis_spec
 - normalization
-- diagnostics
+- optional generator names
+- diagnostics are non-authoritative summaries/provenance
 
 ---
 

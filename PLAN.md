@@ -1,16 +1,16 @@
-# PDELie — Execution Plan (V0.3)
+# PDELie — Execution Plan (V0.4)
 
-## Current Release Phase
+## Current Active Milestone
 
-**Post–Milestone 3 RC hardening / release-surface alignment**
+**V0.4 Milestone 1 — GeneratorFamily family semantics and migration policy**
 
-This file is the active execution plan for the current `v0.3` release series.
+This file is the active execution plan for the current `v0.4` release series.
 
 It should contain:
 
-- a short record of completed milestones
-- the frozen plan for the current release phase
-- release-phase-specific rules and gates
+- a short record of the completed `v0.3` release
+- the frozen plan for the current active milestone
+- milestone-specific rules and gates
 
 It should **not** redefine package contracts or roadmap commitments. Those belong in:
 
@@ -18,319 +18,103 @@ It should **not** redefine package contracts or roadmap commitments. Those belon
 - `CONTRACTS_AND_DEFAULTS.md`
 - `API_STABILITY.md`
 - `ROADMAP.md`
-- `V0_3_SCOPE.md`
+- `V0_4_SCOPE.md`
 
 ---
 
-## Milestone 1 — Invariant layer
+## V0.3 Closeout
 
-### Goal
+`v0.3` is complete as the first invariant/downstream utility release.
 
-Add the first stable invariant layer in the narrowest possible form:
+Completed outcome:
 
-`FieldBatch -> DerivativeBatch -> ResidualBatch -> GeneratorFamily -> InvariantMapSpec -> InvariantApplier`
+- stable `InvariantMapSpec`
+- runtime-only `InvariantApplier`
+- runtime-only narrow PySINDy bridge
+- internal controlled downstream benchmark / release gate
+- Heat and Burgers regression protection preserved
 
-for the **single-generator case only**, while preserving the current stable Heat and Burgers paths with no regressions.
-
-### Status
-
-**COMPLETE**
-
-### Implemented
-
-- `InvariantMapSpec` as a stable canonical object for the single-generator case
-- runtime `InvariantApplier`
-- one frozen invariant application path for the current stable symmetry slice
-- regression protection ensuring Heat and Burgers still pass the current stable symmetry pipeline
-- explicit typed scope-guard failures for unsupported invariant applications
-
-### Milestone 1 Gate
-
-Milestone 1 passed because:
-
-- `InvariantMapSpec` exists as a stable canonical object
-- `InvariantApplier` works end to end on the frozen single-generator path
-- transformed outputs remain valid `FieldBatch` objects
-- transform provenance is recorded
-- Heat and Burgers still pass the current stable symmetry pipeline
-- no downstream bridge was required
-- no deferred or experimental feature was required
+`v0.4` begins from that frozen release surface.
 
 ---
 
-## Milestone 2 — Thin downstream bridge
+## Milestone 1 — GeneratorFamily Representation Semantics
 
 ### Goal
 
-Add the smallest downstream utility path that proves the new invariant layer can feed one downstream workflow without expanding scope beyond the frozen `v0.3` axis.
+Freeze `GeneratorFamily` family semantics and migration policy before any symbolic display, span diagnostics, closure diagnostics, or visualization work is added.
 
-This milestone does **not** add the full downstream benchmark layer yet.  
-It adds only the minimum bridge required for the later controlled benchmark/release-gate milestone.
-
-### Status
-
-**COMPLETE**
+This milestone is representation-only.
 
 ### Frozen Decisions
 
-- one thin downstream bridge only
-- no new numerical backend
-- no weak-form methods
-- no operator methods
-- no broad adapters
-- no broad benchmark expansion
-- no new stable canonical object unless absolutely required
-- stable PDEs remain:
-  - Heat
-  - Burgers
-- stable derivative backend remains:
-  - `spectral_fd`
-- stable symmetry/invariant path remains the current single-generator translation-oriented path
-- the downstream bridge is runtime-only, backend-specific, and exposed only as `pdelie.discovery.to_pysindy_trajectories`
-- the flattened trajectory format is a bridge format only, not a PDELie canonical downstream representation
-- the downstream bridge remains as thin as possible, using PySINDy only for a fit smoke path
+- `GeneratorFamily` remains the stable canonical object
+- canonical `schema_version` for family output is `"0.2"`
+- canonical `coefficients` shape is 2D
+- canonical `basis_spec` is required in `v0.4` output
+- legacy 1D translation payloads remain accepted as backward-compatible input
+- canonical core is `parameterization + coefficients + basis_spec + normalization + optional generator_names`
+- `to_dict()` always emits canonical `"0.2"` output
+- `from_dict()` performs legacy translation upgrade only in the explicit supported case
+- diagnostics are non-authoritative
+- no fitting in M1
+- no symbolic display in M1
+- no span metrics in M1
+- no closure diagnostics in M1
+- no visualization in M1
 
-### Milestone 2
+### Deliverables
 
-Implement:
+- `GeneratorFamily` contract update with `basis_spec`
+- explicit schema-version policy note prepared for `CONTRACTS_AND_DEFAULTS.md`
+- validation rules for canonical family-shaped coefficients
+- explicit legacy translation upgrade path
+- deterministic basis ordering rules
+- explicit component/term interpretation rules
+- regression protection for current translation-based uses
 
-- one thin runtime-only PySINDy bridge for the current invariant-transformed stable path
-- one minimal end-to-end downstream fit smoke path using the existing invariant layer
-- regression protection ensuring Heat and Burgers stable symmetry paths remain unchanged
-- explicit documentation of what the bridge does and does not guarantee
+### Acceptance Criteria
 
-This milestone is complete only if the downstream bridge is:
+Milestone 1 is complete only if:
 
-- contract-compliant
-- minimal in scope
-- non-disruptive to the existing stable core
-- sufficient for one later controlled benchmark path
+- existing Heat/Burgers stable paths still pass unchanged
+- existing single-generator translation workflows still validate
+- canonical family serialization is defined and tested
+- legacy input upgrades cleanly to canonical family output
+- missing or invalid `basis_spec` fails with typed validation errors
+- diagnostics remain non-authoritative
+- no new canonical object is introduced
+- no public downstream or invariant semantics are broadened
 
----
+### Test Plan
 
-## Required Components
+Run at minimum:
 
-### 1. Thin downstream bridge
-
-Add one narrow bridge that consumes the current transformed data path.
-
-The bridge must:
-
-- work with the current single-generator invariant layer
-- avoid becoming a general discovery framework
-- avoid introducing a new stable canonical result object unless absolutely necessary
-- avoid widening stable scope beyond one backend and one path
-- remain out of root `pdelie` imports
-- stay runtime-level only
-- use a flattened-trajectory bridge format only for PySINDy
-
-### 2. One frozen utility path
-
-Implement one minimal supported downstream path for the current stable symmetry slice.
-
-That path must:
-
-- work on the existing stable Heat/Burgers setting
-- preserve current contracts
-- remain provenance-aware where applicable
-- avoid introducing a new numerical regime
-- avoid implying broad downstream support that does not yet exist
-
-### 3. Regression protection
-
-Keep the existing stable core intact:
-
-- Heat path still works
-- Burgers path still works
-- no regression in symmetry verification
-- no regression in invariant application
-- no new canonical stable objects unless absolutely necessary
-
----
-
-## Exact Files Created Or Modified
-
-Created:
-
-- `src/pdelie/discovery/__init__.py`
-- `src/pdelie/discovery/pysindy_bridge.py`
-- `tests/test_pysindy_bridge.py`
-
-Modified:
-
-- `pyproject.toml`
-- `tests/test_public_api.py`
-- `API_STABILITY.md`
-- `V0_3_SCOPE.md`
-- `PLAN.md`
-
-Do **not** modify:
-
-- data generation modules
-- derivative backend modules
-- residual evaluators
-- translation fitter logic
-- verification core
-- broad benchmark harness code
-- operator code
-- weak-form code
-
-unless a minimal contract-consistency fix is required.
-
----
-
-## Minimal Test Plan
-
-### 1. Bridge smoke tests
-
-Add tests showing:
-
-- the downstream bridge can consume the current invariant-transformed path
-- the bridge behaves reproducibly under fixed inputs
-- invalid or unsupported uses fail with typed errors or explicit scope errors
-- the optional PySINDy dependency fails with a clear install hint when unavailable
-
-### 2. Stable-path compatibility tests
-
-Add tests showing:
-
-- Heat still passes existing stable path unchanged
-- Burgers still passes existing stable path unchanged
-- invariant application still behaves as before
-- the bridge does not corrupt the current stable data model
-
-### 3. Narrow end-to-end utility test
-
-Add one narrow test showing:
-
-- stable symmetry path
-- stable invariant path
-- thin downstream bridge path
-
-work together end to end for the frozen single-generator case
-
-### 4. Full regression check
-
-At milestone completion, run:
-
-- the narrow bridge tests
-- invariant tests
-- current Heat/Burgers stable tests
+- legacy 1D translation payload tests
+- legacy input -> canonical output round-trip tests
+- canonical 2D family payload tests
+- missing `basis_spec` tests
+- incompatible coefficient shape vs `basis_spec` tests
+- invalid component or term ordering tests
+- existing Heat/Burgers regression tests
 - full `pytest`
 
 ---
 
-## Milestone 2 Gate
+## Later Milestones
 
-Milestone 2 is complete only if:
+Strict sequencing for `v0.4`:
 
-- one thin downstream bridge exists for the frozen stable path
-- the bridge works end to end on the single-generator invariant workflow
-- Heat and Burgers still pass the current stable symmetry pipeline
-- invariant application still passes unchanged
-- no broad benchmark layer is required yet
-- no deferred or experimental feature is required
-- no new stable canonical object was added unless unavoidable and explicitly documented
+- Milestone 2: symbolic normalization and display
+- Milestone 3: span diagnostics under the frozen inner-product policy
+- Milestone 4: closure diagnostics with exact bracket preferred
+- Milestone 5: minimal visualization as renderers only and deferrable
+- Milestone 6: algebra-span release gate
 
-If these are not satisfied, Milestone 2 is not complete.
+Hard sequencing rules:
 
-### Milestone 2 Completion Gate
-
-Milestone 2 passed because:
-
-- one thin runtime-only downstream bridge exists for the frozen stable path
-- the bridge works end to end on the single-generator invariant workflow
-- the bridge remains out of root `pdelie` imports
-- no new stable canonical object was added
-- Heat and Burgers still pass the current stable symmetry pipeline
-- invariant application still passes unchanged
-- no full benchmark layer was required
-- no deferred or experimental feature was required
-
----
-
-## Milestone 3 — Controlled downstream benchmark / release-gate layer
-
-### Goal
-
-Add the smallest controlled downstream benchmark and release-gate layer for the current stable symmetry, invariant, and runtime-only PySINDy bridge path.
-
-This milestone must stay internal to `tests/_helpers` and `tests/`.
-It must not add public API, new canonical objects, or broader downstream machinery.
-
-### Status
-
-**COMPLETE**
-
-### Frozen Decisions
-
-- one internal four-branch benchmark only:
-  - `vanilla`
-  - `known_invariant`
-  - `discovered_invariant`
-  - `nuisance`
-- no new public API
-- no new stable canonical object
-- no weak-form methods
-- no operator methods
-- no broad adapters
-- no benchmark zoo
-- use the current runtime-only `InvariantApplier` unchanged
-- use the current runtime-only PySINDy bridge unchanged
-- known and discovered branches are expected to be numerically equivalent in this milestone
-- the nuisance branch is the actual utility comparison branch
-- PySINDy configuration is frozen explicitly for the release gate
-
-### Implemented
-
-- internal helper `tests/_helpers/downstream_benchmark.py`
-- internal test module `tests/test_downstream_benchmark.py`
-- explicit frozen PySINDy configuration for fit/score
-- benchmark-local per-sample alignment using the frozen `argmax(values[0, 0, :, 0])` rule
-- reproducibility, matched-settings, known/discovered-equivalence, nuisance-distinctness, and release-gate tests
-
-### Exact Files Created Or Modified
-
-Created:
-
-- `tests/_helpers/downstream_benchmark.py`
-- `tests/test_downstream_benchmark.py`
-
-Modified:
-
-- `V0_3_SCOPE.md`
-- `PLAN.md`
-
-Do **not** modify:
-
-- `ROADMAP.md`
-- public API files
-- invariant/runtime bridge code
-
-unless a minimal contract-consistency fix is required.
-
-### Minimal Test Plan
-
-- run `tests/test_downstream_benchmark.py` first
-- then run the full suite with `pytest`
-- benchmark tests must confirm:
-  - reproducibility
-  - matched settings
-  - known/discovered trajectory equivalence
-  - nuisance branch distinctness
-  - release-gate ordering on Burgers against nuisance
-
-### Milestone 3 Completion Gate
-
-Milestone 3 passed because:
-
-- the four-branch internal benchmark runs on Heat and Burgers
-- settings are frozen and matched across branches
-- known and discovered branches are numerically equivalent in the frozen slice
-- the nuisance baseline is included and reproducible
-- the Burgers invariant-aware branches beat the nuisance branch under the frozen release-gate configuration
-- Heat and Burgers stable symmetry paths still pass unchanged
-- no public API and no stable canonical object were added
+- do not add fitting logic before representation and diagnostics semantics are frozen
+- do not let visualization define new semantics or helper contracts
 
 ---
 
@@ -338,18 +122,22 @@ Milestone 3 passed because:
 
 - DO NOT add weak-form methods
 - DO NOT add operator methods
-- DO NOT add broad adapters
-- DO NOT add multi-generator invariant machinery
-- DO NOT add a broad downstream public API
-- DO NOT add new stable canonical objects
-- DO NOT change the current stable Heat/Burgers symmetry path unless required by a minimal contract-consistency fix
-- DO NOT modify `ROADMAP.md` in this milestone
+- DO NOT add broad dataset adapters
+- DO NOT add neural generators as stable API
+- DO NOT add representative-loss or research-loss code
+- DO NOT add stable 2D PDE pipeline work
+- DO NOT add stable multi-generator PDE fitting in `v0.4`
+- DO NOT add broad downstream benchmark expansion
+- DO NOT add paper-specific or manuscript-facing language
 
 ---
 
 ## Status
 
-- Milestone 1: **COMPLETE**
-- Milestone 2: **COMPLETE**
-- Milestone 3: **COMPLETE**
-- Current phase: **RC hardening / release-surface alignment**
+- `v0.3`: **COMPLETE**
+- Milestone 1: **ACTIVE**
+- Milestone 2: **PLANNED**
+- Milestone 3: **PLANNED**
+- Milestone 4: **PLANNED**
+- Milestone 5: **PLANNED**
+- Milestone 6: **PLANNED**
