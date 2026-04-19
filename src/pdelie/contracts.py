@@ -137,7 +137,10 @@ def _normalize_basis_spec(value: Any) -> dict[str, Any]:
         for power in powers:
             if isinstance(power, bool) or not isinstance(power, (int, np.integer)):
                 raise SchemaValidationError("basis_spec['basis_terms'] powers must be integers.")
-            normalized_powers.append(int(power))
+            normalized_power = int(power)
+            if normalized_power < 0:
+                raise SchemaValidationError("basis_spec['basis_terms'] powers must be nonnegative integers.")
+            normalized_powers.append(normalized_power)
         basis_terms.append({"label": label, "powers": normalized_powers})
         term_labels.append(label)
 

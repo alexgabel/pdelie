@@ -4,28 +4,13 @@ import numpy as np
 import pytest
 
 from pdelie import GeneratorFamily, ScopeValidationError
+from pdelie.contracts import _translation_generator_basis_spec
 from pdelie.data import generate_burgers_1d_field_batch, generate_heat_1d_field_batch
 from pdelie.residuals import BurgersResidualEvaluator, HeatResidualEvaluator
 from pdelie.symmetry.fitting import fit_translation_generator
 from pdelie.symmetry.fitting.translation_baseline import TRANSLATION_FALLBACK_SPAN_TOLERANCE
 from pdelie.symmetry.parameterization.polynomial_translation import DEFAULT_TRANSLATION_SPAN_TOLERANCE
 from pdelie.verification import DEFAULT_EPSILON_VALUES, verify_translation_generator
-
-
-def translation_basis_spec() -> dict[str, object]:
-    return {
-        "variables": ["t", "x", "u"],
-        "component_names": ["xi"],
-        "basis_terms": [
-            {"label": "1", "powers": [0, 0, 0]},
-            {"label": "t", "powers": [1, 0, 0]},
-            {"label": "x", "powers": [0, 1, 0]},
-            {"label": "u", "powers": [0, 0, 1]},
-        ],
-        "component_ordering": ["xi"],
-        "term_ordering": ["1", "t", "x", "u"],
-        "layout": "component_major",
-    }
 
 
 def test_translation_span_tolerance_defaults_are_shared() -> None:
@@ -35,7 +20,7 @@ def test_translation_span_tolerance_defaults_are_shared() -> None:
     wrong = GeneratorFamily(
         parameterization="polynomial_translation_affine",
         coefficients=np.array([[0.0, 0.0, 1.0, 0.0]]),
-        basis_spec=translation_basis_spec(),
+        basis_spec=_translation_generator_basis_spec(),
         normalization="l2_unit",
         diagnostics={},
     )
@@ -58,7 +43,7 @@ def test_translation_verification_fails_for_wrong_generator() -> None:
     wrong = GeneratorFamily(
         parameterization="polynomial_translation_affine",
         coefficients=np.array([[0.0, 0.0, 1.0, 0.0]]),
-        basis_spec=translation_basis_spec(),
+        basis_spec=_translation_generator_basis_spec(),
         normalization="l2_unit",
         diagnostics={},
     )
@@ -104,7 +89,7 @@ def test_translation_verification_rejects_nonperiodic_boundary_conditions() -> N
     generator = GeneratorFamily(
         parameterization="polynomial_translation_affine",
         coefficients=np.array([[1.0, 0.0, 0.0, 0.0]]),
-        basis_spec=translation_basis_spec(),
+        basis_spec=_translation_generator_basis_spec(),
         normalization="l2_unit",
         diagnostics={},
     )
@@ -128,7 +113,7 @@ def test_translation_verification_fails_for_wrong_burgers_generator() -> None:
     wrong = GeneratorFamily(
         parameterization="polynomial_translation_affine",
         coefficients=np.array([[0.0, 0.0, 1.0, 0.0]]),
-        basis_spec=translation_basis_spec(),
+        basis_spec=_translation_generator_basis_spec(),
         normalization="l2_unit",
         diagnostics={},
     )
