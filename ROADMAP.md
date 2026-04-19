@@ -129,7 +129,7 @@ Its purpose is:
 ## Current Completed Release
 
 ### `v0.3` — First invariant/downstream utility release
-**Status:** Committed
+**Status:** Completed
 
 `v0.3` is the first release where PDELie demonstrates stable downstream usefulness, not just symmetry recovery.
 
