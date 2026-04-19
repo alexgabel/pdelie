@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 
 from pdelie import GeneratorFamily, ScopeValidationError
+from pdelie.contracts import _translation_generator_basis_spec
 from pdelie.data import generate_burgers_1d_field_batch, generate_heat_1d_field_batch
 from pdelie.residuals import BurgersResidualEvaluator, HeatResidualEvaluator
 from pdelie.symmetry.fitting import fit_translation_generator
@@ -18,9 +19,10 @@ def test_translation_span_tolerance_defaults_are_shared() -> None:
     heldout = generate_heat_1d_field_batch(batch_size=3, num_times=33, num_points=64, seed=20)
     wrong = GeneratorFamily(
         parameterization="polynomial_translation_affine",
-        coefficients=np.array([0.0, 0.0, 1.0, 0.0]),
+        coefficients=np.array([[0.0, 0.0, 1.0, 0.0]]),
+        basis_spec=_translation_generator_basis_spec(),
         normalization="l2_unit",
-        diagnostics={"basis": ["1", "t", "x", "u"]},
+        diagnostics={},
     )
     report = verify_translation_generator(heldout, wrong, HeatResidualEvaluator())
     assert report.diagnostics["span_tolerance"] == DEFAULT_TRANSLATION_SPAN_TOLERANCE
@@ -40,9 +42,10 @@ def test_translation_verification_fails_for_wrong_generator() -> None:
     heldout = generate_heat_1d_field_batch(batch_size=3, num_times=33, num_points=64, seed=23)
     wrong = GeneratorFamily(
         parameterization="polynomial_translation_affine",
-        coefficients=np.array([0.0, 0.0, 1.0, 0.0]),
+        coefficients=np.array([[0.0, 0.0, 1.0, 0.0]]),
+        basis_spec=_translation_generator_basis_spec(),
         normalization="l2_unit",
-        diagnostics={"basis": ["1", "t", "x", "u"]},
+        diagnostics={},
     )
     report = verify_translation_generator(heldout, wrong, HeatResidualEvaluator())
     assert report.classification == "failed"
@@ -85,9 +88,10 @@ def test_translation_verification_rejects_nonperiodic_boundary_conditions() -> N
     heldout.metadata["boundary_conditions"] = {"x": "dirichlet"}
     generator = GeneratorFamily(
         parameterization="polynomial_translation_affine",
-        coefficients=np.array([1.0, 0.0, 0.0, 0.0]),
+        coefficients=np.array([[1.0, 0.0, 0.0, 0.0]]),
+        basis_spec=_translation_generator_basis_spec(),
         normalization="l2_unit",
-        diagnostics={"basis": ["1", "t", "x", "u"]},
+        diagnostics={},
     )
     with pytest.raises(ScopeValidationError, match="periodic boundary conditions in x"):
         verify_translation_generator(heldout, generator, HeatResidualEvaluator())
@@ -108,9 +112,10 @@ def test_translation_verification_fails_for_wrong_burgers_generator() -> None:
     heldout = generate_burgers_1d_field_batch(batch_size=3, num_times=33, num_points=64, seed=33)
     wrong = GeneratorFamily(
         parameterization="polynomial_translation_affine",
-        coefficients=np.array([0.0, 0.0, 1.0, 0.0]),
+        coefficients=np.array([[0.0, 0.0, 1.0, 0.0]]),
+        basis_spec=_translation_generator_basis_spec(),
         normalization="l2_unit",
-        diagnostics={"basis": ["1", "t", "x", "u"]},
+        diagnostics={},
     )
     report = verify_translation_generator(heldout, wrong, BurgersResidualEvaluator())
     assert report.classification == "failed"

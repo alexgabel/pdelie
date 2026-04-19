@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 
 from pdelie import FieldBatch, GeneratorFamily, InvariantMapSpec, SchemaValidationError, ScopeValidationError
+from pdelie.contracts import _translation_generator_basis_spec
 from pdelie.data import generate_burgers_1d_field_batch, generate_heat_1d_field_batch
 from pdelie.derivatives import compute_spectral_fd_derivatives
 from pdelie.invariants import InvariantApplier
@@ -15,9 +16,10 @@ from pdelie.verification import verify_translation_generator
 def make_translation_generator() -> GeneratorFamily:
     return GeneratorFamily(
         parameterization="polynomial_translation_affine",
-        coefficients=np.array([1.0, 0.0, 0.0, 0.0]),
+        coefficients=np.array([[1.0, 0.0, 0.0, 0.0]]),
+        basis_spec=_translation_generator_basis_spec(),
         normalization="l2_unit",
-        diagnostics={"basis": ["1", "t", "x", "u"]},
+        diagnostics={},
     )
 
 

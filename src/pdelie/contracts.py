@@ -25,6 +25,15 @@ ALLOWED_RESIDUAL_TYPES = frozenset({"analytic", "weak", "surrogate", "operator"}
 ALLOWED_CLASSIFICATIONS = frozenset({"exact", "approximate", "failed"})
 ALLOWED_DOMAIN_VALIDITIES = frozenset({"local", "global", "unknown"})
 SPATIAL_DIMS = ("x", "y", "z")
+GENERATOR_FAMILY_LAYOUT = "component_major"
+GENERATOR_FAMILY_REQUIRED_BASIS_SPEC_FIELDS = (
+    "variables",
+    "component_names",
+    "basis_terms",
+    "component_ordering",
+    "term_ordering",
+    "layout",
+)
 
 
 def _to_numpy(value: Any) -> np.ndarray:
@@ -84,6 +93,95 @@ def _validate_dims_order(dims: tuple[str, ...]) -> None:
     expected_prefix = [dim for dim in SPATIAL_DIMS if dim in spatial]
     if spatial != expected_prefix:
         raise SchemaValidationError("Spatial dims must be ordered as x, y, z.")
+
+
+def _validate_string_list(value: Any, name: str) -> list[str]:
+    if not isinstance(value, (list, tuple)) or len(value) == 0:
+        raise SchemaValidationError(f"{name} must be a non-empty list of strings.")
+    normalized = [str(item) for item in value]
+    if any(not item for item in normalized):
+        raise SchemaValidationError(f"{name} entries must be non-empty strings.")
+    if len(set(normalized)) != len(normalized):
+        raise SchemaValidationError(f"{name} entries must be unique.")
+    return normalized
+
+
+def _normalize_basis_spec(value: Any) -> dict[str, Any]:
+    if value is None:
+        raise SchemaValidationError("basis_spec must be provided for canonical GeneratorFamily payloads.")
+    basis_spec = dict(_validate_mapping(value, "basis_spec"))
+    missing_fields = [field for field in GENERATOR_FAMILY_REQUIRED_BASIS_SPEC_FIELDS if field not in basis_spec]
+    if missing_fields:
+        raise SchemaValidationError(f"basis_spec is missing required fields: {missing_fields}.")
+
+    variables = _validate_string_list(basis_spec["variables"], "basis_spec['variables']")
+    component_names = _validate_string_list(basis_spec["component_names"], "basis_spec['component_names']")
+
+    raw_basis_terms = basis_spec["basis_terms"]
+    if not isinstance(raw_basis_terms, (list, tuple)) or len(raw_basis_terms) == 0:
+        raise SchemaValidationError("basis_spec['basis_terms'] must be a non-empty list.")
+
+    basis_terms: list[dict[str, Any]] = []
+    term_labels: list[str] = []
+    for index, raw_term in enumerate(raw_basis_terms):
+        term = dict(_validate_mapping(raw_term, f"basis_spec['basis_terms'][{index}]"))
+        if "label" not in term or "powers" not in term:
+            raise SchemaValidationError("Each basis_spec['basis_terms'] entry must include 'label' and 'powers'.")
+        label = str(term["label"])
+        if not label:
+            raise SchemaValidationError("basis_spec['basis_terms'] labels must be non-empty strings.")
+        powers = term["powers"]
+        if not isinstance(powers, (list, tuple)) or len(powers) != len(variables):
+            raise SchemaValidationError("basis_spec['basis_terms'] powers must match the variables length.")
+        normalized_powers: list[int] = []
+        for power in powers:
+            if isinstance(power, bool) or not isinstance(power, (int, np.integer)):
+                raise SchemaValidationError("basis_spec['basis_terms'] powers must be integers.")
+            normalized_power = int(power)
+            if normalized_power < 0:
+                raise SchemaValidationError("basis_spec['basis_terms'] powers must be nonnegative integers.")
+            normalized_powers.append(normalized_power)
+        basis_terms.append({"label": label, "powers": normalized_powers})
+        term_labels.append(label)
+
+    if len(set(term_labels)) != len(term_labels):
+        raise SchemaValidationError("basis_spec['basis_terms'] labels must be unique.")
+
+    component_ordering = _validate_string_list(basis_spec["component_ordering"], "basis_spec['component_ordering']")
+    term_ordering = _validate_string_list(basis_spec["term_ordering"], "basis_spec['term_ordering']")
+    layout = str(basis_spec["layout"])
+
+    if component_ordering != component_names:
+        raise SchemaValidationError("basis_spec['component_ordering'] must exactly match component_names.")
+    if term_ordering != term_labels:
+        raise SchemaValidationError("basis_spec['term_ordering'] must exactly match basis_terms labels in order.")
+    if layout != GENERATOR_FAMILY_LAYOUT:
+        raise SchemaValidationError(f"basis_spec['layout'] must be '{GENERATOR_FAMILY_LAYOUT}'.")
+
+    return {
+        "variables": variables,
+        "component_names": component_names,
+        "basis_terms": basis_terms,
+        "component_ordering": component_ordering,
+        "term_ordering": term_ordering,
+        "layout": layout,
+    }
+
+
+def _translation_generator_basis_spec() -> dict[str, Any]:
+    return {
+        "variables": ["t", "x", "u"],
+        "component_names": ["xi"],
+        "basis_terms": [
+            {"label": "1", "powers": [0, 0, 0]},
+            {"label": "t", "powers": [1, 0, 0]},
+            {"label": "x", "powers": [0, 1, 0]},
+            {"label": "u", "powers": [0, 0, 1]},
+        ],
+        "component_ordering": ["xi"],
+        "term_ordering": ["1", "t", "x", "u"],
+        "layout": GENERATOR_FAMILY_LAYOUT,
+    }
 
 
 @dataclass(slots=True)
@@ -320,51 +418,120 @@ class ResidualBatch:
 
 @dataclass(slots=True)
 class GeneratorFamily:
-    schema_version: str = "0.1"
+    schema_version: str = "0.2"
     parameterization: str = ""
     coefficients: np.ndarray = None  # type: ignore[assignment]
+    basis_spec: dict[str, Any] = None  # type: ignore[assignment]
     normalization: str = ""
+    generator_names: list[str] | None = None
     diagnostics: dict[str, Any] = None  # type: ignore[assignment]
 
-    SCHEMA_VERSION: ClassVar[str] = "0.1"
+    SCHEMA_VERSION: ClassVar[str] = "0.2"
 
     def __post_init__(self) -> None:
         self.coefficients = _to_numpy(self.coefficients)
-        self.diagnostics = dict(_validate_mapping(self.diagnostics, "diagnostics"))
+        self.basis_spec = _normalize_basis_spec(self.basis_spec)
+        if self.generator_names is not None:
+            if not isinstance(self.generator_names, (list, tuple)):
+                raise SchemaValidationError("generator_names must be a list of strings when provided.")
+            self.generator_names = [str(name) for name in self.generator_names]
+        if self.diagnostics is None:
+            self.diagnostics = {}
+        else:
+            self.diagnostics = dict(_validate_mapping(self.diagnostics, "diagnostics"))
         self.validate()
 
     def validate(self) -> None:
         if self.schema_version != self.SCHEMA_VERSION:
             raise SchemaValidationError("Unsupported GeneratorFamily schema_version.")
-        if self.coefficients.ndim != 1 or self.coefficients.size == 0:
-            raise ShapeValidationError("coefficients must be a non-empty one-dimensional array.")
+        if self.coefficients.ndim != 2 or 0 in self.coefficients.shape:
+            raise ShapeValidationError("coefficients must be a non-empty two-dimensional array.")
         if not isinstance(self.parameterization, str) or not self.parameterization:
             raise SchemaValidationError("parameterization must be a non-empty string.")
         if not isinstance(self.normalization, str) or not self.normalization:
             raise SchemaValidationError("normalization must be a non-empty string.")
+        expected_width = len(self.basis_spec["component_names"]) * len(self.basis_spec["basis_terms"])
+        if self.coefficients.shape[1] != expected_width:
+            raise ShapeValidationError("coefficients width must match component_names x basis_terms.")
+        if self.generator_names is not None:
+            if len(self.generator_names) != self.coefficients.shape[0]:
+                raise ShapeValidationError("generator_names length must match the number of generators.")
+            if any(not name for name in self.generator_names):
+                raise SchemaValidationError("generator_names entries must be non-empty strings.")
         if self.normalization == "l2_unit":
-            norm = np.linalg.norm(self.coefficients)
-            if not np.isclose(norm, 1.0, atol=1e-8):
-                raise ShapeValidationError("l2_unit generators must have unit L2 norm.")
+            row_norms = np.linalg.norm(self.coefficients, axis=1)
+            if not np.allclose(row_norms, 1.0, atol=1e-8):
+                raise ShapeValidationError("l2_unit generators must have unit L2 norm row-wise.")
         _validate_json_round_trip(self.to_dict())
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        payload = {
             "schema_version": self.schema_version,
             "parameterization": self.parameterization,
             "coefficients": _json_safe(self.coefficients),
+            "basis_spec": _json_safe(self.basis_spec),
             "normalization": self.normalization,
             "diagnostics": _json_safe(self.diagnostics),
         }
+        if self.generator_names is not None:
+            payload["generator_names"] = list(self.generator_names)
+        return payload
 
     @classmethod
     def from_dict(cls, payload: Mapping[str, Any]) -> "GeneratorFamily":
+        schema_version = str(payload["schema_version"])
+        parameterization = str(payload["parameterization"])
+        coefficients = np.asarray(payload["coefficients"], dtype=float)
+        normalization = str(payload["normalization"])
+        raw_diagnostics = payload.get("diagnostics")
+        if raw_diagnostics is None:
+            diagnostics = {}
+        else:
+            diagnostics = dict(_validate_mapping(raw_diagnostics, "diagnostics"))
+
+        raw_generator_names = payload.get("generator_names")
+        if raw_generator_names is None:
+            generator_names = None
+        elif isinstance(raw_generator_names, (list, tuple)):
+            generator_names = list(raw_generator_names)
+        else:
+            raise SchemaValidationError("generator_names must be a list or tuple when provided.")
+
+        if schema_version == "0.1":
+            if (
+                parameterization != "polynomial_translation_affine"
+                or "basis_spec" in payload
+                or payload.get("generator_names") is not None
+                or coefficients.ndim != 1
+                or coefficients.size != 4
+            ):
+                raise SchemaValidationError(
+                    "Legacy GeneratorFamily compatibility is only supported for single-generator "
+                    "polynomial_translation_affine payloads without basis_spec."
+                )
+            return cls(
+                schema_version=cls.SCHEMA_VERSION,
+                parameterization=parameterization,
+                coefficients=coefficients.reshape(1, -1),
+                basis_spec=_translation_generator_basis_spec(),
+                normalization=normalization,
+                generator_names=generator_names,
+                diagnostics=diagnostics,
+            )
+
+        if schema_version != cls.SCHEMA_VERSION:
+            raise SchemaValidationError("Unsupported GeneratorFamily schema_version.")
+        if "basis_spec" not in payload:
+            raise SchemaValidationError("basis_spec is required for canonical GeneratorFamily payloads.")
+
         return cls(
-            schema_version=str(payload["schema_version"]),
-            parameterization=str(payload["parameterization"]),
-            coefficients=np.asarray(payload["coefficients"], dtype=float),
-            normalization=str(payload["normalization"]),
-            diagnostics=dict(payload["diagnostics"]),
+            schema_version=schema_version,
+            parameterization=parameterization,
+            coefficients=coefficients,
+            basis_spec=dict(_validate_mapping(payload["basis_spec"], "basis_spec")),
+            normalization=normalization,
+            generator_names=generator_names,
+            diagnostics=diagnostics,
         )
 
 

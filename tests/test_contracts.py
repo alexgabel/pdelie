@@ -15,6 +15,7 @@ from pdelie import (
     ShapeValidationError,
     VerificationReport,
 )
+from pdelie.contracts import _translation_generator_basis_spec
 
 
 def make_field_batch(*, x_coords: np.ndarray | None = None) -> FieldBatch:
@@ -35,8 +36,6 @@ def make_field_batch(*, x_coords: np.ndarray | None = None) -> FieldBatch:
         },
         preprocess_log=[],
     )
-
-
 def test_field_batch_round_trip_is_json_safe() -> None:
     field = make_field_batch()
     payload = field.to_dict()
@@ -116,9 +115,215 @@ def test_generator_family_requires_unit_norm_when_marked_l2_unit() -> None:
     with pytest.raises(ShapeValidationError):
         GeneratorFamily(
             parameterization="polynomial_translation_affine",
-            coefficients=np.array([2.0, 0.0, 0.0, 0.0]),
+            coefficients=np.array([[2.0, 0.0, 0.0, 0.0]]),
+            basis_spec=_translation_generator_basis_spec(),
             normalization="l2_unit",
-            diagnostics={"basis": ["1", "t", "x", "u"]},
+            diagnostics={},
+        )
+
+
+def test_generator_family_from_dict_upgrades_legacy_translation_payload_to_canonical_family() -> None:
+    legacy_payload = {
+        "schema_version": "0.1",
+        "parameterization": "polynomial_translation_affine",
+        "coefficients": [1.0, 0.0, 0.0, 0.0],
+        "normalization": "l2_unit",
+        "diagnostics": {"basis": ["1", "t", "x", "u"]},
+    }
+
+    generator = GeneratorFamily.from_dict(legacy_payload)
+    payload = generator.to_dict()
+
+    assert generator.schema_version == "0.2"
+    np.testing.assert_allclose(generator.coefficients, np.array([[1.0, 0.0, 0.0, 0.0]], dtype=float))
+    assert generator.basis_spec == _translation_generator_basis_spec()
+    assert generator.generator_names is None
+    assert payload["schema_version"] == "0.2"
+    assert payload["coefficients"] == [[1.0, 0.0, 0.0, 0.0]]
+    assert payload["basis_spec"] == _translation_generator_basis_spec()
+    json.dumps(payload)
+
+
+def test_generator_family_accepts_canonical_family_payload() -> None:
+    payload = {
+        "schema_version": "0.2",
+        "parameterization": "polynomial_translation_affine",
+        "coefficients": [[1.0, 0.0, 0.0, 0.0]],
+        "basis_spec": _translation_generator_basis_spec(),
+        "normalization": "l2_unit",
+        "diagnostics": {},
+    }
+
+    generator = GeneratorFamily.from_dict(payload)
+
+    assert generator.schema_version == "0.2"
+    np.testing.assert_allclose(generator.coefficients, np.array([[1.0, 0.0, 0.0, 0.0]], dtype=float))
+    assert generator.basis_spec == _translation_generator_basis_spec()
+
+
+def test_generator_family_from_dict_treats_missing_or_null_diagnostics_as_empty_mapping() -> None:
+    payload = {
+        "schema_version": "0.2",
+        "parameterization": "polynomial_translation_affine",
+        "coefficients": [[1.0, 0.0, 0.0, 0.0]],
+        "basis_spec": _translation_generator_basis_spec(),
+        "normalization": "l2_unit",
+        "diagnostics": None,
+    }
+
+    generator = GeneratorFamily.from_dict(payload)
+
+    assert generator.diagnostics == {}
+
+    del payload["diagnostics"]
+    generator = GeneratorFamily.from_dict(payload)
+
+    assert generator.diagnostics == {}
+
+
+def test_generator_family_from_dict_rejects_non_mapping_diagnostics() -> None:
+    with pytest.raises(SchemaValidationError, match="diagnostics must be a mapping"):
+        GeneratorFamily.from_dict(
+            {
+                "schema_version": "0.2",
+                "parameterization": "polynomial_translation_affine",
+                "coefficients": [[1.0, 0.0, 0.0, 0.0]],
+                "basis_spec": _translation_generator_basis_spec(),
+                "normalization": "l2_unit",
+                "diagnostics": "not-a-mapping",
+            }
+        )
+
+
+def test_generator_family_from_dict_rejects_non_sequence_generator_names() -> None:
+    with pytest.raises(SchemaValidationError, match="generator_names must be a list or tuple"):
+        GeneratorFamily.from_dict(
+            {
+                "schema_version": "0.2",
+                "parameterization": "polynomial_translation_affine",
+                "coefficients": [[1.0, 0.0, 0.0, 0.0]],
+                "basis_spec": _translation_generator_basis_spec(),
+                "normalization": "l2_unit",
+                "diagnostics": {},
+                "generator_names": "gen",
+            }
+        )
+
+
+def test_generator_family_rejects_missing_basis_spec_on_direct_construction() -> None:
+    with pytest.raises(SchemaValidationError, match="basis_spec must be provided"):
+        GeneratorFamily(
+            parameterization="polynomial_translation_affine",
+            coefficients=np.array([[1.0, 0.0, 0.0, 0.0]]),
+            normalization="l2_unit",
+            diagnostics={},
+        )
+
+
+def test_generator_family_rejects_missing_basis_spec_on_non_legacy_payload() -> None:
+    with pytest.raises(SchemaValidationError, match="basis_spec is required"):
+        GeneratorFamily.from_dict(
+            {
+                "schema_version": "0.2",
+                "parameterization": "polynomial_translation_affine",
+                "coefficients": [[1.0, 0.0, 0.0, 0.0]],
+                "normalization": "l2_unit",
+                "diagnostics": {},
+            }
+        )
+
+
+def test_generator_family_rejects_incompatible_coefficient_shape_for_basis_spec() -> None:
+    with pytest.raises(ShapeValidationError, match="coefficients width must match"):
+        GeneratorFamily(
+            parameterization="polynomial_translation_affine",
+            coefficients=np.array([[1.0, 0.0, 0.0]]),
+            basis_spec=_translation_generator_basis_spec(),
+            normalization="l2_unit",
+            diagnostics={},
+        )
+
+
+def test_generator_family_rejects_invalid_component_ordering() -> None:
+    basis_spec = _translation_generator_basis_spec()
+    basis_spec["component_ordering"] = ["tau"]
+
+    with pytest.raises(SchemaValidationError, match="component_ordering"):
+        GeneratorFamily(
+            parameterization="polynomial_translation_affine",
+            coefficients=np.array([[1.0, 0.0, 0.0, 0.0]]),
+            basis_spec=basis_spec,
+            normalization="l2_unit",
+            diagnostics={},
+        )
+
+
+def test_generator_family_rejects_invalid_term_ordering() -> None:
+    basis_spec = _translation_generator_basis_spec()
+    basis_spec["term_ordering"] = ["t", "1", "x", "u"]
+
+    with pytest.raises(SchemaValidationError, match="term_ordering"):
+        GeneratorFamily(
+            parameterization="polynomial_translation_affine",
+            coefficients=np.array([[1.0, 0.0, 0.0, 0.0]]),
+            basis_spec=basis_spec,
+            normalization="l2_unit",
+            diagnostics={},
+        )
+
+
+def test_generator_family_rejects_duplicate_component_names() -> None:
+    basis_spec = _translation_generator_basis_spec()
+    basis_spec["component_names"] = ["xi", "xi"]
+
+    with pytest.raises(SchemaValidationError, match="component_names"):
+        GeneratorFamily(
+            parameterization="polynomial_translation_affine",
+            coefficients=np.array([[1.0] * 8]),
+            basis_spec=basis_spec,
+            normalization="l2_unit",
+            diagnostics={},
+        )
+
+
+def test_generator_family_rejects_duplicate_basis_term_labels() -> None:
+    basis_spec = _translation_generator_basis_spec()
+    basis_spec["basis_terms"][1]["label"] = "1"
+    basis_spec["term_ordering"] = ["1", "1", "x", "u"]
+
+    with pytest.raises(SchemaValidationError, match="labels must be unique"):
+        GeneratorFamily(
+            parameterization="polynomial_translation_affine",
+            coefficients=np.array([[1.0, 0.0, 0.0, 0.0]]),
+            basis_spec=basis_spec,
+            normalization="l2_unit",
+            diagnostics={},
+        )
+
+
+def test_generator_family_rejects_negative_basis_term_power() -> None:
+    basis_spec = _translation_generator_basis_spec()
+    basis_spec["basis_terms"][0]["powers"] = [-1, 0, 0]
+
+    with pytest.raises(SchemaValidationError, match="nonnegative integers"):
+        GeneratorFamily(
+            parameterization="polynomial_translation_affine",
+            coefficients=np.array([[1.0, 0.0, 0.0, 0.0]]),
+            basis_spec=basis_spec,
+            normalization="l2_unit",
+            diagnostics={},
+        )
+
+
+def test_generator_family_rejects_mismatched_generator_names_length() -> None:
+    with pytest.raises(ShapeValidationError, match="generator_names length must match"):
+        GeneratorFamily(
+            parameterization="polynomial_translation_affine",
+            coefficients=np.array([[1.0, 0.0, 0.0, 0.0]]),
+            basis_spec=_translation_generator_basis_spec(),
+            normalization="l2_unit",
+            generator_names=["g0", "g1"],
+            diagnostics={},
         )
 
 

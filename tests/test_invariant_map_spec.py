@@ -6,14 +6,16 @@ import numpy as np
 import pytest
 
 from pdelie import GeneratorFamily, InvariantMapSpec, SchemaValidationError
+from pdelie.contracts import _translation_generator_basis_spec
 
 
 def make_translation_generator() -> GeneratorFamily:
     return GeneratorFamily(
         parameterization="polynomial_translation_affine",
-        coefficients=np.array([1.0, 0.0, 0.0, 0.0]),
+        coefficients=np.array([[1.0, 0.0, 0.0, 0.0]]),
+        basis_spec=_translation_generator_basis_spec(),
         normalization="l2_unit",
-        diagnostics={"basis": ["1", "t", "x", "u"]},
+        diagnostics={},
     )
 
 

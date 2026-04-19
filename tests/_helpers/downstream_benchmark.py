@@ -6,6 +6,7 @@ from collections.abc import Callable
 import numpy as np
 
 from pdelie import FieldBatch, GeneratorFamily, InvariantMapSpec
+from pdelie.contracts import _translation_generator_basis_spec
 from pdelie.data import generate_burgers_1d_field_batch, generate_heat_1d_field_batch
 from pdelie.discovery import to_pysindy_trajectories
 from pdelie.invariants import InvariantApplier
@@ -121,9 +122,10 @@ def _require_downstream_dependencies():
 def _known_translation_generator_metadata() -> dict[str, object]:
     generator = GeneratorFamily(
         parameterization="polynomial_translation_affine",
-        coefficients=np.array([1.0, 0.0, 0.0, 0.0]),
+        coefficients=np.array([[1.0, 0.0, 0.0, 0.0]]),
+        basis_spec=_translation_generator_basis_spec(),
         normalization="l2_unit",
-        diagnostics={"basis": ["1", "t", "x", "u"]},
+        diagnostics={},
     )
     return generator.to_dict()
 

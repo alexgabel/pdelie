@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from pdelie.contracts import FieldBatch, GeneratorFamily
+from pdelie.contracts import FieldBatch, GeneratorFamily, _translation_generator_basis_spec
 from pdelie.residuals.base import ResidualEvaluator
 from pdelie.symmetry.parameterization.polynomial_translation import (
     DEFAULT_TRANSLATION_SPAN_TOLERANCE,
@@ -67,7 +67,8 @@ def fit_translation_generator(
 
     return GeneratorFamily(
         parameterization="polynomial_translation_affine",
-        coefficients=coefficients,
+        coefficients=coefficients.reshape(1, -1),
+        basis_spec=_translation_generator_basis_spec(),
         normalization="l2_unit",
         diagnostics={
             "basis": list(POLYNOMIAL_TRANSLATION_BASIS),

@@ -52,10 +52,10 @@ This milestone is representation-only.
 - canonical `schema_version` for family output is `"0.2"`
 - canonical `coefficients` shape is 2D
 - canonical `basis_spec` is required in `v0.4` output
-- legacy 1D translation payloads remain accepted as backward-compatible input
+- direct construction without `basis_spec` is invalid
 - canonical core is `parameterization + coefficients + basis_spec + normalization + optional generator_names`
 - `to_dict()` always emits canonical `"0.2"` output
-- `from_dict()` performs legacy translation upgrade only in the explicit supported case
+- `from_dict()` performs legacy translation upgrade only for the explicit `0.1` single-generator translation payload
 - diagnostics are non-authoritative
 - no fitting in M1
 - no symbolic display in M1
@@ -68,7 +68,7 @@ This milestone is representation-only.
 - `GeneratorFamily` contract update with `basis_spec`
 - explicit schema-version policy note prepared for `CONTRACTS_AND_DEFAULTS.md`
 - validation rules for canonical family-shaped coefficients
-- explicit legacy translation upgrade path
+- explicit `from_dict()`-only legacy translation upgrade path
 - deterministic basis ordering rules
 - explicit component/term interpretation rules
 - regression protection for current translation-based uses
@@ -81,7 +81,8 @@ Milestone 1 is complete only if:
 - existing single-generator translation workflows still validate
 - canonical family serialization is defined and tested
 - legacy input upgrades cleanly to canonical family output
-- missing or invalid `basis_spec` fails with typed validation errors
+- direct construction missing `basis_spec` fails with typed validation errors
+- non-legacy payloads missing `basis_spec` fail with typed validation errors
 - diagnostics remain non-authoritative
 - no new canonical object is introduced
 - no public downstream or invariant semantics are broadened
