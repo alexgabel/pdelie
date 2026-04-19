@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.0
+
+First final release for the frozen V0.3 stable core.
+
+- functionally identical to `0.3.0rc1` unless a release blocker required a minimal fix
+- finalizes the `0.3.0rc1` release surface for the invariant/downstream utility slice
+
 ## 0.3.0rc1
 
 First release candidate for the frozen V0.3 invariant/downstream utility core.
