@@ -49,12 +49,12 @@ This milestone is representation-only.
 ### Frozen Decisions
 
 - `GeneratorFamily` remains the stable canonical object
-- canonical `schema_version` for family output is `0.2`
+- canonical `schema_version` for family output is `"0.2"`
 - canonical `coefficients` shape is 2D
 - canonical `basis_spec` is required in `v0.4` output
 - legacy 1D translation payloads remain accepted as backward-compatible input
 - canonical core is `parameterization + coefficients + basis_spec + normalization + optional generator_names`
-- `to_dict()` always emits canonical `0.2` output
+- `to_dict()` always emits canonical `"0.2"` output
 - `from_dict()` performs legacy translation upgrade only in the explicit supported case
 - diagnostics are non-authoritative
 - no fitting in M1
