@@ -338,7 +338,7 @@ Rotation-style fixtures must be coefficient-level algebra fixtures, not PDE/data
 - controlled algebraic fixtures
 
 ### Milestone 4 — Closure diagnostics
-**Status:** Active
+**Status:** Complete
 
 - exact polynomial Lie brackets where supported
 - deterministic fallback where needed and kept minimal
@@ -347,11 +347,17 @@ Rotation-style fixtures must be coefficient-level algebra fixtures, not PDE/data
 - verification-aware interpretation labels
 
 ### Milestone 5 — Minimal visualization
-**Status:** Planned
+**Status:** Active
 
 - optional `[viz]` extra only
-- visualization consumes existing runtime reports only
+- visualization consumes existing canonical objects and runtime reports only
 - no visualization-specific contracts
+- coefficient-bar renderer for `GeneratorFamily`
+- symbolic summary renderer using the frozen M2 symbolic display
+- verification-curve renderer for `VerificationReport`
+- span-diagnostics renderer for the frozen M3 report shape
+- closure-diagnostics renderer for the frozen M4 report shape
+- no transformed-field plots, rollout heatmaps, animation, or interactive backends
 - explicitly deferrable first if M1–M4 take longer than expected
 
 ### Milestone 6 — Algebra-span release gate
