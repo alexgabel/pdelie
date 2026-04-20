@@ -1,14 +1,16 @@
 from __future__ import annotations
 
 import math
-from typing import Sequence
+from typing import TYPE_CHECKING, Sequence
 
-import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.figure import Figure
 
 from pdelie.contracts import GeneratorFamily
 from pdelie.symmetry import render_generator_family
+from pdelie.viz._matplotlib import require_pyplot
+
+if TYPE_CHECKING:
+    from matplotlib.figure import Figure
 
 _ZERO_DISPLAY_TOL = 1e-12
 
@@ -79,6 +81,7 @@ def plot_generator_coefficients(
 ) -> Figure:
     """Plot stored generator coefficients as deterministic horizontal bar charts."""
 
+    plt = require_pyplot()
     generator.validate()
     labels = _flattened_basis_labels(generator)
     rows = _display_rows(np.asarray(generator.coefficients, dtype=float), normalize_for_display=normalize_for_display)
@@ -139,6 +142,7 @@ def plot_generator_symbolic_summary(
 ) -> Figure:
     """Render stored generators as symbolic text inside a simple figure."""
 
+    plt = require_pyplot()
     generator.validate()
     lines: Sequence[str] = render_generator_family(generator, display_normalization=display_normalization)
     figure, axis = plt.subplots(figsize=_symbolic_summary_figure_size(lines))

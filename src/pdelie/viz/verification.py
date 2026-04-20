@@ -1,14 +1,18 @@
 from __future__ import annotations
 
-import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
+from typing import TYPE_CHECKING
 
 from pdelie.contracts import VerificationReport
+from pdelie.viz._matplotlib import require_pyplot
+
+if TYPE_CHECKING:
+    from matplotlib.figure import Figure
 
 
 def plot_verification_curve(report: VerificationReport) -> Figure:
     """Plot the held-out verification curve for an existing VerificationReport."""
 
+    plt = require_pyplot()
     report.validate()
 
     figure, axis = plt.subplots(figsize=(6.5, 4.0))

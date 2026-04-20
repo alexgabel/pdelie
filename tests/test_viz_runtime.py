@@ -283,6 +283,76 @@ def test_plot_span_diagnostics_rejects_malformed_report() -> None:
         plot_span_diagnostics({})
 
 
+def test_plot_span_diagnostics_rejects_missing_conditioning_fields() -> None:
+    reference = _make_generator(
+        np.array([[1.0, 0.0, 0.0, 0.0]], dtype=float),
+        basis_spec=_translation_generator_basis_spec(),
+        parameterization="polynomial_translation_affine",
+    )
+    candidate = _make_generator(
+        np.array([[0.0, 1.0, 0.0, 0.0]], dtype=float),
+        basis_spec=_translation_generator_basis_spec(),
+        parameterization="polynomial_translation_affine",
+    )
+    report = compare_generator_spans(reference, candidate)
+    malformed = dict(report)
+    malformed["conditioning"] = {
+        "ambient_metric": report["conditioning"]["ambient_metric"],
+        "reference_span": report["conditioning"]["reference_span"],
+    }
+
+    with pytest.raises(SchemaValidationError, match="conditioning'.*missing required keys"):
+        plot_span_diagnostics(malformed)
+
+
+def test_plot_span_diagnostics_rejects_non_numeric_conditioning_values() -> None:
+    reference = _make_generator(
+        np.array([[1.0, 0.0, 0.0, 0.0]], dtype=float),
+        basis_spec=_translation_generator_basis_spec(),
+        parameterization="polynomial_translation_affine",
+    )
+    candidate = _make_generator(
+        np.array([[0.0, 1.0, 0.0, 0.0]], dtype=float),
+        basis_spec=_translation_generator_basis_spec(),
+        parameterization="polynomial_translation_affine",
+    )
+    report = compare_generator_spans(reference, candidate)
+    malformed = dict(report)
+    malformed["conditioning"] = dict(report["conditioning"])
+    malformed["conditioning"]["candidate_span"] = "not-a-number"
+
+    with pytest.raises(SchemaValidationError, match="conditioning\\.candidate_span"):
+        plot_span_diagnostics(malformed)
+
+
 def test_plot_closure_diagnostics_rejects_malformed_report() -> None:
     with pytest.raises(SchemaValidationError, match="missing required keys"):
         plot_closure_diagnostics({})
+
+
+def test_plot_closure_diagnostics_rejects_missing_jacobi_mode() -> None:
+    generator = _make_generator(
+        np.array([[1.0, 0.0], [0.0, 1.0]], dtype=float),
+        basis_spec=_x_basis_spec(),
+    )
+    report = diagnose_generator_family_closure(generator)
+    malformed = dict(report)
+    malformed["jacobi"] = dict(report["jacobi"])
+    malformed["jacobi"].pop("mode")
+
+    with pytest.raises(SchemaValidationError, match="'summary', 'triple_residuals', and 'mode'"):
+        plot_closure_diagnostics(malformed)
+
+
+def test_plot_closure_diagnostics_rejects_invalid_jacobi_mode_type() -> None:
+    generator = _make_generator(
+        np.array([[1.0, 0.0], [0.0, 1.0]], dtype=float),
+        basis_spec=_x_basis_spec(),
+    )
+    report = diagnose_generator_family_closure(generator)
+    malformed = dict(report)
+    malformed["jacobi"] = dict(report["jacobi"])
+    malformed["jacobi"]["mode"] = 1
+
+    with pytest.raises(SchemaValidationError, match="field 'mode' must be a non-empty string"):
+        plot_closure_diagnostics(malformed)

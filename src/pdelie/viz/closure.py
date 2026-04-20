@@ -1,12 +1,16 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+from typing import TYPE_CHECKING
 
-import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.figure import Figure
 
 from pdelie.errors import SchemaValidationError
+from pdelie.viz._matplotlib import require_pyplot
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
 
 _ZERO_RESIDUAL_TOL = 1e-12
 _NEAR_ZERO_RESIDUAL_TOL = 1e-6
@@ -31,7 +35,7 @@ def _matrix_status(matrix: np.ndarray) -> str:
     return f"Nonzero residuals present (max {_format_residual(max_value)})"
 
 
-def _annotate_residual_matrix(axis: plt.Axes, matrix: np.ndarray) -> None:
+def _annotate_residual_matrix(axis: Axes, matrix: np.ndarray) -> None:
     if matrix.size > _ANNOTATION_CELL_LIMIT:
         return
     threshold = 0.5
@@ -125,8 +129,12 @@ def _validate_closure_report(
             raise SchemaValidationError(
                 f"Closure diagnostics section '{section_name}' must include 'summary' and 'pairwise_residuals'."
             )
-    if "summary" not in jacobi or "triple_residuals" not in jacobi:
-        raise SchemaValidationError("Closure diagnostics section 'jacobi' must include 'summary' and 'triple_residuals'.")
+    if "summary" not in jacobi or "triple_residuals" not in jacobi or "mode" not in jacobi:
+        raise SchemaValidationError(
+            "Closure diagnostics section 'jacobi' must include 'summary', 'triple_residuals', and 'mode'."
+        )
+    if not isinstance(jacobi["mode"], str) or not jacobi["mode"]:
+        raise SchemaValidationError("Closure diagnostics section 'jacobi' field 'mode' must be a non-empty string.")
 
     structure_constants = _require_structure_constants(report)
     return closure, antisymmetry, jacobi, structure_constants
@@ -135,6 +143,7 @@ def _validate_closure_report(
 def plot_closure_diagnostics(report: Mapping[str, object]) -> Figure:
     """Plot summary heatmaps for an existing closure-diagnostics report."""
 
+    plt = require_pyplot()
     if not isinstance(report, Mapping):
         raise SchemaValidationError("Closure diagnostics input must be a mapping.")
 

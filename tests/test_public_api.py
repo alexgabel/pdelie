@@ -1,6 +1,10 @@
 from __future__ import annotations
 
 import importlib
+import sys
+
+import numpy as np
+import pytest
 
 import pdelie
 from pdelie import (
@@ -100,3 +104,31 @@ def test_viz_package_runtime_api_matches_frozen_m5_surface() -> None:
     assert hasattr(viz_module, "plot_verification_curve")
     assert hasattr(viz_module, "plot_span_diagnostics")
     assert hasattr(viz_module, "plot_closure_diagnostics")
+
+
+def test_viz_package_import_succeeds_without_matplotlib_until_renderer_use(monkeypatch: pytest.MonkeyPatch) -> None:
+    original_import_module = importlib.import_module
+
+    def _fake_import_module(name: str, package: str | None = None):
+        if name == "matplotlib" or name.startswith("matplotlib."):
+            raise ModuleNotFoundError("No module named 'matplotlib'", name="matplotlib")
+        return original_import_module(name, package)
+
+    for module_name in list(sys.modules):
+        if module_name == "pdelie.viz" or module_name.startswith("pdelie.viz."):
+            sys.modules.pop(module_name)
+
+    monkeypatch.setattr(importlib, "import_module", _fake_import_module)
+
+    viz_module = importlib.import_module("pdelie.viz")
+    report = VerificationReport(
+        norm="relative_l2",
+        epsilon_values=np.logspace(-4, -1, 7),
+        error_curve=np.logspace(-7, -4, 7),
+        classification="exact",
+        diagnostics={},
+    )
+
+    assert hasattr(viz_module, "plot_verification_curve")
+    with pytest.raises(ImportError, match="Matplotlib is required for pdelie\\.viz"):
+        viz_module.plot_verification_curve(report)

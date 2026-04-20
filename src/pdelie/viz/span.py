@@ -1,13 +1,15 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Any
+from typing import TYPE_CHECKING
 
-import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.figure import Figure
 
 from pdelie.errors import SchemaValidationError
+from pdelie.viz._matplotlib import require_pyplot
+
+if TYPE_CHECKING:
+    from matplotlib.figure import Figure
 
 _ZERO_ANGLE_TOL = 1e-12
 _ANGLE_LABEL_MAX_COUNT = 10
@@ -19,6 +21,13 @@ def _format_float(value: float) -> str:
 
 def _angle_label_fontsize(count: int) -> float:
     return max(7.0, 9.0 - 0.15 * max(count - 4, 0))
+
+
+def _require_float(value: object, name: str) -> float:
+    try:
+        return float(value)
+    except (TypeError, ValueError) as exc:
+        raise SchemaValidationError(f"Span diagnostics report field '{name}' must be numeric.") from exc
 
 
 def _summary_lines(
@@ -97,10 +106,24 @@ def _validate_span_report(report: Mapping[str, object]) -> None:
     if "summary" not in projection_residual:
         raise SchemaValidationError("Span diagnostics report field 'projection_residual' must include 'summary'.")
 
+    conditioning = report["conditioning"]
+    if not isinstance(conditioning, Mapping):
+        raise SchemaValidationError("Span diagnostics report field 'conditioning' must be a mapping.")
+    required_conditioning_keys = ("ambient_metric", "reference_span", "candidate_span")
+    missing_conditioning = [key for key in required_conditioning_keys if key not in conditioning]
+    if missing_conditioning:
+        raise SchemaValidationError(
+            "Span diagnostics report field 'conditioning' is missing required keys: "
+            f"{missing_conditioning}."
+        )
+    for key in required_conditioning_keys:
+        _require_float(conditioning[key], f"conditioning.{key}")
+
 
 def plot_span_diagnostics(report: Mapping[str, object]) -> Figure:
     """Plot principal angles and projection-residual summary from an existing span report."""
 
+    plt = require_pyplot()
     if not isinstance(report, Mapping):
         raise SchemaValidationError("Span diagnostics input must be a mapping.")
     _validate_span_report(report)
