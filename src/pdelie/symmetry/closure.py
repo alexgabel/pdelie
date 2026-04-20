@@ -9,6 +9,7 @@ import numpy as np
 
 from pdelie.contracts import GeneratorFamily, VerificationReport
 from pdelie.errors import SchemaValidationError, ScopeValidationError, ShapeValidationError
+from pdelie.symmetry._polynomial_metric import _monomial_average_inner_product
 
 
 _SUPPORTED_INNER_PRODUCTS = frozenset({"normalized_polynomial_l2"})
@@ -17,6 +18,7 @@ _RANK_TOL = 1e-10
 _METRIC_EIGEN_TOL = 1e-12
 _RESIDUAL_EPS = 1e-12
 _SAMPLED_GRID_POINTS_PER_AXIS = 5
+_MAX_SAMPLED_GRID_POINTS = 15625
 _FALLBACK_DOMAIN_BOUND = 1.0
 _SYMMETRY_ALGEBRA_CLASSIFICATIONS = frozenset({"exact", "approximate"})
 
@@ -226,17 +228,6 @@ def _lie_bracket(
         bracket[output_component] = _clean_polynomial(component_bracket)
     return bracket
 
-
-def _monomial_average_inner_product(powers_a: tuple[int, ...], powers_b: tuple[int, ...]) -> float:
-    value = 1.0
-    for power_a, power_b in zip(powers_a, powers_b):
-        total_power = int(power_a) + int(power_b)
-        if total_power % 2 == 1:
-            return 0.0
-        value *= 1.0 / float(total_power + 1)
-    return value
-
-
 def _polynomial_inner_product(left: _Polynomial, right: _Polynomial) -> float:
     total = 0.0
     for left_powers, left_coefficient in left.items():
@@ -302,6 +293,15 @@ def _normalized_domain(variables: Sequence[str]) -> dict[str, object]:
 
 
 def _tensor_grid(variables: Sequence[str]) -> np.ndarray:
+    num_variables = len(variables)
+    total_points = _SAMPLED_GRID_POINTS_PER_AXIS ** num_variables
+    if total_points > _MAX_SAMPLED_GRID_POINTS:
+        raise ScopeValidationError(
+            "sampled_projection fallback is only supported up to "
+            f"{_MAX_SAMPLED_GRID_POINTS} total tensor-grid points in V0.4 Milestone 4; "
+            f"got {total_points} points for {num_variables} variables with "
+            f"{_SAMPLED_GRID_POINTS_PER_AXIS} points per axis."
+        )
     axes = [
         np.linspace(-_FALLBACK_DOMAIN_BOUND, _FALLBACK_DOMAIN_BOUND, _SAMPLED_GRID_POINTS_PER_AXIS, dtype=float)
         for _ in variables

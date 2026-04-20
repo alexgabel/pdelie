@@ -56,6 +56,21 @@ def _velocity_basis_spec(labels: list[str] | None = None) -> dict[str, object]:
     }
 
 
+def _high_dim_velocity_basis_spec(*, labels: list[str], num_variables: int = 7) -> dict[str, object]:
+    variables = [f"x{index}" for index in range(num_variables)]
+    return {
+        "variables": variables,
+        "component_names": ["velocity"],
+        "basis_terms": [
+            {"label": labels[0], "powers": [0] * num_variables},
+            {"label": labels[1], "powers": [1] + [0] * (num_variables - 1)},
+        ],
+        "component_ordering": ["velocity"],
+        "term_ordering": list(labels),
+        "layout": "component_major",
+    }
+
+
 def _make_generator(
     coefficients: np.ndarray,
     *,
@@ -212,6 +227,34 @@ def test_diagnose_generator_family_closure_sampled_projection_is_deterministic()
     np.testing.assert_allclose(first["structure_constants"]["tensor"], second["structure_constants"]["tensor"], atol=1e-12)
     np.testing.assert_allclose(first["closure"]["pairwise_residuals"], second["closure"]["pairwise_residuals"], atol=1e-12)
     np.testing.assert_allclose(first["antisymmetry"]["pairwise_residuals"], second["antisymmetry"]["pairwise_residuals"], atol=1e-12)
+
+
+def test_diagnose_generator_family_closure_rejects_forced_sampled_projection_when_tensor_grid_exceeds_cap() -> None:
+    generator = _make_generator(
+        np.array([[1.0, 0.0]], dtype=float),
+        basis_spec=_high_dim_velocity_basis_spec(labels=["1", "x0"]),
+    )
+
+    with pytest.raises(ScopeValidationError, match=r"15625.*78125.*7 variables.*5 points per axis"):
+        diagnose_generator_family_closure(
+            generator,
+            component_targets={"velocity": "x0"},
+            computation_mode="sampled_projection",
+        )
+
+
+def test_diagnose_generator_family_closure_auto_mode_raises_same_error_when_fallback_grid_exceeds_cap() -> None:
+    generator = _make_generator(
+        np.array([[1.0, 0.0]], dtype=float),
+        basis_spec=_high_dim_velocity_basis_spec(labels=["offset", "linear"]),
+    )
+
+    with pytest.raises(ScopeValidationError, match=r"15625.*78125.*7 variables.*5 points per axis"):
+        diagnose_generator_family_closure(
+            generator,
+            component_targets={"velocity": "x0"},
+            computation_mode="auto",
+        )
 
 
 @pytest.mark.parametrize(

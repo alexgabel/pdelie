@@ -8,6 +8,7 @@ import numpy as np
 
 from pdelie.contracts import GeneratorFamily
 from pdelie.errors import SchemaValidationError, ShapeValidationError
+from pdelie.symmetry._polynomial_metric import _monomial_average_inner_product
 
 
 _SUPPORTED_INNER_PRODUCTS = frozenset({"normalized_polynomial_l2"})
@@ -38,17 +39,6 @@ def _require_structurally_equivalent_basis_spec(
         raise SchemaValidationError(
             "compare_generator_spans requires structurally equivalent basis_spec semantics."
         )
-
-
-def _monomial_average_inner_product(powers_a: tuple[int, ...], powers_b: tuple[int, ...]) -> float:
-    value = 1.0
-    for power_a, power_b in zip(powers_a, powers_b):
-        total_power = int(power_a) + int(power_b)
-        if total_power % 2 == 1:
-            return 0.0
-        value *= 1.0 / float(total_power + 1)
-    return value
-
 
 def _basis_term_gram_matrix(generator: GeneratorFamily) -> np.ndarray:
     basis_terms = [
