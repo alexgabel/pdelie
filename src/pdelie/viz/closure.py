@@ -67,18 +67,21 @@ def plot_closure_diagnostics(report: Mapping[str, object]) -> Figure:
     if closure_matrix.shape != antisymmetry_matrix.shape:
         raise SchemaValidationError("Closure and antisymmetry pairwise_residuals must have matching shapes.")
 
-    figure, axes = plt.subplots(1, 3, figsize=(12.0, 3.8))
+    figure, axes = plt.subplots(1, 3, figsize=(12.0, 3.8), constrained_layout=True)
 
     closure_axis, antisymmetry_axis, jacobi_axis = axes
-    closure_axis.imshow(closure_matrix, cmap="viridis", aspect="auto")
+    closure_image = closure_axis.imshow(closure_matrix, cmap="viridis", aspect="auto", vmin=0.0, vmax=1.0)
     closure_axis.set_title("Closure")
     closure_axis.set_xlabel("j")
     closure_axis.set_ylabel("i")
 
-    antisymmetry_axis.imshow(antisymmetry_matrix, cmap="viridis", aspect="auto")
+    antisymmetry_axis.imshow(antisymmetry_matrix, cmap="viridis", aspect="auto", vmin=0.0, vmax=1.0)
     antisymmetry_axis.set_title("Antisymmetry")
     antisymmetry_axis.set_xlabel("j")
     antisymmetry_axis.set_ylabel("i")
+
+    shared_colorbar = figure.colorbar(closure_image, ax=[closure_axis, antisymmetry_axis], fraction=0.046, pad=0.04)
+    shared_colorbar.set_label("Residual")
 
     jacobi_axis.set_axis_off()
     jacobi_axis.set_title("Jacobi")
@@ -101,7 +104,6 @@ def plot_closure_diagnostics(report: Mapping[str, object]) -> Figure:
     else:
         jacobi_axis.text(0.02, 0.62, "No triple residuals", transform=jacobi_axis.transAxes, va="top")
 
-    figure.tight_layout()
     return figure
 
 
