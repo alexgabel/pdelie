@@ -2,8 +2,8 @@
 
 ## Release Target
 
-- package version: `0.4.0rc1`
-- git tag: `v0.4.0rc1`
+- package version: `0.4.0`
+- git tag: `v0.4.0`
 
 ## Done
 
@@ -35,13 +35,13 @@
 - new canonical stable objects beyond the current V0.4 slice
 - paper-specific experiment logic
 
-## Release Candidate View
+## Final Release View
 
-The current repository is ready for the first `0.4.0rc1` release candidate for the frozen V0.4 stable core, subject to the release-path checks passing on the release branch and CI passing on the release PR.
+The current repository is ready for the final `0.4.0` release for the frozen V0.4 stable core, subject to the release-path checks passing on the release branch and CI passing on the release PR.
 
 There are no known scientific-scope blockers inside the current V0.4 slice.
 
-`0.4.0rc1` is the first release candidate for the completed V0.4 milestone line. Any post-rc changes should be minimal blocker fixes only.
+`0.4.0` is functionally identical to `0.4.0rc1` unless a release blocker required a minimal fix.
 
 ## Packaging And Public API Notes
 
@@ -56,7 +56,7 @@ There are no known scientific-scope blockers inside the current V0.4 slice.
 
 ## Final Tag Checklist
 
-Before tagging `v0.4.0rc1`:
+Before tagging `v0.4.0`:
 
 - run `python -m pytest` from the repo root
 - run `python -m build --sdist --wheel`
@@ -64,4 +64,4 @@ Before tagging `v0.4.0rc1`:
 - run `python -m pdelie.examples.heat_vertical_slice`
 - confirm GitHub Actions jobs `v0_4-release-gate`, `editable-tests`, and `package-smoke` pass on the release PR commit
 - merge the release PR into `main`
-- tag the merged `main` commit as `v0.4.0rc1`
+- tag the merged `main` commit as `v0.4.0`
