@@ -40,6 +40,10 @@ Runtime public API for the frozen `v0.4` Milestone 3 slice:
 
 - `pdelie.symmetry.compare_generator_spans` for runtime-only algebraic span comparison of canonical polynomial `GeneratorFamily` objects under the frozen normalized polynomial inner product
 
+Runtime public API for the frozen `v0.4` Milestone 4 slice:
+
+- `pdelie.symmetry.diagnose_generator_family_closure` for runtime-only closure, structure-constant, and algebra-diagnostic reports on canonical polynomial `GeneratorFamily` objects
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 

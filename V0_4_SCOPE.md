@@ -250,29 +250,44 @@ Additional runtime diagnostic fields may be included, but are not frozen in `v0.
 
 Preferred mode:
 
-- exact polynomial coefficient-space Lie bracket when supported
+- exact polynomial Lie brackets for the current monomial algebraic/runtime polynomial scope
 
 Fallback mode:
 
-- sampled/projection closure only when exact mode is unavailable
+- deterministic sampled/projection closure only when exact mode is unavailable or explicitly forced
 
-Every closure report must store:
+Exact-mode policy:
 
-- computation mode
-- domain or sample grid
-- variable scaling
-- component weights
-- projection method
-- residual normalization
-- conditioning
-- warning flags for ill-conditioned structure-constant estimation
+- closure diagnostics use raw vector-field brackets
+- exact brackets may use an internal expanded polynomial representation when bracket monomials leave the stored family basis
+- that expanded bracket representation is runtime-only and not a canonical object or stable basis contract
+- projected brackets determine reported structure constants and closure diagnostics
+- exact mode is available only for the current monomial basis-term encoding; richer or noncanonical term encodings must reject exact mode or downgrade to fallback
 
 Interpretation rule:
 
-- closure diagnostics on verified symmetry generators may be called **symmetry-algebra diagnostics**
-- closure diagnostics on unverified generators are only **vector-field algebra diagnostics**
+- `symmetry_algebra_diagnostics` means closure diagnostics on a family with supplied symmetry-validity evidence
+- it does not claim a full family symmetry proof or full per-generator coverage in `v0.4`
+- `symmetry_algebra_diagnostics` requires non-empty supplied verification evidence whose classifications are all `exact` or `approximate`
+- otherwise the label is `vector_field_algebra_diagnostics`
 - closure is interpretive support, never primary evidence
 - finite-flow validity, residual validity, and held-out verification remain primary
+
+Required core closure report fields:
+
+- interpretation_label
+- verification_classifications
+- inner_product
+- computation_mode
+- domain
+- component_weights
+- component_targets
+- family_rank
+- structure_constants
+- closure
+- antisymmetry
+- jacobi
+- conditioning
 
 ---
 
@@ -315,7 +330,7 @@ Rotation-style fixtures must be coefficient-level algebra fixtures, not PDE/data
 - no heuristic basis simplification helper in the completed M2 slice
 
 ### Milestone 3 — Span diagnostics
-**Status:** Active
+**Status:** Complete
 
 - principal angles
 - projection residual
@@ -323,10 +338,10 @@ Rotation-style fixtures must be coefficient-level algebra fixtures, not PDE/data
 - controlled algebraic fixtures
 
 ### Milestone 4 — Closure diagnostics
-**Status:** Planned
+**Status:** Active
 
 - exact polynomial Lie brackets where supported
-- deterministic fallback where needed
+- deterministic fallback where needed and kept minimal
 - structure constants
 - closure / antisymmetry / Jacobi diagnostics
 - verification-aware interpretation labels
