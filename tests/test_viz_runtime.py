@@ -173,8 +173,29 @@ def test_plot_span_diagnostics_accepts_frozen_m3_report_shape() -> None:
     assert isinstance(figure, Figure)
     assert len(figure.axes) == 2
     assert len(figure.axes[0].patches) == report["comparison_rank"]
+    assert figure.axes[0].get_ylim()[1] >= 90.0
     assert "degrees" in figure.axes[0].get_ylabel().lower()
     assert any("Projection residual" in text.get_text() for text in figure.axes[1].texts)
+    assert any("Ref -> Cand" in text.get_text() for text in figure.axes[1].texts)
+
+
+def test_plot_span_diagnostics_summarizes_multi_rank_cases_more_densely() -> None:
+    basis_spec = _x_basis_spec()
+    reference = _make_generator(
+        np.array([[1.0, 0.0], [0.0, 1.0]], dtype=float),
+        basis_spec=basis_spec,
+    )
+    candidate = _make_generator(
+        np.array([[1.0, 0.0], [1.0, 1.0]], dtype=float),
+        basis_spec=basis_spec,
+    )
+
+    figure = plot_span_diagnostics(compare_generator_spans(reference, candidate))
+
+    assert isinstance(figure, Figure)
+    assert len(figure.axes[0].patches) == 2
+    assert any("Angle list" in text.get_text() for text in figure.axes[1].texts)
+    assert any("Zero angles" in text.get_text() for text in figure.axes[1].texts)
 
 
 def test_plot_span_diagnostics_marks_zero_angle_bars_intentionally() -> None:
@@ -209,6 +230,33 @@ def test_plot_closure_diagnostics_accepts_frozen_m4_report_shape() -> None:
     assert figure.axes[3].get_ylabel() == "Residual"
     assert figure.axes[0].images[0].get_clim() == (0.0, 1.0)
     assert figure.axes[1].images[0].get_clim() == (0.0, 1.0)
+    assert any("All entries = 0" in text.get_text() for text in figure.axes[0].texts)
+    assert any("Mode: structure_constants" in text.get_text() for text in figure.axes[2].texts)
+
+
+def test_plot_closure_diagnostics_annotates_nontrivial_closed_families() -> None:
+    basis_spec = {
+        "variables": ["x"],
+        "component_names": ["xi"],
+        "basis_terms": [
+            {"label": "1", "powers": [0]},
+            {"label": "x", "powers": [1]},
+            {"label": "x^2", "powers": [2]},
+        ],
+        "component_ordering": ["xi"],
+        "term_ordering": ["1", "x", "x^2"],
+        "layout": "component_major",
+    }
+    generator = _make_generator(
+        np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]], dtype=float),
+        basis_spec=basis_spec,
+    )
+
+    figure = plot_closure_diagnostics(diagnose_generator_family_closure(generator))
+
+    assert isinstance(figure, Figure)
+    assert any(text.get_text() == "0" for text in figure.axes[0].texts)
+    assert any("Nonzero structure constants" in text.get_text() for text in figure.axes[2].texts)
 
 
 def test_plot_generator_coefficients_decimates_labels_for_wide_bases() -> None:
