@@ -1,15 +1,15 @@
 # PDELie — Execution Plan (V0.4)
 
-## Current Active Milestone
+## Current State
 
-**V0.4 Milestone 6 — Algebra-span release gate**
+**V0.4 feature milestones complete — pre-`0.4.0rc1` release preparation**
 
 This file is the active execution plan for the current `v0.4` release series.
 
 It should contain:
 
 - a short record of the completed `v0.3` release
-- the frozen plan for the current active milestone
+- the frozen record of the completed `v0.4` milestone line
 - milestone-specific rules and gates
 
 It should **not** redefine package contracts or roadmap commitments. Those belong in:
@@ -132,11 +132,13 @@ Run at minimum:
 - `pytest tests/test_v0_4_release_gate.py`
 - full `pytest`
 
+Milestone 6 is now complete. No further V0.4 feature milestones are planned before `0.4.0rc1`.
+
 ---
 
 ## Later Milestones
 
-Strict sequencing for `v0.4`:
+Feature milestone sequencing for `v0.4` is complete.
 
 Hard sequencing rules:
 
@@ -167,4 +169,4 @@ Hard sequencing rules:
 - Milestone 3: **COMPLETE**
 - Milestone 4: **COMPLETE**
 - Milestone 5: **COMPLETE**
-- Milestone 6: **ACTIVE**
+- Milestone 6: **COMPLETE**

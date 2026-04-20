@@ -361,7 +361,7 @@ Rotation-style fixtures must be coefficient-level algebra fixtures, not PDE/data
 - explicitly deferrable first if M1–M4 take longer than expected
 
 ### Milestone 6 — Algebra-span release gate
-**Status:** Active
+**Status:** Complete
 
 - one focused pytest release-gate module over the already-implemented M1–M5 behavior
 - one dedicated CI visibility job running only that release-gate module
