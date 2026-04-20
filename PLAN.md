@@ -2,7 +2,7 @@
 
 ## Current Active Milestone
 
-**V0.4 Milestone 5 — Minimal visualization suite**
+**V0.4 Milestone 6 — Algebra-span release gate**
 
 This file is the active execution plan for the current `v0.4` release series.
 
@@ -92,11 +92,51 @@ Run at minimum:
 
 ---
 
+## Milestone 6 — Algebra-Span Release Gate
+
+### Goal
+
+Turn the already-implemented V0.4 M1–M5 behavior into one explicit pytest+CI release gate without adding any new capabilities or changing any runtime semantics.
+
+### Frozen Decisions
+
+- M6 is a release-gate milestone only; it does not add new public APIs, canonical objects, or runtime behavior
+- M6 excludes downstream and SymPy behavior from the gate itself
+- the dedicated CI job may still install the standard `.[test]` extra; M6 does not claim total optional-dependency isolation
+- floating outputs in the release gate must use tolerant numeric checks; exact assertions are reserved for strings and small clearly algebraic fixtures
+- the dedicated M6 CI job is an explicit release-gate visibility job and does not replace the full editable/full-suite job
+- visualization smoke in M6 must use a non-interactive backend and must close figures cleanly
+
+### Deliverables
+
+- one focused `tests/test_v0_4_release_gate.py` module over frozen M1–M5 behavior
+- one dedicated `v0_4-release-gate` CI job that runs only the release-gate module
+
+### Acceptance Criteria
+
+Milestone 6 is complete only if:
+
+- legacy translation payloads still upgrade cleanly to canonical `GeneratorFamily`
+- canonical translation family serialization remains explicit and stable
+- symbolic rendering remains deterministic for the frozen translation slice
+- span diagnostics are reproducible on representative exact multi-rank fixtures
+- closure diagnostics are reproducible on representative nontrivial closed fixtures
+- Heat and Burgers stable translation paths still verify as `exact`
+- all current M5 renderers smoke-test cleanly under a non-interactive backend
+- the dedicated M6 CI job is added without replacing the existing full-suite or package-smoke jobs
+
+### Test Plan
+
+Run at minimum:
+
+- `pytest tests/test_v0_4_release_gate.py`
+- full `pytest`
+
+---
+
 ## Later Milestones
 
 Strict sequencing for `v0.4`:
-
-- Milestone 6: algebra-span release gate
 
 Hard sequencing rules:
 
@@ -126,5 +166,5 @@ Hard sequencing rules:
 - Milestone 2: **COMPLETE**
 - Milestone 3: **COMPLETE**
 - Milestone 4: **COMPLETE**
-- Milestone 5: **ACTIVE**
-- Milestone 6: **PLANNED**
+- Milestone 5: **COMPLETE**
+- Milestone 6: **ACTIVE**

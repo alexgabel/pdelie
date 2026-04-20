@@ -347,7 +347,7 @@ Rotation-style fixtures must be coefficient-level algebra fixtures, not PDE/data
 - verification-aware interpretation labels
 
 ### Milestone 5 — Minimal visualization
-**Status:** Active
+**Status:** Complete
 
 - optional `[viz]` extra only
 - visualization consumes existing canonical objects and runtime reports only
@@ -361,14 +361,19 @@ Rotation-style fixtures must be coefficient-level algebra fixtures, not PDE/data
 - explicitly deferrable first if M1–M4 take longer than expected
 
 ### Milestone 6 — Algebra-span release gate
-**Status:** Planned
+**Status:** Active
 
-- migration tests
-- symbolic determinism tests
-- span tests
-- closure tests
-- Heat/Burgers regression tests
-- optional-viz smoke tests
+- one focused pytest release-gate module over the already-implemented M1–M5 behavior
+- one dedicated CI visibility job running only that release-gate module
+- migration / canonical serialization checks for the translation slice
+- symbolic determinism checks for canonical and legacy-upgraded translation families
+- tolerant span reproducibility checks on representative exact multi-rank fixtures
+- tolerant closure reproducibility checks on representative nontrivial closed fixtures
+- compact Heat/Burgers stable translation regression checks
+- optional-viz smoke tests using a non-interactive backend with figure cleanup
+- no downstream or SymPy behavior in the gate itself
+- the CI job may still use the standard `.[test]` environment; this milestone does not claim total optional-dependency isolation
+- the dedicated CI job supplements, and does not replace, the full editable/full-suite job
 
 ---
 
@@ -382,7 +387,9 @@ Rotation-style fixtures must be coefficient-level algebra fixtures, not PDE/data
 - symbolic rendering is deterministic for a given basis
 - span diagnostics are reproducible under the frozen inner-product policy
 - closure diagnostics are reproducible and condition-aware
+- release-gate numeric assertions use tolerant checks for floating outputs
 - visualization remains optional and outside the core install
+- visualization smoke does not require an interactive/display backend and closes figures cleanly
 - no weak-form, operator, neural, broad-adapter, or manuscript-facing feature is required
 
 ---
