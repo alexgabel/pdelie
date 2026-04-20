@@ -2,7 +2,7 @@
 
 ## Current Active Milestone
 
-**V0.4 Milestone 3 — Runtime span diagnostics**
+**V0.4 Milestone 4 — Runtime closure diagnostics**
 
 This file is the active execution plan for the current `v0.4` release series.
 
@@ -38,58 +38,62 @@ Completed outcome:
 
 ---
 
-## Milestone 3 — Runtime Span Diagnostics
+## Milestone 4 — Runtime Closure Diagnostics
 
 ### Goal
 
-Add deterministic runtime-only algebraic span comparison for canonical `GeneratorFamily` objects without changing canonical storage, fitting behavior, or the Heat/Burgers stable paths.
+Add deterministic runtime-only closure diagnostics for canonical polynomial `GeneratorFamily` objects without changing canonical storage, fitting behavior, or the Heat/Burgers stable paths.
 
 ### Frozen Decisions
 
 - `GeneratorFamily` canonical core from Milestone 1 remains unchanged
-- span diagnostics are runtime-only and must not mutate stored coefficients or normalization
-- principal angles are the primary span metric
-- projection residual is the paired derived diagnostic
-- `normalized_polynomial_l2` is the only supported M3 inner-product mode
-- exact polynomial comparison is frozen only for the current algebraic/runtime polynomial scope
-- structurally equivalent `basis_spec` semantics are required; raw dictionary identity is not
-- no fitting changes in M3
-- no closure diagnostics in M3
-- no visualization in M3
+- closure diagnostics are runtime-only and must not mutate stored coefficients or normalization
+- closure remains secondary to dynamical validity and supplied verification evidence
+- `normalized_polynomial_l2` is the only supported M4 inner-product mode
+- exact polynomial closure is frozen only for the current monomial algebraic/runtime polynomial scope
+- exact brackets may use an internal expanded polynomial representation, but that representation is not canonical
+- structure constants are estimated from projected brackets onto the stored family span
+- antisymmetry and Jacobi diagnostics are structure-constant diagnostics, not raw vector-field Jacobi claims
+- sampled fallback is minimal and deterministic, and only a compatibility path
+- no fitting changes in M4
+- no visualization in M4
 
 ### Deliverables
 
-- runtime-only span comparison helper under `pdelie.symmetry`
-- deterministic principal-angle diagnostics for canonical polynomial generator families
-- deterministic projection residual diagnostics under the frozen normalized polynomial inner product
-- basis-spec structural-equivalence checks for span comparison
-- regression protection for canonical translation families, legacy-upgraded translation payloads, and controlled algebraic fixtures
+- runtime-only closure diagnostic helper under `pdelie.symmetry`
+- exact polynomial Lie-bracket diagnostics for canonical monomial polynomial generator families
+- projected structure-constant diagnostics and closure residuals
+- structure-constant antisymmetry and Jacobi diagnostics
+- family-aware interpretation labels based on supplied verification evidence
+- minimal deterministic sampled fallback coverage on one controlled fixture
 
 ### Acceptance Criteria
 
-Milestone 3 is complete only if:
+Milestone 4 is complete only if:
 
 - existing Heat/Burgers stable paths still pass unchanged
 - canonical `GeneratorFamily` contracts remain unchanged
-- identical spans compare with zero principal angles and zero projection residual summary
-- same spans under basis change compare as equivalent
-- structurally non-equivalent basis semantics fail with typed validation errors
-- zero-rank effective spans fail with typed validation errors
+- commuting closed families report zero closure, antisymmetry, and Jacobi summaries
+- closed nontrivial affine families report the expected structure constants
+- unresolved component-target semantics fail with typed validation errors
+- rank-deficient families fail with typed validation errors under the runtime metric policy
 - no new canonical object is introduced
-- no public fitting, invariant, closure, or visualization semantics are broadened
+- no public fitting, invariant, visualization, or canonical semantics are broadened
 
 ### Test Plan
 
 Run at minimum:
 
-- runtime span comparison tests
+- runtime closure diagnostic tests
 - runtime public API import tests
-- canonical single-row translation span tests
-- legacy-upgraded translation span tests
-- basis-change equivalence tests
-- strict-containment residual tests
-- basis-spec structural-equivalence and mismatch tests
-- zero-rank span tests
+- commuting-family closure tests
+- affine structure-constant tests
+- structure-constant Jacobi tests on a closed three-generator family
+- exact-bracket projection tests when brackets leave the stored basis
+- explicit component-target override and unresolved-target failure tests
+- minimal sampled fallback determinism tests
+- family-aware interpretation-label tests
+- rank-deficient family tests
 - existing Heat/Burgers regression tests
 - full `pytest`
 
@@ -99,7 +103,6 @@ Run at minimum:
 
 Strict sequencing for `v0.4`:
 
-- Milestone 4: closure diagnostics with exact bracket preferred
 - Milestone 5: minimal visualization as renderers only and deferrable
 - Milestone 6: algebra-span release gate
 
@@ -129,7 +132,7 @@ Hard sequencing rules:
 - `v0.3`: **COMPLETE**
 - Milestone 1: **COMPLETE**
 - Milestone 2: **COMPLETE**
-- Milestone 3: **ACTIVE**
-- Milestone 4: **PLANNED**
+- Milestone 3: **COMPLETE**
+- Milestone 4: **ACTIVE**
 - Milestone 5: **PLANNED**
 - Milestone 6: **PLANNED**
