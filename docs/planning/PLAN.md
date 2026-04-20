@@ -1,10 +1,10 @@
-# PDELie — Execution Plan (V0.4)
+# PDELie — Archived Execution Plan (V0.4)
 
-## Current State
+## Archive State
 
-**V0.4 feature milestones complete — pre-`0.4.0rc1` release preparation**
+**V0.4 feature milestones complete — archival planning record after the `0.4.0` release**
 
-This file is the active execution plan for the current `v0.4` release series.
+This file is the archived execution plan for the completed `v0.4` release series.
 
 It should contain:
 
@@ -14,9 +14,9 @@ It should contain:
 
 It should **not** redefine package contracts or roadmap commitments. Those belong in:
 
-- `SPEC.md`
-- `CONTRACTS_AND_DEFAULTS.md`
-- `API_STABILITY.md`
+- `../specs/SPEC.md`
+- `../specs/CONTRACTS_AND_DEFAULTS.md`
+- `../specs/API_STABILITY.md`
 - `ROADMAP.md`
 - `V0_4_SCOPE.md`
 
@@ -132,7 +132,7 @@ Run at minimum:
 - `pytest tests/test_v0_4_release_gate.py`
 - full `pytest`
 
-Milestone 6 is now complete. No further V0.4 feature milestones are planned before `0.4.0rc1`.
+Milestone 6 is now complete. No further V0.4 feature milestones are planned in the released `0.4.0` line.
 
 ---
 
