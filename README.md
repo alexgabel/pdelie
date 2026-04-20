@@ -2,16 +2,20 @@
 
 Numerical discovery and verification of Lie symmetries for PDE data.
 
-The current repository implements the stable V0.3 core on the frozen synthetic Heat/Burgers slice:
+The current repository implements the stable V0.4 core on the frozen synthetic Heat/Burgers slice:
 
 - synthetic 1D heat equation
 - synthetic 1D Burgers equation
 - uniform periodic grid
 - `FieldBatch -> DerivativeBatch -> ResidualBatch -> GeneratorFamily -> InvariantMapSpec -> VerificationReport`
 - one stable derivative backend: `spectral_fd`
+- family-shaped `GeneratorFamily` with explicit `basis_spec`
+- runtime-only symbolic helpers under `pdelie.symmetry`
+- runtime-only span and closure diagnostics under `pdelie.symmetry`
+- optional `pdelie.viz` visualization layer
 - one stable invariant canonical object: `InvariantMapSpec`
-- one runtime-only invariant path: `pdelie.invariants.InvariantApplier`
-- one runtime-only backend-specific downstream bridge: `pdelie.discovery.to_pysindy_trajectories`
+- one runtime-only invariant path retained from V0.3: `pdelie.invariants.InvariantApplier`
+- one runtime-only backend-specific downstream bridge retained from V0.3: `pdelie.discovery.to_pysindy_trajectories`
 
 ## Setup
 
@@ -26,13 +30,20 @@ conda activate pdelie
 
 ### Editable install
 
-The environment file installs the package in editable mode with test dependencies.
-
-To install manually from the repo root:
+Core install from the repo root:
 
 ```bash
-python -m pip install -e .[test]
+python -m pip install -e .
 ```
+
+### Optional dependencies
+
+- `.[viz]` adds the optional Matplotlib visualization layer exposed under `pdelie.viz`
+- `.[downstream]` adds the optional narrow PySINDy bridge path exposed under `pdelie.discovery`
+- `.[test]` installs the test environment used in CI and includes the current viz/downstream test dependencies
+- `sympy` is an optional runtime dependency for `pdelie.symmetry.to_sympy_component_expressions`; it is not required for the core install
+
+The downstream path is still intentionally narrow: it is currently validated on the PySINDy 1.x / scikit-learn 1.2.x line under Python `<3.12`, matching the policy in `pyproject.toml`.
 
 ## Run Tests
 
@@ -60,7 +71,7 @@ The packaged example currently demonstrates the stable Heat verification path on
 4. fit the polynomial spatial-translation baseline
 5. verify the generator on held-out heat batches
 
-V0.3 adds a stable invariant canonical object and narrow runtime-level invariant/downstream utilities, but it does not yet add a broad public discovery workflow.
+The packaged example remains Heat-only even though the frozen stable slice also covers Burgers.
 
 You can also call the example programmatically:
 
@@ -77,17 +88,24 @@ Included in the current stable core:
 
 - stable canonical objects and typed validation errors, including `InvariantMapSpec`
 - synthetic heat and Burgers data
-- polynomial translation baseline only
-- finite-transform verification only
+- polynomial translation baseline for the stable PDE slice
+- finite-transform verification for the stable PDE slice
+- family-shaped `GeneratorFamily` serialization and narrow translation compatibility migration
 - single-generator invariant map support
 - matched Heat/Burgers benchmark and release-gate checks in the test layer
 
-Runtime-level public APIs in the frozen V0.3 slice:
+Runtime-level public APIs in the frozen V0.4 slice:
 
 - `pdelie.invariants.InvariantApplier` for single-generator periodic `x` uniform translation only
 - `pdelie.discovery.to_pysindy_trajectories` for the narrow backend-specific PySINDy bridge
+- `pdelie.symmetry.render_generator_family` for deterministic symbolic display
+- `pdelie.symmetry.to_sympy_component_expressions` when `sympy` is installed at runtime
+- `pdelie.symmetry.compare_generator_spans` for runtime span diagnostics
+- `pdelie.symmetry.diagnose_generator_family_closure` for runtime closure diagnostics
+- `pdelie.viz.plot_generator_coefficients`, `plot_generator_symbolic_summary`, `plot_verification_curve`, `plot_span_diagnostics`, and `plot_closure_diagnostics` when `matplotlib` is installed
 
 Explicitly deferred:
+- stable multi-generator PDE fitting
 - multi-generator invariant machinery
 - broad downstream discovery contracts
 - operator symmetry

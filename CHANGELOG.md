@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.4.0rc1
+
+First release candidate for the frozen V0.4 generator-family and algebra-diagnostics core.
+
+- canonical `GeneratorFamily` family semantics finalized with `schema_version = "0.2"`, family-shaped coefficients, and explicit `basis_spec`
+- runtime-only symbolic generator rendering added under `pdelie.symmetry`
+- optional runtime-only SymPy component expressions added under `pdelie.symmetry`
+- runtime-only span diagnostics added under `pdelie.symmetry`
+- runtime-only closure / structure-constant diagnostics added under `pdelie.symmetry`
+- optional Matplotlib visualization layer added under `pdelie.viz`
+- explicit V0.4 release-gate pytest module and `v0_4-release-gate` CI visibility job added
+- package metadata, README, milestone docs, and release-readiness docs aligned with the implemented V0.4 state
+
+Explicitly deferred for this release candidate:
+
+- weak-form methods
+- operator methods
+- broad adapters or interoperability expansion
+- stable multi-generator PDE fitting
+- broader downstream compatibility or prediction-facing workflows
+- new canonical stable objects beyond the current V0.4 slice
+
 ## 0.3.0
 
 First final release for the frozen V0.3 stable core.
