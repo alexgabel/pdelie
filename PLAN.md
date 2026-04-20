@@ -2,7 +2,7 @@
 
 ## Current Active Milestone
 
-**V0.4 Milestone 4 — Runtime closure diagnostics**
+**V0.4 Milestone 5 — Minimal visualization suite**
 
 This file is the active execution plan for the current `v0.4` release series.
 
@@ -38,62 +38,55 @@ Completed outcome:
 
 ---
 
-## Milestone 4 — Runtime Closure Diagnostics
+## Milestone 5 — Minimal Visualization Suite
 
 ### Goal
 
-Add deterministic runtime-only closure diagnostics for canonical polynomial `GeneratorFamily` objects without changing canonical storage, fitting behavior, or the Heat/Burgers stable paths.
+Add a minimal report-first optional visualization layer over existing canonical objects and frozen runtime reports without changing scientific semantics or the Heat/Burgers stable paths.
 
 ### Frozen Decisions
 
-- `GeneratorFamily` canonical core from Milestone 1 remains unchanged
-- closure diagnostics are runtime-only and must not mutate stored coefficients or normalization
-- closure remains secondary to dynamical validity and supplied verification evidence
-- `normalized_polynomial_l2` is the only supported M4 inner-product mode
-- exact polynomial closure is frozen only for the current monomial algebraic/runtime polynomial scope
-- exact brackets may use an internal expanded polynomial representation, but that representation is not canonical
-- structure constants are estimated from projected brackets onto the stored family span
-- antisymmetry and Jacobi diagnostics are structure-constant diagnostics, not raw vector-field Jacobi claims
-- sampled fallback is minimal and deterministic, and only a compatibility path
-- no fitting changes in M4
-- no visualization in M4
+- visualization is runtime-only and must not mutate stored coefficients, normalization, or diagnostics
+- `pdelie.viz` is an optional package and must not be exported from root `pdelie`
+- Matplotlib is the only M5 visualization dependency
+- renderers must consume existing canonical objects or frozen runtime report dicts only
+- no new visualization-specific contracts or canonical objects are introduced
+- no field rollout heatmaps, transformed-field plots, animation, or interactive backends are part of M5
+- no fitting, verification, span, or closure semantics change in M5
 
 ### Deliverables
 
-- runtime-only closure diagnostic helper under `pdelie.symmetry`
-- exact polynomial Lie-bracket diagnostics for canonical monomial polynomial generator families
-- projected structure-constant diagnostics and closure residuals
-- structure-constant antisymmetry and Jacobi diagnostics
-- family-aware interpretation labels based on supplied verification evidence
-- minimal deterministic sampled fallback coverage on one controlled fixture
+- optional `pdelie.viz` runtime package
+- coefficient-bar renderer for `GeneratorFamily`
+- symbolic summary renderer using M2 symbolic display
+- verification-curve renderer for `VerificationReport`
+- span-diagnostics renderer over the frozen M3 report schema
+- closure-diagnostics renderer over the frozen M4 report schema
 
 ### Acceptance Criteria
 
-Milestone 4 is complete only if:
+Milestone 5 is complete only if:
 
 - existing Heat/Burgers stable paths still pass unchanged
-- canonical `GeneratorFamily` contracts remain unchanged
-- commuting closed families report zero closure, antisymmetry, and Jacobi summaries
-- closed nontrivial affine families report the expected structure constants
-- unresolved component-target semantics fail with typed validation errors
-- rank-deficient families fail with typed validation errors under the runtime metric policy
+- canonical objects and runtime scientific report semantics remain unchanged
+- `pdelie.viz` is importable only through the optional visualization package path
+- each M5 renderer returns a Matplotlib `Figure`
+- malformed runtime report dicts fail with typed validation errors
 - no new canonical object is introduced
-- no public fitting, invariant, visualization, or canonical semantics are broadened
+- no public fitting, invariant, span, closure, or canonical semantics are broadened
 
 ### Test Plan
 
 Run at minimum:
 
-- runtime closure diagnostic tests
+- runtime visualization tests
 - runtime public API import tests
-- commuting-family closure tests
-- affine structure-constant tests
-- structure-constant Jacobi tests on a closed three-generator family
-- exact-bracket projection tests when brackets leave the stored basis
-- explicit component-target override and unresolved-target failure tests
-- minimal sampled fallback determinism tests
-- family-aware interpretation-label tests
-- rank-deficient family tests
+- coefficient-bar structural tests
+- symbolic-summary text tests
+- verification-curve log-scale tests
+- span-plot report-shape tests
+- closure-plot report-shape tests
+- malformed-report validation tests
 - existing Heat/Burgers regression tests
 - full `pytest`
 
@@ -103,7 +96,6 @@ Run at minimum:
 
 Strict sequencing for `v0.4`:
 
-- Milestone 5: minimal visualization as renderers only and deferrable
 - Milestone 6: algebra-span release gate
 
 Hard sequencing rules:
@@ -133,6 +125,6 @@ Hard sequencing rules:
 - Milestone 1: **COMPLETE**
 - Milestone 2: **COMPLETE**
 - Milestone 3: **COMPLETE**
-- Milestone 4: **ACTIVE**
-- Milestone 5: **PLANNED**
+- Milestone 4: **COMPLETE**
+- Milestone 5: **ACTIVE**
 - Milestone 6: **PLANNED**
