@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pdelie"
-version = "0.4.0rc1"
+version = "0.4.0"
 description = "Stable V0.4 polynomial generator-family core with algebra diagnostics and optional visualization for PDE Lie symmetry discovery on synthetic Heat and Burgers data"
 requires-python = ">=3.11"
 dependencies = [
