@@ -192,29 +192,31 @@ Its purpose is:
 
 ## Next Release Target
 
-### `v0.5` — Downstream compatibility and prediction utility
-**Status:** Planned
+### `v0.5` — Generator-family portability and external-family compatibility
+**Status:** Committed
 
 `v0.5` is the next planned release after the completed `v0.4` line.
 
 Its purpose is:
 
-> make learned or externally supplied generator families portable and useful in controlled downstream workflows.
+> make learned or externally supplied polynomial generator families portable, externally compatible, and reusable without losing canonical meaning.
 
 ### Candidate scope for `v0.5`
 
-- generator-family export manifest
-- stronger downstream compatibility semantics
-- one controlled system-identification adapter
-- one simple prediction-facing utility task
-- generic benchmark templates
+- generator-family export/import manifest
+- external-family validation and compatibility for canonical polynomial families
+- controlled portability benchmark focused on semantic preservation
+- JSON-compatible manifest payloads under the existing canonical-object policy
+- KdV feasibility only as a gated higher-derivative stress test
 
 ### Out of scope for `v0.5`
 
+- no stable prediction-facing utility task unless later narrowed explicitly
 - no operator-level stable API
 - no broad adapter ecosystem
 - no neural-operator workflow as stable scope
-- no weak-form expansion unless deliberately chosen as the single release axis
+- no weak-form expansion
+- no broad PDE-zoo expansion
 
 ---
 

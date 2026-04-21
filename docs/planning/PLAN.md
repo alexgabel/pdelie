@@ -1,149 +1,111 @@
-# PDELie — Archived Execution Plan (V0.4)
+# PDELie — Execution Plan (V0.5)
 
-## Archive State
+## Current Active Milestone
 
-**V0.4 feature milestones complete — archival planning record after the `0.4.0` release**
+**V0.5 Milestone 1 — Generator-family export/import manifest**
 
-This file is the archived execution plan for the completed `v0.4` release series.
+This file is the active execution plan for the current `v0.5` release series.
 
 It should contain:
 
-- a short record of the completed `v0.3` release
-- the frozen record of the completed `v0.4` milestone line
+- a short record of the completed `v0.4` release
+- the frozen plan for the current active milestone
 - milestone-specific rules and gates
 
-It should **not** redefine package contracts or roadmap commitments. Those belong in:
+It should not redefine package contracts or roadmap commitments. Those belong in:
 
-- `../specs/SPEC.md`
-- `../specs/CONTRACTS_AND_DEFAULTS.md`
-- `../specs/API_STABILITY.md`
-- `ROADMAP.md`
-- `V0_4_SCOPE.md`
+- `docs/specs/SPEC.md`
+- `docs/specs/CONTRACTS_AND_DEFAULTS.md`
+- `docs/specs/API_STABILITY.md`
+- `docs/planning/ROADMAP.md`
+- `docs/planning/V0_5_SCOPE.md`
 
 ---
 
-## V0.3 Closeout
+## V0.4 Closeout
 
-`v0.3` is complete as the first invariant/downstream utility release.
+`v0.4` is complete as the first generator-family and algebra-inspection release.
 
 Completed outcome:
 
-- stable `InvariantMapSpec`
-- runtime-only `InvariantApplier`
-- runtime-only narrow PySINDy bridge
-- internal controlled downstream benchmark / release gate
-- Heat and Burgers regression protection preserved
+- `GeneratorFamily` family semantics and migration policy
+- runtime symbolic display
+- runtime span diagnostics
+- runtime closure diagnostics
+- minimal optional visualization
+- explicit algebra-span release gate
+- Heat/Burgers regression protection preserved
 
-`v0.4` begins from that frozen release surface.
+`v0.5` begins from that frozen release surface.
 
 ---
 
-## Milestone 5 — Minimal Visualization Suite
+## Milestone 1 — Generator-family Export/Import Manifest
 
 ### Goal
 
-Add a minimal report-first optional visualization layer over existing canonical objects and frozen runtime reports without changing scientific semantics or the Heat/Burgers stable paths.
+Define a stable artifact schema that lets learned or externally supplied generator families be exported, imported, validated, and reused without losing canonical meaning.
+
+This milestone is portability-only.
 
 ### Frozen Decisions
 
-- visualization is runtime-only and must not mutate stored coefficients, normalization, or diagnostics
-- `pdelie.viz` is an optional package and must not be exported from root `pdelie`
-- Matplotlib is the only M5 visualization dependency
-- renderers must consume existing canonical objects or frozen runtime report dicts only
-- no new visualization-specific contracts or canonical objects are introduced
-- no field rollout heatmaps, transformed-field plots, animation, or interactive backends are part of M5
-- no fitting, verification, span, or closure semantics change in M5
+- the manifest is a stable artifact schema, not a new canonical object
+- the canonical mathematical content is `GeneratorFamily`
+- optional symbolic / diagnostic / provenance fields are non-authoritative
+- runtime dict export/import is in scope
+- manifest payloads must be JSON-compatible
+- dedicated JSON file read/write is deferred from M1; standard-library `json` over the manifest payload is sufficient
+- no KdV work in M1
+- no prediction utility in M1
+- no downstream benchmark expansion in M1
 
 ### Deliverables
 
-- optional `pdelie.viz` runtime package
-- coefficient-bar renderer for `GeneratorFamily`
-- symbolic summary renderer using M2 symbolic display
-- verification-curve renderer for `VerificationReport`
-- span-diagnostics renderer over the frozen M3 report schema
-- closure-diagnostics renderer over the frozen M4 report schema
+- manifest schema definition
+- dict-level export helper
+- dict-level import/validation helper
+- deterministic round-trip tests
+- typed errors for malformed or unsupported manifests
+- documentation of required vs optional fields
 
 ### Acceptance Criteria
 
-Milestone 5 is complete only if:
+M1 is complete only if:
 
-- existing Heat/Burgers stable paths still pass unchanged
-- canonical objects and runtime scientific report semantics remain unchanged
-- `pdelie.viz` is importable only through the optional visualization package path
-- each M5 renderer returns a Matplotlib `Figure`
-- malformed runtime report dicts fail with typed validation errors
-- no new canonical object is introduced
-- no public fitting, invariant, span, closure, or canonical semantics are broadened
+- manifests contain canonical `GeneratorFamily` payloads
+- export/import round-trips preserve canonical meaning
+- manifest payloads are JSON-compatible without extra normalization
+- optional fields remain non-authoritative
+- malformed manifests fail with typed errors
+- current Heat/Burgers stable paths remain unchanged
+- no new stable canonical object is introduced
 
 ### Test Plan
 
 Run at minimum:
 
-- runtime visualization tests
-- runtime public API import tests
-- coefficient-bar structural tests
-- symbolic-summary text tests
-- verification-curve log-scale tests
-- span-plot report-shape tests
-- closure-plot report-shape tests
-- malformed-report validation tests
-- existing Heat/Burgers regression tests
+- manifest export/import tests
+- malformed manifest tests
+- external-family validation tests
+- current release-gate tests
 - full `pytest`
-
----
-
-## Milestone 6 — Algebra-Span Release Gate
-
-### Goal
-
-Turn the already-implemented V0.4 M1–M5 behavior into one explicit pytest+CI release gate without adding any new capabilities or changing any runtime semantics.
-
-### Frozen Decisions
-
-- M6 is a release-gate milestone only; it does not add new public APIs, canonical objects, or runtime behavior
-- M6 excludes downstream and SymPy behavior from the gate itself
-- the dedicated CI job may still install the standard `.[test]` extra; M6 does not claim total optional-dependency isolation
-- floating outputs in the release gate must use tolerant numeric checks; exact assertions are reserved for strings and small clearly algebraic fixtures
-- the dedicated M6 CI job is an explicit release-gate visibility job and does not replace the full editable/full-suite job
-- visualization smoke in M6 must use a non-interactive backend and must close figures cleanly
-
-### Deliverables
-
-- one focused `tests/test_v0_4_release_gate.py` module over frozen M1–M5 behavior
-- one dedicated `v0_4-release-gate` CI job that runs only the release-gate module
-
-### Acceptance Criteria
-
-Milestone 6 is complete only if:
-
-- legacy translation payloads still upgrade cleanly to canonical `GeneratorFamily`
-- canonical translation family serialization remains explicit and stable
-- symbolic rendering remains deterministic for the frozen translation slice
-- span diagnostics are reproducible on representative exact multi-rank fixtures
-- closure diagnostics are reproducible on representative nontrivial closed fixtures
-- Heat and Burgers stable translation paths still verify as `exact`
-- all current M5 renderers smoke-test cleanly under a non-interactive backend
-- the dedicated M6 CI job is added without replacing the existing full-suite or package-smoke jobs
-
-### Test Plan
-
-Run at minimum:
-
-- `pytest tests/test_v0_4_release_gate.py`
-- full `pytest`
-
-Milestone 6 is now complete. No further V0.4 feature milestones are planned in the released `0.4.0` line.
 
 ---
 
 ## Later Milestones
 
-Feature milestone sequencing for `v0.4` is complete.
+- Milestone 2: external-family compatibility
+- Milestone 3: portability benchmark
+- Milestone 4: KdV feasibility
+- Milestone 5: V0.5 release gate
 
 Hard sequencing rules:
 
-- do not add fitting logic before representation and diagnostics semantics are frozen
-- do not let visualization define new semantics or helper contracts
+- do not promote KdV before the feasibility gate
+- do not add prediction utility until it has a precise task definition
+- do not introduce weak-form methods inside `v0.5`
+- do not turn the manifest into a new canonical object without explicit review
 
 ---
 
@@ -154,19 +116,16 @@ Hard sequencing rules:
 - DO NOT add broad dataset adapters
 - DO NOT add neural generators as stable API
 - DO NOT add representative-loss or research-loss code
-- DO NOT add stable 2D PDE pipeline work
-- DO NOT add stable multi-generator PDE fitting in `v0.4`
-- DO NOT add broad downstream benchmark expansion
+- DO NOT add broad PDE-zoo scope
 - DO NOT add paper-specific or manuscript-facing language
 
 ---
 
 ## Status
 
-- `v0.3`: **COMPLETE**
-- Milestone 1: **COMPLETE**
-- Milestone 2: **COMPLETE**
-- Milestone 3: **COMPLETE**
-- Milestone 4: **COMPLETE**
-- Milestone 5: **COMPLETE**
-- Milestone 6: **COMPLETE**
+- `v0.4`: COMPLETE
+- Milestone 1: ACTIVE
+- Milestone 2: PLANNED
+- Milestone 3: PLANNED
+- Milestone 4: PLANNED / GATED
+- Milestone 5: PLANNED

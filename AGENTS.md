@@ -1,7 +1,7 @@
 # AGENTS.md
 
 ## Repo role
-This repo is the reusable library only. No paper-specific hacks.
+This repo is a reusable library only. No paper-specific hacks.
 
 ## Source of truth
 Read these before coding:
