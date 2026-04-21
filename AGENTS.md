@@ -1,14 +1,14 @@
 # AGENTS.md
 
 ## Repo role
-This repo is the reusable library only. No paper-specific hacks.
+This repo is a reusable library only. No paper-specific hacks.
 
 ## Source of truth
 Read these before coding:
-- SPEC.md
-- CONTRACTS_AND_DEFAULTS.md
-- ARCHITECTURE.md
-- API_STABILITY.md
+- docs/specs/SPEC.md
+- docs/specs/CONTRACTS_AND_DEFAULTS.md
+- docs/specs/ARCHITECTURE.md
+- docs/specs/API_STABILITY.md
 
 ## Stable scope
 V0.x stable scope only:

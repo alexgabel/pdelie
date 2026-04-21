@@ -1,0 +1,114 @@
+name: publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Publish target"
+        required: true
+        type: choice
+        options:
+          - testpypi
+          - pypi
+      git_ref:
+        description: "Git ref to build and publish (for example: v0.4.0rc1 or v0.4.0)"
+        required: true
+        type: string
+      confirm_pypi:
+        description: "Required only for PyPI: enter publish-to-pypi"
+        required: false
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Validate publish inputs
+        shell: bash
+        run: |
+          target="${{ inputs.target }}"
+          git_ref="${{ inputs.git_ref }}"
+          confirm_pypi="${{ inputs.confirm_pypi }}"
+
+          if [ -z "${git_ref}" ]; then
+            echo "git_ref is required"
+            exit 1
+          fi
+
+          if [ "${target}" = "pypi" ]; then
+            if [ "${confirm_pypi}" != "publish-to-pypi" ]; then
+              echo "PyPI publish requires confirm_pypi=publish-to-pypi"
+              exit 1
+            fi
+            case "${git_ref}" in
+              *rc*)
+                echo "PyPI publish must use a final release ref, not an rc ref"
+                exit 1
+                ;;
+              refs/tags/v*|v*)
+                ;;
+              *)
+                echo "PyPI publish must use a final version tag/ref"
+                exit 1
+                ;;
+            esac
+          fi
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.git_ref }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install packaging frontend
+        run: python -m pip install --upgrade pip build
+      - name: Build sdist and wheel
+        run: python -m build --sdist --wheel
+      - name: Upload distribution artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/*
+          if-no-files-found: error
+
+  publish-testpypi:
+    if: ${{ inputs.target == 'testpypi' }}
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/p/pdelie
+    steps:
+      - name: Download distribution artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+      - name: Publish to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          packages-dir: dist/
+
+  publish-pypi:
+    if: ${{ inputs.target == 'pypi' }}
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    environment:
+      name: pypi
+      url: https://pypi.org/p/pdelie
+    steps:
+      - name: Download distribution artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/

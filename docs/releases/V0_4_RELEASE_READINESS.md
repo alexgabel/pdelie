@@ -41,8 +41,6 @@ The current repository is ready for the final `0.4.0` release for the frozen V0.
 
 There are no known scientific-scope blockers inside the current V0.4 slice.
 
-`0.4.0` is functionally identical to `0.4.0rc1` unless a release blocker required a minimal fix.
-
 ## Packaging And Public API Notes
 
 - canonical `GeneratorFamily` output now uses `schema_version = "0.2"` and explicit `basis_spec`

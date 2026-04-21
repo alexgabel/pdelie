@@ -12,9 +12,9 @@ It defines:
 It does **not** define package contracts.  
 All contracts and stable behavior are defined in:
 
-- `SPEC.md`
-- `CONTRACTS_AND_DEFAULTS.md`
-- `API_STABILITY.md`
+- `../specs/SPEC.md`
+- `../specs/CONTRACTS_AND_DEFAULTS.md`
+- `../specs/API_STABILITY.md`
 
 It does **not** define active task execution.  
 Execution state belongs in:
@@ -126,7 +126,7 @@ Its purpose is:
 
 ---
 
-## Current Completed Release
+## Previous Completed Release
 
 ### `v0.3` — First invariant/downstream utility release
 **Status:** Completed
@@ -145,12 +145,12 @@ This release expands the invariant/downstream utility axis without widening the 
 
 ---
 
-## Next Release Target
+## Current Completed Release
 
 ### `v0.4` — Lie-algebra span, symbolic reporting, and visual diagnostics
-**Status:** Committed
+**Status:** Completed
 
-`v0.4` is the next stable release target.
+`v0.4` is the completed release where PDELie proves that it can represent, normalize, compare, diagnose, and inspect small polynomial generator families, not just one frozen generator.
 
 Its purpose is:
 
@@ -190,31 +190,33 @@ Its purpose is:
 
 ---
 
-## Planned Next Step
+## Next Release Target
 
-### `v0.5` — Downstream compatibility and prediction utility
-**Status:** Planned
+### `v0.5` — Generator-family portability and external-family compatibility
+**Status:** Committed
 
-`v0.5` is the next planned release after `v0.4`.
+`v0.5` is the next planned release after the completed `v0.4` line.
 
 Its purpose is:
 
-> make learned or externally supplied generator families portable and useful in controlled downstream workflows.
+> make learned or externally supplied polynomial generator families portable, externally compatible, and reusable without losing canonical meaning.
 
 ### Candidate scope for `v0.5`
 
-- generator-family export manifest
-- stronger downstream compatibility semantics
-- one controlled system-identification adapter
-- one simple prediction-facing utility task
-- generic benchmark templates
+- generator-family export/import manifest
+- external-family validation and compatibility for canonical polynomial families
+- controlled portability benchmark focused on semantic preservation
+- JSON-compatible manifest payloads under the existing canonical-object policy
+- KdV feasibility only as a gated higher-derivative stress test
 
 ### Out of scope for `v0.5`
 
+- no stable prediction-facing utility task unless later narrowed explicitly
 - no operator-level stable API
 - no broad adapter ecosystem
 - no neural-operator workflow as stable scope
-- no weak-form expansion unless deliberately chosen as the single release axis
+- no weak-form expansion
+- no broad PDE-zoo expansion
 
 ---
 
@@ -246,7 +248,7 @@ These may exist in experimental namespaces or downstream repos before they enter
 - `PLAN.md` for current execution only
 
 ### Non-authoritative for scheduling
-- `INTEROPERABILITY_AND_BENCHMARKING.md`
+- `../strategy/INTEROPERABILITY_AND_BENCHMARKING.md`
 - `LLM_CONTEXT.md`
 
 These may describe strategic horizons or research directions, but they do **not** commit a feature to a release.

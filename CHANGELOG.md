@@ -4,7 +4,6 @@
 
 First final release for the frozen V0.4 stable core.
 
-- functionally identical to `0.4.0rc1` unless a release blocker required a minimal fix
 - finalizes the frozen V0.4 generator-family, algebra-diagnostics, and optional-visualization release surface
 
 ## 0.4.0rc1

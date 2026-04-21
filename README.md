@@ -53,6 +53,13 @@ From the repo root:
 python -m pytest
 ```
 
+## Repository Docs
+
+- specifications and contracts: `docs/specs/`
+- planning and frozen scope docs: `docs/planning/`
+- release-readiness history: `docs/releases/`
+- non-normative strategy notes: `docs/strategy/`
+
 ## Minimal End-To-End Example
 
 Run the packaged example module from the repo root:
