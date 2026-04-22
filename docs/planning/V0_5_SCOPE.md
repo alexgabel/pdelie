@@ -13,6 +13,7 @@ Instead, it asks:
 > Can learned or externally supplied polynomial Lie generator families be exported, imported, validated, inspected, and used in controlled downstream workflows without losing their semantics?
 
 `v0.5` is therefore a portability release, not a broader numerics or PDE-zoo release.
+Prediction-facing utility remains deferred unless it is narrowed later with a precise fixed task.
 
 ---
 
@@ -40,6 +41,7 @@ Deferred:
 - prediction-facing utility task unless explicitly narrowed
 - weak-form methods
 - operator methods
+- broad numerics expansion beyond the current stable regime
 - broad adapters
 - broad PDE zoo
 

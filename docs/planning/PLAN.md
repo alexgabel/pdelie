@@ -38,6 +38,9 @@ Completed outcome:
 
 `v0.5` begins from that frozen release surface.
 
+This release series is portability / external compatibility first.
+It does not broaden numerics beyond the current Heat/Burgers stable regime.
+
 ---
 
 ## Milestone 1 — Generator-family Export/Import Manifest
@@ -59,6 +62,7 @@ This milestone is portability-only.
 - no KdV work in M1
 - no prediction utility in M1
 - no downstream benchmark expansion in M1
+- no broad numerics expansion in M1
 
 ### Deliverables
 
@@ -95,6 +99,14 @@ Run at minimum:
 
 ## Later Milestones
 
+Locked sequence:
+
+Milestone 1 -> manifest export/import portability  
+Milestone 2 -> external-family compatibility  
+Milestone 3 -> portability benchmark  
+Milestone 4 -> KdV feasibility  
+Milestone 5 -> V0.5 release gate
+
 - Milestone 2: external-family compatibility
 - Milestone 3: portability benchmark
 - Milestone 4: KdV feasibility
@@ -104,6 +116,7 @@ Hard sequencing rules:
 
 - do not promote KdV before the feasibility gate
 - do not add prediction utility until it has a precise task definition
+- do not broaden numerics during `v0.5` without an explicit scope reset
 - do not introduce weak-form methods inside `v0.5`
 - do not turn the manifest into a new canonical object without explicit review
 
