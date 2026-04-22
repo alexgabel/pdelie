@@ -57,6 +57,10 @@ Runtime public API for the frozen `v0.5` Milestone 1 slice:
 - `pdelie.portability.export_generator_family_manifest` for dict-level export of a stable manifest artifact schema around canonical `GeneratorFamily` payloads
 - `pdelie.portability.import_generator_family_manifest` for dict-level validation/import of the frozen manifest schema back into canonical `GeneratorFamily`
 
+Runtime public API for the frozen `v0.5` Milestone 2 slice:
+
+- `pdelie.portability.coerce_generator_family` for strict normalization of canonical in-memory families, canonical family payloads, manifests, and the narrow legacy translation payload into canonical `GeneratorFamily`
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 

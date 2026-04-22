@@ -85,6 +85,12 @@ Optional fields:
 - `provenance`
 - downstream compatibility hints
 
+Top-level manifest field policy in stable `v0.5`:
+
+- required fields must exist
+- known optional fields may exist
+- unknown top-level manifest fields are rejected
+
 The mathematical content of the manifest is the canonical `GeneratorFamily`.
 
 Symbolic summaries, span diagnostics, closure diagnostics, visualization hints, and provenance are optional metadata. They are not canonical meaning.
@@ -135,7 +141,7 @@ Until that is frozen, prediction utility remains `v0.6+` planning.
 ## Frozen Milestones
 
 ### Milestone 1 — Generator-family export/import manifest
-**Status:** Planned
+**Status:** Complete
 
 - define manifest schema
 - export canonical `GeneratorFamily`
@@ -143,7 +149,7 @@ Until that is frozen, prediction utility remains `v0.6+` planning.
 - no new canonical object unless unavoidable
 
 ### Milestone 2 — External-family compatibility
-**Status:** Planned
+**Status:** Active
 
 - validate externally supplied canonical generator families
 - support runtime dict/object ingestion

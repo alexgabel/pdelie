@@ -6,11 +6,16 @@ from collections.abc import Mapping
 from typing import Any
 
 from pdelie.contracts import GeneratorFamily
-from pdelie.errors import SchemaValidationError
+from pdelie.errors import SchemaValidationError, ScopeValidationError
 
 
 MANIFEST_SCHEMA_VERSION = "0.1"
 MANIFEST_TYPE = "pdelie.generator_family_export"
+_REQUIRED_MANIFEST_FIELDS = frozenset({"manifest_schema_version", "manifest_type", "generator_family"})
+_OPTIONAL_MANIFEST_FIELDS = frozenset(
+    {"pdelie_version", "symbolic", "diagnostics", "provenance", "compatibility_hints"}
+)
+_ALLOWED_MANIFEST_FIELDS = _REQUIRED_MANIFEST_FIELDS | _OPTIONAL_MANIFEST_FIELDS
 
 
 def _require_mapping(value: Any, name: str) -> Mapping[str, Any]:
@@ -50,6 +55,13 @@ def _validate_json_dump(payload: dict[str, Any]) -> None:
         raise SchemaValidationError("Manifest payload must be strict JSON-compatible.") from exc
 
 
+def _validate_supported_external_family(generator: GeneratorFamily) -> None:
+    if not generator.parameterization.startswith("polynomial_"):
+        raise ScopeValidationError(
+            "Manifest import only supports polynomial GeneratorFamily parameterizations in V0.5 Milestone 2."
+        )
+
+
 def _validate_manifest_generator_family_payload(payload: Any) -> Mapping[str, Any]:
     generator_family_payload = _require_mapping(payload, "generator_family")
 
@@ -76,6 +88,32 @@ def _validate_manifest_generator_family_payload(payload: Any) -> Mapping[str, An
     return generator_family_payload
 
 
+def _validate_manifest_top_level_fields(manifest: Mapping[str, Any]) -> None:
+    unknown_fields = sorted(set(manifest) - _ALLOWED_MANIFEST_FIELDS)
+    if unknown_fields:
+        raise SchemaValidationError(
+            f"Manifest payload includes unknown top-level fields: {unknown_fields}."
+        )
+
+
+def _validate_manifest_optional_metadata(manifest: Mapping[str, Any]) -> None:
+    if "pdelie_version" in manifest:
+        value = manifest["pdelie_version"]
+        if not isinstance(value, str) or not value:
+            raise SchemaValidationError("pdelie_version must be a non-empty string when provided.")
+
+    if "symbolic" in manifest:
+        _validate_json_compatible(manifest["symbolic"], "manifest['symbolic']")
+
+    for name in ("diagnostics", "provenance", "compatibility_hints"):
+        if name not in manifest:
+            continue
+        value = manifest[name]
+        if not isinstance(value, Mapping):
+            raise SchemaValidationError(f"{name} must be a mapping when provided.")
+        _validate_json_compatible(value, f"manifest['{name}']")
+
+
 def export_generator_family_manifest(
     generator: GeneratorFamily,
     *,
@@ -96,8 +134,6 @@ def export_generator_family_manifest(
     }
 
     if pdelie_version is not None:
-        if not isinstance(pdelie_version, str) or not pdelie_version:
-            raise SchemaValidationError("pdelie_version must be a non-empty string when provided.")
         manifest["pdelie_version"] = pdelie_version
 
     if symbolic is not None:
@@ -114,6 +150,8 @@ def export_generator_family_manifest(
             raise SchemaValidationError(f"{name} must be a mapping when provided.")
         manifest[name] = value
 
+    _validate_manifest_top_level_fields(manifest)
+    _validate_manifest_optional_metadata(manifest)
     _validate_json_compatible(manifest, "manifest")
     _validate_json_dump(manifest)
     return manifest
@@ -121,10 +159,11 @@ def export_generator_family_manifest(
 
 def import_generator_family_manifest(payload: Mapping[str, Any]) -> GeneratorFamily:
     manifest = _require_mapping(payload, "payload")
+    _validate_manifest_top_level_fields(manifest)
 
     missing_fields = [
         field
-        for field in ("manifest_schema_version", "manifest_type", "generator_family")
+        for field in _REQUIRED_MANIFEST_FIELDS
         if field not in manifest
     ]
     if missing_fields:
@@ -140,5 +179,8 @@ def import_generator_family_manifest(payload: Mapping[str, Any]) -> GeneratorFam
     if manifest_type != MANIFEST_TYPE:
         raise SchemaValidationError(f"Unsupported manifest_type: {manifest_type}.")
 
+    _validate_manifest_optional_metadata(manifest)
     generator_family_payload = _validate_manifest_generator_family_payload(manifest["generator_family"])
-    return GeneratorFamily.from_dict(generator_family_payload)
+    generator = GeneratorFamily.from_dict(generator_family_payload)
+    _validate_supported_external_family(generator)
+    return generator

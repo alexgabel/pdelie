@@ -168,6 +168,14 @@ def test_manifest_import_rejects_malformed_manifest_shapes(payload: object, matc
         import_generator_family_manifest(payload)  # type: ignore[arg-type]
 
 
+def test_manifest_import_rejects_unknown_top_level_fields() -> None:
+    manifest = export_generator_family_manifest(_make_translation_family())
+    manifest["unexpected"] = "field"
+
+    with pytest.raises(SchemaValidationError, match="unknown top-level fields"):
+        import_generator_family_manifest(manifest)
+
+
 def test_manifest_import_rejects_legacy_nested_generator_family_payload() -> None:
     manifest = {
         "manifest_schema_version": "0.1",
@@ -197,6 +205,27 @@ def test_manifest_import_propagates_typed_canonical_nested_payload_errors() -> N
     }
 
     with pytest.raises(SchemaValidationError, match="diagnostics must be a mapping"):
+        import_generator_family_manifest(manifest)
+
+
+@pytest.mark.parametrize(
+    "field_name,value,match",
+    [
+        ("diagnostics", {"bad": float("nan")}, "non-finite"),
+        ("diagnostics", {1: "value"}, "keys must be strings"),
+        ("provenance", {"ok": object()}, "not strict JSON-compatible"),
+        ("compatibility_hints", ["not", "a", "mapping"], "must be a mapping"),
+    ],
+)
+def test_manifest_import_rejects_invalid_recognized_optional_metadata(
+    field_name: str,
+    value: object,
+    match: str,
+) -> None:
+    manifest = export_generator_family_manifest(_make_translation_family())
+    manifest[field_name] = value
+
+    with pytest.raises(SchemaValidationError, match=match):
         import_generator_family_manifest(manifest)
 
 

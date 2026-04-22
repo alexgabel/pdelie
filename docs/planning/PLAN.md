@@ -2,7 +2,7 @@
 
 ## Current Active Milestone
 
-**V0.5 Milestone 1 — Generator-family export/import manifest**
+**V0.5 Milestone 2 — External-family compatibility**
 
 This file is the active execution plan for the current `v0.5` release series.
 
@@ -44,6 +44,8 @@ It does not broaden numerics beyond the current Heat/Burgers stable regime.
 ---
 
 ## Milestone 1 — Generator-family Export/Import Manifest
+
+**Status:** Complete
 
 ### Goal
 
@@ -97,6 +99,33 @@ Run at minimum:
 
 ---
 
+## Milestone 2 — External-family Compatibility
+
+**Status:** Active
+
+### Goal
+
+Normalize the frozen `v0.5` input forms into canonical `GeneratorFamily` objects without widening the existing symbolic/span/closure/viz helper signatures.
+
+### Frozen Decisions
+
+- add `pdelie.portability.coerce_generator_family(...)`
+- accept only:
+  - canonical in-memory `GeneratorFamily`
+  - canonical `GeneratorFamily.to_dict()` payloads
+  - frozen manifest payloads
+  - the existing legacy `0.1` translation payload
+- canonical in-memory input returns as-is after validation
+- malformed structure -> schema error
+- unsupported external conventions -> scope error
+- shape mismatch -> shape error
+- unknown top-level manifest fields are rejected
+- no downstream smoke in M2
+- no KdV work in M2
+- no prediction work in M2
+
+---
+
 ## Later Milestones
 
 Locked sequence:
@@ -137,8 +166,8 @@ Hard sequencing rules:
 ## Status
 
 - `v0.4`: COMPLETE
-- Milestone 1: ACTIVE
-- Milestone 2: PLANNED
+- Milestone 1: COMPLETE
+- Milestone 2: ACTIVE
 - Milestone 3: PLANNED
 - Milestone 4: PLANNED / GATED
 - Milestone 5: PLANNED
