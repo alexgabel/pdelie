@@ -195,7 +195,7 @@ Its purpose is:
 ### `v0.5` — Generator-family portability and external-family compatibility
 **Status:** Committed
 
-`v0.5` is the next planned release after the completed `v0.4` line.
+`v0.5` is the next committed release target after the completed `v0.4` line.
 
 Its purpose is:
 
@@ -216,6 +216,7 @@ Its purpose is:
 - no broad adapter ecosystem
 - no neural-operator workflow as stable scope
 - no weak-form expansion
+- no broad numerics expansion beyond the current stable regime
 - no broad PDE-zoo expansion
 
 ---
@@ -273,5 +274,5 @@ It should **not** be edited every time a new idea appears.
 - `v0.2` = add Burgers under the same stable pipeline
 - `v0.3` = first stable invariant/downstream utility via invariants
 - `v0.4` = Lie-algebra span, symbolic reporting, and visual diagnostics
-- `v0.5` = downstream compatibility and prediction utility
+- `v0.5` = generator-family portability and external-family compatibility, with KdV gated and prediction deferred
 - `v0.6+` = broader numerics, broader data, operator methods, and other experimental directions
