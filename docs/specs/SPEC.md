@@ -114,6 +114,7 @@ Stable `v0.5` runtime artifact note:
 - `pdelie.portability` may wrap a canonical `GeneratorFamily` payload in a stable export/import manifest artifact
 - the manifest is not a canonical object
 - canonical meaning remains only the nested `GeneratorFamily`
+- stable `v0.5` manifest validation rejects unknown top-level manifest fields
 
 ---
 

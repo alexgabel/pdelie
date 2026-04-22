@@ -5,7 +5,7 @@ import json
 import numpy as np
 import pytest
 
-from pdelie import GeneratorFamily, SchemaValidationError
+from pdelie import GeneratorFamily, SchemaValidationError, ScopeValidationError
 from pdelie.contracts import _translation_generator_basis_spec
 from pdelie.portability import (
     export_generator_family_manifest,
@@ -23,9 +23,9 @@ def _make_translation_family() -> GeneratorFamily:
     )
 
 
-def _make_algebraic_family() -> GeneratorFamily:
+def _make_algebraic_family(*, parameterization: str = "polynomial_point_family") -> GeneratorFamily:
     return GeneratorFamily(
-        parameterization="polynomial_point_family",
+        parameterization=parameterization,
         coefficients=np.array(
             [
                 [1.0, 0.0, 0.0],
@@ -71,6 +71,31 @@ def test_manifest_export_import_round_trip_for_non_translation_family() -> None:
 
     assert manifest["generator_family"] == generator.to_dict()
     assert imported.to_dict() == generator.to_dict()
+
+
+def test_manifest_export_rejects_well_formed_but_out_of_scope_parameterizations() -> None:
+    generator = _make_algebraic_family(parameterization="affine_external_family")
+
+    with pytest.raises(
+        ScopeValidationError,
+        match="only supports polynomial GeneratorFamily parameterizations",
+    ):
+        export_generator_family_manifest(generator)
+
+
+def test_manifest_import_rejects_well_formed_but_out_of_scope_parameterizations() -> None:
+    generator = _make_algebraic_family(parameterization="affine_external_family")
+    manifest = {
+        "manifest_schema_version": "0.1",
+        "manifest_type": "pdelie.generator_family_export",
+        "generator_family": generator.to_dict(),
+    }
+
+    with pytest.raises(
+        ScopeValidationError,
+        match="only supports polynomial GeneratorFamily parameterizations",
+    ):
+        import_generator_family_manifest(manifest)
 
 
 def test_manifest_supports_literal_json_round_trip() -> None:
@@ -168,6 +193,14 @@ def test_manifest_import_rejects_malformed_manifest_shapes(payload: object, matc
         import_generator_family_manifest(payload)  # type: ignore[arg-type]
 
 
+def test_manifest_import_rejects_unknown_top_level_fields() -> None:
+    manifest = export_generator_family_manifest(_make_translation_family())
+    manifest["unexpected"] = "field"
+
+    with pytest.raises(SchemaValidationError, match="unknown top-level fields"):
+        import_generator_family_manifest(manifest)
+
+
 def test_manifest_import_rejects_legacy_nested_generator_family_payload() -> None:
     manifest = {
         "manifest_schema_version": "0.1",
@@ -197,6 +230,27 @@ def test_manifest_import_propagates_typed_canonical_nested_payload_errors() -> N
     }
 
     with pytest.raises(SchemaValidationError, match="diagnostics must be a mapping"):
+        import_generator_family_manifest(manifest)
+
+
+@pytest.mark.parametrize(
+    "field_name,value,match",
+    [
+        ("diagnostics", {"bad": float("nan")}, "non-finite"),
+        ("diagnostics", {1: "value"}, "keys must be strings"),
+        ("provenance", {"ok": object()}, "not strict JSON-compatible"),
+        ("compatibility_hints", ["not", "a", "mapping"], "must be a mapping"),
+    ],
+)
+def test_manifest_import_rejects_invalid_recognized_optional_metadata(
+    field_name: str,
+    value: object,
+    match: str,
+) -> None:
+    manifest = export_generator_family_manifest(_make_translation_family())
+    manifest[field_name] = value
+
+    with pytest.raises(SchemaValidationError, match=match):
         import_generator_family_manifest(manifest)
 
 
