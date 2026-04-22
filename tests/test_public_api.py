@@ -31,6 +31,10 @@ def test_stable_public_api_is_importable() -> None:
 def test_runtime_package_api_is_importable() -> None:
     from pdelie.discovery import to_pysindy_trajectories
     from pdelie.invariants import InvariantApplier
+    from pdelie.portability import (
+        export_generator_family_manifest,
+        import_generator_family_manifest,
+    )
     from pdelie.symmetry import (
         compare_generator_spans,
         diagnose_generator_family_closure,
@@ -47,6 +51,8 @@ def test_runtime_package_api_is_importable() -> None:
 
     assert InvariantApplier is not None
     assert to_pysindy_trajectories is not None
+    assert export_generator_family_manifest is not None
+    assert import_generator_family_manifest is not None
     assert compare_generator_spans is not None
     assert diagnose_generator_family_closure is not None
     assert render_generator_family is not None
@@ -61,6 +67,8 @@ def test_runtime_package_api_is_importable() -> None:
 def test_root_package_does_not_export_runtime_invariant_applier() -> None:
     assert not hasattr(pdelie, "InvariantApplier")
     assert not hasattr(pdelie, "to_pysindy_trajectories")
+    assert not hasattr(pdelie, "export_generator_family_manifest")
+    assert not hasattr(pdelie, "import_generator_family_manifest")
     assert not hasattr(pdelie, "compare_generator_spans")
     assert not hasattr(pdelie, "diagnose_generator_family_closure")
     assert not hasattr(pdelie, "render_generator_family")
@@ -84,6 +92,15 @@ def test_discovery_package_runtime_api_matches_frozen_milestone_surface() -> Non
 
     assert hasattr(discovery_module, "to_pysindy_trajectories")
     assert not hasattr(discovery_module, "_fit_pysindy_smoke")
+
+
+def test_portability_package_runtime_api_matches_frozen_m1_surface() -> None:
+    portability_module = importlib.import_module("pdelie.portability")
+
+    assert hasattr(portability_module, "export_generator_family_manifest")
+    assert hasattr(portability_module, "import_generator_family_manifest")
+    assert not hasattr(portability_module, "coerce_generator_family")
+    assert not hasattr(portability_module, "GeneratorFamily")
 
 
 def test_symmetry_package_runtime_api_matches_frozen_m4_surface() -> None:

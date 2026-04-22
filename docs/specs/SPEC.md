@@ -109,6 +109,12 @@ Canonical meaning depends only on:
 `v0.4` direct construction is canonical-only.
 Legacy single-generator translation payloads are a narrow `from_dict()` compatibility path only.
 
+Stable `v0.5` runtime artifact note:
+
+- `pdelie.portability` may wrap a canonical `GeneratorFamily` payload in a stable export/import manifest artifact
+- the manifest is not a canonical object
+- canonical meaning remains only the nested `GeneratorFamily`
+
 ---
 
 ## InvariantMapSpec
