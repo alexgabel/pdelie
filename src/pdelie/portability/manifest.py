@@ -6,7 +6,8 @@ from collections.abc import Mapping
 from typing import Any
 
 from pdelie.contracts import GeneratorFamily
-from pdelie.errors import SchemaValidationError, ScopeValidationError
+from pdelie.errors import SchemaValidationError
+from pdelie.portability._validation import _validate_supported_external_family
 
 
 MANIFEST_SCHEMA_VERSION = "0.1"
@@ -53,13 +54,6 @@ def _validate_json_dump(payload: dict[str, Any]) -> None:
         json.dumps(payload, allow_nan=False)
     except (TypeError, ValueError) as exc:
         raise SchemaValidationError("Manifest payload must be strict JSON-compatible.") from exc
-
-
-def _validate_supported_external_family(generator: GeneratorFamily) -> None:
-    if not generator.parameterization.startswith("polynomial_"):
-        raise ScopeValidationError(
-            "Manifest import only supports polynomial GeneratorFamily parameterizations in V0.5 Milestone 2."
-        )
 
 
 def _validate_manifest_generator_family_payload(payload: Any) -> Mapping[str, Any]:
@@ -126,6 +120,7 @@ def export_generator_family_manifest(
     if not isinstance(generator, GeneratorFamily):
         raise SchemaValidationError("generator must be an in-memory GeneratorFamily.")
     generator.validate()
+    _validate_supported_external_family(generator)
 
     manifest: dict[str, Any] = {
         "manifest_schema_version": MANIFEST_SCHEMA_VERSION,

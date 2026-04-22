@@ -199,6 +199,16 @@ def test_coerce_generator_family_preserves_shape_validation_errors() -> None:
         coerce_generator_family(payload)
 
 
+def test_coerce_generator_family_rejects_incomplete_canonical_payload_with_typed_schema_error() -> None:
+    payload = {
+        "schema_version": "0.2",
+        "parameterization": "polynomial_translation_affine",
+    }
+
+    with pytest.raises(SchemaValidationError, match="missing required field 'coefficients'"):
+        coerce_generator_family(payload)
+
+
 def test_coerced_translation_family_matches_canonical_symbolic_rendering() -> None:
     canonical = _make_translation_family()
     from_dict = coerce_generator_family(canonical.to_dict())

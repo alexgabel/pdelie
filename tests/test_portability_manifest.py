@@ -5,7 +5,7 @@ import json
 import numpy as np
 import pytest
 
-from pdelie import GeneratorFamily, SchemaValidationError
+from pdelie import GeneratorFamily, SchemaValidationError, ScopeValidationError
 from pdelie.contracts import _translation_generator_basis_spec
 from pdelie.portability import (
     export_generator_family_manifest,
@@ -23,9 +23,9 @@ def _make_translation_family() -> GeneratorFamily:
     )
 
 
-def _make_algebraic_family() -> GeneratorFamily:
+def _make_algebraic_family(*, parameterization: str = "polynomial_point_family") -> GeneratorFamily:
     return GeneratorFamily(
-        parameterization="polynomial_point_family",
+        parameterization=parameterization,
         coefficients=np.array(
             [
                 [1.0, 0.0, 0.0],
@@ -71,6 +71,31 @@ def test_manifest_export_import_round_trip_for_non_translation_family() -> None:
 
     assert manifest["generator_family"] == generator.to_dict()
     assert imported.to_dict() == generator.to_dict()
+
+
+def test_manifest_export_rejects_well_formed_but_out_of_scope_parameterizations() -> None:
+    generator = _make_algebraic_family(parameterization="affine_external_family")
+
+    with pytest.raises(
+        ScopeValidationError,
+        match="only supports polynomial GeneratorFamily parameterizations",
+    ):
+        export_generator_family_manifest(generator)
+
+
+def test_manifest_import_rejects_well_formed_but_out_of_scope_parameterizations() -> None:
+    generator = _make_algebraic_family(parameterization="affine_external_family")
+    manifest = {
+        "manifest_schema_version": "0.1",
+        "manifest_type": "pdelie.generator_family_export",
+        "generator_family": generator.to_dict(),
+    }
+
+    with pytest.raises(
+        ScopeValidationError,
+        match="only supports polynomial GeneratorFamily parameterizations",
+    ):
+        import_generator_family_manifest(manifest)
 
 
 def test_manifest_supports_literal_json_round_trip() -> None:

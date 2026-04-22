@@ -4,15 +4,9 @@ from collections.abc import Mapping
 from typing import Any
 
 from pdelie.contracts import GeneratorFamily
-from pdelie.errors import SchemaValidationError, ScopeValidationError
+from pdelie.errors import SchemaValidationError
 from pdelie.portability.manifest import import_generator_family_manifest
-
-
-def _validate_supported_external_family(generator: GeneratorFamily) -> None:
-    if not generator.parameterization.startswith("polynomial_"):
-        raise ScopeValidationError(
-            "coerce_generator_family only supports polynomial GeneratorFamily parameterizations in V0.5 Milestone 2."
-        )
+from pdelie.portability._validation import _validate_supported_external_family
 
 
 def coerce_generator_family(source: Any) -> GeneratorFamily:
@@ -31,7 +25,13 @@ def coerce_generator_family(source: Any) -> GeneratorFamily:
         return import_generator_family_manifest(source)
 
     if "schema_version" in source and "parameterization" in source:
-        generator = GeneratorFamily.from_dict(source)
+        try:
+            generator = GeneratorFamily.from_dict(source)
+        except KeyError as exc:
+            missing_key = exc.args[0] if exc.args else "<unknown>"
+            raise SchemaValidationError(
+                f"Invalid canonical GeneratorFamily payload: missing required field {missing_key!r}."
+            ) from exc
         _validate_supported_external_family(generator)
         return generator
 
