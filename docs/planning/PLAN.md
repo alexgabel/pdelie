@@ -2,7 +2,7 @@
 
 ## Current Active Milestone
 
-**V0.5 Milestone 4 — KdV feasibility**
+**V0.5 Milestone 5 — V0.5 release gate**
 
 This file is the active execution plan for the current `v0.5` release series.
 
@@ -179,7 +179,7 @@ Run at minimum:
 
 ## Milestone 4 — KdV Feasibility
 
-**Status:** Active
+**Status:** Complete / gated
 
 ### Goal
 
@@ -218,6 +218,66 @@ Current kickoff outcome:
 
 - tests-first normalized periodic KdV feasibility passes under the frozen short-horizon numerics
 - stable promotion remains deferred to the `v0.5` release-gate review
+
+---
+
+## Milestone 5 — V0.5 Release Gate
+
+**Status:** Active
+
+### Goal
+
+Aggregate the frozen `v0.5` guarantees from M1-M4 into one compact release-gate slice without adding new runtime functionality.
+
+### Frozen Decisions
+
+- M5 is release-gate aggregation only, not a new feature milestone
+- no new public API
+- no new canonical object
+- no new numerics work
+- no prediction/downstream expansion beyond the existing narrow bridge
+- no KdV promotion-by-accident
+- KdV outcome for `v0.5` is recorded as:
+  - feasibility proven in tests-first scope
+  - stable promotion deferred
+  - no stable KdV API in `v0.5`
+- the release gate must stay compact and high-signal
+- do not duplicate the full lower-level M1-M4 test matrices
+
+### Acceptance Criteria
+
+M5 is complete only if:
+
+- manifest export/import remains deterministic for representative canonical families
+- coercion across the frozen input forms remains stable and typed
+- the portability benchmark remains reproducible on its compact representative slice
+- Heat/Burgers stable regression slices remain exact
+- the KdV feasibility outcome is explicitly recorded while the stable surface remains unchanged
+- the release gate introduces no new runtime API or stable KdV surface
+
+### Test Plan
+
+Run at minimum:
+
+- `tests/test_v0_5_release_gate.py`
+- full `pytest`
+
+### Follow-on CI Hygiene Notes
+
+These are not M5 blockers, but they should be revisited after the `v0.5` release gate lands:
+
+- release-specific CI jobs are accumulating:
+  - `v0_4-release-gate`
+  - `v0_5-release-gate`
+  - `editable-tests`
+  - `package-smoke`
+- this is acceptable during `v0.5` stabilization, but future CI cleanup should prefer either:
+  - one current release-gate job
+  - or only the latest release gate as a required branch-protection check
+- `package-smoke` currently installs `dist/*.whl`
+- this is acceptable in clean CI checkouts, but future hardening may prefer resolving and installing the exact built wheel path explicitly
+- the `v0.5` release gate is intentionally compact and high-signal
+- future release gates should continue to prefer representative integration slices over duplicating full lower-level test modules
 
 ## Later Milestones
 
@@ -262,5 +322,5 @@ Hard sequencing rules:
 - Milestone 1: COMPLETE
 - Milestone 2: COMPLETE
 - Milestone 3: COMPLETE
-- Milestone 4: ACTIVE / GATED
-- Milestone 5: PLANNED
+- Milestone 4: COMPLETE / GATED
+- Milestone 5: ACTIVE

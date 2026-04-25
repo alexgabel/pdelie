@@ -170,7 +170,7 @@ The goal is semantic preservation after export/import, not a repeat of the `v0.3
 Legacy `0.1` translation compatibility remains a narrow smoke path only, not a first-class benchmark branch.
 
 ### Milestone 4 — KdV feasibility
-**Status:** Active / gated
+**Status:** Complete / gated
 
 - spectral third-derivative stress tests
 - synthetic KdV data feasibility
@@ -191,13 +191,21 @@ Current kickoff outcome:
 - stable KdV promotion remains deferred to the release gate
 
 ### Milestone 5 — V0.5 release gate
-**Status:** Planned
+**Status:** Active
 
-- manifest stability
-- external-family validation
-- portability benchmark reproducibility
-- Heat/Burgers regression protection
-- KdV feasibility decision recorded
+- compact, high-signal release-gate aggregation only
+- manifest export/import stability on representative canonical families
+- coercion and frozen input-form stability on representative external-family inputs
+- portability benchmark reproducibility on a representative slice
+- Heat/Burgers regression protection on a representative slice
+- KdV feasibility outcome explicitly recorded as:
+  - feasibility proven in tests-first scope
+  - stable promotion deferred
+  - no stable KdV API in `v0.5`
+- no new public API
+- no new canonical object
+- no new numerics work
+- no prediction/downstream expansion
 
 ---
 
@@ -210,7 +218,7 @@ Current kickoff outcome:
 - external canonical families can be validated and inspected
 - malformed or unsupported external families fail with typed errors
 - portability benchmark shows no semantic drift between in-memory and imported families
-- KdV feasibility is either passed and promoted, or explicitly deferred with rationale
+- KdV feasibility outcome is explicitly recorded while no stable KdV surface is added in `v0.5`
 - no weak-form, operator, neural, broad-adapter, or manuscript-facing feature is required
 
 ---
