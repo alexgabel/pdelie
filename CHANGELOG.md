@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.5.0rc1
+
+First release candidate for the frozen V0.5 generator-family portability and external-compatibility core.
+
+- stable manifest export/import helpers added under `pdelie.portability`
+- strict external-family normalization added under `pdelie.portability.coerce_generator_family(...)`
+- compact portability benchmark / semantic-preservation layer added for canonical, manifest, and narrow legacy translation inputs
+- compact V0.5 release-gate layer and `v0_5-release-gate` CI visibility job added
+- normalized periodic KdV feasibility passes in the tests-first slice, but KdV remains non-stable in `v0.5`
+- package metadata, milestone docs, and release-readiness docs aligned with the implemented V0.5 state
+
+Explicitly deferred for this release candidate:
+
+- stable KdV API or stable KdV runtime module
+- weak-form methods
+- operator methods
+- broad dataset adapters or interoperability expansion
+- prediction-facing utility work
+- new canonical stable objects beyond the current V0.5 slice
+
 ## 0.4.0
 
 First final release for the frozen V0.4 stable core.

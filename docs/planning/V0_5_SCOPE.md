@@ -191,7 +191,7 @@ Current kickoff outcome:
 - stable KdV promotion remains deferred to the release gate
 
 ### Milestone 5 — V0.5 release gate
-**Status:** Active
+**Status:** Complete
 
 - compact, high-signal release-gate aggregation only
 - manifest export/import stability on representative canonical families
@@ -206,6 +206,13 @@ Current kickoff outcome:
 - no new canonical object
 - no new numerics work
 - no prediction/downstream expansion
+
+Current outcome:
+
+- the `v0.5` release gate is complete
+- the compact release-gate aggregation slice passes
+- KdV feasibility is recorded as passed in the tests-first slice
+- KdV remains non-stable in `v0.5` with no stable KdV API added
 
 ---
 

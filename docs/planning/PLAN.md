@@ -2,7 +2,7 @@
 
 ## Current Active Milestone
 
-**V0.5 Milestone 5 — V0.5 release gate**
+**V0.5 milestone execution complete**
 
 This file is the active execution plan for the current `v0.5` release series.
 
@@ -223,7 +223,7 @@ Current kickoff outcome:
 
 ## Milestone 5 — V0.5 Release Gate
 
-**Status:** Active
+**Status:** Complete
 
 ### Goal
 
@@ -261,6 +261,13 @@ Run at minimum:
 
 - `tests/test_v0_5_release_gate.py`
 - full `pytest`
+
+Current outcome:
+
+- the `v0.5` release gate is complete
+- the compact release-gate aggregation slice passes
+- KdV remains recorded as feasibility-passed in tests-first scope only
+- KdV is not promoted to a stable `v0.5` API surface
 
 ### Follow-on CI Hygiene Notes
 
@@ -323,4 +330,4 @@ Hard sequencing rules:
 - Milestone 2: COMPLETE
 - Milestone 3: COMPLETE
 - Milestone 4: COMPLETE / GATED
-- Milestone 5: ACTIVE
+- Milestone 5: COMPLETE

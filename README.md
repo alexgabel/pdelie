@@ -2,7 +2,7 @@
 
 Numerical discovery and verification of Lie symmetries for PDE data.
 
-The current repository implements the stable V0.4 core on the frozen synthetic Heat/Burgers slice:
+The current repository implements the frozen V0.5 portability and external-compatibility core on the synthetic Heat/Burgers slice:
 
 - synthetic 1D heat equation
 - synthetic 1D Burgers equation
@@ -16,6 +16,7 @@ The current repository implements the stable V0.4 core on the frozen synthetic H
 - one stable invariant canonical object: `InvariantMapSpec`
 - one runtime-only invariant path retained from V0.3: `pdelie.invariants.InvariantApplier`
 - one runtime-only backend-specific downstream bridge retained from V0.3: `pdelie.discovery.to_pysindy_trajectories`
+- one runtime-only portability layer retained from V0.5: `pdelie.portability`
 
 ## Setup
 
@@ -98,13 +99,18 @@ Included in the current stable core:
 - polynomial translation baseline for the stable PDE slice
 - finite-transform verification for the stable PDE slice
 - family-shaped `GeneratorFamily` serialization and narrow translation compatibility migration
+- manifest export/import for canonical `GeneratorFamily` portability
+- strict external-family normalization for canonical payloads, manifests, and the narrow legacy translation payload
 - single-generator invariant map support
 - matched Heat/Burgers benchmark and release-gate checks in the test layer
+- KdV feasibility passed in a tests-first slice, but KdV remains non-stable in V0.5
 
-Runtime-level public APIs in the frozen V0.4 slice:
+Runtime-level public APIs in the frozen V0.5 slice:
 
 - `pdelie.invariants.InvariantApplier` for single-generator periodic `x` uniform translation only
 - `pdelie.discovery.to_pysindy_trajectories` for the narrow backend-specific PySINDy bridge
+- `pdelie.portability.export_generator_family_manifest` and `pdelie.portability.import_generator_family_manifest` for manifest-level generator-family portability
+- `pdelie.portability.coerce_generator_family` for strict normalization of canonical, manifest, and narrow legacy translation inputs
 - `pdelie.symmetry.render_generator_family` for deterministic symbolic display
 - `pdelie.symmetry.to_sympy_component_expressions` when `sympy` is installed at runtime
 - `pdelie.symmetry.compare_generator_spans` for runtime span diagnostics
