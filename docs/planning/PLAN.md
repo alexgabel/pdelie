@@ -2,7 +2,7 @@
 
 ## Current Active Milestone
 
-**V0.5 Milestone 3 — Portability benchmark**
+**V0.5 Milestone 4 — KdV feasibility**
 
 This file is the active execution plan for the current `v0.5` release series.
 
@@ -128,7 +128,7 @@ Normalize the frozen `v0.5` input forms into canonical `GeneratorFamily` objects
 
 ## Milestone 3 — Portability Benchmark
 
-**Status:** Active
+**Status:** Complete
 
 ### Goal
 
@@ -177,6 +177,48 @@ Run at minimum:
 
 ---
 
+## Milestone 4 — KdV Feasibility
+
+**Status:** Active
+
+### Goal
+
+Assess whether clean periodic KdV is a comfortable fit for the current uniform-grid, synthetic-data, `spectral_fd` regime without introducing a stable KdV runtime API.
+
+### Frozen Decisions
+
+- M4 remains feasibility only; no stable KdV API yet
+- no root exports
+- no broad numerics expansion
+- no prediction/downstream broadening
+- normalized periodic KdV form only:
+  - `u_t + 6*u*u_x + u_xxx = 0`
+- tests-first implementation only in `tests/_helpers/` and test-local helpers
+- fixed rollout numerics:
+  - periodic spectral spatial derivatives
+  - two-thirds dealiasing for the nonlinear term
+  - explicit RK4 time stepping
+  - short-horizon only
+- no contract changes unless feasibility proves impossible otherwise
+
+### Acceptance Criteria
+
+M4 is complete only if:
+
+- third-derivative Fourier-mode accuracy passes
+- synthetic KdV rollout is reproducible
+- KdV residual is near zero within the frozen tolerance
+- short-horizon mass and `L2` conservation look sane
+- Heat/Burgers regressions remain unchanged
+- the outcome is recorded explicitly as:
+  - feasibility passed, stable promotion deferred
+  - or deferred to `v0.6+` with rationale
+
+Current kickoff outcome:
+
+- tests-first normalized periodic KdV feasibility passes under the frozen short-horizon numerics
+- stable promotion remains deferred to the `v0.5` release-gate review
+
 ## Later Milestones
 
 Locked sequence:
@@ -219,6 +261,6 @@ Hard sequencing rules:
 - `v0.4`: COMPLETE
 - Milestone 1: COMPLETE
 - Milestone 2: COMPLETE
-- Milestone 3: ACTIVE
-- Milestone 4: PLANNED / GATED
+- Milestone 3: COMPLETE
+- Milestone 4: ACTIVE / GATED
 - Milestone 5: PLANNED
