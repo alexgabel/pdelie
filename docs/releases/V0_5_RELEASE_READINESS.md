@@ -2,8 +2,8 @@
 
 ## Release Target
 
-- package version: `0.5.0rc1`
-- git tag: `v0.5.0rc1`
+- package version: `0.5.0`
+- git tag: `v0.5.0`
 
 ## Done
 
@@ -49,9 +49,9 @@
 - new canonical stable objects beyond the current `v0.5` slice
 - paper-specific experiment logic
 
-## Release Candidate View
+## Final Release View
 
-The current repository is ready for the `0.5.0rc1` release candidate for the frozen `v0.5` portability and external-compatibility slice, subject to the release-path checks passing on the release branch and CI passing on the release PR.
+The current repository is ready for the final `0.5.0` release for the frozen `v0.5` portability and external-compatibility slice, subject to the release-path checks passing on the release branch and CI passing on the release PR.
 
 There are no known scientific-scope blockers inside the current `v0.5` slice.
 
@@ -68,9 +68,9 @@ There are no known scientific-scope blockers inside the current `v0.5` slice.
 - KdV remains tests-first feasibility only in `v0.5` and does not add a stable runtime API
 - the `v0_4-release-gate` and `v0_5-release-gate` CI jobs are explicit visibility checks; if they should block merges, repository branch-protection settings must be updated separately
 
-## Release Candidate Tag Checklist
+## Final Tag Checklist
 
-Before tagging `v0.5.0rc1`:
+Before tagging `v0.5.0`:
 
 - run `python -m pytest` from the repo root
 - run `python -m build --sdist --wheel`
@@ -78,4 +78,4 @@ Before tagging `v0.5.0rc1`:
 - run `python -m pdelie.examples.heat_vertical_slice`
 - confirm GitHub Actions jobs `v0_4-release-gate`, `v0_5-release-gate`, `editable-tests`, and `package-smoke` pass on the release PR commit
 - merge the release PR into `main`
-- tag the merged `main` commit as `v0.5.0rc1`
+- tag the merged `main` commit as `v0.5.0`
