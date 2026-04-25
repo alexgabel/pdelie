@@ -2,7 +2,7 @@
 
 ## Current Active Milestone
 
-**V0.5 Milestone 2 — External-family compatibility**
+**V0.5 Milestone 3 — Portability benchmark**
 
 This file is the active execution plan for the current `v0.5` release series.
 
@@ -101,7 +101,7 @@ Run at minimum:
 
 ## Milestone 2 — External-family Compatibility
 
-**Status:** Active
+**Status:** Complete
 
 ### Goal
 
@@ -123,6 +123,57 @@ Normalize the frozen `v0.5` input forms into canonical `GeneratorFamily` objects
 - no downstream smoke in M2
 - no KdV work in M2
 - no prediction work in M2
+
+---
+
+## Milestone 3 — Portability Benchmark
+
+**Status:** Active
+
+### Goal
+
+Prove that the frozen `v0.5` portability inputs preserve the behavior of the existing symbolic/span/closure/viz helpers and the existing narrow downstream bridge.
+
+### Frozen Decisions
+
+- M3 is docs/tests only; no new runtime public API
+- benchmark semantic preservation only
+- positive branches are:
+  - in-memory canonical family
+  - canonical payload via `coerce_generator_family(...)`
+  - manifest payload via `coerce_generator_family(...)`
+- legacy `0.1` translation payload is included only as a narrow compatibility smoke
+- downstream coverage is limited to:
+  - `InvariantMapSpec`
+  - `InvariantApplier`
+  - `to_pysindy_trajectories`
+- do not fit or score PySINDy models in M3
+- negative controls remain typed:
+  - malformed manifest -> schema error
+  - unsupported non-polynomial family -> scope error
+- no KdV work in M3
+- no prediction work in M3
+- no broad numerics expansion in M3
+
+### Acceptance Criteria
+
+M3 is complete only if:
+
+- positive branches show no semantic drift in symbolic rendering
+- positive branches show no semantic drift in span diagnostics
+- positive branches show no semantic drift in closure diagnostics
+- translation branches produce identical downstream transformed fields and bridge trajectories
+- legacy translation remains compatible in the narrow smoke path
+- malformed and unsupported controls fail with typed errors
+
+### Test Plan
+
+Run at minimum:
+
+- portability benchmark reproducibility tests
+- portability manifest/coercion regression tests
+- narrow downstream bridge tests
+- full `pytest`
 
 ---
 
@@ -167,7 +218,7 @@ Hard sequencing rules:
 
 - `v0.4`: COMPLETE
 - Milestone 1: COMPLETE
-- Milestone 2: ACTIVE
-- Milestone 3: PLANNED
+- Milestone 2: COMPLETE
+- Milestone 3: ACTIVE
 - Milestone 4: PLANNED / GATED
 - Milestone 5: PLANNED

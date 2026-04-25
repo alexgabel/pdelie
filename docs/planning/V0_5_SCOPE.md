@@ -149,7 +149,7 @@ Until that is frozen, prediction utility remains `v0.6+` planning.
 - no new canonical object unless unavoidable
 
 ### Milestone 2 — External-family compatibility
-**Status:** Active
+**Status:** Complete
 
 - validate externally supplied canonical generator families
 - support runtime dict/object ingestion
@@ -157,16 +157,17 @@ Until that is frozen, prediction utility remains `v0.6+` planning.
 - typed failures for unsupported families
 
 ### Milestone 3 — Portability benchmark
-**Status:** Planned
+**Status:** Active
 
 Compare:
 
 - in-memory family
-- exported/imported manifest family
-- externally supplied canonical family
+- canonical payload normalized through `coerce_generator_family(...)`
+- exported/imported manifest family normalized through `coerce_generator_family(...)`
 - nuisance / malformed control
 
 The goal is semantic preservation after export/import, not a repeat of the `v0.3` downstream benchmark.
+Legacy `0.1` translation compatibility remains a narrow smoke path only, not a first-class benchmark branch.
 
 ### Milestone 4 — KdV feasibility
 **Status:** Planned / gated
