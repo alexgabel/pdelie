@@ -145,7 +145,7 @@ This release expands the invariant/downstream utility axis without widening the 
 
 ---
 
-## Current Completed Release
+## Previous Completed Release
 
 ### `v0.4` — Lie-algebra span, symbolic reporting, and visual diagnostics
 **Status:** Completed
@@ -190,51 +190,90 @@ Its purpose is:
 
 ---
 
-## Next Release Target
+## Current Completed Release
 
 ### `v0.5` — Generator-family portability and external-family compatibility
+**Status:** Completed
+
+`v0.5` is the completed release where PDELie proves that canonical polynomial generator families can be exported, imported, normalized, and reused without losing meaning.
+
+Completed scope:
+
+- generator-family export/import manifest
+- strict external-family compatibility and coercion for canonical polynomial families
+- compact portability benchmark focused on semantic preservation
+- JSON-compatible manifest payloads under the existing canonical-object policy
+- compact `v0.5` release gate
+- KdV feasibility recorded as passed in a tests-first slice, with stable KdV promotion deferred
+
+This release closes the portability / external-compatibility axis without broadening the stable numerics regime or adding a stable KdV surface.
+
+---
+
+## Next Release Target
+
+### `v0.6` — Symmetry-guided PDE discovery utilities
 **Status:** Committed
 
-`v0.5` is the next committed release target after the completed `v0.4` line.
+`v0.6` is the next committed release target after the completed `v0.5` line.
 
 Its purpose is:
 
-> make learned or externally supplied polynomial generator families portable, externally compatible, and reusable without losing canonical meaning.
+> make PDELie useful for controlled symmetry-guided PDE discovery experiments in the existing canonical Heat/Burgers regime.
 
-### Candidate scope for `v0.5`
+Frozen release definition:
 
-- generator-family export/import manifest
-- external-family validation and compatibility for canonical polynomial families
-- controlled portability benchmark focused on semantic preservation
-- JSON-compatible manifest payloads under the existing canonical-object policy
-- KdV feasibility only as a gated higher-derivative stress test
+`PDE data -> generator family -> translation-canonical inputs -> sparse PDE discovery -> recovery metrics`
 
-### Out of scope for `v0.5`
+### In scope for `v0.6`
 
-- no stable prediction-facing utility task unless later narrowed explicitly
-- no operator-level stable API
-- no broad adapter ecosystem
-- no neural-operator workflow as stable scope
-- no weak-form expansion
-- no broad numerics expansion beyond the current stable regime
-- no broad PDE-zoo expansion
+- discovery recovery metrics
+- one thin PySINDy discovery adapter
+- one translation-canonical discovery-input builder
+- simple robustness utilities
+- one compact `v0.6` release gate
+
+### Out of scope for `v0.6`
+
+- no new canonical object
+- no root exports from `pdelie.__init__`
+- no general discovery-backend framework
+- no general invariant-theory engine
+- no dataframe, plotting, manuscript, or experiment-matrix layer
+- no stable KdV promotion
+- no external dataset-ingestion axis
+- no weak-form methods
+- no operator methods
+- no broad adapters
+- no paper-specific thresholds, figures, or manuscript logic
+
+### Release Gate for `v0.6`
+
+`v0.6` is complete only if:
+
+- discovery recovery metrics are deterministic and typed
+- the thin PySINDy adapter runs reproducibly in the current scalar periodic regime
+- translation-canonical discovery inputs are deterministic for representative known/imported translation families
+- robustness utilities preserve `FieldBatch` validity and provenance behavior
+- Heat/Burgers stable paths remain unchanged
+- no stable KdV surface is added
 
 ---
 
 ## Medium-Term Horizon
 
-### `v0.6+`
-**Status:** Experimental / Deferred
+### `v0.7+` — Broader data-ingestion and numerics horizon
+**Status:** Planned
 
-The following remain promising later directions:
+The following remain later directions after the `v0.6` discovery-utility release:
 
+- broader external dataset ingestion
+- broader numerics beyond the current stable Heat/Burgers regime
 - weak-form derivatives / weak residual workflows
-- broader dataset interoperability
-- operator-level symmetry discovery
+- operator-level symmetry methods
 - larger external datasets
-- nonuniform grid support in practice
-- neural generator fields as public stable methods
-- broader representation-theoretic extensions
+- nonuniform-grid support in practice
+- broader adapter ecosystems and interoperability work
 
 These may exist in experimental namespaces or downstream repos before they enter the stable roadmap.
 
@@ -244,8 +283,7 @@ These may exist in experimental namespaces or downstream repos before they enter
 
 ### Authoritative for scheduling
 - `ROADMAP.md`
-- `V0_1_SCOPE.md`
-- `V0_2_SCOPE.md` once frozen
+- `V0_6_SCOPE.md` once frozen
 - `PLAN.md` for current execution only
 
 ### Non-authoritative for scheduling
@@ -274,5 +312,6 @@ It should **not** be edited every time a new idea appears.
 - `v0.2` = add Burgers under the same stable pipeline
 - `v0.3` = first stable invariant/downstream utility via invariants
 - `v0.4` = Lie-algebra span, symbolic reporting, and visual diagnostics
-- `v0.5` = generator-family portability and external-family compatibility, with KdV gated and prediction deferred
-- `v0.6+` = broader numerics, broader data, operator methods, and other experimental directions
+- `v0.5` = generator-family portability and external-family compatibility, with KdV kept non-stable
+- `v0.6` = symmetry-guided PDE discovery utilities in the current Heat/Burgers regime
+- `v0.7+` = broader data ingestion, broader numerics, weak-form work, operator methods, and other later directions
