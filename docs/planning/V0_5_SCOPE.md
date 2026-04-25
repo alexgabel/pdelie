@@ -157,7 +157,7 @@ Until that is frozen, prediction utility remains `v0.6+` planning.
 - typed failures for unsupported families
 
 ### Milestone 3 — Portability benchmark
-**Status:** Active
+**Status:** Complete
 
 Compare:
 
@@ -170,12 +170,25 @@ The goal is semantic preservation after export/import, not a repeat of the `v0.3
 Legacy `0.1` translation compatibility remains a narrow smoke path only, not a first-class benchmark branch.
 
 ### Milestone 4 — KdV feasibility
-**Status:** Planned / gated
+**Status:** Active / gated
 
 - spectral third-derivative stress tests
 - synthetic KdV data feasibility
 - KdV residual feasibility
+- short-horizon conservation sanity
 - promotion decision: stable path or defer to `v0.6+`
+
+M4 remains tests-first and feasibility-only:
+
+- no stable KdV API yet
+- no root exports
+- no broad numerics expansion
+- no prediction/downstream broadening
+
+Current kickoff outcome:
+
+- normalized periodic KdV feasibility passes in the tests-first slice
+- stable KdV promotion remains deferred to the release gate
 
 ### Milestone 5 — V0.5 release gate
 **Status:** Planned
