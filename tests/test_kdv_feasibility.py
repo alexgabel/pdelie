@@ -83,6 +83,14 @@ def test_kdv_field_generation_is_reproducible_and_shape_valid() -> None:
     assert first.metadata["grid_type"] == "rectilinear"
 
 
+def test_kdv_feasibility_derivatives_require_uniform_time_grid() -> None:
+    field = generate_kdv_1d_field_batch(seed=12, **_generation_kwargs())
+    field.coords["time"] = np.array([0.0, 0.01, 0.025, 0.045] + list(field.coords["time"][4:]), dtype=float)
+
+    with pytest.raises(pdelie.ShapeValidationError, match="require a uniform time grid"):
+        compute_kdv_feasibility_derivatives(field)
+
+
 def test_kdv_residual_is_near_zero_on_clean_short_horizon_data() -> None:
     field = generate_kdv_1d_field_batch(seed=13, **_generation_kwargs())
     residual = evaluate_kdv_feasibility_residual(field)

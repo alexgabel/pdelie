@@ -182,7 +182,11 @@ def compute_kdv_feasibility_derivatives(field: FieldBatch) -> DerivativeBatch:
     x = np.asarray(field.coords["x"], dtype=float)
     t = np.asarray(field.coords["time"], dtype=float)
     dx = float(x[1] - x[0])
+    if t.ndim != 1 or t.size < 3:
+        raise ShapeValidationError("KdV feasibility derivatives require a one-dimensional time coordinate with at least 3 points.")
     dt = float(t[1] - t[0])
+    if not np.allclose(np.diff(t), dt, atol=1e-12, rtol=0.0):
+        raise ShapeValidationError("KdV feasibility derivatives require a uniform time grid.")
 
     u_x, u_xx, u_xxx = _spectral_spatial_derivatives(values, dx=dx)
     u_t = np.gradient(values, dt, axis=1, edge_order=2)
