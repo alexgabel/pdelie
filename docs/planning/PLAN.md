@@ -262,6 +262,23 @@ Run at minimum:
 - `tests/test_v0_5_release_gate.py`
 - full `pytest`
 
+### Follow-on CI Hygiene Notes
+
+These are not M5 blockers, but they should be revisited after the `v0.5` release gate lands:
+
+- release-specific CI jobs are accumulating:
+  - `v0_4-release-gate`
+  - `v0_5-release-gate`
+  - `editable-tests`
+  - `package-smoke`
+- this is acceptable during `v0.5` stabilization, but future CI cleanup should prefer either:
+  - one current release-gate job
+  - or only the latest release gate as a required branch-protection check
+- `package-smoke` currently installs `dist/*.whl`
+- this is acceptable in clean CI checkouts, but future hardening may prefer resolving and installing the exact built wheel path explicitly
+- the `v0.5` release gate is intentionally compact and high-signal
+- future release gates should continue to prefer representative integration slices over duplicating full lower-level test modules
+
 ## Later Milestones
 
 Locked sequence:
