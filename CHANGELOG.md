@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.0
+
+First final release for the frozen V0.5 portability and external-compatibility core.
+
+- functionally identical to `0.5.0rc1` unless a release blocker required a minimal fix
+- finalizes the `0.5.0rc1` release surface for the V0.5 portability slice
+
 ## 0.5.0rc1
 
 First release candidate for the frozen V0.5 generator-family portability and external-compatibility core.
