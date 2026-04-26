@@ -2,7 +2,7 @@
 
 ## Current Release Status
 
-**V0.7 Milestone 2 complete**
+**V0.7 Milestone 3 complete**
 
 This file is the execution record for the active `v0.7` release series.
 
@@ -212,11 +212,18 @@ Implement `from_xarray(...)` exactly as frozen in M0, including lazy optional-de
 
 ## Milestone 3 — Parity Tests and V0.7 Release Gate
 
-**Status:** Pending
+**Status:** Complete
 
 ### Goal
 
 Prove that imported structured data behaves like the current native Heat/Burgers `FieldBatch` path and add a compact `v0.7` release gate.
+
+### Completed Outcome
+
+- added native-vs-imported parity coverage for `from_numpy(...)` and `from_xarray(...)`
+- proved parity through the current derivative, residual, symmetry-fit, verification, and discovery-bridge layers
+- added a compact `v0_7-release-gate` test module and dedicated CI job
+- kept the downstream fit assertion structural-only and avoided any new public API
 
 ---
 
@@ -260,4 +267,4 @@ Hard sequencing rules:
 - Milestone 0: COMPLETE
 - Milestone 1: COMPLETE
 - Milestone 2: COMPLETE
-- Milestone 3: PENDING
+- Milestone 3: COMPLETE
