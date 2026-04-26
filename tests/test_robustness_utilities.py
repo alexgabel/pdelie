@@ -257,6 +257,13 @@ def test_split_batch_train_heldout_rejects_invalid_train_size(train_size: object
         split_batch_train_heldout(field, train_size=train_size, seed=7)  # type: ignore[arg-type]
 
 
+def test_split_batch_train_heldout_rejects_bool_seed() -> None:
+    field = _make_field(batch_size=5)
+
+    with pytest.raises(SchemaValidationError):
+        split_batch_train_heldout(field, train_size=2, seed=True)  # type: ignore[arg-type]
+
+
 def test_split_batch_train_heldout_rejects_missing_batch_and_too_small_batch() -> None:
     field = _make_field(batch_size=1)
 
@@ -364,6 +371,18 @@ def test_summarize_recovery_grid_omits_optional_residual_means_when_not_universa
     row = summarize_recovery_grid(records)[0]
 
     assert "mean_heldout_residual_l2" not in row
+
+
+def test_summarize_recovery_grid_rejects_nonfinite_optional_residuals() -> None:
+    records = [
+        {
+            "conditions": {"noise": 0.1},
+            "recovery": _make_recovery(classification="exact", residuals={"heldout_residual_l2": np.nan}),
+        }
+    ]
+
+    with pytest.raises(SchemaValidationError):
+        summarize_recovery_grid(records)
 
 
 @pytest.mark.parametrize(
