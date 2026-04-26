@@ -89,8 +89,9 @@ def add_gaussian_noise(
 
     if noise_std != 0.0:
         rng = np.random.default_rng(normalized_seed)
-        noise = rng.normal(scale=noise_std, size=values.shape)
-        values[eligible] = values[eligible] + noise[eligible]
+        eligible_count = int(np.count_nonzero(eligible))
+        noise = rng.normal(scale=noise_std, size=eligible_count)
+        values[eligible] = values[eligible] + noise
 
     return _clone_field(
         field,
