@@ -65,6 +65,12 @@ Runtime public API for the frozen `v0.6` Milestone 1 slice:
 
 - `pdelie.discovery.evaluate_discovery_recovery` for runtime-only support and coefficient recovery metrics over caller-supplied canonical term strings
 
+Runtime public API for the frozen `v0.6` Milestone 2 slice:
+
+- `pdelie.discovery.fit_pysindy_discovery` for a runtime-only, backend-native PySINDy fit adapter over the current flattened `to_pysindy_trajectories(...)` bridge
+- this M2 API returns a runtime backend report dict, not a stable JSON-compatible artifact schema
+- its `coefficients` field is runtime NumPy data, and its `equation_terms` / `equation_strings` fields are backend-native, non-canonical debug outputs
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 

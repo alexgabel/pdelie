@@ -2,7 +2,7 @@
 
 ## Current Active Milestone
 
-**V0.6 Milestone 1 — Discovery recovery metrics**
+**V0.6 Milestone 2 — Thin PySINDy backend-fit adapter**
 
 This file is the active execution plan for the current `v0.6` release series.
 
@@ -43,7 +43,7 @@ It does not broaden the stable numerics regime beyond the current Heat/Burgers c
 
 ## Milestone 1 — Discovery Recovery Metrics
 
-**Status:** Active
+**Status:** Complete
 
 ### Goal
 
@@ -93,27 +93,34 @@ Run at minimum:
 
 ## Milestone 2 — Thin PySINDy Discovery Adapter
 
-**Status:** Pending
+**Status:** Active
 
 ### Goal
 
-Add one narrow PySINDy-only discovery adapter for the existing scalar periodic trajectory bridge without creating a general discovery-backend framework.
+Add one narrow PySINDy-only backend-fit adapter for the existing scalar periodic trajectory bridge without creating a general discovery-backend framework or claiming canonical PDE-level equation extraction.
 
 ### Frozen Decisions
 
 - add `pdelie.discovery.fit_pysindy_discovery(...)`
 - PySINDy only
 - continuous-time only
-- target derivative is exactly `"u_t"`
 - accept only the current trajectory shape from `to_pysindy_trajectories(...)`
-- `feature_names` are the input trajectory columns
+- all trajectories must share identical shape as a frozen M2 simplification, not as a general PySINDy limitation
+- `feature_names` are the input state-feature columns and must be unique non-empty strings
+- runtime owns a private frozen deterministic PySINDy default profile
+- `config` must be `None`
+- return a runtime backend report dict, not a JSON-compatible artifact schema
 - return:
   - `library_feature_names`
-  - dense `coefficients`
-  - sparse `equation_terms`
+  - dense 2D `coefficients` as NumPy arrays
+  - sparse backend-native `equation_terms`
+  - backend-native debug `equation_strings`
 - default coefficient threshold is `1e-8`
 - backend fitting failures return `status="failed"`
 - missing dependency remains `ImportError`
+- `equation_terms` and `equation_strings` are backend-native and non-canonical
+- `equation_terms` and `equation_strings` must not be fed directly into `evaluate_discovery_recovery(...)` without a later canonicalization step
+- do not promise a true `u_t = ...` PDE equation in M2
 - do not generalize into a backend framework
 
 ---
@@ -227,8 +234,8 @@ Hard sequencing rules:
 ## Status
 
 - `v0.5`: COMPLETE
-- Milestone 1: ACTIVE
-- Milestone 2: PENDING
+- Milestone 1: COMPLETE
+- Milestone 2: ACTIVE
 - Milestone 3: PENDING
 - Milestone 4: PENDING
 - Milestone 5: PENDING
