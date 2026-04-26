@@ -283,7 +283,7 @@ Frozen preprocess-log policy:
 ---
 
 ## Milestone 5 — V0.6 release gate
-**Status:** Active
+**Status:** Complete
 
 The `v0.6` release gate remains compact and representative only.
 

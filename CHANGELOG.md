@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.6.0
+
+First final release for the frozen V0.6 symmetry-guided PDE discovery utilities core.
+
+- adds runtime-only discovery recovery metrics under `pdelie.discovery.evaluate_discovery_recovery(...)`
+- adds a thin runtime-only PySINDy backend-fit adapter under `pdelie.discovery.fit_pysindy_discovery(...)`
+- adds runtime-only heuristic translation-canonical discovery inputs under `pdelie.discovery.build_translation_canonical_discovery_inputs(...)`
+- adds deterministic robustness helpers under `pdelie.data` plus grouped recovery-grid summaries under `pdelie.discovery`
+- adds a compact `v0_6-release-gate` CI visibility job and representative release-gate pytest module
+- finalizes the frozen `v0.6` Heat/Burgers discovery-utility surface without promoting KdV
+
+Explicitly deferred for this final release:
+
+- stable KdV API or stable KdV runtime module
+- external structured dataset ingestion
+- weak-form methods
+- operator methods
+- broad discovery adapters or backend frameworks
+- paper-specific experiment logic, figures, or manuscript tables
+
 ## 0.5.0
 
 First final release for the frozen V0.5 portability and external-compatibility core.

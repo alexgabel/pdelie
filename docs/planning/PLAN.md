@@ -1,15 +1,15 @@
 # PDELie — Execution Plan (V0.6)
 
-## Current Active Milestone
+## Current Release Status
 
-**V0.6 Milestone 5 — V0.6 release gate**
+**V0.6 release complete**
 
-This file is the active execution plan for the current `v0.6` release series.
+This file is the execution record for the completed `v0.6` release series.
 
 It should contain:
 
 - a short record of the completed `v0.5` release
-- the frozen plan for the current active milestone
+- the frozen plan for the completed `v0.6` milestone sequence
 - milestone-specific rules and gates
 
 It should not redefine package contracts or roadmap commitments. Those belong in:
@@ -201,7 +201,7 @@ Add plain, deterministic robustness helpers that keep `FieldBatch` semantics int
 
 ## Milestone 5 — V0.6 Release Gate
 
-**Status:** Active
+**Status:** Complete
 
 ### Goal
 
@@ -269,4 +269,4 @@ Hard sequencing rules:
 - Milestone 2: COMPLETE
 - Milestone 3: COMPLETE
 - Milestone 4: COMPLETE
-- Milestone 5: ACTIVE
+- Milestone 5: COMPLETE
