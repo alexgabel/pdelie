@@ -77,6 +77,15 @@ Runtime public API for the frozen `v0.6` Milestone 3 slice:
 - this M3 API returns a runtime dict containing a transformed `FieldBatch`, the narrow `to_pysindy_trajectories(...)` bridge output, and deterministic alignment metadata
 - its canonicalization policy is heuristic peak alignment, not a strong invariant-theoretic guarantee
 
+Runtime public API for the frozen `v0.6` Milestone 4 slice:
+
+- `pdelie.data.add_gaussian_noise` for deterministic additive Gaussian perturbation of canonical `FieldBatch` data while preserving `FieldBatch` validity and preprocess provenance
+- `pdelie.data.subsample_time` for stride-only time-axis subsampling of canonical `FieldBatch` data
+- `pdelie.data.subsample_x` for stride-only x-axis subsampling of canonical `FieldBatch` data under the stable minimum-two-x-points rule
+- `pdelie.data.split_batch_train_heldout` for deterministic batch-axis train/held-out splitting of canonical `FieldBatch` data
+- `pdelie.discovery.summarize_recovery_grid` for runtime-only grouped aggregation of nested recovery-grid records
+- the M4 summarizer is runtime convenience only, not a canonical artifact schema, JSON contract, or manuscript-table format
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 
