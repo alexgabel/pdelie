@@ -260,22 +260,106 @@ Frozen release definition:
 
 ---
 
-## Medium-Term Horizon
+## Planned Next Step
 
-### `v0.7+` — Broader data-ingestion and numerics horizon
+### `v0.7` — Structured external data ingestion
 **Status:** Planned
 
-The following remain later directions after the `v0.6` discovery-utility release:
+`v0.7` is the planned release after the `v0.6` discovery-utility release.
 
-- broader external dataset ingestion
-- broader numerics beyond the current stable Heat/Burgers regime
+Its purpose is:
+
+> make PDELie able to ingest external structured 1D uniform rectilinear PDE data into canonical `FieldBatch`, so the existing symmetry and discovery utilities can run outside internally generated synthetic fixtures.
+
+### Candidate scope for `v0.7`
+
+- `pdelie.data.from_numpy(...)`
+- `pdelie.data.from_xarray(...)`
+- strict conversion to canonical `FieldBatch`
+- 1D uniform rectilinear inputs only
+- scalar-variable stable slice only
+- explicit dims, coords, metadata, and provenance validation
+- parity tests showing imported Heat/Burgers-like data behaves like native `FieldBatch`
+
+### Out of scope for `v0.7`
+
+- no PDEBench-specific loader
+- no The Well adapter
+- no HDF5, netCDF, or Zarr stable loader
+- no 2D/3D external-data ingestion
+- no nonuniform-grid support
+- no broad metadata inference
+- no weak-form methods
+- no operator methods
+
+`v0.7` is therefore not a broad dataset-support release. It is the first structured-ingestion release:
+
+> external structured arrays -> canonical `FieldBatch` -> existing PDELie pipeline.
+
+---
+
+## Medium-Term Horizon
+
+### `v0.8` — Robust high-derivative and weak-form numerics
+**Status:** Planned / Experimental
+
+`v0.8` is the likely next major numerical expansion after structured ingestion.
+
+Its purpose is:
+
+> add derivative-robust machinery for noisy, coarse, or high-derivative PDE discovery, while preserving the canonical data and generator-family contracts.
+
+Candidate directions:
+
 - weak-form derivatives / weak residual workflows
-- operator-level symmetry methods
-- larger external datasets
-- nonuniform-grid support in practice
-- broader adapter ecosystems and interoperability work
+- WSINDy-style integration tests
+- robust residual evaluation under noise
+- high-derivative stress tests
+- KdV promotion if the weak/spectral story is mature enough
 
-These may exist in experimental namespaces or downstream repos before they enter the stable roadmap.
+KdV does not require weak-form methods for clean synthetic periodic tests, but noisy or coarse KdV is a natural pressure point for weak-form machinery. `v0.8` is therefore the right place to decide whether weak methods become a stable numerical axis.
+
+### `v0.9` — Broader PDE and dataset coverage
+**Status:** Planned / Experimental
+
+`v0.9` may broaden PDE and dataset coverage once structured ingestion and robust numerics are stable.
+
+Candidate directions:
+
+- stable KdV if not already promoted
+- wave equation after second-time-derivative semantics are clarified
+- reaction-diffusion systems
+- Kuramoto-Sivashinsky as a harder high-derivative stress test
+- PDEBench / The Well adapters after generic ingestion is proven
+- multidimensional structured grids if the 1D path is stable
+
+### `v1.0` — Stable public engine
+**Status:** Deferred
+
+`v1.0` should only happen once PDELie has a stable, supportable public surface for:
+
+- canonical PDE field data
+- generator families
+- verification and diagnostics
+- portability manifests
+- discovery utilities
+- selected structured external-data ingestion
+
+`v1.0` should be a stabilization milestone, not a scope-expansion milestone.
+
+### Later / Experimental — Operator-facing symmetry discovery
+**Status:** Experimental / Deferred
+
+Operator-facing symmetry work remains a later or separate track.
+
+Candidate directions:
+
+- FNO / DeepONet-compatible symmetry diagnostics
+- operator-level generator probing
+- learned symmetry representations in neural operators
+- operator benchmark layers
+
+This is not part of the near-term non-operator Paper 1 path and should not be mixed into `v0.6` or `v0.7`.
 
 ---
 
@@ -314,4 +398,8 @@ It should **not** be edited every time a new idea appears.
 - `v0.4` = Lie-algebra span, symbolic reporting, and visual diagnostics
 - `v0.5` = generator-family portability and external-family compatibility, with KdV kept non-stable
 - `v0.6` = symmetry-guided PDE discovery utilities in the current Heat/Burgers regime
-- `v0.7+` = broader data ingestion, broader numerics, weak-form work, operator methods, and other later directions
+- `v0.7` = structured external data ingestion into canonical `FieldBatch`
+- `v0.8` = robust high-derivative / weak-form numerics
+- `v0.9` = broader PDE and dataset coverage
+- `v1.0` = stable public engine
+- later / experimental = operator-facing symmetry discovery

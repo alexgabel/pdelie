@@ -61,6 +61,10 @@ Runtime public API for the frozen `v0.5` Milestone 2 slice:
 
 - `pdelie.portability.coerce_generator_family` for strict normalization of canonical in-memory families, canonical family payloads, manifests, and the narrow legacy translation payload into canonical `GeneratorFamily`
 
+Runtime public API for the frozen `v0.6` Milestone 1 slice:
+
+- `pdelie.discovery.evaluate_discovery_recovery` for runtime-only support and coefficient recovery metrics over caller-supplied canonical term strings
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 
