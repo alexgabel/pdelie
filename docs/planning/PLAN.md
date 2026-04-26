@@ -2,7 +2,7 @@
 
 ## Current Active Milestone
 
-**V0.6 Milestone 2 — Thin PySINDy backend-fit adapter**
+**V0.6 Milestone 3 — Translation-canonical discovery inputs**
 
 This file is the active execution plan for the current `v0.6` release series.
 
@@ -93,7 +93,7 @@ Run at minimum:
 
 ## Milestone 2 — Thin PySINDy Discovery Adapter
 
-**Status:** Active
+**Status:** Complete
 
 ### Goal
 
@@ -127,21 +127,39 @@ Add one narrow PySINDy-only backend-fit adapter for the existing scalar periodic
 
 ## Milestone 3 — Translation-Canonical Discovery Inputs
 
-**Status:** Pending
+**Status:** Active
 
 ### Goal
 
-Bridge the current translation/invariant path into discovery-ready canonical inputs without implying full differential-invariant generation.
+Bridge the current translation/invariant path into discovery-ready canonical inputs without implying full differential-invariant generation or mathematically intrinsic invariant construction.
 
 ### Frozen Decisions
 
 - add `pdelie.discovery.build_translation_canonical_discovery_inputs(...)`
+- use `invariant_spec_template`, not `invariant_spec`
+- exactly one of `generator_family` or `invariant_spec_template`
 - translation/canonical path only
 - scalar variable only
 - periodic `x` only
+- reject masked fields
+- accept only single-row translation generators within `DEFAULT_TRANSLATION_SPAN_TOLERANCE`
+- `invariant_spec_template` is explicit template mode and must not include `shift`
 - per-sample initial-time peak alignment
 - first-index tie-breaking
 - deterministic reported shifts in batch order
+- peak alignment is a heuristic canonicalization policy, not a strong invariant-theoretic guarantee
+- split/apply/reassemble through the existing `InvariantApplier`
+- reassembled field appends exactly one batch-level preprocess entry
+- return a runtime dict with:
+  - `transformed_field`
+  - `trajectories`
+  - `time_values`
+  - `feature_names`
+  - `generator_metadata`
+  - `construction_method`
+  - `alignment_policy`
+  - `alignment_shifts`
+  - `provenance`
 - no general invariant-theory engine
 - no full differential-invariant generation
 
@@ -235,7 +253,7 @@ Hard sequencing rules:
 
 - `v0.5`: COMPLETE
 - Milestone 1: COMPLETE
-- Milestone 2: ACTIVE
-- Milestone 3: PENDING
+- Milestone 2: COMPLETE
+- Milestone 3: ACTIVE
 - Milestone 4: PENDING
 - Milestone 5: PENDING

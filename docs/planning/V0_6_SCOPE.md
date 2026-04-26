@@ -110,7 +110,7 @@ Frozen outputs:
 ---
 
 ## Milestone 2 — Thin PySINDy discovery adapter
-**Status:** Active
+**Status:** Complete
 
 Public runtime API:
 
@@ -163,11 +163,11 @@ Frozen returned fields:
 ---
 
 ## Milestone 3 — Translation-canonical discovery inputs
-**Status:** Pending
+**Status:** Active
 
 Public runtime API:
 
-- `pdelie.discovery.build_translation_canonical_discovery_inputs(field, *, generator_family=None, invariant_spec=None) -> dict[str, object]`
+- `pdelie.discovery.build_translation_canonical_discovery_inputs(field, *, generator_family=None, invariant_spec_template=None) -> dict[str, object]`
 
 Frozen scope:
 
@@ -175,10 +175,14 @@ Frozen scope:
 - current invariant-application path only
 - scalar variable only
 - periodic `x` only
+- masked fields are rejected
 - supports known/oracle translation families
 - supports imported/coerced translation families
 - supports discovered translation families
-- rejects unsupported non-translation families
+- rejects unsupported non-translation families and non-uniform translation-like families
+- `invariant_spec_template` is explicit template mode, not direct fixed-shift mode
+- template parameters may be `{}` or `{"axis": "x"}`
+- template parameters must not include `shift`
 - no full differential-invariant generation
 
 Frozen alignment behavior:
@@ -189,6 +193,14 @@ Frozen alignment behavior:
 - peak index selection uses first-index tie-breaking
 - shift is `x[peak_index] - x[0]`
 - output shifts are deterministic and reported in batch order
+- alignment policy is a deterministic heuristic canonicalization rule, not a strong invariant-theoretic guarantee
+
+Frozen implementation policy:
+
+- split batch inputs into single-sample fields
+- apply the existing `InvariantApplier` one sample at a time
+- reassemble into one batched `FieldBatch`
+- append exactly one batch-level preprocess-log entry instead of concatenating per-sample logs
 
 Frozen returned fields:
 
