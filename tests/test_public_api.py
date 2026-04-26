@@ -29,7 +29,7 @@ def test_stable_public_api_is_importable() -> None:
 
 
 def test_runtime_package_api_is_importable() -> None:
-    from pdelie.data import add_gaussian_noise, from_numpy, split_batch_train_heldout, subsample_time, subsample_x
+    from pdelie.data import add_gaussian_noise, from_numpy, from_xarray, split_batch_train_heldout, subsample_time, subsample_x
     from pdelie.discovery import (
         build_translation_canonical_discovery_inputs,
         evaluate_discovery_recovery,
@@ -59,6 +59,7 @@ def test_runtime_package_api_is_importable() -> None:
 
     assert add_gaussian_noise is not None
     assert from_numpy is not None
+    assert from_xarray is not None
     assert split_batch_train_heldout is not None
     assert subsample_time is not None
     assert subsample_x is not None
@@ -89,6 +90,7 @@ def test_root_package_does_not_export_runtime_invariant_applier() -> None:
     assert not hasattr(pdelie, "evaluate_discovery_recovery")
     assert not hasattr(pdelie, "fit_pysindy_discovery")
     assert not hasattr(pdelie, "from_numpy")
+    assert not hasattr(pdelie, "from_xarray")
     assert not hasattr(pdelie, "split_batch_train_heldout")
     assert not hasattr(pdelie, "subsample_time")
     assert not hasattr(pdelie, "subsample_x")
@@ -115,11 +117,12 @@ def test_invariants_package_runtime_api_matches_frozen_milestone_surface() -> No
     assert not hasattr(invariants_module, "InvariantMapSpec")
 
 
-def test_data_package_runtime_api_matches_frozen_v0_7_m1_surface() -> None:
+def test_data_package_runtime_api_matches_frozen_v0_7_m2_surface() -> None:
     data_module = importlib.import_module("pdelie.data")
 
     assert hasattr(data_module, "add_gaussian_noise")
     assert hasattr(data_module, "from_numpy")
+    assert hasattr(data_module, "from_xarray")
     assert hasattr(data_module, "subsample_time")
     assert hasattr(data_module, "subsample_x")
     assert hasattr(data_module, "split_batch_train_heldout")

@@ -158,9 +158,7 @@ Stable dependency behavior:
 - `from_xarray(...)` is a runtime-optional path
 - `xarray` must be imported lazily inside the function / module path
 - if `xarray` is unavailable, calling `from_xarray(...)` raises `ImportError` with an install message
-- do not add an optional dependency extra in `v0.7 M0`
-- the packaging extra name for `xarray` support will be finalized when `from_xarray(...)` is implemented
-- `v0.7 M0` freezes only the runtime behavior and placeholder packaging note, not the final extra name
+- the optional dependency extra name for stable `from_xarray(...)` support is `xarray`
 
 ---
 

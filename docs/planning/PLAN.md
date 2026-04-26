@@ -2,7 +2,7 @@
 
 ## Current Release Status
 
-**V0.7 Milestone 1 complete**
+**V0.7 Milestone 2 complete**
 
 This file is the execution record for the active `v0.7` release series.
 
@@ -193,11 +193,20 @@ Implement `from_numpy(...)` exactly as frozen in M0.
 
 ## Milestone 2 — `from_xarray(...)`
 
-**Status:** Pending
+**Status:** Complete
 
 ### Goal
 
 Implement `from_xarray(...)` exactly as frozen in M0, including lazy optional-dependency behavior.
+
+### Completed Outcome
+
+- added `pdelie.data.from_xarray(...)`
+- accepted only the four frozen scalar 1D `xarray.DataArray` layouts
+- canonicalized output to `("batch", "time", "x", "var")`
+- preserved explicit `NaN` values and optional `xarray.DataArray` masks without normalization
+- deep-copied values, coordinates, metadata, masks, and preprocess provenance
+- finalized the optional dependency extra name as `xarray`
 
 ---
 
@@ -250,5 +259,5 @@ Hard sequencing rules:
 - `v0.6`: COMPLETE
 - Milestone 0: COMPLETE
 - Milestone 1: COMPLETE
-- Milestone 2: PENDING
+- Milestone 2: COMPLETE
 - Milestone 3: PENDING

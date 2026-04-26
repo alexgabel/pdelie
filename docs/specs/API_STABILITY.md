@@ -91,6 +91,11 @@ Runtime public API for the frozen `v0.7` Milestone 1 slice:
 - `pdelie.data.from_numpy` for strict runtime conversion of explicit NumPy/array-like 1D uniform rectilinear trajectory data into canonical `FieldBatch`
 - this M1 API is core-only, not file-based, not alias-based, and not a broad external-loader framework
 
+Runtime public API for the frozen `v0.7` Milestone 2 slice:
+
+- `pdelie.data.from_xarray` for strict runtime conversion of explicit `xarray.DataArray` 1D uniform rectilinear trajectory data into canonical `FieldBatch`
+- this M2 API is runtime-optional, DataArray-only, not Dataset-based, and not a broad external-loader framework
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 
