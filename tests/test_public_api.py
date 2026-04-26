@@ -29,7 +29,12 @@ def test_stable_public_api_is_importable() -> None:
 
 
 def test_runtime_package_api_is_importable() -> None:
-    from pdelie.discovery import evaluate_discovery_recovery, fit_pysindy_discovery, to_pysindy_trajectories
+    from pdelie.discovery import (
+        build_translation_canonical_discovery_inputs,
+        evaluate_discovery_recovery,
+        fit_pysindy_discovery,
+        to_pysindy_trajectories,
+    )
     from pdelie.invariants import InvariantApplier
     from pdelie.portability import (
         coerce_generator_family,
@@ -51,6 +56,7 @@ def test_runtime_package_api_is_importable() -> None:
     )
 
     assert InvariantApplier is not None
+    assert build_translation_canonical_discovery_inputs is not None
     assert evaluate_discovery_recovery is not None
     assert fit_pysindy_discovery is not None
     assert to_pysindy_trajectories is not None
@@ -70,6 +76,7 @@ def test_runtime_package_api_is_importable() -> None:
 
 def test_root_package_does_not_export_runtime_invariant_applier() -> None:
     assert not hasattr(pdelie, "InvariantApplier")
+    assert not hasattr(pdelie, "build_translation_canonical_discovery_inputs")
     assert not hasattr(pdelie, "evaluate_discovery_recovery")
     assert not hasattr(pdelie, "fit_pysindy_discovery")
     assert not hasattr(pdelie, "to_pysindy_trajectories")
@@ -97,6 +104,7 @@ def test_invariants_package_runtime_api_matches_frozen_milestone_surface() -> No
 def test_discovery_package_runtime_api_matches_frozen_milestone_surface() -> None:
     discovery_module = importlib.import_module("pdelie.discovery")
 
+    assert hasattr(discovery_module, "build_translation_canonical_discovery_inputs")
     assert hasattr(discovery_module, "evaluate_discovery_recovery")
     assert hasattr(discovery_module, "fit_pysindy_discovery")
     assert hasattr(discovery_module, "to_pysindy_trajectories")

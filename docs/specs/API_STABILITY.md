@@ -71,6 +71,12 @@ Runtime public API for the frozen `v0.6` Milestone 2 slice:
 - this M2 API returns a runtime backend report dict, not a stable JSON-compatible artifact schema
 - its `coefficients` field is runtime NumPy data, and its `equation_terms` / `equation_strings` fields are backend-native, non-canonical debug outputs
 
+Runtime public API for the frozen `v0.6` Milestone 3 slice:
+
+- `pdelie.discovery.build_translation_canonical_discovery_inputs` for a runtime-only, heuristic translation-canonical discovery-input helper over canonical Heat/Burgers `FieldBatch` data
+- this M3 API returns a runtime dict containing a transformed `FieldBatch`, the narrow `to_pysindy_trajectories(...)` bridge output, and deterministic alignment metadata
+- its canonicalization policy is heuristic peak alignment, not a strong invariant-theoretic guarantee
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 
