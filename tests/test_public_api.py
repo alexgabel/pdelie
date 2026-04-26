@@ -29,10 +29,12 @@ def test_stable_public_api_is_importable() -> None:
 
 
 def test_runtime_package_api_is_importable() -> None:
+    from pdelie.data import add_gaussian_noise, split_batch_train_heldout, subsample_time, subsample_x
     from pdelie.discovery import (
         build_translation_canonical_discovery_inputs,
         evaluate_discovery_recovery,
         fit_pysindy_discovery,
+        summarize_recovery_grid,
         to_pysindy_trajectories,
     )
     from pdelie.invariants import InvariantApplier
@@ -55,10 +57,15 @@ def test_runtime_package_api_is_importable() -> None:
         plot_verification_curve,
     )
 
+    assert add_gaussian_noise is not None
+    assert split_batch_train_heldout is not None
+    assert subsample_time is not None
+    assert subsample_x is not None
     assert InvariantApplier is not None
     assert build_translation_canonical_discovery_inputs is not None
     assert evaluate_discovery_recovery is not None
     assert fit_pysindy_discovery is not None
+    assert summarize_recovery_grid is not None
     assert to_pysindy_trajectories is not None
     assert coerce_generator_family is not None
     assert export_generator_family_manifest is not None
@@ -76,9 +83,14 @@ def test_runtime_package_api_is_importable() -> None:
 
 def test_root_package_does_not_export_runtime_invariant_applier() -> None:
     assert not hasattr(pdelie, "InvariantApplier")
+    assert not hasattr(pdelie, "add_gaussian_noise")
     assert not hasattr(pdelie, "build_translation_canonical_discovery_inputs")
     assert not hasattr(pdelie, "evaluate_discovery_recovery")
     assert not hasattr(pdelie, "fit_pysindy_discovery")
+    assert not hasattr(pdelie, "split_batch_train_heldout")
+    assert not hasattr(pdelie, "subsample_time")
+    assert not hasattr(pdelie, "subsample_x")
+    assert not hasattr(pdelie, "summarize_recovery_grid")
     assert not hasattr(pdelie, "to_pysindy_trajectories")
     assert not hasattr(pdelie, "coerce_generator_family")
     assert not hasattr(pdelie, "export_generator_family_manifest")
@@ -101,12 +113,22 @@ def test_invariants_package_runtime_api_matches_frozen_milestone_surface() -> No
     assert not hasattr(invariants_module, "InvariantMapSpec")
 
 
+def test_data_package_runtime_api_matches_frozen_m4_surface() -> None:
+    data_module = importlib.import_module("pdelie.data")
+
+    assert hasattr(data_module, "add_gaussian_noise")
+    assert hasattr(data_module, "subsample_time")
+    assert hasattr(data_module, "subsample_x")
+    assert hasattr(data_module, "split_batch_train_heldout")
+
+
 def test_discovery_package_runtime_api_matches_frozen_milestone_surface() -> None:
     discovery_module = importlib.import_module("pdelie.discovery")
 
     assert hasattr(discovery_module, "build_translation_canonical_discovery_inputs")
     assert hasattr(discovery_module, "evaluate_discovery_recovery")
     assert hasattr(discovery_module, "fit_pysindy_discovery")
+    assert hasattr(discovery_module, "summarize_recovery_grid")
     assert hasattr(discovery_module, "to_pysindy_trajectories")
     assert not hasattr(discovery_module, "_fit_pysindy_smoke")
 

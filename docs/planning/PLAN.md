@@ -2,7 +2,7 @@
 
 ## Current Active Milestone
 
-**V0.6 Milestone 3 — Translation-canonical discovery inputs**
+**V0.6 Milestone 4 — Robustness utilities**
 
 This file is the active execution plan for the current `v0.6` release series.
 
@@ -127,7 +127,7 @@ Add one narrow PySINDy-only backend-fit adapter for the existing scalar periodic
 
 ## Milestone 3 — Translation-Canonical Discovery Inputs
 
-**Status:** Active
+**Status:** Complete
 
 ### Goal
 
@@ -167,7 +167,7 @@ Bridge the current translation/invariant path into discovery-ready canonical inp
 
 ## Milestone 4 — Robustness Utilities
 
-**Status:** Pending
+**Status:** Active
 
 ### Goal
 
@@ -175,14 +175,25 @@ Add plain, deterministic robustness helpers that keep `FieldBatch` semantics int
 
 ### Frozen Decisions
 
-- `FieldBatch` in / `FieldBatch` out only
-- deterministic noise, subsampling, and splitting
-- coords are copied
-- masks are preserved
-- `NaN` values remain `NaN`
+- add `pdelie.data.add_gaussian_noise(...)`
+- add `pdelie.data.subsample_time(...)`
+- add `pdelie.data.subsample_x(...)`
+- add `pdelie.data.split_batch_train_heldout(...)`
+- add `pdelie.discovery.summarize_recovery_grid(...)`
+- `FieldBatch` in / `FieldBatch` out only for the data-side helpers
+- deep-copy metadata and existing preprocess-log entries before appending new entries
+- copy coord arrays, copy `var_names`, and copy/slice masks when present
+- deterministic noise, subsampling, and splitting only
 - noise applies only to finite unmasked values
-- stride-only subsampling
-- train/heldout split is deterministic and preserves original order within each split
+- `NaN` and other non-finite source values remain unchanged
+- `subsample_time` may leave one time point
+- `subsample_x` must leave at least two x-points
+- `train_size` is an integer count only
+- integer-like parameters allow Python `int` and NumPy integer types but reject `bool`
+- train/heldout split is deterministic and preserves original batch order within each split
+- `summarize_recovery_grid(...)` consumes nested `{"conditions": ..., "recovery": ...}` runtime records
+- grouped summary rows use deterministic typed sort keys over condition values
+- `summarize_recovery_grid(...)` is runtime convenience only, not a canonical artifact or manuscript-table schema
 - `preprocess_log` gets exactly one new plain-dict entry with `operation` and `parameters`
 - no dataframe, plotting, or report-rendering layer
 
@@ -254,6 +265,6 @@ Hard sequencing rules:
 - `v0.5`: COMPLETE
 - Milestone 1: COMPLETE
 - Milestone 2: COMPLETE
-- Milestone 3: ACTIVE
-- Milestone 4: PENDING
+- Milestone 3: COMPLETE
+- Milestone 4: ACTIVE
 - Milestone 5: PENDING

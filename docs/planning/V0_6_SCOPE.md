@@ -163,7 +163,7 @@ Frozen returned fields:
 ---
 
 ## Milestone 3 — Translation-canonical discovery inputs
-**Status:** Active
+**Status:** Complete
 
 Public runtime API:
 
@@ -217,7 +217,7 @@ Frozen returned fields:
 ---
 
 ## Milestone 4 — Robustness utilities
-**Status:** Pending
+**Status:** Active
 
 Public runtime APIs under `pdelie.data`:
 
@@ -234,15 +234,43 @@ Frozen utility policy:
 
 - `FieldBatch` in / `FieldBatch` out
 - deterministic noise, subsampling, and splitting
+- metadata is deep-copied
+- existing preprocess-log entries are deep-copied before appending new entries
 - coords are copied
+- `var_names` are copied
 - masks are preserved
 - `NaN` values remain `NaN`
 - noise is applied only to finite unmasked values
 - subsampling is stride-only
+- `subsample_time` may leave one time point
+- `subsample_x` must leave at least two x-points
 - train/heldout split is deterministic and preserves original order within each split
+- `train_size` is an integer count only
+- integer-like parameters accept Python `int` and NumPy integer types but reject `bool`
 - no dataframe object
 - no plot layer
 - no table-rendering system
+- `summarize_recovery_grid(...)` is a runtime convenience API, not a canonical artifact schema and not a manuscript table format
+
+Frozen noise policy:
+
+- `add_gaussian_noise(...)` computes its reference RMS from finite unmasked values only
+- masked entries remain unchanged
+- existing non-finite values remain unchanged
+- no eligible finite unmasked values raises `SchemaValidationError`
+
+Frozen recovery-grid policy:
+
+- `summarize_recovery_grid(...)` accepts nested records of the form `{"conditions": {...}, "recovery": {...}}`
+- condition values must be JSON-scalar values only
+- condition floats must be finite
+- grouped output rows are sorted deterministically using typed condition sort keys
+- recovery `classification` must be one of:
+  - `exact`
+  - `partial`
+  - `failed`
+- required recovery metrics must be finite numeric scalars
+- optional residual means are included only when every record in a group contains that field
 
 Frozen preprocess-log policy:
 
