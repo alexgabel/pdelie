@@ -2,7 +2,7 @@
 
 ## Current Release Status
 
-**V0.7 Milestone 0 active**
+**V0.7 Milestone 1 complete**
 
 This file is the execution record for the active `v0.7` release series.
 
@@ -45,7 +45,7 @@ It does not broaden the stable numerics regime or the current scalar periodic di
 
 ## Milestone 0 — External Ingestion Contract Freeze
 
-**Status:** Active
+**Status:** Complete
 
 ### Goal
 
@@ -174,11 +174,20 @@ M0 is complete only if:
 
 ## Milestone 1 — `from_numpy(...)`
 
-**Status:** Pending
+**Status:** Complete
 
 ### Goal
 
 Implement `from_numpy(...)` exactly as frozen in M0.
+
+### Completed Outcome
+
+- added `pdelie.data.from_numpy(...)`
+- accepted only the four frozen scalar 1D structured layouts
+- canonicalized output to `("batch", "time", "x", "var")`
+- preserved explicit `NaN` values and optional masks without normalization
+- deep-copied values, coordinates, metadata, masks, and preprocess provenance
+- appended one deterministic `from_numpy` provenance entry
 
 ---
 
@@ -239,7 +248,7 @@ Hard sequencing rules:
 ## Status
 
 - `v0.6`: COMPLETE
-- Milestone 0: ACTIVE
-- Milestone 1: PENDING
+- Milestone 0: COMPLETE
+- Milestone 1: COMPLETE
 - Milestone 2: PENDING
 - Milestone 3: PENDING
