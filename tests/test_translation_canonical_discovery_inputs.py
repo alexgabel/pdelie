@@ -279,10 +279,44 @@ def test_alignment_is_deterministic_for_flat_and_repeated_maxima() -> None:
 
     result = build_translation_canonical_discovery_inputs(field, generator_family=_make_translation_generator())
     x = field.coords["x"]
+    transformed = result["transformed_field"]
 
     assert result["alignment_policy"]["kind"] == "heuristic_peak_alignment"
     assert result["alignment_policy"]["tie_break"] == "first_index"
-    assert result["alignment_shifts"] == [pytest.approx(0.0), pytest.approx(float(x[1] - x[0]))]
+    assert result["alignment_shifts"] == [pytest.approx(0.0), pytest.approx(float(x[0] - x[1]))]
+    np.testing.assert_allclose(transformed.values[0, :, :, 0], values[0, :, :, 0])
+    assert int(np.argmax(transformed.values[1, 0, :, 0])) == 0
+
+
+def test_nonflat_peak_at_index_zero_reports_zero_shift_and_is_unchanged() -> None:
+    base = generate_heat_1d_field_batch(batch_size=1, num_times=5, num_points=4, seed=1017)
+    values = np.array(
+        [
+            [
+                [[4.0], [2.0], [1.0], [0.5]],
+                [[4.0], [2.0], [1.0], [0.5]],
+                [[4.0], [2.0], [1.0], [0.5]],
+                [[4.0], [2.0], [1.0], [0.5]],
+                [[4.0], [2.0], [1.0], [0.5]],
+            ]
+        ],
+        dtype=float,
+    )
+    field = FieldBatch(
+        values=values,
+        dims=base.dims,
+        coords={name: coord.copy() for name, coord in base.coords.items()},
+        var_names=list(base.var_names),
+        metadata=dict(base.metadata),
+        preprocess_log=list(base.preprocess_log),
+        mask=None,
+    )
+
+    result = build_translation_canonical_discovery_inputs(field, generator_family=_make_translation_generator())
+    transformed = result["transformed_field"]
+
+    assert result["alignment_shifts"] == [pytest.approx(0.0)]
+    np.testing.assert_allclose(transformed.values, values)
 
 
 def test_bridge_outputs_match_direct_bridge_on_transformed_field() -> None:

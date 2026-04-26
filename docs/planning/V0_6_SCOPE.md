@@ -191,7 +191,7 @@ Frozen alignment behavior:
 - alignment uses the initial-time slice only
 - alignment uses `values[batch, 0, :, 0]`
 - peak index selection uses first-index tie-breaking
-- shift is `x[peak_index] - x[0]`
+- shift is `x[0] - x[peak_index]`
 - output shifts are deterministic and reported in batch order
 - alignment policy is a deterministic heuristic canonicalization rule, not a strong invariant-theoretic guarantee
 

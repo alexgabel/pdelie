@@ -21,7 +21,7 @@ _ALIGNMENT_POLICY = {
     "time_index": 0,
     "var_index": 0,
     "tie_break": "first_index",
-    "shift_formula": "x[argmax(values[batch, 0, :, 0])] - x[0]",
+    "shift_formula": "x[0] - x[argmax(values[batch, 0, :, 0])]",
 }
 
 
@@ -123,7 +123,6 @@ def _normalize_invariant_spec_template(
 
 
 def _single_sample_fields(field: FieldBatch) -> list[FieldBatch]:
-    batch_axis = field.dims.index("batch")
     return [
         FieldBatch(
             values=field.values[index : index + 1].copy(),
@@ -134,14 +133,14 @@ def _single_sample_fields(field: FieldBatch) -> list[FieldBatch]:
             preprocess_log=list(field.preprocess_log),
             mask=None,
         )
-        for index in range(field.values.shape[batch_axis])
+        for index in range(field.values.shape[0])
     ]
 
 
 def _compute_alignment_shift(sample: FieldBatch) -> float:
     x = np.asarray(sample.coords["x"], dtype=float)
     peak_index = int(np.argmax(np.asarray(sample.values[0, 0, :, 0], dtype=float)))
-    return float(x[peak_index] - x[0])
+    return float(x[0] - x[peak_index])
 
 
 def _make_internal_spec(generator_metadata: dict[str, object], shift: float) -> InvariantMapSpec:
