@@ -63,6 +63,35 @@ jobs:
         run: python -m pip check
       - name: Run V0.5 release gate
         run: python -m pytest tests/test_v0_5_release_gate.py
+  v0_6-release-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install package and test dependencies
+        shell: bash
+        run: |
+          retry() {
+            local attempts="$1"
+            shift
+            local count=1
+            until "$@"; do
+              if [ "${count}" -ge "${attempts}" ]; then
+                return 1
+              fi
+              count=$((count + 1))
+              echo "Retrying (${count}/${attempts}): $*"
+              sleep 5
+            done
+          }
+          retry 3 python -m pip install --upgrade pip
+          retry 3 python -m pip install -e .[test]
+      - name: Check dependencies
+        run: python -m pip check
+      - name: Run V0.6 release gate
+        run: python -m pytest tests/test_v0_6_release_gate.py
   editable-tests:
     runs-on: ubuntu-latest
     steps:

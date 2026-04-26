@@ -217,7 +217,7 @@ Frozen returned fields:
 ---
 
 ## Milestone 4 — Robustness utilities
-**Status:** Active
+**Status:** Complete
 
 Public runtime APIs under `pdelie.data`:
 
@@ -283,7 +283,7 @@ Frozen preprocess-log policy:
 ---
 
 ## Milestone 5 — V0.6 release gate
-**Status:** Pending
+**Status:** Active
 
 The `v0.6` release gate remains compact and representative only.
 
@@ -303,6 +303,7 @@ Frozen release-gate policy:
 - no exact PySINDy model-string assertions
 - no KdV stable-surface addition
 - no broad performance claim beyond finite, reproducible, structurally valid outputs
+- the dedicated `v0_6-release-gate` CI job is the authoritative release gate for this milestone
 
 ---
 

@@ -2,7 +2,7 @@
 
 ## Current Active Milestone
 
-**V0.6 Milestone 4 — Robustness utilities**
+**V0.6 Milestone 5 — V0.6 release gate**
 
 This file is the active execution plan for the current `v0.6` release series.
 
@@ -167,7 +167,7 @@ Bridge the current translation/invariant path into discovery-ready canonical inp
 
 ## Milestone 4 — Robustness Utilities
 
-**Status:** Active
+**Status:** Complete
 
 ### Goal
 
@@ -201,7 +201,7 @@ Add plain, deterministic robustness helpers that keep `FieldBatch` semantics int
 
 ## Milestone 5 — V0.6 Release Gate
 
-**Status:** Pending
+**Status:** Active
 
 ### Goal
 
@@ -213,6 +213,8 @@ Add one compact, representative `v0.6` release gate without making discovery-per
 - raw/vanilla input slice
 - oracle/known translation family input slice
 - imported/coerced translation family input slice
+- dedicated `tests/test_v0_6_release_gate.py`
+- dedicated `v0_6-release-gate` CI job
 - no discovery superiority claim
 - no exact PySINDy model-string assertions
 - no stable KdV surface addition
@@ -266,5 +268,5 @@ Hard sequencing rules:
 - Milestone 1: COMPLETE
 - Milestone 2: COMPLETE
 - Milestone 3: COMPLETE
-- Milestone 4: ACTIVE
-- Milestone 5: PENDING
+- Milestone 4: COMPLETE
+- Milestone 5: ACTIVE
