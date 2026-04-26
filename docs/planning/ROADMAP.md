@@ -190,7 +190,7 @@ Its purpose is:
 
 ---
 
-## Current Completed Release
+## Previous Completed Release
 
 ### `v0.5` — Generator-family portability and external-family compatibility
 **Status:** Completed
@@ -210,12 +210,12 @@ This release closes the portability / external-compatibility axis without broade
 
 ---
 
-## Next Release Target
+## Current Completed Release
 
 ### `v0.6` — Symmetry-guided PDE discovery utilities
-**Status:** Committed
+**Status:** Completed
 
-`v0.6` is the next committed release target after the completed `v0.5` line.
+`v0.6` is the completed release where PDELie proves that the existing Heat/Burgers slice can support a small, generic public-library layer for controlled symmetry-guided PDE discovery workflows.
 
 Its purpose is:
 
@@ -260,18 +260,18 @@ Frozen release definition:
 
 ---
 
-## Planned Next Step
+## Next Committed Release Target
 
 ### `v0.7` — Structured external data ingestion
-**Status:** Planned
+**Status:** Committed
 
-`v0.7` is the planned release after the `v0.6` discovery-utility release.
+`v0.7` is the next committed release after the completed `v0.6` discovery-utility release.
 
 Its purpose is:
 
 > make PDELie able to ingest external structured 1D uniform rectilinear PDE data into canonical `FieldBatch`, so the existing symmetry and discovery utilities can run outside internally generated synthetic fixtures.
 
-### Candidate scope for `v0.7`
+### Committed scope for `v0.7`
 
 - `pdelie.data.from_numpy(...)`
 - `pdelie.data.from_xarray(...)`
@@ -295,6 +295,12 @@ Its purpose is:
 `v0.7` is therefore not a broad dataset-support release. It is the first structured-ingestion release:
 
 > external structured arrays -> canonical `FieldBatch` -> existing PDELie pipeline.
+
+The authoritative `v0.7` scope freeze belongs in:
+
+- `V0_7_SCOPE.md`
+
+`V0_7_PREP.md` remains non-authoritative preparation material.
 
 ---
 
@@ -368,9 +374,11 @@ This is not part of the near-term non-operator Paper 1 path and should not be mi
 ### Authoritative for scheduling
 - `ROADMAP.md`
 - `V0_6_SCOPE.md` once frozen
+- `V0_7_SCOPE.md` once frozen
 - `PLAN.md` for current execution only
 
 ### Non-authoritative for scheduling
+- `V0_7_PREP.md`
 - `../strategy/INTEROPERABILITY_AND_BENCHMARKING.md`
 - `LLM_CONTEXT.md`
 

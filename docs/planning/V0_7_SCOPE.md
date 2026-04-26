@@ -1,57 +1,37 @@
-# PDELie — Execution Plan (V0.7)
+# V0.7 Scope Freeze
 
-## Current Release Status
+## Summary
 
-**V0.7 Milestone 0 active**
+`v0.7` is the first structured external-data ingestion release for `pdelie`.
 
-This file is the execution record for the active `v0.7` release series.
+Its purpose is:
 
-It should contain:
+> ingest external structured 1D uniform rectilinear PDE data into canonical `FieldBatch`, so the existing stable scalar Heat/Burgers symmetry and discovery stack can run on imported data rather than only internally generated synthetic fixtures.
 
-- a short closeout record for the completed `v0.6` release
-- the active `v0.7` milestone sequence
-- milestone-specific rules and gates
-
-It should not redefine package contracts or roadmap commitments. Those belong in:
-
-- `docs/specs/SPEC.md`
-- `docs/specs/CONTRACTS_AND_DEFAULTS.md`
-- `docs/specs/API_STABILITY.md`
-- `docs/planning/ROADMAP.md`
-- `docs/planning/V0_7_SCOPE.md`
-
-`API_STABILITY.md` should not change during `v0.7 M0`, because the importer APIs are not implemented yet.
+`v0.7` is intentionally narrow.
+It is not a broad dataset-adapter release.
 
 ---
 
-## V0.6 Closeout
+## Stable Scope
 
-`v0.6` is complete as the symmetry-guided PDE discovery utilities release.
+Stable `v0.7` scope is limited to:
 
-Completed outcome:
+- `pdelie.data.from_numpy(...)`
+- `pdelie.data.from_xarray(...)`
+- strict conversion into canonical `FieldBatch`
+- structured 1D uniform rectilinear trajectory data only
+- scalar-variable stable slice only
+- explicit dims, coords, metadata, mask, and provenance validation
+- parity with the existing Heat/Burgers symmetry and discovery pipeline
 
-- discovery recovery metrics
-- one thin PySINDy discovery adapter
-- one translation-canonical discovery-input builder
-- simple robustness utilities
-- one compact `v0.6` release gate
+Stable `v0.7` release definition:
 
-`v0.7` begins from that frozen Heat/Burgers discovery-utility surface.
-
-This release series is structured-ingestion first.
-It does not broaden the stable numerics regime or the current scalar periodic discovery stack.
+`external structured arrays -> canonical FieldBatch -> existing PDELie pipeline`
 
 ---
 
-## Milestone 0 — External Ingestion Contract Freeze
-
-**Status:** Active
-
-### Goal
-
-Freeze the exact `v0.7` importer contracts before writing runtime ingestion code.
-
-### Frozen Decisions
+## Exact Public API Contracts
 
 Planned stable public APIs:
 
@@ -70,6 +50,10 @@ Variable-name rules:
   - otherwise `DataArray.name`
   - otherwise validation failure
 
+---
+
+## Accepted Layouts
+
 Stable accepted source layouts are:
 
 - `("time", "x")`
@@ -87,6 +71,10 @@ Frozen axis/layout rules:
 - no static / no-time layouts in stable `v0.7`
 - no dim aliases in stable `v0.7`
 - no `y` / `z` ingestion in stable `v0.7`
+
+---
+
+## Coordinate and Metadata Validation
 
 Coordinate validation:
 
@@ -117,6 +105,10 @@ Metadata requirements:
 - `parameter_tags` must be a mapping but may be empty
 - `xarray` attrs are not used as stable metadata inference
 
+---
+
+## Mask / NaN Policy
+
 Stable `v0.7` importers preserve missing-data signals rather than normalizing them.
 
 Frozen rules:
@@ -128,6 +120,10 @@ Frozen rules:
 - `from_numpy(...)` accepts array-like `mask`
 - `from_xarray(...)` accepts `xarray.DataArray` `mask` only
 - mask must align with the pre-normalized input layout and the resulting post-injection shape
+
+---
+
+## Copy / Provenance Semantics
 
 Stable importers always materialize owned canonical data.
 
@@ -150,6 +146,12 @@ Frozen provenance rule:
     - `injected_var_axis`
     - `mask_provided`
 
+No broader provenance schema is introduced in `v0.7 M0`.
+
+---
+
+## Optional `xarray` Dependency Policy
+
 Stable dependency behavior:
 
 - `from_numpy(...)` is core-only
@@ -160,86 +162,34 @@ Stable dependency behavior:
 - the packaging extra name for `xarray` support will be finalized when `from_xarray(...)` is implemented
 - `v0.7 M0` freezes only the runtime behavior and placeholder packaging note, not the final extra name
 
-### Acceptance Criteria
+---
 
-M0 is complete only if:
+## Explicit Non-goals
 
-- `ROADMAP.md`, `PLAN.md`, and `V0_7_SCOPE.md` are internally consistent
-- `v0.6` is consistently described as completed
-- `v0.7` is consistently described as the next committed release
-- the importer contract bullets are identical between `PLAN.md` and `V0_7_SCOPE.md`
-- `API_STABILITY.md` remains unchanged during M0
+Out of stable `v0.7` scope:
+
+- no `xarray.Dataset` stable support
+- no dim aliases
+- no static-field ingestion
+- no multidimensional ingestion
+- no `y` / `z` ingestion
+- no nonuniform-grid support
+- no metadata inference layer
+- no PDEBench-specific loader
+- no The Well adapter
+- no HDF5, netCDF, or Zarr stable loader
+- no weak-form methods
+- no operator methods
+- no stable KdV promotion piggybacked into ingestion work
+- no paper-specific experiment logic
 
 ---
 
-## Milestone 1 — `from_numpy(...)`
+## Milestones
 
-**Status:** Pending
+Planned `v0.7` sequence:
 
-### Goal
-
-Implement `from_numpy(...)` exactly as frozen in M0.
-
----
-
-## Milestone 2 — `from_xarray(...)`
-
-**Status:** Pending
-
-### Goal
-
-Implement `from_xarray(...)` exactly as frozen in M0, including lazy optional-dependency behavior.
-
----
-
-## Milestone 3 — Parity Tests and V0.7 Release Gate
-
-**Status:** Pending
-
-### Goal
-
-Prove that imported structured data behaves like the current native Heat/Burgers `FieldBatch` path and add a compact `v0.7` release gate.
-
----
-
-## Later Milestones
-
-Locked sequence:
-
-Milestone 0 -> external ingestion contract freeze  
-Milestone 1 -> `from_numpy(...)`  
-Milestone 2 -> `from_xarray(...)`  
-Milestone 3 -> parity tests and compact `v0.7` release gate
-
-Hard sequencing rules:
-
-- do not turn `v0.7` into a broad dataset-adapter release
-- do not add multidimensional stable ingestion
-- do not add metadata inference as stable behavior
-- do not broaden ingestion work into weak-form or operator-method expansion
-- do not use `v0.7` to promote KdV
-
----
-
-## Rules
-
-- DO NOT update `docs/specs/API_STABILITY.md` until importer APIs actually land
-- DO NOT add `xarray.Dataset` stable support in `v0.7`
-- DO NOT add dim aliases in `v0.7`
-- DO NOT add static-field ingestion in `v0.7`
-- DO NOT add multidimensional stable ingestion in `v0.7`
-- DO NOT add nonuniform-grid support in `v0.7`
-- DO NOT add broad metadata inference
-- DO NOT add weak-form methods
-- DO NOT add operator methods
-- DO NOT add paper-specific experiment logic
-
----
-
-## Status
-
-- `v0.6`: COMPLETE
-- Milestone 0: ACTIVE
-- Milestone 1: PENDING
-- Milestone 2: PENDING
-- Milestone 3: PENDING
+- Milestone 0 — external ingestion contract freeze
+- Milestone 1 — `from_numpy(...)`
+- Milestone 2 — `from_xarray(...)`
+- Milestone 3 — parity tests and compact `v0.7` release gate

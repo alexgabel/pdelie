@@ -2,7 +2,7 @@
 
 Numerical discovery and verification of Lie symmetries for PDE data.
 
-The current repository implements the frozen V0.5 portability and external-compatibility core on the synthetic Heat/Burgers slice:
+The current repository implements the frozen V0.6 symmetry-guided PDE discovery utilities core on the synthetic Heat/Burgers slice:
 
 - synthetic 1D heat equation
 - synthetic 1D Burgers equation
@@ -17,6 +17,10 @@ The current repository implements the frozen V0.5 portability and external-compa
 - one runtime-only invariant path retained from V0.3: `pdelie.invariants.InvariantApplier`
 - one runtime-only backend-specific downstream bridge retained from V0.3: `pdelie.discovery.to_pysindy_trajectories`
 - one runtime-only portability layer retained from V0.5: `pdelie.portability`
+- one runtime-only discovery metrics layer under `pdelie.discovery`
+- one runtime-only thin PySINDy discovery adapter under `pdelie.discovery`
+- one runtime-only translation-canonical discovery-input helper under `pdelie.discovery`
+- one runtime-only robustness helper layer under `pdelie.data`
 
 ## Setup
 
@@ -60,6 +64,21 @@ python -m pytest
 - planning and frozen scope docs: `docs/planning/`
 - release-readiness history: `docs/releases/`
 - non-normative strategy notes: `docs/strategy/`
+- exploratory notebooks and usage guides: `notebooks/`
+
+## Tutorial Notebooks
+
+The repository now includes exploratory notebooks under `notebooks/` for the shipped `v0.6` runtime surface:
+
+- `00_how_to_use_pdelie_v0_6.ipynb`
+- `01_raw_vs_translation_canonical_discovery.ipynb`
+- `02_robustness_sweeps.ipynb`
+- `03_portability_round_trips.ipynb`
+- `04_discovered_vs_known_translation_generators.ipynb`
+- `05_closure_algebra_diagnostics.ipynb`
+
+These notebooks are non-normative tutorials, not stability contracts.
+Most discovery notebooks require the downstream extras (`.[downstream]` or `.[test]`).
 
 ## Minimal End-To-End Example
 
@@ -102,13 +121,19 @@ Included in the current stable core:
 - manifest export/import for canonical `GeneratorFamily` portability
 - strict external-family normalization for canonical payloads, manifests, and the narrow legacy translation payload
 - single-generator invariant map support
+- runtime-only discovery recovery metrics, backend-native PySINDy discovery fits, translation-canonical discovery inputs, and robustness utilities for the current Heat/Burgers slice
 - matched Heat/Burgers benchmark and release-gate checks in the test layer
-- KdV feasibility passed in a tests-first slice, but KdV remains non-stable in V0.5
+- KdV feasibility passed in a tests-first slice, but KdV remains non-stable in V0.6
 
-Runtime-level public APIs in the frozen V0.5 slice:
+Runtime-level public APIs in the frozen V0.6 slice:
 
 - `pdelie.invariants.InvariantApplier` for single-generator periodic `x` uniform translation only
 - `pdelie.discovery.to_pysindy_trajectories` for the narrow backend-specific PySINDy bridge
+- `pdelie.discovery.evaluate_discovery_recovery` for runtime-only support/coefficient recovery metrics over caller-supplied canonical term strings
+- `pdelie.discovery.fit_pysindy_discovery` for a runtime-only backend-native PySINDy fit adapter
+- `pdelie.discovery.build_translation_canonical_discovery_inputs` for runtime-only heuristic translation-canonical discovery inputs
+- `pdelie.discovery.summarize_recovery_grid` for runtime-only grouped recovery summaries
+- `pdelie.data.add_gaussian_noise`, `subsample_time`, `subsample_x`, and `split_batch_train_heldout` for deterministic `FieldBatch` robustness workflows
 - `pdelie.portability.export_generator_family_manifest` and `pdelie.portability.import_generator_family_manifest` for manifest-level generator-family portability
 - `pdelie.portability.coerce_generator_family` for strict normalization of canonical, manifest, and narrow legacy translation inputs
 - `pdelie.symmetry.render_generator_family` for deterministic symbolic display
