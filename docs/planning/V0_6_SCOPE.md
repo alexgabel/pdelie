@@ -68,7 +68,7 @@ Unsupported in stable `v0.6`:
 ---
 
 ## Milestone 1 — Discovery recovery metrics
-**Status:** Active
+**Status:** Complete
 
 Public runtime API:
 
@@ -110,7 +110,7 @@ Frozen outputs:
 ---
 
 ## Milestone 2 — Thin PySINDy discovery adapter
-**Status:** Pending
+**Status:** Active
 
 Public runtime API:
 
@@ -120,19 +120,26 @@ Frozen scope:
 
 - PySINDy only
 - continuous-time only
-- target derivative exactly `"u_t"`
 - accepts only the current trajectory shape from `to_pysindy_trajectories(...)`
-- `feature_names` are the input trajectory columns
-- default config is the current deterministic downstream benchmark profile
+- all trajectories must share identical shape as a frozen M2 simplification, not as a general PySINDy limitation
+- `feature_names` are the input trajectory columns and must be unique non-empty strings
+- default config is a private runtime deterministic PySINDy profile
+- `config` must be `None` in `v0.6` M2
 - this is not a general discovery-backend framework
+- this is not yet a canonical PDE-level `u_t = ...` equation extractor
+- this returns a runtime backend report dict, not a JSON-compatible artifact schema
 
 Frozen extraction policy:
 
 - returns `library_feature_names`
-- returns a dense `coefficients` vector aligned 1:1 with `library_feature_names`
-- returns sparse `equation_terms`
+- returns a dense 2D `coefficients` matrix with rows aligned to `feature_names` and columns aligned to `library_feature_names`
+- `coefficients` remain runtime NumPy arrays in `v0.6` M2
+- returns sparse backend-native `equation_terms`
+- returns backend-native debug `equation_strings`
 - default coefficient threshold is `1e-8`
 - raw multi-target backend matrices are out of scope
+- canonical PDE term extraction is out of scope
+- `equation_terms` and `equation_strings` must not be fed directly into `evaluate_discovery_recovery(...)` without a later canonicalization step
 
 Frozen failure policy:
 
@@ -144,12 +151,11 @@ Frozen returned fields:
 
 - `status`
 - `backend`
-- `target_derivative`
 - `feature_names`
 - `library_feature_names`
 - `coefficients`
 - `equation_terms`
-- `equation_string`
+- `equation_strings`
 - `fit_config`
 - `fit_diagnostics`
 - `failure_reason` when failed
