@@ -2,10 +2,11 @@
 
 Numerical discovery and verification of Lie symmetries for PDE data.
 
-The current repository implements the frozen V0.6 symmetry-guided PDE discovery utilities core on the synthetic Heat/Burgers slice:
+The current repository implements the frozen V0.7 structured external-data ingestion and symmetry/discovery utilities core on the scalar 1D Heat/Burgers slice:
 
 - synthetic 1D heat equation
 - synthetic 1D Burgers equation
+- strict external structured ingestion into canonical `FieldBatch`
 - uniform periodic grid
 - `FieldBatch -> DerivativeBatch -> ResidualBatch -> GeneratorFamily -> InvariantMapSpec -> VerificationReport`
 - one stable derivative backend: `spectral_fd`
@@ -45,7 +46,8 @@ python -m pip install -e .
 
 - `.[viz]` adds the optional Matplotlib visualization layer exposed under `pdelie.viz`
 - `.[downstream]` adds the optional narrow PySINDy bridge path exposed under `pdelie.discovery`
-- `.[test]` installs the test environment used in CI and includes the current viz/downstream test dependencies
+- `.[xarray]` adds the optional `xarray.DataArray` ingestion path exposed under `pdelie.data.from_xarray`
+- `.[test]` installs the test environment used in CI and includes the current viz/downstream/xarray test dependencies
 - `sympy` is an optional runtime dependency for `pdelie.symmetry.to_sympy_component_expressions`; it is not required for the core install
 
 The downstream path is still intentionally narrow: it is currently validated on the PySINDy 1.x / scikit-learn 1.2.x line under Python `<3.12`, matching the policy in `pyproject.toml`.
@@ -68,7 +70,7 @@ python -m pytest
 
 ## Tutorial Notebooks
 
-The repository now includes exploratory notebooks under `notebooks/` for the shipped `v0.6` runtime surface:
+The repository includes exploratory notebooks under `notebooks/` for the shipped symmetry/discovery runtime surface that remains part of `v0.7`:
 
 - `00_how_to_use_pdelie_v0_6.ipynb`
 - `01_raw_vs_translation_canonical_discovery.ipynb`
@@ -115,18 +117,21 @@ Included in the current stable core:
 
 - stable canonical objects and typed validation errors, including `InvariantMapSpec`
 - synthetic heat and Burgers data
+- strict structured external-data ingestion into canonical `FieldBatch` via `from_numpy(...)` and `from_xarray(...)`
 - polynomial translation baseline for the stable PDE slice
 - finite-transform verification for the stable PDE slice
 - family-shaped `GeneratorFamily` serialization and narrow translation compatibility migration
 - manifest export/import for canonical `GeneratorFamily` portability
 - strict external-family normalization for canonical payloads, manifests, and the narrow legacy translation payload
 - single-generator invariant map support
-- runtime-only discovery recovery metrics, backend-native PySINDy discovery fits, translation-canonical discovery inputs, and robustness utilities for the current Heat/Burgers slice
+- runtime-only discovery recovery metrics, backend-native PySINDy discovery fits, translation-canonical discovery inputs, robustness utilities, and structured-ingestion parity coverage for the current Heat/Burgers slice
 - matched Heat/Burgers benchmark and release-gate checks in the test layer
-- KdV feasibility passed in a tests-first slice, but KdV remains non-stable in V0.6
+- KdV feasibility passed in a tests-first slice, but KdV remains non-stable in V0.7
 
-Runtime-level public APIs in the frozen V0.6 slice:
+Runtime-level public APIs in the frozen V0.7 slice:
 
+- `pdelie.data.from_numpy` for strict runtime conversion of explicit NumPy/array-like 1D uniform rectilinear trajectory data into canonical `FieldBatch`
+- `pdelie.data.from_xarray` for strict runtime conversion of explicit `xarray.DataArray` 1D uniform rectilinear trajectory data into canonical `FieldBatch` when the optional `xarray` dependency is installed
 - `pdelie.invariants.InvariantApplier` for single-generator periodic `x` uniform translation only
 - `pdelie.discovery.to_pysindy_trajectories` for the narrow backend-specific PySINDy bridge
 - `pdelie.discovery.evaluate_discovery_recovery` for runtime-only support/coefficient recovery metrics over caller-supplied canonical term strings
@@ -146,6 +151,10 @@ Explicitly deferred:
 - stable multi-generator PDE fitting
 - multi-generator invariant machinery
 - broad downstream discovery contracts
+- `xarray.Dataset` support
+- file-based dataset loaders
+- multidimensional or nonuniform-grid ingestion
+- metadata inference
 - operator symmetry
 - weak-form features
 - broad adapters and interoperability work

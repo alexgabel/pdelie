@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.7.0
+
+First final release for the frozen V0.7 structured external-data ingestion core.
+
+- adds `pdelie.data.from_numpy(...)` for strict runtime conversion of explicit NumPy/array-like 1D uniform rectilinear trajectory data into canonical `FieldBatch`
+- adds `pdelie.data.from_xarray(...)` for strict runtime conversion of explicit `xarray.DataArray` 1D uniform rectilinear trajectory data into canonical `FieldBatch`
+- adds native-vs-imported parity coverage across the current derivative, residual, symmetry-fit, verification, and discovery-bridge layers
+- adds a compact `v0_7-release-gate` CI visibility job and representative release-gate pytest module
+- preserves the frozen Heat/Burgers symmetry and discovery-utility surface from `v0.6` while extending the library to structured external ingestion
+
+Explicitly deferred for this final release:
+
+- `xarray.Dataset` support
+- dim aliases
+- static-field ingestion
+- multidimensional external-data ingestion
+- nonuniform-grid support
+- metadata inference
+- PDEBench-specific loaders
+- The Well adapters
+- HDF5, netCDF, or Zarr stable loaders
+- weak-form methods
+- operator methods
+- stable KdV promotion
+- paper-specific experiment logic
+
 ## 0.6.0
 
 First final release for the frozen V0.6 symmetry-guided PDE discovery utilities core.

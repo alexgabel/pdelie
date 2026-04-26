@@ -2,14 +2,14 @@
 
 ## Current Release Status
 
-**V0.7 Milestone 3 complete**
+**V0.7 release complete**
 
-This file is the execution record for the active `v0.7` release series.
+This file is the execution record for the completed `v0.7` release series.
 
 It should contain:
 
 - a short closeout record for the completed `v0.6` release
-- the active `v0.7` milestone sequence
+- the completed `v0.7` milestone sequence
 - milestone-specific rules and gates
 
 It should not redefine package contracts or roadmap commitments. Those belong in:
@@ -227,7 +227,22 @@ Prove that imported structured data behaves like the current native Heat/Burgers
 
 ---
 
-## Later Milestones
+## V0.7 Closeout
+
+`v0.7` is complete as the structured external-data ingestion release.
+
+Completed release outcome:
+
+- strict `pdelie.data.from_numpy(...)` ingestion into canonical `FieldBatch`
+- strict runtime-optional `pdelie.data.from_xarray(...)` ingestion for `xarray.DataArray`
+- parity protection proving imported Heat/Burgers-like data behaves like the native `FieldBatch` path
+- a compact `v0.7` release gate and dedicated CI visibility job
+
+This release extends the library into structured external ingestion without broadening the stable numerics regime, adding file loaders, or changing the existing Heat/Burgers symmetry and discovery contracts.
+
+---
+
+## Executed Milestone Sequence
 
 Locked sequence:
 

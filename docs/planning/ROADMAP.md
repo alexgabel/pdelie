@@ -4,8 +4,8 @@ This file is the authoritative release-planning document for `pdelie`.
 
 It defines:
 
-- the current release series
-- the next committed release target
+- the current completed release
+- the next committed release target when one is frozen
 - the medium-term planned direction
 - the experimental horizon
 
@@ -210,7 +210,7 @@ This release closes the portability / external-compatibility axis without broade
 
 ---
 
-## Current Completed Release
+## Previous Completed Release
 
 ### `v0.6` — Symmetry-guided PDE discovery utilities
 **Status:** Completed
@@ -260,18 +260,18 @@ Frozen release definition:
 
 ---
 
-## Next Committed Release Target
+## Current Completed Release
 
 ### `v0.7` — Structured external data ingestion
-**Status:** Committed
+**Status:** Completed
 
-`v0.7` is the next committed release after the completed `v0.6` discovery-utility release.
+`v0.7` is the completed release after the `v0.6` discovery-utility series.
 
 Its purpose is:
 
 > make PDELie able to ingest external structured 1D uniform rectilinear PDE data into canonical `FieldBatch`, so the existing symmetry and discovery utilities can run outside internally generated synthetic fixtures.
 
-### Committed scope for `v0.7`
+Completed scope:
 
 - `pdelie.data.from_numpy(...)`
 - `pdelie.data.from_xarray(...)`
@@ -300,11 +300,22 @@ The authoritative `v0.7` scope freeze belongs in:
 
 - `V0_7_SCOPE.md`
 
-`V0_7_PREP.md` remains non-authoritative preparation material.
+### Release Gate for `v0.7`
+
+`v0.7` is complete only if:
+
+- `from_numpy(...)` preserves the frozen scalar 1D uniform-rectilinear ingestion contract
+- `from_xarray(...)` preserves the same contract for `xarray.DataArray`
+- imported Heat/Burgers-like data matches native `FieldBatch` behavior through the current derivative, residual, symmetry-fit, verification, and discovery-bridge layers
+- the compact `v0_7-release-gate` remains green in CI
+- no broad loader framework, `Dataset` support, metadata inference, or multidimensional ingestion is added
 
 ---
 
 ## Medium-Term Horizon
+
+No post-`v0.7` committed release target is frozen yet.
+The likely next release direction is `v0.8`, but it remains planned rather than committed.
 
 ### `v0.8` — Robust high-derivative and weak-form numerics
 **Status:** Planned / Experimental
@@ -378,7 +389,6 @@ This is not part of the near-term non-operator Paper 1 path and should not be mi
 - `PLAN.md` for current execution only
 
 ### Non-authoritative for scheduling
-- `V0_7_PREP.md`
 - `../strategy/INTEROPERABILITY_AND_BENCHMARKING.md`
 - `LLM_CONTEXT.md`
 
