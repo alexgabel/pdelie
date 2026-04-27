@@ -20,7 +20,7 @@ It should not redefine package contracts or roadmap commitments. Those belong in
 - `docs/planning/ROADMAP.md`
 - `docs/planning/V0_7_SCOPE.md`
 
-`API_STABILITY.md` should not change during `v0.7 M0`, because the importer APIs are not implemented yet.
+Historical M0 note: `API_STABILITY.md` stayed unchanged during `v0.7 M0`, because the importer APIs were not implemented yet.
 
 ---
 
@@ -263,7 +263,7 @@ Hard sequencing rules:
 
 ## Rules
 
-- DO NOT update `docs/specs/API_STABILITY.md` until importer APIs actually land
+- M0-only: DO NOT update `docs/specs/API_STABILITY.md` until importer APIs actually land
 - DO NOT add `xarray.Dataset` stable support in `v0.7`
 - DO NOT add dim aliases in `v0.7`
 - DO NOT add static-field ingestion in `v0.7`

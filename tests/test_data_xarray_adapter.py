@@ -193,6 +193,38 @@ def test_from_xarray_normalizes_and_copies_mask_to_canonical_shape() -> None:
     assert field.preprocess_log[-1]["parameters"]["mask_provided"] is True
 
 
+def test_from_xarray_canonical_layout_still_returns_owned_values_and_mask() -> None:
+    values = np.arange(32, dtype=float).reshape(1, 4, 8, 1)
+    data_array = xr.DataArray(
+        values,
+        dims=("batch", "time", "x", "var"),
+        coords={"batch": [0], "time": _time(), "x": _x(), "var": ["u"]},
+        name="u",
+    )
+    mask = xr.DataArray(
+        np.zeros((1, 4, 8, 1), dtype=bool),
+        dims=("batch", "time", "x", "var"),
+        coords={"batch": [0], "time": _time(), "x": _x(), "var": ["u"]},
+    )
+    mask.values[0, 1, 2, 0] = True
+
+    field = from_xarray(
+        data_array,
+        metadata=_metadata(),
+        mask=mask,
+    )
+
+    assert field.mask is not None
+    assert not np.shares_memory(field.values, values)
+    assert not np.shares_memory(field.mask, mask.values)
+
+    values[0, 0, 0, 0] = -1.0
+    mask.values[0, 1, 2, 0] = False
+
+    assert field.values[0, 0, 0, 0] != -1.0
+    assert bool(field.mask[0, 1, 2, 0]) is True
+
+
 def test_from_xarray_preserves_nans_without_creating_mask() -> None:
     values = np.arange(32, dtype=float).reshape(4, 8)
     values[2, 3] = np.nan

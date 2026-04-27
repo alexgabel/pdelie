@@ -126,7 +126,7 @@ Its purpose is:
 
 ---
 
-## Previous Completed Release
+## Earlier Completed Releases
 
 ### `v0.3` — First invariant/downstream utility release
 **Status:** Completed
@@ -144,8 +144,6 @@ Completed scope:
 This release expands the invariant/downstream utility axis without widening the stable library into weak-form methods, operator methods, or broad adapters.
 
 ---
-
-## Previous Completed Release
 
 ### `v0.4` — Lie-algebra span, symbolic reporting, and visual diagnostics
 **Status:** Completed
@@ -190,8 +188,6 @@ Its purpose is:
 
 ---
 
-## Previous Completed Release
-
 ### `v0.5` — Generator-family portability and external-family compatibility
 **Status:** Completed
 
@@ -209,8 +205,6 @@ Completed scope:
 This release closes the portability / external-compatibility axis without broadening the stable numerics regime or adding a stable KdV surface.
 
 ---
-
-## Previous Completed Release
 
 ### `v0.6` — Symmetry-guided PDE discovery utilities
 **Status:** Completed

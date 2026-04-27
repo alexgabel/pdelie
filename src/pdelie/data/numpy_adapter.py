@@ -141,7 +141,7 @@ def _validate_mask(mask: object, *, expected_shape: tuple[int, ...]) -> np.ndarr
     normalized = np.asarray(mask, dtype=bool)
     if normalized.shape != expected_shape:
         raise ShapeValidationError("mask must match the pre-normalized values shape.")
-    return normalized.copy()
+    return normalized
 
 
 def _canonicalize_values(
@@ -149,7 +149,7 @@ def _canonicalize_values(
     *,
     dims: tuple[str, ...],
 ) -> tuple[np.ndarray, bool, bool]:
-    canonical = values.copy()
+    canonical = values
     injected_batch_axis = False
     injected_var_axis = False
 
@@ -171,12 +171,12 @@ def _canonicalize_mask(
 ) -> np.ndarray | None:
     if mask is None:
         return None
-    canonical = mask.copy()
+    canonical = mask
     if injected_batch_axis:
         canonical = np.expand_dims(canonical, axis=0)
     if injected_var_axis:
         canonical = np.expand_dims(canonical, axis=-1)
-    return canonical.copy()
+    return canonical
 
 
 def from_numpy(
@@ -226,7 +226,7 @@ def from_numpy(
     return FieldBatch(
         values=canonical_values.copy(),
         dims=_CANONICAL_DIMS,
-        coords={"time": time_coord.copy(), "x": x_coord.copy()},
+        coords={"time": time_coord, "x": x_coord},
         var_names=[normalized_var_name],
         metadata=deepcopy(normalized_metadata),
         preprocess_log=[

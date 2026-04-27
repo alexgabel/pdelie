@@ -170,7 +170,7 @@ def _validate_mask(mask: object, *, data_array: object, normalized_dims: tuple[s
     normalized_mask = np.asarray(mask.values, dtype=bool)
     if normalized_mask.shape != data_array.shape:
         raise ShapeValidationError("mask must match the pre-normalized data_array shape.")
-    return normalized_mask.copy()
+    return normalized_mask
 
 
 def from_xarray(
@@ -234,7 +234,7 @@ def from_xarray(
     return FieldBatch(
         values=canonical_values.copy(),
         dims=_CANONICAL_DIMS,
-        coords={"time": time_coord.copy(), "x": x_coord.copy()},
+        coords={"time": time_coord, "x": x_coord},
         var_names=[resolved_var_name],
         metadata=deepcopy(normalized_metadata),
         preprocess_log=[

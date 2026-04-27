@@ -131,6 +131,31 @@ def test_from_numpy_normalizes_and_copies_mask_to_canonical_shape() -> None:
     assert field.preprocess_log[-1]["parameters"]["mask_provided"] is True
 
 
+def test_from_numpy_canonical_layout_still_returns_owned_values_and_mask() -> None:
+    values = np.arange(32, dtype=float).reshape(1, 4, 8, 1)
+    mask = np.zeros((1, 4, 8, 1), dtype=bool)
+    mask[0, 1, 2, 0] = True
+
+    field = from_numpy(
+        values,
+        dims=("batch", "time", "x", "var"),
+        coords={"time": _time(), "x": _x()},
+        var_name="u",
+        metadata=_metadata(),
+        mask=mask,
+    )
+
+    assert field.mask is not None
+    assert not np.shares_memory(field.values, values)
+    assert not np.shares_memory(field.mask, mask)
+
+    values[0, 0, 0, 0] = -1.0
+    mask[0, 1, 2, 0] = False
+
+    assert field.values[0, 0, 0, 0] != -1.0
+    assert bool(field.mask[0, 1, 2, 0]) is True
+
+
 def test_from_numpy_preserves_nans_without_creating_mask() -> None:
     values = np.arange(32, dtype=float).reshape(4, 8)
     values[2, 3] = np.nan
