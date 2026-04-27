@@ -1,15 +1,15 @@
-# PDELie — Execution Plan (V0.7)
+# PDELie — Execution Plan (V0.8)
 
 ## Current Release Status
 
-**V0.7 release complete**
+**V0.8 complete and release-ready**
 
-This file is the execution record for the completed `v0.7` release series.
+This file is the execution record for the `v0.8` release series.
 
 It should contain:
 
-- a short closeout record for the completed `v0.6` release
-- the completed `v0.7` milestone sequence
+- a short closeout record for the completed `v0.7` release
+- the active `v0.8` milestone sequence
 - milestone-specific rules and gates
 
 It should not redefine package contracts or roadmap commitments. Those belong in:
@@ -18,212 +18,9 @@ It should not redefine package contracts or roadmap commitments. Those belong in
 - `docs/specs/CONTRACTS_AND_DEFAULTS.md`
 - `docs/specs/API_STABILITY.md`
 - `docs/planning/ROADMAP.md`
-- `docs/planning/V0_7_SCOPE.md`
+- `docs/planning/V0_8_SCOPE.md`
 
-Historical M0 note: `API_STABILITY.md` stayed unchanged during `v0.7 M0`, because the importer APIs were not implemented yet.
-
----
-
-## V0.6 Closeout
-
-`v0.6` is complete as the symmetry-guided PDE discovery utilities release.
-
-Completed outcome:
-
-- discovery recovery metrics
-- one thin PySINDy discovery adapter
-- one translation-canonical discovery-input builder
-- simple robustness utilities
-- one compact `v0.6` release gate
-
-`v0.7` begins from that frozen Heat/Burgers discovery-utility surface.
-
-This release series is structured-ingestion first.
-It does not broaden the stable numerics regime or the current scalar periodic discovery stack.
-
----
-
-## Milestone 0 — External Ingestion Contract Freeze
-
-**Status:** Complete
-
-### Goal
-
-Freeze the exact `v0.7` importer contracts before writing runtime ingestion code.
-
-### Frozen Decisions
-
-Planned stable public APIs:
-
-- `pdelie.data.from_numpy(values, *, dims, coords, var_name, metadata, mask=None, preprocess_log=None) -> FieldBatch`
-- `pdelie.data.from_xarray(data_array, *, var_name=None, metadata, mask=None, preprocess_log=None) -> FieldBatch`
-
-`from_xarray(...)` is frozen to `xarray.DataArray` only in `v0.7`.
-`xarray.Dataset` support is out of scope for the stable slice.
-
-Variable-name rules:
-
-- `from_numpy(...)` always requires explicit `var_name`
-- `from_xarray(...)` resolves `var_name` by:
-  - explicit `var_name` argument first
-  - otherwise the single `var` coordinate value when explicit `var` axis exists
-  - otherwise `DataArray.name`
-  - otherwise validation failure
-
-Stable accepted source layouts are:
-
-- `("time", "x")`
-- `("batch", "time", "x")`
-- `("time", "x", "var")`
-- `("batch", "time", "x", "var")`
-
-Frozen axis/layout rules:
-
-- `time` is required
-- `x` is required
-- `var` may be omitted only for the scalar stable slice
-- if `var` is omitted, the importer injects a trailing singleton `var` axis
-- if `var` is present, its length must be exactly `1`
-- no static / no-time layouts in stable `v0.7`
-- no dim aliases in stable `v0.7`
-- no `y` / `z` ingestion in stable `v0.7`
-
-Coordinate validation:
-
-- `time` and `x` coordinates are required
-- both must be 1D finite numeric arrays
-- `time` must be strictly increasing, uniform, and length `>= 3`
-- `x` must be strictly increasing, uniform, and length `>= 4`
-- `x` uniformity uses the current `FieldBatch` spatial tolerance policy
-- `time` uniformity is required because stable `v0.7` imports target the current trajectory / discovery pipeline
-- no coordinate inference beyond extracting `time` / `x` from the provided inputs
-- no normalization, sorting, or repair of malformed coordinates
-
-Metadata requirements:
-
-- the caller must supply the full required `FieldBatch` metadata mapping
-- there is no stable metadata inference in `v0.7`
-- required keys remain:
-  - `boundary_conditions`
-  - `grid_type`
-  - `coordinate_system`
-  - `grid_regularity`
-  - `parameter_tags`
-- stable `v0.7` imported fields must validate as:
-  - `grid_type == "rectilinear"`
-  - `grid_regularity == "uniform"`
-  - `coordinate_system == "cartesian"`
-  - `boundary_conditions["x"] == "periodic"`
-- `parameter_tags` must be a mapping but may be empty
-- `xarray` attrs are not used as stable metadata inference
-
-Stable `v0.7` importers preserve missing-data signals rather than normalizing them.
-
-Frozen rules:
-
-- preserve both explicit masks and existing `NaN` / non-finite values
-- do not normalize `NaN` values into masks
-- do not normalize masks into `NaN` values
-- if `mask` is provided and `var` is injected, inject the singleton `var` axis into the mask too
-- `from_numpy(...)` accepts array-like `mask`
-- `from_xarray(...)` accepts `xarray.DataArray` `mask` only
-- mask must align with the pre-normalized input layout and the resulting post-injection shape
-
-Stable importers always materialize owned canonical data.
-
-Frozen copy rules:
-
-- always materialize and copy imported values
-- always copy coordinates
-- always copy masks when present
-- deep-copy `metadata`
-- if `preprocess_log` is omitted, start from `[]`
-- if `preprocess_log` is provided, deep-copy it and then append exactly one new entry
-
-Frozen provenance rule:
-
-- append exactly one provenance entry:
-  - `operation = "from_numpy"` or `"from_xarray"`
-  - `parameters` includes at least:
-    - `source_layout`
-    - `imported_shape`
-    - `injected_var_axis`
-    - `mask_provided`
-
-Stable dependency behavior:
-
-- `from_numpy(...)` is core-only
-- `from_xarray(...)` is a runtime-optional path
-- `xarray` must be imported lazily inside the function / module path
-- if `xarray` is unavailable, calling `from_xarray(...)` raises `ImportError` with an install message
-- do not add an optional dependency extra in `v0.7 M0`
-- the packaging extra name for `xarray` support will be finalized when `from_xarray(...)` is implemented
-- `v0.7 M0` freezes only the runtime behavior and placeholder packaging note, not the final extra name
-
-### Acceptance Criteria
-
-M0 is complete only if:
-
-- `ROADMAP.md`, `PLAN.md`, and `V0_7_SCOPE.md` are internally consistent
-- `v0.6` is consistently described as completed
-- `v0.7` is consistently described as the next committed release
-- the importer contract bullets are identical between `PLAN.md` and `V0_7_SCOPE.md`
-- `API_STABILITY.md` remains unchanged during M0
-
----
-
-## Milestone 1 — `from_numpy(...)`
-
-**Status:** Complete
-
-### Goal
-
-Implement `from_numpy(...)` exactly as frozen in M0.
-
-### Completed Outcome
-
-- added `pdelie.data.from_numpy(...)`
-- accepted only the four frozen scalar 1D structured layouts
-- canonicalized output to `("batch", "time", "x", "var")`
-- preserved explicit `NaN` values and optional masks without normalization
-- deep-copied values, coordinates, metadata, masks, and preprocess provenance
-- appended one deterministic `from_numpy` provenance entry
-
----
-
-## Milestone 2 — `from_xarray(...)`
-
-**Status:** Complete
-
-### Goal
-
-Implement `from_xarray(...)` exactly as frozen in M0, including lazy optional-dependency behavior.
-
-### Completed Outcome
-
-- added `pdelie.data.from_xarray(...)`
-- accepted only the four frozen scalar 1D `xarray.DataArray` layouts
-- canonicalized output to `("batch", "time", "x", "var")`
-- preserved explicit `NaN` values and optional `xarray.DataArray` masks without normalization
-- deep-copied values, coordinates, metadata, masks, and preprocess provenance
-- finalized the optional dependency extra name as `xarray`
-
----
-
-## Milestone 3 — Parity Tests and V0.7 Release Gate
-
-**Status:** Complete
-
-### Goal
-
-Prove that imported structured data behaves like the current native Heat/Burgers `FieldBatch` path and add a compact `v0.7` release gate.
-
-### Completed Outcome
-
-- added native-vs-imported parity coverage for `from_numpy(...)` and `from_xarray(...)`
-- proved parity through the current derivative, residual, symmetry-fit, verification, and discovery-bridge layers
-- added a compact `v0_7-release-gate` test module and dedicated CI job
-- kept the downstream fit assertion structural-only and avoided any new public API
+`API_STABILITY.md` is updated only when a frozen runtime weak API actually lands.
 
 ---
 
@@ -231,14 +28,256 @@ Prove that imported structured data behaves like the current native Heat/Burgers
 
 `v0.7` is complete as the structured external-data ingestion release.
 
-Completed release outcome:
+Completed outcome:
 
 - strict `pdelie.data.from_numpy(...)` ingestion into canonical `FieldBatch`
 - strict runtime-optional `pdelie.data.from_xarray(...)` ingestion for `xarray.DataArray`
 - parity protection proving imported Heat/Burgers-like data behaves like the native `FieldBatch` path
 - a compact `v0.7` release gate and dedicated CI visibility job
 
-This release extends the library into structured external ingestion without broadening the stable numerics regime, adding file loaders, or changing the existing Heat/Burgers symmetry and discovery contracts.
+`v0.8` begins from that frozen Heat/Burgers plus structured-ingestion surface.
+
+This release series is weak-residual first.
+It does not broaden the stable canonical object set, PDE coverage, or adapter surface.
+
+---
+
+## Milestone 0 — Roadmap Reset
+
+**Status:** Complete
+
+### Goal
+
+Promote `v0.8` to the next committed release target, create `V0_8_SCOPE.md`, reset `PLAN.md`, and keep `API_STABILITY.md` unchanged.
+
+### Completed Outcome
+
+- promoted `v0.8` to committed in `ROADMAP.md`
+- created `V0_8_SCOPE.md`
+- reset `PLAN.md` as the active `v0.8` execution record
+- left `API_STABILITY.md` unchanged
+
+### Acceptance Criteria
+
+M0 is complete only if:
+
+- `ROADMAP.md`, `PLAN.md`, and `V0_8_SCOPE.md` are internally consistent
+- `v0.7` is consistently described as completed
+- `v0.8` is consistently described as the next committed release
+- `v0.9` remains planned
+- `API_STABILITY.md` remains unchanged during M0
+
+---
+
+## Milestone 1 — Weak Semantics Freeze
+
+**Status:** Complete
+
+### Goal
+
+Freeze the exact weak residual formulas, test-function details, report schema, and benchmark fixtures before runtime implementation.
+
+### Completed Outcome
+
+- froze the exact weak residual formulas for Heat and Burgers
+- froze the exact quartic-bump test-function formulas, local-coordinate scaling, and centered overlapping window profile
+- froze the exact report schema for the stable window-indexed weak residual reports
+- froze deterministic clean/noisy/coarse benchmark fixtures using the existing native generators and robustness utilities
+- explicitly deferred `ResidualBatch` / `ResidualEvaluator` integration unless later experimental work justifies it
+
+---
+
+## Milestone 2 — Weak Residual Report Implementation
+
+**Status:** Complete
+
+### Goal
+
+Implement report-style weak Heat/Burgers residual APIs only.
+
+### Completed Outcome
+
+- implemented `evaluate_weak_heat_residual(...)`
+- implemented `evaluate_weak_burgers_residual(...)`
+- landed one shared internal weak-window engine for the frozen quartic-bump, wrapped-periodic, trapezoidal report path
+- derived `nu` from `field.metadata["parameter_tags"]["nu"]` when not provided
+- added typed rejection for unsupported inputs and public-API boundary tests
+
+---
+
+## Milestone 3 — Optional Contract-Integration Exploration
+
+**Status:** Complete
+
+### Goal
+
+Allow optional non-critical exploration of contract integration without making it part of the committed stable `v0.8` surface.
+
+### Completed Outcome
+
+- added a test-only report-space fitting / verification harness under `tests/_helpers/weak_contract_integration.py`
+- reused the stable translation basis and transform stack without forcing weak reports into `ResidualBatch`, `ResidualEvaluator`, or any new runtime surface
+- recorded singular values, condition diagnostics, rank estimates, and fallback reasons for the weak-report nullspace fit
+- added an M3-only canonical translation fallback when the selected weak-report fit still drifted outside the stable translation span tolerance
+- confirmed reproducible clean-fixture report-space verification on Heat and Burgers with no public API changes
+
+### Closeout Decision
+
+**Promising internal compatibility experiment; stable contract integration still deferred**
+
+Observed deterministic clean-fixture outcome:
+
+- Heat used canonical translation reference fallback with `fallback_reason="svd_translation_span_drift"` and achieved a first-epsilon wrong-vs-fitted median error ratio of `17.14x`
+- Burgers used canonical translation reference fallback with `fallback_reason="weak_report_contract_span_drift"` and achieved a first-epsilon wrong-vs-fitted median error ratio of `6.04x`
+- both PDEs therefore cleared the internal `5x` closeout target while keeping contract integration out of the stable `v0.8` surface
+
+M4 proceeds as planned. `v0.8` remains weak-residual-report first, and stable contract integration is still deferred.
+
+---
+
+## Milestone 4 — Robustness Comparison Layer
+
+**Status:** Complete
+
+### Goal
+
+Add deterministic robustness comparisons against the current spectral/analytic path.
+
+### Completed Outcome
+
+- added a compact internal downstream benchmark helper under `tests/_helpers/weak_robustness_benchmark.py`
+- compared the strong path against the weak-report path on the frozen clean/noisy/coarse Heat/Burgers matrix
+- kept the benchmark summary-level and internal-only, with no new public API surface
+- added frozen imported-parity checks for `from_numpy` on `heat/noisy` and `burgers/coarse`
+- kept `from_xarray` as optional-runtime parity only
+
+### Frozen M4 Benchmark Contract
+
+M4 is frozen to one downstream benchmark matrix.
+It compares translation fitting plus held-out verification, not direct weak-report-vs-strong-residual magnitudes.
+
+Shared M4 settings:
+
+- `train_batch_size = 4`
+- `heldout_batch_size = 3`
+- `num_times = 33`
+- `num_points = 64`
+- `noise_std_fraction = 1e-3`
+- coarse degradation is exactly `subsample_time(stride=2)` then `subsample_x(stride=2)`
+- wrong-generator control is fixed to `[0.0, 0.0, 1.0, 0.0]`
+
+Frozen M4 seeds:
+
+- Heat:
+  - clean training seed `8401`
+  - clean heldout seed `8402`
+  - noisy training seed `8403`
+  - noisy heldout seed `8404`
+- Burgers:
+  - clean training seed `8501`
+  - clean heldout seed `8502`
+  - noisy training seed `8503`
+  - noisy heldout seed `8504`
+
+Frozen degraded-data success rule:
+
+- clean baseline:
+  - both strong and weak paths must be deterministic on repeated runs for Heat and Burgers
+  - both paths must return either in-tolerance translation coefficients or an explicit canonical translation reference fallback
+  - both paths must achieve a first-epsilon wrong-vs-fitted median separation ratio of at least `5.0x` on clean Heat and clean Burgers
+- degraded robustness:
+  - for each PDE separately, at least one degraded condition in `{noisy, coarse}` must produce a weak-path robustness signal
+  - a weak-path robustness signal requires deterministic repeated-run behavior and either:
+    - weak contract stability where the weak path returns in-tolerance translation coefficients or a canonical translation fallback and the strong path does not, or
+    - weak separation where the weak first-epsilon wrong-vs-fitted median separation ratio is at least `1.5x` the strong-path ratio and the weak-path ratio is at least `3.0x`
+- M4 does not require the weak path to beat the strong path on every degraded fixture
+- imported-field parity in M4 must reuse the same frozen seeds and degradations after canonical ingestion
+
+### Closeout Decision
+
+**Frozen representative robustness signal landed; weak degraded passes were fallback-driven, not in-tolerance weak-fit recoveries**
+
+Observed outcome:
+
+- Heat:
+  - passing degraded condition: `noisy`
+  - `robustness_signal_source = "contract_stability_signal"`
+  - weak `contract_mode = "canonical_fallback"`
+  - weak `fallback_reason = "svd_translation_span_drift"`
+  - weak ratio: `17.93x`
+  - strong ratio: `18.65x`
+  - plain-language result: weak robustness signal via canonical fallback
+- Burgers:
+  - passing degraded conditions: `noisy` and `coarse`
+  - representative closeout case: `noisy`
+  - `robustness_signal_source = "contract_stability_signal"`
+  - weak `contract_mode = "canonical_fallback"`
+  - weak `fallback_reason = "weak_report_contract_span_drift"`
+  - weak ratio: `9.90x`
+  - strong ratio: `60.39x`
+  - plain-language result: weak robustness signal via canonical fallback
+- imported parity:
+  - required `from_numpy` subset passed on `heat/noisy` and `burgers/coarse`
+  - optional `from_xarray` subset was skipped because `xarray` was not installed in the active `.venv`
+
+Interpretation:
+
+- M4 provides the frozen release signal required for `v0.8`
+- the degraded weak-path wins are currently driven by canonical fallback plus stable held-out verification behavior, not by direct in-tolerance weak-fit recovery
+- this keeps the weak report path viable for the release, but it does not change the M3 conclusion that stable contract integration remains deferred
+
+---
+
+## Milestone 5 — Optional KdV Stress
+
+**Status:** COMPLETE
+
+### Goal
+
+Keep KdV as optional non-blocking exploratory stress coverage only.
+
+### Outcome
+
+- optional KdV stress deferred/skipped for `v0.8`
+- no weak KdV runtime surface lands in `v0.8`
+- M6 proceeds unchanged
+- no stable KdV API/export
+
+### Closeout
+
+- weak KdV deferred because the frozen `v0.8` quartic-bump weak profile is mathematically unsuitable for an honest KdV weak form
+- KdV `u_xxx` requires a third-order integration-by-parts treatment, but the frozen profile only guarantees `phi = 0` and `phi_x = 0` at support boundaries; it does not guarantee `phi_xx = 0`
+- the boundary incompatibility is explicit in the frozen profile: `beta(s) = (1 - s^2)^2` has `beta''(±1) = 8`, so the required third-derivative boundary cancellation fails
+- M4's degraded weak-path wins were via canonical fallback / contract stability, not via in-tolerance weak-fit recovery or separation superiority over the strong path
+- because the current release case for weak methods is already fallback-backed and narrow, `v0.8` does not broaden into a harder weak KdV branch
+- this is a mathematical scope guard, not a timing defer; any future real weak KdV work would require a new weak-profile freeze with higher-order boundary vanishing
+
+---
+
+## Milestone 6 — Release Gate
+
+**Status:** COMPLETE
+
+### Goal
+
+Add a compact release gate and align docs once runtime weak APIs land.
+
+### Outcome
+
+- compact `v0_8-release-gate`
+- dedicated `v0_8-release-gate` CI visibility job
+- release metadata and release-facing docs aligned for direct `0.8.0`
+- package-smoke extended with a tiny built-wheel weak-report check
+
+### Closeout
+
+- implemented `tests/test_v0_8_release_gate.py` on top of the landed weak-report, M4 benchmark, and KdV-feasibility helpers
+- added the `v0_8-release-gate` job to CI without changing the earlier release-gate jobs
+- aligned `pyproject.toml`, `CHANGELOG.md`, `README.md`, `ROADMAP.md`, and `V0_8_RELEASE_READINESS.md` with the implemented `v0.8` surface
+- audited `docs/specs/API_STABILITY.md` against the landed weak runtime surface and kept the document aligned with no new stable weak-derivative or KdV API claims
+- kept the release interpretation narrow: degraded weak-path wins remain representative fallback-backed contract-stability signals, not direct weak-fit recovery or general weak superiority
+- encoded the strict direct-final release path: full test suite, build, clean wheel smoke, optional TestPyPI preflight if available, and final tagging only after CI is green
+- post-`v0.8` CI cleanup remains a follow-up item; historical release-gate jobs stay in place for this milestone
 
 ---
 
@@ -246,40 +285,33 @@ This release extends the library into structured external ingestion without broa
 
 Locked sequence:
 
-Milestone 0 -> external ingestion contract freeze  
-Milestone 1 -> `from_numpy(...)`  
-Milestone 2 -> `from_xarray(...)`  
-Milestone 3 -> parity tests and compact `v0.7` release gate
-
-Hard sequencing rules:
-
-- do not turn `v0.7` into a broad dataset-adapter release
-- do not add multidimensional stable ingestion
-- do not add metadata inference as stable behavior
-- do not broaden ingestion work into weak-form or operator-method expansion
-- do not use `v0.7` to promote KdV
+Milestone 0 -> roadmap reset  
+Milestone 1 -> weak semantics freeze  
+Milestone 2 -> weak residual report implementation  
+Milestone 3 -> optional contract-integration exploration  
+Milestone 4 -> robustness comparison layer  
+Milestone 5 -> optional KdV stress  
+Milestone 6 -> release gate
 
 ---
 
 ## Rules
 
-- M0-only: DO NOT update `docs/specs/API_STABILITY.md` until importer APIs actually land
-- DO NOT add `xarray.Dataset` stable support in `v0.7`
-- DO NOT add dim aliases in `v0.7`
-- DO NOT add static-field ingestion in `v0.7`
-- DO NOT add multidimensional stable ingestion in `v0.7`
-- DO NOT add nonuniform-grid support in `v0.7`
-- DO NOT add broad metadata inference
-- DO NOT add weak-form methods
-- DO NOT add operator methods
-- DO NOT add paper-specific experiment logic
+- DO NOT broaden `docs/specs/API_STABILITY.md` beyond the frozen `v0.8` weak residual report surface
+- DO NOT add a stable weak derivative API in `v0.8`
+- DO NOT force weak outputs into `DerivativeBatch` or `ResidualBatch` in `v0.8`
+- DO NOT promote KdV to stable scope in `v0.8`
+- DO NOT broaden `v0.8` into nonuniform-grid, multidimensional, multivariable, operator, or adapter work
 
 ---
 
 ## Status
 
-- `v0.6`: COMPLETE
+- `v0.7`: COMPLETE
 - Milestone 0: COMPLETE
 - Milestone 1: COMPLETE
 - Milestone 2: COMPLETE
 - Milestone 3: COMPLETE
+- Milestone 4: COMPLETE
+- Milestone 5: COMPLETE
+- Milestone 6: COMPLETE

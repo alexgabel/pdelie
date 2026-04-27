@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 
 import pdelie
+from pdelie.residuals.weak_1d import _beta, _beta_prime, _beta_second
 from tests._helpers.kdv_feasibility import (
     KDV_FEASIBILITY_CONFIG,
     compute_kdv_feasibility_derivatives,
@@ -112,7 +113,16 @@ def test_kdv_short_horizon_mass_and_l2_drift_are_small() -> None:
     assert relative_l2_drift <= 5e-3
 
 
-def test_m4_kdv_feasibility_adds_no_stable_surface() -> None:
+def test_v0_8_quartic_bump_profile_is_not_valid_for_honest_kdv_weak_form() -> None:
+    # This freezes the mathematical reason M5 defers weak KdV in v0.8:
+    # the frozen quartic bump kills phi and phi_x at support endpoints, but not phi_xx.
+    endpoints = np.array([-1.0, 1.0], dtype=float)
+    np.testing.assert_allclose(_beta(endpoints), np.array([0.0, 0.0], dtype=float), atol=0.0, rtol=0.0)
+    np.testing.assert_allclose(_beta_prime(endpoints), np.array([0.0, 0.0], dtype=float), atol=0.0, rtol=0.0)
+    np.testing.assert_allclose(_beta_second(endpoints), np.array([8.0, 8.0], dtype=float), atol=0.0, rtol=0.0)
+
+
+def test_v0_8_kdv_feasibility_adds_no_stable_surface() -> None:
     assert not hasattr(pdelie, "KdVResidualEvaluator")
     assert not hasattr(pdelie, "generate_kdv_1d_field_batch")
 

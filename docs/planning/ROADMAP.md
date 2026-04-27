@@ -256,14 +256,58 @@ Frozen release definition:
 
 ## Current Completed Release
 
-### `v0.7` — Structured external data ingestion
+### `v0.8` — Window-indexed weak residuals
 **Status:** Completed
 
-`v0.7` is the completed release after the `v0.6` discovery-utility series.
+`v0.8` is the completed release after the `v0.7` structured-ingestion series.
 
 Its purpose is:
 
-> make PDELie able to ingest external structured 1D uniform rectilinear PDE data into canonical `FieldBatch`, so the existing symmetry and discovery utilities can run outside internally generated synthetic fixtures.
+> add a narrow stable weak-form residual path for the existing scalar 1D Heat/Burgers regime, with deterministic clean/noisy/coarse robustness comparisons against the current spectral/analytic path, while preserving canonical data and generator-family contracts.
+
+Completed stable scope:
+
+- `pdelie.residuals.evaluate_weak_heat_residual(...)`
+- `pdelie.residuals.evaluate_weak_burgers_residual(...)`
+- window-indexed weak residual reports rather than field-shaped residual arrays
+- canonical scalar 1D uniform periodic `FieldBatch` inputs only
+- Heat and Burgers only
+- frozen local separable quartic-bump windows with fixed centered overlap and trapezoidal quadrature, with exact details in `V0_8_SCOPE.md`
+- deterministic clean/noisy/coarse robustness comparisons against the current `spectral_fd` / analytic path
+- one compact `v0_8-release-gate`
+
+Completed release definition:
+
+`canonical FieldBatch -> stable weak residual report APIs for Heat/Burgers -> deterministic clean/noisy/coarse robustness comparisons against the current spectral/analytic path`
+
+Release interpretation:
+
+- the degraded weak-path wins are frozen as representative contract-stability signals
+- those degraded wins are fallback-backed release checks, not general weak-superiority claims
+- stable weak derivatives, weak `ResidualBatch` / `ResidualEvaluator` integration, and stable KdV promotion remain deferred
+
+The authoritative `v0.8` scope freeze belongs in:
+
+- `V0_8_SCOPE.md`
+
+### Release Gate for `v0.8`
+
+`v0.8` is complete only if:
+
+- weak residual report outputs are deterministic under the frozen defaults
+- unsupported inputs fail with typed errors
+- clean Heat/Burgers fixtures show acceptable weak-path behavior
+- frozen noisy/coarse fixtures show a documented robustness signal against the current spectral/analytic path
+- no stable weak-derivative or stable KdV public surface is added
+
+---
+
+## Most Recent Prior Completed Release
+
+### `v0.7` — Structured external data ingestion
+**Status:** Completed
+
+`v0.7` is the completed structured-ingestion release carried forward into `v0.8`.
 
 Completed scope:
 
@@ -275,60 +319,13 @@ Completed scope:
 - explicit dims, coords, metadata, and provenance validation
 - parity tests showing imported Heat/Burgers-like data behaves like native `FieldBatch`
 
-### Out of scope for `v0.7`
-
-- no PDEBench-specific loader
-- no The Well adapter
-- no HDF5, netCDF, or Zarr stable loader
-- no 2D/3D external-data ingestion
-- no nonuniform-grid support
-- no broad metadata inference
-- no weak-form methods
-- no operator methods
-
-`v0.7` is therefore not a broad dataset-support release. It is the first structured-ingestion release:
-
-> external structured arrays -> canonical `FieldBatch` -> existing PDELie pipeline.
-
 The authoritative `v0.7` scope freeze belongs in:
 
 - `V0_7_SCOPE.md`
 
-### Release Gate for `v0.7`
-
-`v0.7` is complete only if:
-
-- `from_numpy(...)` preserves the frozen scalar 1D uniform-rectilinear ingestion contract
-- `from_xarray(...)` preserves the same contract for `xarray.DataArray`
-- imported Heat/Burgers-like data matches native `FieldBatch` behavior through the current derivative, residual, symmetry-fit, verification, and discovery-bridge layers
-- the compact `v0_7-release-gate` remains green in CI
-- no broad loader framework, `Dataset` support, metadata inference, or multidimensional ingestion is added
-
 ---
 
 ## Medium-Term Horizon
-
-No post-`v0.7` committed release target is frozen yet.
-The likely next release direction is `v0.8`, but it remains planned rather than committed.
-
-### `v0.8` — Robust high-derivative and weak-form numerics
-**Status:** Planned / Experimental
-
-`v0.8` is the likely next major numerical expansion after structured ingestion.
-
-Its purpose is:
-
-> add derivative-robust machinery for noisy, coarse, or high-derivative PDE discovery, while preserving the canonical data and generator-family contracts.
-
-Candidate directions:
-
-- weak-form derivatives / weak residual workflows
-- WSINDy-style integration tests
-- robust residual evaluation under noise
-- high-derivative stress tests
-- KdV promotion if the weak/spectral story is mature enough
-
-KdV does not require weak-form methods for clean synthetic periodic tests, but noisy or coarse KdV is a natural pressure point for weak-form machinery. `v0.8` is therefore the right place to decide whether weak methods become a stable numerical axis.
 
 ### `v0.9` — Broader PDE and dataset coverage
 **Status:** Planned / Experimental
@@ -380,6 +377,7 @@ This is not part of the near-term non-operator Paper 1 path and should not be mi
 - `ROADMAP.md`
 - `V0_6_SCOPE.md` once frozen
 - `V0_7_SCOPE.md` once frozen
+- `V0_8_SCOPE.md` once frozen
 - `PLAN.md` for current execution only
 
 ### Non-authoritative for scheduling
@@ -411,7 +409,7 @@ It should **not** be edited every time a new idea appears.
 - `v0.5` = generator-family portability and external-family compatibility, with KdV kept non-stable
 - `v0.6` = symmetry-guided PDE discovery utilities in the current Heat/Burgers regime
 - `v0.7` = structured external data ingestion into canonical `FieldBatch`
-- `v0.8` = robust high-derivative / weak-form numerics
+- `v0.8` = window-indexed weak residual reports and representative robustness comparisons
 - `v0.9` = broader PDE and dataset coverage
 - `v1.0` = stable public engine
 - later / experimental = operator-facing symmetry discovery

@@ -2,11 +2,12 @@
 
 Numerical discovery and verification of Lie symmetries for PDE data.
 
-The current repository implements the frozen V0.7 structured external-data ingestion and symmetry/discovery utilities core on the scalar 1D Heat/Burgers slice:
+The current repository implements the frozen V0.8 weak residual report plus structured-ingestion and symmetry/discovery utilities core on the scalar 1D Heat/Burgers slice:
 
 - synthetic 1D heat equation
 - synthetic 1D Burgers equation
 - strict external structured ingestion into canonical `FieldBatch`
+- deterministic window-indexed weak residual reports under `pdelie.residuals`
 - uniform periodic grid
 - `FieldBatch -> DerivativeBatch -> ResidualBatch -> GeneratorFamily -> InvariantMapSpec -> VerificationReport`
 - one stable derivative backend: `spectral_fd`
@@ -70,7 +71,7 @@ python -m pytest
 
 ## Tutorial Notebooks
 
-The repository includes exploratory notebooks under `notebooks/` for the shipped symmetry/discovery runtime surface that remains part of `v0.7`:
+The repository includes exploratory notebooks under `notebooks/` for the shipped symmetry/discovery runtime surface retained in `v0.8`:
 
 - `00_how_to_use_pdelie_v0_6.ipynb`
 - `01_raw_vs_translation_canonical_discovery.ipynb`
@@ -118,6 +119,7 @@ Included in the current stable core:
 - stable canonical objects and typed validation errors, including `InvariantMapSpec`
 - synthetic heat and Burgers data
 - strict structured external-data ingestion into canonical `FieldBatch` via `from_numpy(...)` and `from_xarray(...)`
+- stable weak residual report APIs under `pdelie.residuals` for Heat and Burgers
 - polynomial translation baseline for the stable PDE slice
 - finite-transform verification for the stable PDE slice
 - family-shaped `GeneratorFamily` serialization and narrow translation compatibility migration
@@ -126,12 +128,14 @@ Included in the current stable core:
 - single-generator invariant map support
 - runtime-only discovery recovery metrics, backend-native PySINDy discovery fits, translation-canonical discovery inputs, robustness utilities, and structured-ingestion parity coverage for the current Heat/Burgers slice
 - matched Heat/Burgers benchmark and release-gate checks in the test layer
-- KdV feasibility passed in a tests-first slice, but KdV remains non-stable in V0.7
+- KdV feasibility remains tests-first only; weak KdV is explicitly deferred from `v0.8`
 
-Runtime-level public APIs in the frozen V0.7 slice:
+Runtime-level public APIs in the frozen V0.8 slice:
 
 - `pdelie.data.from_numpy` for strict runtime conversion of explicit NumPy/array-like 1D uniform rectilinear trajectory data into canonical `FieldBatch`
 - `pdelie.data.from_xarray` for strict runtime conversion of explicit `xarray.DataArray` 1D uniform rectilinear trajectory data into canonical `FieldBatch` when the optional `xarray` dependency is installed
+- `pdelie.residuals.evaluate_weak_heat_residual` for deterministic window-indexed weak residual report dicts over canonical scalar 1D uniform periodic Heat `FieldBatch` data
+- `pdelie.residuals.evaluate_weak_burgers_residual` for deterministic window-indexed weak residual report dicts over canonical scalar 1D uniform periodic Burgers `FieldBatch` data
 - `pdelie.invariants.InvariantApplier` for single-generator periodic `x` uniform translation only
 - `pdelie.discovery.to_pysindy_trajectories` for the narrow backend-specific PySINDy bridge
 - `pdelie.discovery.evaluate_discovery_recovery` for runtime-only support/coefficient recovery metrics over caller-supplied canonical term strings
@@ -147,6 +151,8 @@ Runtime-level public APIs in the frozen V0.7 slice:
 - `pdelie.symmetry.diagnose_generator_family_closure` for runtime closure diagnostics
 - `pdelie.viz.plot_generator_coefficients`, `plot_generator_symbolic_summary`, `plot_verification_curve`, `plot_span_diagnostics`, and `plot_closure_diagnostics` when `matplotlib` is installed
 
+The degraded weak-path release wins in `v0.8` are frozen as representative contract-stability signals. They are fallback-backed release checks, not a general weak-superiority claim.
+
 Explicitly deferred:
 - stable multi-generator PDE fitting
 - multi-generator invariant machinery
@@ -156,5 +162,5 @@ Explicitly deferred:
 - multidimensional or nonuniform-grid ingestion
 - metadata inference
 - operator symmetry
-- weak-form features
+- weak derivatives and broader weak-form methods beyond the frozen `v0.8` weak residual report slice
 - broad adapters and interoperability work
