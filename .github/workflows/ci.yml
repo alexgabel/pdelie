@@ -121,6 +121,35 @@ jobs:
         run: python -m pip check
       - name: Run V0.7 release gate
         run: python -m pytest tests/test_v0_7_release_gate.py
+  v0_8-release-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install package and test dependencies
+        shell: bash
+        run: |
+          retry() {
+            local attempts="$1"
+            shift
+            local count=1
+            until "$@"; do
+              if [ "${count}" -ge "${attempts}" ]; then
+                return 1
+              fi
+              count=$((count + 1))
+              echo "Retrying (${count}/${attempts}): $*"
+              sleep 5
+            done
+          }
+          retry 3 python -m pip install --upgrade pip
+          retry 3 python -m pip install -e .[test]
+      - name: Check dependencies
+        run: python -m pip check
+      - name: Run V0.8 release gate
+        run: python -m pytest tests/test_v0_8_release_gate.py
   editable-tests:
     runs-on: ubuntu-latest
     steps:
@@ -203,6 +232,33 @@ jobs:
       - name: Stable import smoke
         run: |
           /tmp/pdelie-rc-venv/bin/python -c "from pdelie import FieldBatch, DerivativeBatch, ResidualBatch, ResidualEvaluator, GeneratorFamily, VerificationReport; print('stable-import-ok')"
+      - name: Weak residual report smoke
+        run: |
+          /tmp/pdelie-rc-venv/bin/python - <<'PY'
+          import numpy as np
+
+          from pdelie.data import generate_heat_1d_field_batch
+          from pdelie.residuals import evaluate_weak_burgers_residual, evaluate_weak_heat_residual
+
+          assert evaluate_weak_burgers_residual is not None
+          field = generate_heat_1d_field_batch(batch_size=1, num_times=5, num_points=9, seed=123)
+          report = evaluate_weak_heat_residual(field)
+          expected_keys = {
+              "equation",
+              "equation_form",
+              "method_family",
+              "window_residuals",
+              "time_window_centers",
+              "x_window_centers",
+              "normalization",
+              "diagnostics",
+          }
+          assert set(report) == expected_keys
+          assert report["method_family"] == "local_separable_quartic_bump_trapezoid_v1"
+          assert report["normalization"] == "none"
+          assert np.all(np.isfinite(report["window_residuals"]))
+          print("weak-report-smoke-ok")
+          PY
       - name: Example smoke and determinism
         run: |
           /tmp/pdelie-rc-venv/bin/python - <<'PY'

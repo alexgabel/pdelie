@@ -96,6 +96,13 @@ Runtime public API for the frozen `v0.7` Milestone 2 slice:
 - `pdelie.data.from_xarray` for strict runtime conversion of explicit `xarray.DataArray` 1D uniform rectilinear trajectory data into canonical `FieldBatch`
 - this M2 API is runtime-optional, DataArray-only, not Dataset-based, and not a broad external-loader framework
 
+Runtime public API for the frozen `v0.8` Milestone 2 slice:
+
+- `pdelie.residuals.evaluate_weak_heat_residual` for deterministic window-indexed weak residual reports over canonical scalar 1D uniform periodic Heat `FieldBatch` data
+- `pdelie.residuals.evaluate_weak_burgers_residual` for deterministic window-indexed weak residual reports over canonical scalar 1D uniform periodic Burgers `FieldBatch` data
+- these M2 APIs return runtime report dicts, not canonical `ResidualBatch` objects
+- their stable report shape and diagnostics surface are frozen by `docs/planning/V0_8_SCOPE.md`
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 
@@ -106,7 +113,7 @@ These must not change without version bump.
 ## Experimental API
 
 - neural generators
-- weak-form methods
+- weak-form derivatives and weak-form methods beyond the frozen `v0.8` weak residual report slice
 - operator symmetry
 - advanced invariant maps
 - multi-generator invariant machinery

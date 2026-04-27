@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pdelie"
-version = "0.7.0"
-description = "V0.7 structured external-data ingestion core with strict NumPy/xarray adapters into canonical FieldBatch plus parity-tested Heat/Burgers symmetry and discovery utilities"
+version = "0.8.0"
+description = "V0.8 weak residual report core with structured ingestion plus parity-tested Heat/Burgers symmetry and discovery utilities"
 requires-python = ">=3.11"
 dependencies = [
   "numpy>=1.24,<2",

@@ -22,7 +22,7 @@ It is a **library**, not a project repo.
 ## Experimental
 
 - neural generators
-- weak-form extensions
+- weak-form derivatives and weak-form extensions beyond the frozen `v0.8` weak residual report slice
 - operator-level symmetry discovery
 - multi-generator invariant charts
 

@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.8.0
+
+First final release for the frozen V0.8 weak residual report core.
+
+- adds `pdelie.residuals.evaluate_weak_heat_residual(...)` for deterministic window-indexed weak residual reports over canonical scalar 1D uniform periodic Heat `FieldBatch` data
+- adds `pdelie.residuals.evaluate_weak_burgers_residual(...)` for deterministic window-indexed weak residual reports over canonical scalar 1D uniform periodic Burgers `FieldBatch` data
+- adds a compact `v0_8-release-gate` CI visibility job and representative release-gate pytest module
+- adds a frozen representative robustness layer for clean/noisy/coarse Heat/Burgers comparisons against the current spectral/analytic path
+- preserves the prior `v0.7` structured-ingestion and symmetry/discovery runtime surface while adding the narrow `v0.8` weak residual report APIs
+
+Explicitly deferred for this final release:
+
+- weak derivatives
+- weak `ResidualBatch` / `ResidualEvaluator` integration
+- stable KdV promotion
+- multidimensional, multivariable, or nonuniform-grid weak paths
+- broader PDE, grid, or adapter expansion
+- paper-specific experiment logic
+
 ## 0.7.0
 
 First final release for the frozen V0.7 structured external-data ingestion core.

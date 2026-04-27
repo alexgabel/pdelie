@@ -43,6 +43,7 @@ def test_runtime_package_api_is_importable() -> None:
         export_generator_family_manifest,
         import_generator_family_manifest,
     )
+    from pdelie.residuals import evaluate_weak_burgers_residual, evaluate_weak_heat_residual
     from pdelie.symmetry import (
         compare_generator_spans,
         diagnose_generator_family_closure,
@@ -64,6 +65,8 @@ def test_runtime_package_api_is_importable() -> None:
     assert subsample_time is not None
     assert subsample_x is not None
     assert InvariantApplier is not None
+    assert evaluate_weak_burgers_residual is not None
+    assert evaluate_weak_heat_residual is not None
     assert build_translation_canonical_discovery_inputs is not None
     assert evaluate_discovery_recovery is not None
     assert fit_pysindy_discovery is not None
@@ -87,6 +90,9 @@ def test_root_package_does_not_export_runtime_invariant_applier() -> None:
     assert not hasattr(pdelie, "InvariantApplier")
     assert not hasattr(pdelie, "add_gaussian_noise")
     assert not hasattr(pdelie, "build_translation_canonical_discovery_inputs")
+    assert not hasattr(pdelie, "compute_weak_derivatives")
+    assert not hasattr(pdelie, "evaluate_weak_burgers_residual")
+    assert not hasattr(pdelie, "evaluate_weak_heat_residual")
     assert not hasattr(pdelie, "evaluate_discovery_recovery")
     assert not hasattr(pdelie, "fit_pysindy_discovery")
     assert not hasattr(pdelie, "from_numpy")
@@ -99,6 +105,7 @@ def test_root_package_does_not_export_runtime_invariant_applier() -> None:
     assert not hasattr(pdelie, "coerce_generator_family")
     assert not hasattr(pdelie, "export_generator_family_manifest")
     assert not hasattr(pdelie, "import_generator_family_manifest")
+    assert not hasattr(pdelie, "KdVResidualEvaluator")
     assert not hasattr(pdelie, "compare_generator_spans")
     assert not hasattr(pdelie, "diagnose_generator_family_closure")
     assert not hasattr(pdelie, "render_generator_family")
@@ -126,6 +133,20 @@ def test_data_package_runtime_api_matches_frozen_v0_7_m2_surface() -> None:
     assert hasattr(data_module, "subsample_time")
     assert hasattr(data_module, "subsample_x")
     assert hasattr(data_module, "split_batch_train_heldout")
+
+
+def test_residuals_package_runtime_api_matches_frozen_v0_8_m2_surface() -> None:
+    residuals_module = importlib.import_module("pdelie.residuals")
+
+    assert hasattr(residuals_module, "HeatResidualEvaluator")
+    assert hasattr(residuals_module, "BurgersResidualEvaluator")
+    assert hasattr(residuals_module, "ResidualEvaluator")
+    assert hasattr(residuals_module, "evaluate_weak_heat_residual")
+    assert hasattr(residuals_module, "evaluate_weak_burgers_residual")
+    assert not hasattr(residuals_module, "compute_weak_derivatives")
+    assert not hasattr(residuals_module, "WeakHeatResidualEvaluator")
+    assert not hasattr(residuals_module, "WeakBurgersResidualEvaluator")
+    assert not hasattr(residuals_module, "KdVResidualEvaluator")
 
 
 def test_discovery_package_runtime_api_matches_frozen_milestone_surface() -> None:
