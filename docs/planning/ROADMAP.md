@@ -294,6 +294,10 @@ The authoritative `v0.7` scope freeze belongs in:
 
 - `V0_7_SCOPE.md`
 
+The next frozen scope doc is:
+
+- `V0_8_SCOPE.md`
+
 ### Release Gate for `v0.7`
 
 `v0.7` is complete only if:
@@ -306,29 +310,52 @@ The authoritative `v0.7` scope freeze belongs in:
 
 ---
 
-## Medium-Term Horizon
+## Next Committed Release
 
-No post-`v0.7` committed release target is frozen yet.
-The likely next release direction is `v0.8`, but it remains planned rather than committed.
+### `v0.8` — Window-indexed weak residuals
+**Status:** Committed
 
-### `v0.8` — Robust high-derivative and weak-form numerics
-**Status:** Planned / Experimental
-
-`v0.8` is the likely next major numerical expansion after structured ingestion.
+`v0.8` is the next committed release after the completed `v0.7` structured-ingestion series.
 
 Its purpose is:
 
-> add derivative-robust machinery for noisy, coarse, or high-derivative PDE discovery, while preserving the canonical data and generator-family contracts.
+> add a narrow stable weak-form residual path for the existing scalar 1D Heat/Burgers regime, with deterministic clean/noisy/coarse robustness comparisons against the current spectral/analytic path, while preserving canonical data and generator-family contracts.
 
-Candidate directions:
+Committed stable scope:
 
-- weak-form derivatives / weak residual workflows
-- WSINDy-style integration tests
-- robust residual evaluation under noise
-- high-derivative stress tests
-- KdV promotion if the weak/spectral story is mature enough
+- `pdelie.residuals.evaluate_weak_heat_residual(...)`
+- `pdelie.residuals.evaluate_weak_burgers_residual(...)`
+- window-indexed weak residual reports rather than field-shaped residual arrays
+- canonical scalar 1D uniform periodic `FieldBatch` inputs only
+- Heat and Burgers only
+- deterministic robustness comparisons against the current `spectral_fd` / analytic path
+- one compact `v0_8-release-gate`
 
-KdV does not require weak-form methods for clean synthetic periodic tests, but noisy or coarse KdV is a natural pressure point for weak-form machinery. `v0.8` is therefore the right place to decide whether weak methods become a stable numerical axis.
+Stable `v0.8` release definition:
+
+`canonical FieldBatch -> stable weak residual report APIs for Heat/Burgers -> deterministic clean/noisy/coarse robustness comparisons against the current spectral/analytic path`
+
+Explicit non-goals for `v0.8`:
+
+- no stable weak derivative API
+- no stable `ResidualBatch` / `ResidualEvaluator` integration commitment
+- no stable KdV promotion
+- no multidimensional, multivariable, nonuniform-grid, operator, or adapter expansion
+- no new canonical object
+
+### Release Gate for `v0.8`
+
+`v0.8` is complete only if:
+
+- weak residual report outputs are deterministic under the frozen defaults
+- unsupported inputs fail with typed errors
+- clean Heat/Burgers fixtures show acceptable weak-path behavior
+- frozen noisy/coarse fixtures show a documented robustness signal against the current spectral/analytic path
+- no stable weak-derivative or stable KdV public surface is added
+
+---
+
+## Medium-Term Horizon
 
 ### `v0.9` — Broader PDE and dataset coverage
 **Status:** Planned / Experimental
@@ -380,6 +407,7 @@ This is not part of the near-term non-operator Paper 1 path and should not be mi
 - `ROADMAP.md`
 - `V0_6_SCOPE.md` once frozen
 - `V0_7_SCOPE.md` once frozen
+- `V0_8_SCOPE.md` once frozen
 - `PLAN.md` for current execution only
 
 ### Non-authoritative for scheduling
@@ -411,7 +439,7 @@ It should **not** be edited every time a new idea appears.
 - `v0.5` = generator-family portability and external-family compatibility, with KdV kept non-stable
 - `v0.6` = symmetry-guided PDE discovery utilities in the current Heat/Burgers regime
 - `v0.7` = structured external data ingestion into canonical `FieldBatch`
-- `v0.8` = robust high-derivative / weak-form numerics
+- `v0.8` = window-indexed weak residual reports and robustness comparisons
 - `v0.9` = broader PDE and dataset coverage
 - `v1.0` = stable public engine
 - later / experimental = operator-facing symmetry discovery
