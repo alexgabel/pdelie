@@ -4,10 +4,11 @@ from collections.abc import Callable, Mapping
 
 import numpy as np
 
-from pdelie.contracts import FieldBatch, _is_uniform
+from pdelie.contracts import FieldBatch
 from pdelie.errors import SchemaValidationError, ScopeValidationError
 
 
+_COORDINATE_UNIFORM_ABS_TOL = 1e-12
 _TIME_WINDOW_SIZE = 5
 _X_WINDOW_SIZE = 9
 _TIME_HALF_WIDTH = 2
@@ -49,7 +50,30 @@ def _validate_field_input(field: object, *, function_name: str) -> FieldBatch:
     return field
 
 
-def _validate_supported_field(field: FieldBatch, *, function_name: str) -> None:
+def _validate_strict_uniform_increasing_coordinate(
+    coord: np.ndarray,
+    *,
+    name: str,
+    function_name: str,
+) -> float:
+    if coord.ndim != 1:
+        raise ScopeValidationError(f"{function_name} requires one-dimensional {name} coordinates.")
+    if coord.size < 2:
+        raise ScopeValidationError(f"{function_name} requires at least two {name} coordinates.")
+    if not np.all(np.isfinite(coord)):
+        raise ScopeValidationError(f"{function_name} requires finite {name} coordinates.")
+
+    deltas = np.diff(coord)
+    if not np.all(deltas > 0.0):
+        raise ScopeValidationError(f"{function_name} requires strictly increasing {name} coordinates.")
+
+    spacing = float(deltas[0])
+    if not np.allclose(deltas, spacing, atol=_COORDINATE_UNIFORM_ABS_TOL, rtol=0.0):
+        raise ScopeValidationError(f"{function_name} requires uniformly spaced {name} coordinates.")
+    return spacing
+
+
+def _validate_supported_field(field: FieldBatch, *, function_name: str) -> tuple[float, float]:
     if field.dims != ("batch", "time", "x", "var"):
         raise ScopeValidationError(
             f"{function_name} only supports dims ('batch', 'time', 'x', 'var') in V0.8 Milestone 2."
@@ -74,12 +98,14 @@ def _validate_supported_field(field: FieldBatch, *, function_name: str) -> None:
         )
 
     time = np.asarray(field.coords["time"], dtype=float)
-    if not _is_uniform(time):
-        raise ScopeValidationError(f"{function_name} requires uniformly spaced time coordinates.")
+    x = np.asarray(field.coords["x"], dtype=float)
+    dt = _validate_strict_uniform_increasing_coordinate(time, name="time", function_name=function_name)
+    dx = _validate_strict_uniform_increasing_coordinate(x, name="x", function_name=function_name)
 
     boundary_conditions = field.metadata.get("boundary_conditions")
     if not isinstance(boundary_conditions, Mapping) or boundary_conditions.get("x") != "periodic":
         raise ScopeValidationError(f"{function_name} requires periodic boundary conditions in x.")
+    return dt, dx
 
 
 def _validate_finite_scalar(value: object, *, name: str, function_name: str) -> float:
@@ -221,13 +247,11 @@ def _evaluate_weak_report(
     nonlinear_kernel_factory: Callable[[dict[str, np.ndarray]], np.ndarray | None],
 ) -> dict[str, object]:
     field = _validate_field_input(field, function_name=function_name)
-    _validate_supported_field(field, function_name=function_name)
+    dt, dx = _validate_supported_field(field, function_name=function_name)
     nu = _resolve_diffusivity(field, diffusivity, function_name=function_name)
 
     time = np.asarray(field.coords["time"], dtype=float)
     x = np.asarray(field.coords["x"], dtype=float)
-    dt = float(abs(time[1] - time[0]))
-    dx = float(abs(x[1] - x[0]))
     kernels = _compute_base_kernels(dt=dt, dx=dx)
     linear_kernel = kernels["weights"] * (-kernels["phi_t"] - nu * kernels["phi_xx"])
     nonlinear_kernel = nonlinear_kernel_factory(kernels)

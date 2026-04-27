@@ -102,6 +102,56 @@ def _make_nonuniform_time_field(field: FieldBatch) -> FieldBatch:
     )
 
 
+def _make_tightly_nonuniform_time_field(field: FieldBatch) -> FieldBatch:
+    time = field.coords["time"].copy()
+    time[2] = time[2] + 5e-11
+    return FieldBatch(
+        values=field.values.copy(),
+        dims=field.dims,
+        coords={"time": time, "x": field.coords["x"].copy()},
+        var_names=list(field.var_names),
+        metadata=deepcopy(field.metadata),
+        preprocess_log=deepcopy(field.preprocess_log),
+        mask=None,
+    )
+
+
+def _make_decreasing_time_field(field: FieldBatch) -> FieldBatch:
+    return FieldBatch(
+        values=field.values[:, ::-1, :, :].copy(),
+        dims=field.dims,
+        coords={"time": field.coords["time"][::-1].copy(), "x": field.coords["x"].copy()},
+        var_names=list(field.var_names),
+        metadata=deepcopy(field.metadata),
+        preprocess_log=deepcopy(field.preprocess_log),
+        mask=None,
+    )
+
+
+def _make_decreasing_x_field(field: FieldBatch) -> FieldBatch:
+    return FieldBatch(
+        values=field.values[:, :, ::-1, :].copy(),
+        dims=field.dims,
+        coords={"time": field.coords["time"].copy(), "x": field.coords["x"][::-1].copy()},
+        var_names=list(field.var_names),
+        metadata=deepcopy(field.metadata),
+        preprocess_log=deepcopy(field.preprocess_log),
+        mask=None,
+    )
+
+
+def _make_zero_spacing_x_field(field: FieldBatch) -> FieldBatch:
+    return FieldBatch(
+        values=field.values.copy(),
+        dims=field.dims,
+        coords={"time": field.coords["time"].copy(), "x": np.zeros_like(field.coords["x"], dtype=float)},
+        var_names=list(field.var_names),
+        metadata=deepcopy(field.metadata),
+        preprocess_log=deepcopy(field.preprocess_log),
+        mask=None,
+    )
+
+
 def _make_nonfinite_field(field: FieldBatch) -> FieldBatch:
     values = field.values.copy()
     values[0, 0, 0, 0] = np.nan
@@ -253,6 +303,10 @@ def test_weak_residual_reports_reject_wrong_input_type(
         (lambda: _make_masked_field(generate_heat_1d_field_batch(batch_size=2, num_times=17, num_points=16, seed=9203)), "masked fields", ScopeValidationError),
         (lambda: _make_nonfinite_field(generate_heat_1d_field_batch(batch_size=2, num_times=17, num_points=16, seed=9204)), "finite field values", ScopeValidationError),
         (lambda: _make_nonuniform_time_field(generate_heat_1d_field_batch(batch_size=2, num_times=17, num_points=16, seed=9205)), "uniformly spaced time", ScopeValidationError),
+        (lambda: _make_tightly_nonuniform_time_field(generate_heat_1d_field_batch(batch_size=2, num_times=17, num_points=16, seed=9208)), "uniformly spaced time", ScopeValidationError),
+        (lambda: _make_decreasing_time_field(generate_heat_1d_field_batch(batch_size=2, num_times=17, num_points=16, seed=9209)), "strictly increasing time", ScopeValidationError),
+        (lambda: _make_decreasing_x_field(generate_heat_1d_field_batch(batch_size=2, num_times=17, num_points=16, seed=9210)), "strictly increasing x", ScopeValidationError),
+        (lambda: _make_zero_spacing_x_field(generate_heat_1d_field_batch(batch_size=2, num_times=17, num_points=16, seed=9211)), "strictly increasing x", ScopeValidationError),
         (lambda: _make_nonperiodic_field(generate_heat_1d_field_batch(batch_size=2, num_times=17, num_points=16, seed=9206)), "periodic boundary conditions", ScopeValidationError),
         (_make_short_time_field, "at least 5 time points", ScopeValidationError),
         (_make_short_x_field, "at least 9 x-points", ScopeValidationError),
