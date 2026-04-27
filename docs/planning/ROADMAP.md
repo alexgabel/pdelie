@@ -4,8 +4,8 @@ This file is the authoritative release-planning document for `pdelie`.
 
 It defines:
 
-- the current release series
-- the next committed release target
+- the current completed release
+- the next committed release target when one is frozen
 - the medium-term planned direction
 - the experimental horizon
 
@@ -126,7 +126,7 @@ Its purpose is:
 
 ---
 
-## Previous Completed Release
+## Earlier Completed Releases
 
 ### `v0.3` — First invariant/downstream utility release
 **Status:** Completed
@@ -144,8 +144,6 @@ Completed scope:
 This release expands the invariant/downstream utility axis without widening the stable library into weak-form methods, operator methods, or broad adapters.
 
 ---
-
-## Previous Completed Release
 
 ### `v0.4` — Lie-algebra span, symbolic reporting, and visual diagnostics
 **Status:** Completed
@@ -190,8 +188,6 @@ Its purpose is:
 
 ---
 
-## Current Completed Release
-
 ### `v0.5` — Generator-family portability and external-family compatibility
 **Status:** Completed
 
@@ -210,12 +206,10 @@ This release closes the portability / external-compatibility axis without broade
 
 ---
 
-## Next Release Target
-
 ### `v0.6` — Symmetry-guided PDE discovery utilities
-**Status:** Committed
+**Status:** Completed
 
-`v0.6` is the next committed release target after the completed `v0.5` line.
+`v0.6` is the completed release where PDELie proves that the existing Heat/Burgers slice can support a small, generic public-library layer for controlled symmetry-guided PDE discovery workflows.
 
 Its purpose is:
 
@@ -260,18 +254,18 @@ Frozen release definition:
 
 ---
 
-## Planned Next Step
+## Current Completed Release
 
 ### `v0.7` — Structured external data ingestion
-**Status:** Planned
+**Status:** Completed
 
-`v0.7` is the planned release after the `v0.6` discovery-utility release.
+`v0.7` is the completed release after the `v0.6` discovery-utility series.
 
 Its purpose is:
 
 > make PDELie able to ingest external structured 1D uniform rectilinear PDE data into canonical `FieldBatch`, so the existing symmetry and discovery utilities can run outside internally generated synthetic fixtures.
 
-### Candidate scope for `v0.7`
+Completed scope:
 
 - `pdelie.data.from_numpy(...)`
 - `pdelie.data.from_xarray(...)`
@@ -296,9 +290,26 @@ Its purpose is:
 
 > external structured arrays -> canonical `FieldBatch` -> existing PDELie pipeline.
 
+The authoritative `v0.7` scope freeze belongs in:
+
+- `V0_7_SCOPE.md`
+
+### Release Gate for `v0.7`
+
+`v0.7` is complete only if:
+
+- `from_numpy(...)` preserves the frozen scalar 1D uniform-rectilinear ingestion contract
+- `from_xarray(...)` preserves the same contract for `xarray.DataArray`
+- imported Heat/Burgers-like data matches native `FieldBatch` behavior through the current derivative, residual, symmetry-fit, verification, and discovery-bridge layers
+- the compact `v0_7-release-gate` remains green in CI
+- no broad loader framework, `Dataset` support, metadata inference, or multidimensional ingestion is added
+
 ---
 
 ## Medium-Term Horizon
+
+No post-`v0.7` committed release target is frozen yet.
+The likely next release direction is `v0.8`, but it remains planned rather than committed.
 
 ### `v0.8` — Robust high-derivative and weak-form numerics
 **Status:** Planned / Experimental
@@ -368,6 +379,7 @@ This is not part of the near-term non-operator Paper 1 path and should not be mi
 ### Authoritative for scheduling
 - `ROADMAP.md`
 - `V0_6_SCOPE.md` once frozen
+- `V0_7_SCOPE.md` once frozen
 - `PLAN.md` for current execution only
 
 ### Non-authoritative for scheduling

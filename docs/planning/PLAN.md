@@ -1,15 +1,15 @@
-# PDELie — Execution Plan (V0.6)
+# PDELie — Execution Plan (V0.7)
 
 ## Current Release Status
 
-**V0.6 release complete**
+**V0.7 release complete**
 
-This file is the execution record for the completed `v0.6` release series.
+This file is the execution record for the completed `v0.7` release series.
 
 It should contain:
 
-- a short record of the completed `v0.5` release
-- the frozen plan for the completed `v0.6` milestone sequence
+- a short closeout record for the completed `v0.6` release
+- the completed `v0.7` milestone sequence
 - milestone-specific rules and gates
 
 It should not redefine package contracts or roadmap commitments. Those belong in:
@@ -18,255 +18,268 @@ It should not redefine package contracts or roadmap commitments. Those belong in
 - `docs/specs/CONTRACTS_AND_DEFAULTS.md`
 - `docs/specs/API_STABILITY.md`
 - `docs/planning/ROADMAP.md`
-- `docs/planning/V0_6_SCOPE.md`
+- `docs/planning/V0_7_SCOPE.md`
+
+Historical M0 note: `API_STABILITY.md` stayed unchanged during `v0.7 M0`, because the importer APIs were not implemented yet.
 
 ---
 
-## V0.5 Closeout
+## V0.6 Closeout
 
-`v0.5` is complete as the generator-family portability and external-family compatibility release.
+`v0.6` is complete as the symmetry-guided PDE discovery utilities release.
 
 Completed outcome:
 
-- manifest export/import for canonical `GeneratorFamily`
-- strict external-family coercion into canonical `GeneratorFamily`
-- compact portability benchmark
-- compact `v0.5` release gate
-- KdV feasibility recorded as passed in a tests-first slice, with stable KdV promotion deferred
+- discovery recovery metrics
+- one thin PySINDy discovery adapter
+- one translation-canonical discovery-input builder
+- simple robustness utilities
+- one compact `v0.6` release gate
 
-`v0.6` begins from that frozen release surface.
+`v0.7` begins from that frozen Heat/Burgers discovery-utility surface.
 
-This release series is discovery-utility first.
-It does not broaden the stable numerics regime beyond the current Heat/Burgers canonical slice.
+This release series is structured-ingestion first.
+It does not broaden the stable numerics regime or the current scalar periodic discovery stack.
 
 ---
 
-## Milestone 1 — Discovery Recovery Metrics
+## Milestone 0 — External Ingestion Contract Freeze
 
 **Status:** Complete
 
 ### Goal
 
-Add a small, generic recovery-metrics layer for sparse PDE discovery outputs without introducing a new canonical equation object.
+Freeze the exact `v0.7` importer contracts before writing runtime ingestion code.
 
 ### Frozen Decisions
 
-- add `pdelie.discovery.evaluate_discovery_recovery(...)`
-- `target_terms` and `discovered_terms` are mappings of canonical term string to scalar coefficient
-- exact string equality defines support identity
-- aliases, symbolic simplification, and term normalization are out of scope
-- term keys must be non-empty strings
-- coefficients must be finite
-- support is `abs(coef) > support_epsilon`
-- empty target + empty discovered = `exact`
-- empty target + non-empty discovered = `failed`
-- non-empty target + empty discovered = `failed`
-- classification is support-based only:
-  - `exact`
-  - `partial`
-  - `failed`
-- no PySINDy adapter work in M1
-- no translation-canonical input builder in M1
-- no robustness utilities in M1
-- no KdV work in M1
+Planned stable public APIs:
+
+- `pdelie.data.from_numpy(values, *, dims, coords, var_name, metadata, mask=None, preprocess_log=None) -> FieldBatch`
+- `pdelie.data.from_xarray(data_array, *, var_name=None, metadata, mask=None, preprocess_log=None) -> FieldBatch`
+
+`from_xarray(...)` is frozen to `xarray.DataArray` only in `v0.7`.
+`xarray.Dataset` support is out of scope for the stable slice.
+
+Variable-name rules:
+
+- `from_numpy(...)` always requires explicit `var_name`
+- `from_xarray(...)` resolves `var_name` by:
+  - explicit `var_name` argument first
+  - otherwise the single `var` coordinate value when explicit `var` axis exists
+  - otherwise `DataArray.name`
+  - otherwise validation failure
+
+Stable accepted source layouts are:
+
+- `("time", "x")`
+- `("batch", "time", "x")`
+- `("time", "x", "var")`
+- `("batch", "time", "x", "var")`
+
+Frozen axis/layout rules:
+
+- `time` is required
+- `x` is required
+- `var` may be omitted only for the scalar stable slice
+- if `var` is omitted, the importer injects a trailing singleton `var` axis
+- if `var` is present, its length must be exactly `1`
+- no static / no-time layouts in stable `v0.7`
+- no dim aliases in stable `v0.7`
+- no `y` / `z` ingestion in stable `v0.7`
+
+Coordinate validation:
+
+- `time` and `x` coordinates are required
+- both must be 1D finite numeric arrays
+- `time` must be strictly increasing, uniform, and length `>= 3`
+- `x` must be strictly increasing, uniform, and length `>= 4`
+- `x` uniformity uses the current `FieldBatch` spatial tolerance policy
+- `time` uniformity is required because stable `v0.7` imports target the current trajectory / discovery pipeline
+- no coordinate inference beyond extracting `time` / `x` from the provided inputs
+- no normalization, sorting, or repair of malformed coordinates
+
+Metadata requirements:
+
+- the caller must supply the full required `FieldBatch` metadata mapping
+- there is no stable metadata inference in `v0.7`
+- required keys remain:
+  - `boundary_conditions`
+  - `grid_type`
+  - `coordinate_system`
+  - `grid_regularity`
+  - `parameter_tags`
+- stable `v0.7` imported fields must validate as:
+  - `grid_type == "rectilinear"`
+  - `grid_regularity == "uniform"`
+  - `coordinate_system == "cartesian"`
+  - `boundary_conditions["x"] == "periodic"`
+- `parameter_tags` must be a mapping but may be empty
+- `xarray` attrs are not used as stable metadata inference
+
+Stable `v0.7` importers preserve missing-data signals rather than normalizing them.
+
+Frozen rules:
+
+- preserve both explicit masks and existing `NaN` / non-finite values
+- do not normalize `NaN` values into masks
+- do not normalize masks into `NaN` values
+- if `mask` is provided and `var` is injected, inject the singleton `var` axis into the mask too
+- `from_numpy(...)` accepts array-like `mask`
+- `from_xarray(...)` accepts `xarray.DataArray` `mask` only
+- mask must align with the pre-normalized input layout and the resulting post-injection shape
+
+Stable importers always materialize owned canonical data.
+
+Frozen copy rules:
+
+- always materialize and copy imported values
+- always copy coordinates
+- always copy masks when present
+- deep-copy `metadata`
+- if `preprocess_log` is omitted, start from `[]`
+- if `preprocess_log` is provided, deep-copy it and then append exactly one new entry
+
+Frozen provenance rule:
+
+- append exactly one provenance entry:
+  - `operation = "from_numpy"` or `"from_xarray"`
+  - `parameters` includes at least:
+    - `source_layout`
+    - `imported_shape`
+    - `injected_var_axis`
+    - `mask_provided`
+
+Stable dependency behavior:
+
+- `from_numpy(...)` is core-only
+- `from_xarray(...)` is a runtime-optional path
+- `xarray` must be imported lazily inside the function / module path
+- if `xarray` is unavailable, calling `from_xarray(...)` raises `ImportError` with an install message
+- do not add an optional dependency extra in `v0.7 M0`
+- the packaging extra name for `xarray` support will be finalized when `from_xarray(...)` is implemented
+- `v0.7 M0` freezes only the runtime behavior and placeholder packaging note, not the final extra name
 
 ### Acceptance Criteria
 
-M1 is complete only if:
+M0 is complete only if:
 
-- support identity is deterministic under exact string equality
-- invalid term keys or non-finite coefficients fail with typed errors
-- support threshold behavior is explicit and deterministic
-- exact / partial / failed classification is stable for representative edge cases
-- coefficient and residual summary fields are returned in one plain runtime dict
-- no new canonical object is introduced
-
-### Test Plan
-
-Run at minimum:
-
-- discovery recovery metrics tests
-- representative edge-case tests
-- full `pytest`
+- `ROADMAP.md`, `PLAN.md`, and `V0_7_SCOPE.md` are internally consistent
+- `v0.6` is consistently described as completed
+- `v0.7` is consistently described as the next committed release
+- the importer contract bullets are identical between `PLAN.md` and `V0_7_SCOPE.md`
+- `API_STABILITY.md` remains unchanged during M0
 
 ---
 
-## Milestone 2 — Thin PySINDy Discovery Adapter
+## Milestone 1 — `from_numpy(...)`
 
 **Status:** Complete
 
 ### Goal
 
-Add one narrow PySINDy-only backend-fit adapter for the existing scalar periodic trajectory bridge without creating a general discovery-backend framework or claiming canonical PDE-level equation extraction.
+Implement `from_numpy(...)` exactly as frozen in M0.
 
-### Frozen Decisions
+### Completed Outcome
 
-- add `pdelie.discovery.fit_pysindy_discovery(...)`
-- PySINDy only
-- continuous-time only
-- accept only the current trajectory shape from `to_pysindy_trajectories(...)`
-- all trajectories must share identical shape as a frozen M2 simplification, not as a general PySINDy limitation
-- `feature_names` are the input state-feature columns and must be unique non-empty strings
-- runtime owns a private frozen deterministic PySINDy default profile
-- `config` must be `None`
-- return a runtime backend report dict, not a JSON-compatible artifact schema
-- return:
-  - `library_feature_names`
-  - dense 2D `coefficients` as NumPy arrays
-  - sparse backend-native `equation_terms`
-  - backend-native debug `equation_strings`
-- default coefficient threshold is `1e-8`
-- backend fitting failures return `status="failed"`
-- missing dependency remains `ImportError`
-- `equation_terms` and `equation_strings` are backend-native and non-canonical
-- `equation_terms` and `equation_strings` must not be fed directly into `evaluate_discovery_recovery(...)` without a later canonicalization step
-- do not promise a true `u_t = ...` PDE equation in M2
-- do not generalize into a backend framework
+- added `pdelie.data.from_numpy(...)`
+- accepted only the four frozen scalar 1D structured layouts
+- canonicalized output to `("batch", "time", "x", "var")`
+- preserved explicit `NaN` values and optional masks without normalization
+- deep-copied values, coordinates, metadata, masks, and preprocess provenance
+- appended one deterministic `from_numpy` provenance entry
 
 ---
 
-## Milestone 3 — Translation-Canonical Discovery Inputs
+## Milestone 2 — `from_xarray(...)`
 
 **Status:** Complete
 
 ### Goal
 
-Bridge the current translation/invariant path into discovery-ready canonical inputs without implying full differential-invariant generation or mathematically intrinsic invariant construction.
+Implement `from_xarray(...)` exactly as frozen in M0, including lazy optional-dependency behavior.
 
-### Frozen Decisions
+### Completed Outcome
 
-- add `pdelie.discovery.build_translation_canonical_discovery_inputs(...)`
-- use `invariant_spec_template`, not `invariant_spec`
-- exactly one of `generator_family` or `invariant_spec_template`
-- translation/canonical path only
-- scalar variable only
-- periodic `x` only
-- reject masked fields
-- accept only single-row translation generators within `DEFAULT_TRANSLATION_SPAN_TOLERANCE`
-- `invariant_spec_template` is explicit template mode and must not include `shift`
-- per-sample initial-time peak alignment
-- first-index tie-breaking
-- deterministic reported shifts in batch order
-- peak alignment is a heuristic canonicalization policy, not a strong invariant-theoretic guarantee
-- split/apply/reassemble through the existing `InvariantApplier`
-- reassembled field appends exactly one batch-level preprocess entry
-- return a runtime dict with:
-  - `transformed_field`
-  - `trajectories`
-  - `time_values`
-  - `feature_names`
-  - `generator_metadata`
-  - `construction_method`
-  - `alignment_policy`
-  - `alignment_shifts`
-  - `provenance`
-- no general invariant-theory engine
-- no full differential-invariant generation
+- added `pdelie.data.from_xarray(...)`
+- accepted only the four frozen scalar 1D `xarray.DataArray` layouts
+- canonicalized output to `("batch", "time", "x", "var")`
+- preserved explicit `NaN` values and optional `xarray.DataArray` masks without normalization
+- deep-copied values, coordinates, metadata, masks, and preprocess provenance
+- finalized the optional dependency extra name as `xarray`
 
 ---
 
-## Milestone 4 — Robustness Utilities
+## Milestone 3 — Parity Tests and V0.7 Release Gate
 
 **Status:** Complete
 
 ### Goal
 
-Add plain, deterministic robustness helpers that keep `FieldBatch` semantics intact.
+Prove that imported structured data behaves like the current native Heat/Burgers `FieldBatch` path and add a compact `v0.7` release gate.
 
-### Frozen Decisions
+### Completed Outcome
 
-- add `pdelie.data.add_gaussian_noise(...)`
-- add `pdelie.data.subsample_time(...)`
-- add `pdelie.data.subsample_x(...)`
-- add `pdelie.data.split_batch_train_heldout(...)`
-- add `pdelie.discovery.summarize_recovery_grid(...)`
-- `FieldBatch` in / `FieldBatch` out only for the data-side helpers
-- deep-copy metadata and existing preprocess-log entries before appending new entries
-- copy coord arrays, copy `var_names`, and copy/slice masks when present
-- deterministic noise, subsampling, and splitting only
-- noise applies only to finite unmasked values
-- `NaN` and other non-finite source values remain unchanged
-- `subsample_time` may leave one time point
-- `subsample_x` must leave at least two x-points
-- `train_size` is an integer count only
-- integer-like parameters allow Python `int` and NumPy integer types but reject `bool`
-- train/heldout split is deterministic and preserves original batch order within each split
-- `summarize_recovery_grid(...)` consumes nested `{"conditions": ..., "recovery": ...}` runtime records
-- grouped summary rows use deterministic typed sort keys over condition values
-- `summarize_recovery_grid(...)` is runtime convenience only, not a canonical artifact or manuscript-table schema
-- `preprocess_log` gets exactly one new plain-dict entry with `operation` and `parameters`
-- no dataframe, plotting, or report-rendering layer
+- added native-vs-imported parity coverage for `from_numpy(...)` and `from_xarray(...)`
+- proved parity through the current derivative, residual, symmetry-fit, verification, and discovery-bridge layers
+- added a compact `v0_7-release-gate` test module and dedicated CI job
+- kept the downstream fit assertion structural-only and avoided any new public API
 
 ---
 
-## Milestone 5 — V0.6 Release Gate
+## V0.7 Closeout
 
-**Status:** Complete
+`v0.7` is complete as the structured external-data ingestion release.
 
-### Goal
+Completed release outcome:
 
-Add one compact, representative `v0.6` release gate without making discovery-performance claims.
+- strict `pdelie.data.from_numpy(...)` ingestion into canonical `FieldBatch`
+- strict runtime-optional `pdelie.data.from_xarray(...)` ingestion for `xarray.DataArray`
+- parity protection proving imported Heat/Burgers-like data behaves like the native `FieldBatch` path
+- a compact `v0.7` release gate and dedicated CI visibility job
 
-### Frozen Decisions
-
-- compact representative aggregation only
-- raw/vanilla input slice
-- oracle/known translation family input slice
-- imported/coerced translation family input slice
-- dedicated `tests/test_v0_6_release_gate.py`
-- dedicated `v0_6-release-gate` CI job
-- no discovery superiority claim
-- no exact PySINDy model-string assertions
-- no stable KdV surface addition
-- Heat/Burgers stable paths remain unchanged
-
-### Test Plan
-
-Run at minimum:
-
-- `tests/test_v0_6_release_gate.py`
-- full `pytest`
+This release extends the library into structured external ingestion without broadening the stable numerics regime, adding file loaders, or changing the existing Heat/Burgers symmetry and discovery contracts.
 
 ---
 
-## Later Milestones
+## Executed Milestone Sequence
 
 Locked sequence:
 
-Milestone 1 -> discovery recovery metrics  
-Milestone 2 -> thin PySINDy discovery adapter  
-Milestone 3 -> translation-canonical discovery inputs  
-Milestone 4 -> robustness utilities  
-Milestone 5 -> V0.6 release gate
+Milestone 0 -> external ingestion contract freeze  
+Milestone 1 -> `from_numpy(...)`  
+Milestone 2 -> `from_xarray(...)`  
+Milestone 3 -> parity tests and compact `v0.7` release gate
 
 Hard sequencing rules:
 
-- do not broaden discovery metrics into a new canonical equation object
-- do not turn the PySINDy adapter into a general backend framework
-- do not broaden translation-canonical inputs into full invariant generation
-- do not turn robustness utilities into a dataframe or plotting layer
-- do not promote KdV in `v0.6`
+- do not turn `v0.7` into a broad dataset-adapter release
+- do not add multidimensional stable ingestion
+- do not add metadata inference as stable behavior
+- do not broaden ingestion work into weak-form or operator-method expansion
+- do not use `v0.7` to promote KdV
 
 ---
 
 ## Rules
 
-- DO NOT add new canonical objects in `v0.6`
-- DO NOT add root exports from `pdelie.__init__`
-- DO NOT add KdV as a stable `v0.6` surface
-- DO NOT add external dataset-ingestion scope in `v0.6`
+- M0-only: DO NOT update `docs/specs/API_STABILITY.md` until importer APIs actually land
+- DO NOT add `xarray.Dataset` stable support in `v0.7`
+- DO NOT add dim aliases in `v0.7`
+- DO NOT add static-field ingestion in `v0.7`
+- DO NOT add multidimensional stable ingestion in `v0.7`
+- DO NOT add nonuniform-grid support in `v0.7`
+- DO NOT add broad metadata inference
 - DO NOT add weak-form methods
 - DO NOT add operator methods
-- DO NOT add broad adapters
-- DO NOT add paper-specific experiment matrices, thresholds, figures, or manuscript logic
+- DO NOT add paper-specific experiment logic
 
 ---
 
 ## Status
 
-- `v0.5`: COMPLETE
+- `v0.6`: COMPLETE
+- Milestone 0: COMPLETE
 - Milestone 1: COMPLETE
 - Milestone 2: COMPLETE
 - Milestone 3: COMPLETE
-- Milestone 4: COMPLETE
-- Milestone 5: COMPLETE
