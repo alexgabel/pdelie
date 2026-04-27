@@ -103,6 +103,13 @@ Runtime public API for the frozen `v0.8` Milestone 2 slice:
 - these M2 APIs return runtime report dicts, not canonical `ResidualBatch` objects
 - their stable report shape and diagnostics surface are frozen by `docs/planning/V0_8_SCOPE.md`
 
+Runtime public API update for the frozen `v0.9` Milestone 1 slice:
+
+- `pdelie.derivatives.compute_spectral_fd_derivatives(field, *, max_spatial_order=2)` preserves the current default `spectral_fd` behavior and derivative outputs
+- `max_spatial_order=3` adds the third spatial derivative output `u_xxx`
+- `max_spatial_order=1` emits only the time derivative and first spatial derivative outputs
+- unsupported `max_spatial_order` values raise `ScopeValidationError`
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 

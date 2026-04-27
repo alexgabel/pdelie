@@ -12,7 +12,17 @@ def _reshape_for_axis(values: np.ndarray, axis: int, axis_size: int) -> tuple[in
     return tuple(shape)
 
 
-def compute_spectral_fd_derivatives(field: FieldBatch) -> DerivativeBatch:
+def _validate_max_spatial_order(max_spatial_order: object) -> int:
+    if isinstance(max_spatial_order, (bool, np.bool_)) or not isinstance(max_spatial_order, (int, np.integer)):
+        raise ScopeValidationError("spectral_fd max_spatial_order must be one of 1, 2, or 3.")
+    normalized = int(max_spatial_order)
+    if normalized not in {1, 2, 3}:
+        raise ScopeValidationError("spectral_fd max_spatial_order must be one of 1, 2, or 3.")
+    return normalized
+
+
+def compute_spectral_fd_derivatives(field: FieldBatch, *, max_spatial_order: int = 2) -> DerivativeBatch:
+    normalized_max_spatial_order = _validate_max_spatial_order(max_spatial_order)
     field.validate()
 
     if field.dims != ("batch", "time", "x", "var"):
@@ -42,18 +52,32 @@ def compute_spectral_fd_derivatives(field: FieldBatch) -> DerivativeBatch:
     u_xx = np.real(np.fft.ifft(-(wavenumbers**2) * spectrum, axis=x_axis))
     u_t = np.gradient(values, dt, axis=t_axis, edge_order=2)
 
-    derivatives = DerivativeBatch(
-        derivatives={
+    derivative_arrays = {
+        "u_x": np.asarray(u_x, dtype=float),
+        "u_t": np.asarray(u_t, dtype=float),
+    }
+    if normalized_max_spatial_order >= 2:
+        derivative_arrays = {
             "u_x": np.asarray(u_x, dtype=float),
             "u_xx": np.asarray(u_xx, dtype=float),
             "u_t": np.asarray(u_t, dtype=float),
-        },
+        }
+    if normalized_max_spatial_order >= 3:
+        u_xxx = np.real(np.fft.ifft(((1j * wavenumbers) ** 3) * spectrum, axis=x_axis))
+        derivative_arrays["u_xxx"] = np.asarray(u_xxx, dtype=float)
+
+    config = {
+        "spatial_method": "spectral",
+        "temporal_method": "finite_difference",
+        "temporal_edge_order": 2,
+    }
+    if normalized_max_spatial_order != 2:
+        config["spatial_max_order"] = normalized_max_spatial_order
+
+    derivatives = DerivativeBatch(
+        derivatives=derivative_arrays,
         backend="spectral_fd",
-        config={
-            "spatial_method": "spectral",
-            "temporal_method": "finite_difference",
-            "temporal_edge_order": 2,
-        },
+        config=config,
         boundary_assumptions="periodic in x; finite differences in time",
         diagnostics={
             "dx": dx,

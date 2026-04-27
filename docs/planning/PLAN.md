@@ -79,27 +79,30 @@ M0 is complete only if:
 
 ## Milestone 1 - Spectral `u_xxx`
 
-**Status:** PENDING
+**Status:** COMPLETE
 
 ### Goal
 
 Extend the existing `spectral_fd` derivative backend through third spatial order without breaking default Heat/Burgers behavior.
 
-### Planned Work
+### Completed Outcome
 
-- implement `compute_spectral_fd_derivatives(field, *, max_spatial_order: int = 2)`
-- freeze derivative key behavior:
+- implemented `compute_spectral_fd_derivatives(field, *, max_spatial_order: int = 2)`
+- froze derivative key behavior:
   - `1` -> `u_t`, `u_x`
   - `2` -> `u_t`, `u_x`, `u_xx`
   - `3` -> `u_t`, `u_x`, `u_xx`, `u_xxx`
-- reject unsupported orders with `ScopeValidationError`
-- add exact Fourier `u_xxx` accuracy tests
-- add default-regression tests proving existing default derivative arrays and keys remain behavior-compatible
-- update `API_STABILITY.md` for the derivative API change when this milestone lands
+- accepted Python integer and NumPy integer scalar orders while rejecting bools and unsupported values
+- preserved default `max_spatial_order=2` derivative arrays, derivative-key set, config, and diagnostics
+- kept `spatial_max_order` out of the default config and recorded it only for non-default orders
+- computed `u_xxx` using the same spectral wavenumber convention as `u_x` and `u_xx`
+- added exact Fourier `u_xxx` accuracy tests
+- added default-regression tests proving existing default derivative arrays and metadata remain behavior-compatible
+- updated `API_STABILITY.md` for the derivative API change
 
 ### Acceptance Criteria
 
-- Heat/Burgers derivative tests still pass under default `max_spatial_order=2`
+- Heat/Burgers derivative tests pass under default `max_spatial_order=2`
 - `u_xxx` matches exact Fourier fixtures within frozen tolerance
 - invalid derivative orders raise typed errors
 - `API_STABILITY.md` documents the landed derivative API change
@@ -289,7 +292,7 @@ Milestone 6 -> release gate and release readiness
 
 - `v0.8`: COMPLETE
 - Milestone 0: COMPLETE
-- Milestone 1: PENDING
+- Milestone 1: COMPLETE
 - Milestone 2: PENDING
 - Milestone 3: PENDING
 - Milestone 4: PENDING
