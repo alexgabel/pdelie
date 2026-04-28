@@ -2,7 +2,7 @@
 
 ## Current Release Status
 
-**V0.9 committed; Milestone 3 complete**
+**V0.9 committed; Milestone 4 complete**
 
 This file is the active execution record for the `v0.9` release series.
 
@@ -216,28 +216,43 @@ Promote normalized KdV strong-form residual evaluation into runtime.
 
 ## Milestone 4 - KdV Vertical Slice
 
-**Status:** PENDING
+**Status:** COMPLETE
 
 ### Goal
 
 Prove KdV works through the existing translation fitting and held-out verification stack.
 
-### Planned Work
+### Completed Outcome
 
-- add KdV fit/verification coverage using the frozen fixture:
+- added KdV fit/verification coverage using the frozen fixture:
   - generator seed `9001`
   - `batch_size = 5`
   - `train_size = 2`
   - split seed `9002`
   - all other generator settings default
-- add `python -m pdelie.examples.kdv_vertical_slice`
-- keep the vertical slice on the normalized periodic short-horizon strong path only
+- added `python -m pdelie.examples.kdv_vertical_slice`
+- added lazy `pdelie.examples.run_kdv_vertical_slice_example`
+- kept root `pdelie` exports unchanged
+- kept the vertical slice on the normalized periodic short-horizon strong path only
+- computed conservation diagnostics on the full generated fixture before train/heldout splitting
+- kept the example output as a JSON-serializable runtime smoke summary, not a stable canonical artifact schema
+- observed frozen-fixture values:
+  - max absolute residual: `0.0029755398453998883`
+  - RMS residual: `0.0005530662104030956`
+  - mass drift: `1.529348589458863e-16`
+  - relative L2 drift: `4.353026792731057e-14`
+  - translation span distance: `0.007441277120177836`
+  - first-epsilon held-out verification error: `3.7632323492784305e-06`
+  - verification classification: `approximate`
+  - fit mode: `svd`
+  - reference fallback used: `False`
 
 ### Acceptance Criteria
 
 - translation span distance is `<= 5e-2`
 - first-epsilon held-out verification error is `< 1e-4`
 - verification classification is not `failed`
+- observed `approximate` classification is acceptable because the M4 gate requires only non-failed verification
 - example smoke runs without changing the existing Heat example
 
 ---
@@ -333,6 +348,6 @@ Milestone 6 -> release gate and release readiness
 - Milestone 1: COMPLETE
 - Milestone 2: COMPLETE
 - Milestone 3: COMPLETE
-- Milestone 4: PENDING
+- Milestone 4: COMPLETE
 - Milestone 5: PENDING
 - Milestone 6: PENDING
