@@ -2,7 +2,7 @@
 
 ## Current Release Status
 
-**V0.10 active; Milestone 0 complete**
+**V0.10 active; Milestone 1 complete**
 
 This file is the active execution record for the `v0.10` release series.
 
@@ -82,32 +82,46 @@ M0 is complete only if:
 
 ## Milestone 1 - Reporting Semantics Freeze
 
-**Status:** PENDING
+**Status:** COMPLETE
 
 ### Goal
 
 Freeze exactly what `v0.10` supportability reporting means before runtime implementation.
 
-### Planned Scope
+### Completed Outcome
 
-- choose exact reporting helper names and import paths, if public helpers are justified
-- freeze return types and JSON-compatibility expectations
-- freeze which existing surfaces may be summarized:
-  - residual diagnostics
-  - generator fitting diagnostics
-  - verification reports
+- chose a new public runtime submodule for M2: `pdelie.reporting`
+- froze no root `pdelie` exports for reporting helpers
+- froze reporting helpers as runtime-level public APIs, not canonical objects
+- froze future M2 helper names:
+  - `summarize_residual_batch(...)`
+  - `summarize_weak_residual_report(...)`
+  - `summarize_generator_family(...)`
+  - `summarize_verification_report(...)`
+  - `summarize_vertical_slice(...)`
+- froze common reporting rules:
+  - JSON-compatible plain Python dict outputs
+  - NumPy arrays convert to lists
+  - NumPy scalars convert to Python scalars
+  - existing typed validation errors for invalid inputs
+  - no input mutation
+  - no canonical object creation or schema changes
+  - no manuscript-specific table, figure, threshold, or label logic
+- froze summary schemas:
+  - residual batch summaries
+  - weak residual report summaries
+  - generator family summaries
+  - verification report summaries
   - vertical-slice summaries
-  - release-gate support summaries
-- define deterministic representative inputs for reporting tests
-- explicitly decide whether helpers are public runtime APIs or internal helpers
-- explicitly avoid new canonical objects unless a repeated supportability problem proves they are necessary
+- left `API_STABILITY.md` unchanged because the public APIs are frozen for M2 but not implemented in M1
+- left runtime code, tests, README, changelog, release-readiness docs, package metadata, and CI unchanged
 
 ### Acceptance Criteria
 
 - exact reporting semantics are frozen before implementation
 - no manuscript-specific reporting logic is introduced
 - example outputs remain runtime smoke summaries, not canonical artifacts
-- `API_STABILITY.md` is still unchanged unless public reporting APIs land in this milestone
+- `API_STABILITY.md` remains unchanged until `pdelie.reporting` lands in M2
 
 ---
 
@@ -272,7 +286,7 @@ Milestone 6 -> release readiness and documentation alignment
 
 - `v0.9`: COMPLETE
 - Milestone 0: COMPLETE
-- Milestone 1: PENDING
+- Milestone 1: COMPLETE
 - Milestone 2: PENDING
 - Milestone 3: PENDING
 - Milestone 4: PENDING

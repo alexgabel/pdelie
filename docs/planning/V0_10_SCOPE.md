@@ -41,34 +41,147 @@ Committed supportability directions:
 
 ## Public API Policy
 
-No new `v0.10` public API is frozen in M0.
+M1 freezes a new runtime-level public helper surface for M2:
 
-If `v0.10` adds reporting helpers, M1 must freeze their exact names, import paths, return shape, and non-goals before implementation.
+- `pdelie.reporting`
 
-Any new `v0.10` reporting helper must be:
+This is a public runtime submodule.
+It is not a canonical object system.
+It has no root `pdelie` exports.
+
+Frozen M2 public APIs:
+
+```python
+summarize_residual_batch(residual: ResidualBatch) -> dict[str, Any]
+summarize_weak_residual_report(report: Mapping[str, Any]) -> dict[str, Any]
+summarize_generator_family(generator: GeneratorFamily) -> dict[str, Any]
+summarize_verification_report(report: VerificationReport) -> dict[str, Any]
+summarize_vertical_slice(
+    *,
+    derivatives: DerivativeBatch,
+    residual: ResidualBatch,
+    generator: GeneratorFamily,
+    verification: VerificationReport,
+    extra_metrics: Mapping[str, Any] | None = None,
+) -> dict[str, Any]
+```
+
+Frozen common reporting rules:
 
 - runtime-level, not a canonical object
-- deterministic for frozen representative inputs
-- JSON-compatible or explicitly documented as runtime-only if NumPy arrays are returned
+- deterministic for identical inputs
+- JSON-compatible plain Python dict outputs
+- NumPy arrays become lists
+- NumPy scalar values become Python scalar values
+- input object types and required report keys are validated
+- validation failures use existing typed validation errors
 - scoped to existing stable surfaces
-- documented in `API_STABILITY.md` in the same milestone where the public API lands
-
-No root `pdelie` export should be added for new `v0.10` helper APIs unless the scope freeze explicitly justifies it.
+- no helper mutates its inputs
+- no helper creates or changes canonical objects
+- no manuscript-specific table, figure, threshold, or label logic
+- no root `pdelie` exports
+- `API_STABILITY.md` is updated in M2 when these APIs land
 
 ---
 
-## Reporting Helper Direction
+## Reporting Helper Schemas
 
-`v0.10` may add compact reporting helpers for supportability.
-Exact helper names and schemas are deferred to M1.
+Every reporting helper returns a dict containing:
 
-Candidate reporting targets:
+- `summary_schema_version = "0.1"`
+- `summary_type`
 
-- residual diagnostics summaries
-- generator fitting summaries
-- verification report summaries
-- vertical-slice summaries
-- release-gate support summaries
+### ResidualBatch Summary
+
+`summarize_residual_batch(...)` freezes these keys:
+
+- `summary_schema_version`
+- `summary_type = "residual_batch"`
+- `residual_shape`
+- `definition_type`
+- `normalization`
+- `max_abs_residual`
+- `rms_residual`
+- `diagnostics`
+
+`max_abs_residual` and `rms_residual` are computed from `residual.residual`.
+The original diagnostics are preserved after JSON-safe conversion.
+
+### Weak Residual Report Summary
+
+`summarize_weak_residual_report(...)` freezes these keys:
+
+- `summary_schema_version`
+- `summary_type = "weak_residual_report"`
+- `equation`
+- `equation_form`
+- `method_family`
+- `normalization`
+- `window_residual_shape`
+- `max_abs_residual`
+- `l2_residual`
+- `diagnostics`
+
+The helper supports the frozen `v0.8` weak report shape only.
+It validates that the input mapping contains the frozen weak report keys before summarizing.
+
+### GeneratorFamily Summary
+
+`summarize_generator_family(...)` freezes these keys:
+
+- `summary_schema_version`
+- `summary_type = "generator_family"`
+- `parameterization`
+- `normalization`
+- `coefficient_shape`
+- `coefficients`
+- `generator_names`
+- `translation_span_distance`
+- `fit_mode`
+- `reference_fallback_used`
+- `fallback_reason`
+- `diagnostics`
+
+`translation_span_distance` is populated only for `polynomial_translation_affine`.
+For other parameterizations, it is `None`.
+Fit and fallback fields are read from diagnostics when present and otherwise reported as `None`.
+
+### VerificationReport Summary
+
+`summarize_verification_report(...)` freezes these keys:
+
+- `summary_schema_version`
+- `summary_type = "verification_report"`
+- `norm`
+- `classification`
+- `epsilon_values`
+- `error_curve`
+- `first_epsilon`
+- `first_error`
+- `max_error`
+- `diagnostics`
+
+`first_epsilon` and `first_error` are the first entries of the verification sweep.
+`max_error` is computed from `error_curve`.
+
+### Vertical Slice Summary
+
+`summarize_vertical_slice(...)` freezes these keys:
+
+- `summary_schema_version`
+- `summary_type = "vertical_slice"`
+- `derivative_backend`
+- `derivative_keys`
+- `derivative_config`
+- `derivative_diagnostics`
+- `residual`
+- `generator`
+- `verification`
+- `extra_metrics`
+
+The nested `residual`, `generator`, and `verification` values are produced by the corresponding summary helpers.
+`extra_metrics` is optional and JSON-safe converted when provided.
+It must not be used to smuggle manuscript-specific reporting logic into the runtime API.
 
 Reporting helpers must not:
 
@@ -99,12 +212,19 @@ Expected properties:
 ## API Stability Audit
 
 M0 audits `docs/specs/API_STABILITY.md` only.
+M1 freezes future public reporting APIs in planning docs only.
 
 Audit result for M0:
 
 - all public APIs through `v0.9` remain documented
 - no `v0.10` public API has landed yet
 - `API_STABILITY.md` should remain unchanged until reporting helpers or other public APIs actually land
+
+M1 audit result:
+
+- `pdelie.reporting` APIs are frozen for M2 but not implemented yet
+- `API_STABILITY.md` remains unchanged in M1
+- M2 must update `API_STABILITY.md` when `pdelie.reporting` lands
 
 Future `v0.10` milestones must update `API_STABILITY.md` in the same milestone where any public API is added or changed.
 
@@ -188,6 +308,6 @@ Planned `v0.10` sequence:
 `API_STABILITY.md` is updated only when public APIs land:
 
 - M0 audits it but leaves it unchanged
-- M1 may freeze proposed public reporting contracts in planning docs only
-- M2 updates it if public reporting helpers land
+- M1 freezes public reporting contracts in planning docs only
+- M2 updates it when public reporting helpers land
 - later milestones update it only if they add or change public APIs
