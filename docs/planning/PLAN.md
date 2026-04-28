@@ -2,7 +2,7 @@
 
 ## Current Release Status
 
-**V0.9 committed; Milestone 4 complete**
+**V0.9 committed; Milestone 5 complete**
 
 This file is the active execution record for the `v0.9` release series.
 
@@ -259,21 +259,38 @@ Prove KdV works through the existing translation fitting and held-out verificati
 
 ## Milestone 5 - Imported Parity and Non-goal Guards
 
-**Status:** PENDING
+**Status:** COMPLETE
 
 ### Goal
 
 Prove KdV remains compatible with the existing structured-ingestion path while protecting v0.9 scope boundaries.
 
-### Planned Work
+### Completed Outcome
 
-- add mandatory `from_numpy` parity for representative KdV data
-- add optional `from_xarray` parity with `pytest.importorskip`
-- compare derivative keys, residual diagnostics, fitted span distance, and verification classification with tolerances
-- assert no weak KdV API
-- assert no root `pdelie` exports for KdV APIs
-- assert v0.8 weak report APIs remain stable
-- assert no broad adapter expansion
+- added mandatory `from_numpy` parity for representative KdV train and heldout data
+- added optional `from_xarray` parity with `pytest.importorskip`
+- used the frozen M4 fixture:
+  - generator seed `9001`
+  - `batch_size = 5`
+  - `train_size = 2`
+  - split seed `9002`
+- verified imported train and heldout fields preserve:
+  - canonical dims, values, coordinates, and variable names
+  - `parameter_tags == {"equation": "kdv_normalized"}`
+  - mask state
+  - native preprocess-log prefix plus exactly one importer entry
+- compared native and imported KdV strong paths with tolerances:
+  - `compute_spectral_fd_derivatives(..., max_spatial_order=3)`
+  - `KdVResidualEvaluator`
+  - `fit_translation_generator`
+  - `verify_translation_generator`
+- compared stable summary fields only and avoided full diagnostic-dict equality for floating or implementation-specific diagnostics
+- observed mandatory `from_numpy` parity passed
+- observed optional `from_xarray` parity skipped cleanly because xarray is unavailable in the local test environment
+- asserted no weak KdV API
+- asserted no root `pdelie` exports for KdV runtime APIs or KdV example helpers
+- asserted v0.8 weak report APIs remain stable
+- did not add runtime APIs, KdV-specific importers, generic adapter helpers, or broad adapter expansion
 
 ### Acceptance Criteria
 
@@ -349,5 +366,5 @@ Milestone 6 -> release gate and release readiness
 - Milestone 2: COMPLETE
 - Milestone 3: COMPLETE
 - Milestone 4: COMPLETE
-- Milestone 5: PENDING
+- Milestone 5: COMPLETE
 - Milestone 6: PENDING

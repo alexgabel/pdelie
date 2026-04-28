@@ -119,13 +119,16 @@ def test_v0_8_release_gate_runtime_surface_and_api_stability_doc_are_aligned() -
     assert not hasattr(pdelie, "evaluate_weak_heat_residual")
     assert not hasattr(pdelie, "evaluate_weak_burgers_residual")
     assert not hasattr(residuals_module, "compute_weak_derivatives")
+    assert not hasattr(residuals_module, "evaluate_weak_kdv_residual")
     assert not hasattr(residuals_module, "WeakHeatResidualEvaluator")
     assert not hasattr(residuals_module, "WeakBurgersResidualEvaluator")
+    assert not hasattr(residuals_module, "WeakKdVResidualEvaluator")
     assert hasattr(residuals_module, "KdVResidualEvaluator")
     assert not hasattr(residuals_module, "KDVResidualEvaluator")
     assert not hasattr(residuals_module, "KdvResidualEvaluator")
     assert not hasattr(pdelie, "generate_kdv_1d_field_batch")
     assert not hasattr(pdelie, "KdVResidualEvaluator")
+    assert not hasattr(pdelie, "run_kdv_vertical_slice_example")
     assert not hasattr(data_module, "sample_kdv_mode_coefficients")
 
     assert "pdelie.residuals.evaluate_weak_heat_residual" in api_stability
