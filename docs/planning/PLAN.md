@@ -22,8 +22,8 @@ Contracts and stable behavior belong in:
 - `docs/planning/ROADMAP.md`
 - `docs/planning/V0_10_SCOPE.md`
 
-`API_STABILITY.md` was audited in M0 and remains unchanged because no new `v0.10` public API has landed yet.
-It must be updated in the same milestone where any public reporting helper or other public API lands.
+`API_STABILITY.md` was audited in M0, left unchanged in M0/M1, updated in M2 when the public `pdelie.reporting` helpers landed, and audited again in M4/M6 with no further changes required.
+It must continue to be updated in the same milestone where any future public helper or other public API lands.
 
 ---
 
