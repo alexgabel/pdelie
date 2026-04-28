@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.9.0
+
+First final release for the frozen V0.9 normalized periodic KdV strong path.
+
+- extends `pdelie.derivatives.compute_spectral_fd_derivatives(...)` with `max_spatial_order=3` and stable `u_xxx` output while preserving the `max_spatial_order=2` default behavior
+- adds `pdelie.data.generate_kdv_1d_field_batch(...)` for normalized periodic short-horizon synthetic KdV under the frozen v0.9 generator regime
+- adds `pdelie.residuals.KdVResidualEvaluator` for the normalized strong-form residual `u_t + 6*u*u_x + u_xxx = 0`
+- adds `python -m pdelie.examples.kdv_vertical_slice` and `pdelie.examples.run_kdv_vertical_slice_example(...)` as runtime smoke examples for the stable KdV path
+- adds compact `v0_9-release-gate` CI visibility and representative KdV imported-parity checks
+- preserves the prior `v0.8` weak residual report APIs and structured-ingestion / symmetry-discovery utility surface
+
+Explicitly deferred for this final release:
+
+- weak KdV APIs
+- weak derivative APIs or broader weak-form expansion
+- root `pdelie` exports for KdV runtime APIs
+- custom KdV initial conditions or configurable KdV coefficients
+- general KdV stability guarantees outside the frozen short-horizon release fixtures
+- multidimensional, multivariable, nonuniform-grid, operator, or broad adapter expansion
+- PyPI and TestPyPI publication; package-index publishing is deferred to `v1.0` or later
+
 ## 0.8.0
 
 First final release for the frozen V0.8 weak residual report core.

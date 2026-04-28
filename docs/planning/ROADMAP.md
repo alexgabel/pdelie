@@ -256,87 +256,16 @@ Frozen release definition:
 
 ## Current Completed Release
 
-### `v0.8` — Window-indexed weak residuals
-**Status:** Completed
-
-`v0.8` is the completed release after the `v0.7` structured-ingestion series.
-
-Its purpose is:
-
-> add a narrow stable weak-form residual path for the existing scalar 1D Heat/Burgers regime, with deterministic clean/noisy/coarse robustness comparisons against the current spectral/analytic path, while preserving canonical data and generator-family contracts.
-
-Completed stable scope:
-
-- `pdelie.residuals.evaluate_weak_heat_residual(...)`
-- `pdelie.residuals.evaluate_weak_burgers_residual(...)`
-- window-indexed weak residual reports rather than field-shaped residual arrays
-- canonical scalar 1D uniform periodic `FieldBatch` inputs only
-- Heat and Burgers only
-- frozen local separable quartic-bump windows with fixed centered overlap and trapezoidal quadrature, with exact details in `V0_8_SCOPE.md`
-- deterministic clean/noisy/coarse robustness comparisons against the current `spectral_fd` / analytic path
-- one compact `v0_8-release-gate`
-
-Completed release definition:
-
-`canonical FieldBatch -> stable weak residual report APIs for Heat/Burgers -> deterministic clean/noisy/coarse robustness comparisons against the current spectral/analytic path`
-
-Release interpretation:
-
-- the degraded weak-path wins are frozen as representative contract-stability signals
-- those degraded wins are fallback-backed release checks, not general weak-superiority claims
-- stable weak derivatives, weak `ResidualBatch` / `ResidualEvaluator` integration, and stable KdV promotion remain deferred
-
-The authoritative `v0.8` scope freeze belongs in:
-
-- `V0_8_SCOPE.md`
-
-### Release Gate for `v0.8`
-
-`v0.8` is complete only if:
-
-- weak residual report outputs are deterministic under the frozen defaults
-- unsupported inputs fail with typed errors
-- clean Heat/Burgers fixtures show acceptable weak-path behavior
-- frozen noisy/coarse fixtures show a documented robustness signal against the current spectral/analytic path
-- no stable weak-derivative or stable KdV public surface is added
-
----
-
-## Most Recent Prior Completed Release
-
-### `v0.7` — Structured external data ingestion
-**Status:** Completed
-
-`v0.7` is the completed structured-ingestion release carried forward into `v0.8`.
-
-Completed scope:
-
-- `pdelie.data.from_numpy(...)`
-- `pdelie.data.from_xarray(...)`
-- strict conversion to canonical `FieldBatch`
-- 1D uniform rectilinear inputs only
-- scalar-variable stable slice only
-- explicit dims, coords, metadata, and provenance validation
-- parity tests showing imported Heat/Burgers-like data behaves like native `FieldBatch`
-
-The authoritative `v0.7` scope freeze belongs in:
-
-- `V0_7_SCOPE.md`
-
----
-
-## Next Committed Release Target
-
 ### `v0.9` - Stable normalized periodic KdV strong path
-**Status:** Committed
+**Status:** Completed
 
-`v0.9` is the next committed release after the `v0.8` weak residual report series.
+`v0.9` is the completed release after the `v0.8` weak residual report series.
 
 Its purpose is:
 
 > promote the existing tests-first KdV feasibility slice into a narrow stable runtime path for normalized, periodic, short-horizon KdV data.
 
-Committed stable scope:
+Completed stable scope:
 
 - extend `compute_spectral_fd_derivatives(...)` with `max_spatial_order` through `u_xxx`
 - add `pdelie.data.generate_kdv_1d_field_batch(...)`
@@ -345,8 +274,9 @@ Committed stable scope:
 - keep support limited to canonical scalar 1D uniform periodic `FieldBatch` inputs
 - add KdV translation fitting and held-out verification through the existing polynomial translation stack
 - add mandatory `from_numpy` parity and optional `from_xarray` parity for representative KdV data
+- add one compact `v0_9-release-gate`
 
-Committed release definition:
+Completed release definition:
 
 `canonical scalar 1D uniform periodic FieldBatch -> spectral_fd with u_xxx -> normalized KdV residual evaluator -> translation fit/verification`
 
@@ -355,6 +285,7 @@ Release interpretation:
 - this is stable normalized periodic short-horizon KdV support, not general KdV support
 - the stable numerical guarantee covers the frozen default short-horizon regime and release-gate fixtures
 - accepted generator parameters outside the release-guaranteed regime are user-risk in `v0.9`
+- `v0.9.0` is a Git-tag-only release; PyPI and TestPyPI publication are deferred to `v1.0` or later
 
 Explicit non-goals:
 
@@ -382,6 +313,63 @@ The authoritative `v0.9` scope freeze belongs in:
 - KdV translation fitting and held-out verification pass the frozen vertical slice
 - representative KdV data passes mandatory `from_numpy` parity and optional `from_xarray` parity when available
 - no weak KdV API or root KdV export is added
+
+---
+
+## Most Recent Prior Completed Release
+
+### `v0.8` — Window-indexed weak residuals
+**Status:** Completed
+
+`v0.8` is the completed release after the `v0.7` structured-ingestion series.
+
+Completed stable scope:
+
+- `pdelie.residuals.evaluate_weak_heat_residual(...)`
+- `pdelie.residuals.evaluate_weak_burgers_residual(...)`
+- window-indexed weak residual reports rather than field-shaped residual arrays
+- canonical scalar 1D uniform periodic `FieldBatch` inputs only
+- Heat and Burgers only
+- frozen local separable quartic-bump windows with fixed centered overlap and trapezoidal quadrature, with exact details in `V0_8_SCOPE.md`
+- deterministic clean/noisy/coarse robustness comparisons against the current `spectral_fd` / analytic path
+- one compact `v0_8-release-gate`
+
+Completed release definition:
+
+`canonical FieldBatch -> stable weak residual report APIs for Heat/Burgers -> deterministic clean/noisy/coarse robustness comparisons against the current spectral/analytic path`
+
+Release interpretation:
+
+- the degraded weak-path wins are frozen as representative contract-stability signals
+- those degraded wins are fallback-backed release checks, not general weak-superiority claims
+- stable weak derivatives, weak `ResidualBatch` / `ResidualEvaluator` integration, and weak KdV remain deferred
+
+The authoritative `v0.8` scope freeze belongs in:
+
+- `V0_8_SCOPE.md`
+
+---
+
+## Earlier Completed Release
+
+### `v0.7` — Structured external data ingestion
+**Status:** Completed
+
+`v0.7` is the completed structured-ingestion release carried forward into later releases.
+
+Completed scope:
+
+- `pdelie.data.from_numpy(...)`
+- `pdelie.data.from_xarray(...)`
+- strict conversion to canonical `FieldBatch`
+- 1D uniform rectilinear inputs only
+- scalar-variable stable slice only
+- explicit dims, coords, metadata, and provenance validation
+- parity tests showing imported Heat/Burgers-like data behaves like native `FieldBatch`
+
+The authoritative `v0.7` scope freeze belongs in:
+
+- `V0_7_SCOPE.md`
 
 ---
 

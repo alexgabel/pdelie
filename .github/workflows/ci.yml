@@ -150,6 +150,35 @@ jobs:
         run: python -m pip check
       - name: Run V0.8 release gate
         run: python -m pytest tests/test_v0_8_release_gate.py
+  v0_9-release-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install package and test dependencies
+        shell: bash
+        run: |
+          retry() {
+            local attempts="$1"
+            shift
+            local count=1
+            until "$@"; do
+              if [ "${count}" -ge "${attempts}" ]; then
+                return 1
+              fi
+              count=$((count + 1))
+              echo "Retrying (${count}/${attempts}): $*"
+              sleep 5
+            done
+          }
+          retry 3 python -m pip install --upgrade pip
+          retry 3 python -m pip install -e .[test]
+      - name: Check dependencies
+        run: python -m pip check
+      - name: Run V0.9 release gate
+        run: python -m pytest tests/test_v0_9_release_gate.py
   editable-tests:
     runs-on: ubuntu-latest
     steps:
@@ -180,7 +209,9 @@ jobs:
       - name: Run test suite
         run: python -m pytest
       - name: Example smoke (editable install)
-        run: python -m pdelie.examples.heat_vertical_slice
+        run: |
+          python -m pdelie.examples.heat_vertical_slice
+          python -m pdelie.examples.kdv_vertical_slice
   package-smoke:
     runs-on: ubuntu-latest
     steps:
@@ -258,6 +289,26 @@ jobs:
           assert report["normalization"] == "none"
           assert np.all(np.isfinite(report["window_residuals"]))
           print("weak-report-smoke-ok")
+          PY
+      - name: KdV strong path smoke
+        run: |
+          /tmp/pdelie-rc-venv/bin/python - <<'PY'
+          import numpy as np
+          import pdelie
+
+          from pdelie.data import generate_kdv_1d_field_batch
+          from pdelie.derivatives import compute_spectral_fd_derivatives
+          from pdelie.residuals import KdVResidualEvaluator
+
+          assert not hasattr(pdelie, "generate_kdv_1d_field_batch")
+          assert not hasattr(pdelie, "KdVResidualEvaluator")
+          field = generate_kdv_1d_field_batch(batch_size=1, num_times=5, num_points=16, num_modes=1, seed=123)
+          derivatives = compute_spectral_fd_derivatives(field, max_spatial_order=3)
+          assert "u_xxx" in derivatives.derivatives
+          residual = KdVResidualEvaluator().evaluate(field, derivatives)
+          assert np.isfinite(float(residual.diagnostics["max_abs_residual"]))
+          assert np.isfinite(float(residual.diagnostics["rms_residual"]))
+          print("kdv-smoke-ok")
           PY
       - name: Example smoke and determinism
         run: |

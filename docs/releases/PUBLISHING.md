@@ -14,7 +14,21 @@ Release metadata comes from:
 
 These files must be aligned before any release candidate or final release is published.
 
-## Recommended Publishing Model
+## V0.x Package-Index Deferral
+
+For the current `v0.x` series, including `v0.9.0`, release completion means:
+
+- metadata, docs, tests, build, and wheel-smoke checks pass
+- the release PR is merged
+- the merged commit is tagged in Git as the final version
+
+`v0.9.0` is intentionally a Git-tag-only release.
+Do not run TestPyPI or PyPI publishing for `v0.9`.
+
+Package-index publishing through TestPyPI or PyPI is deferred until `v1.0` or later.
+The publishing model below remains the intended future package-index workflow once publication is re-enabled.
+
+## Future Publishing Model (`v1.0` Or Later)
 
 `pdelie` should use GitHub Actions trusted publishing with OIDC for both TestPyPI and PyPI.
 
@@ -26,14 +40,14 @@ Why this is the default:
 
 This repository does not store account-specific publishing credentials. The workflow assumes trusted publishing is configured externally.
 
-## Release Policy
+## Future Package-Index Release Policy (`v1.0` Or Later)
 
 `pdelie` uses:
 
 - release candidates: `X.Y.ZrcN`
 - final releases: `X.Y.Z`
 
-Guiding rules:
+Guiding rules once package-index publishing is re-enabled:
 
 - release candidates go to **TestPyPI only**
 - final releases go to **PyPI only**
@@ -98,7 +112,7 @@ Expected local checks:
 
 For a stricter local smoke pass, install the wheel into a clean virtual environment before publishing.
 
-## Release Candidate Flow
+## Future Release Candidate Flow (`v1.0` Or Later)
 
 Use this for `X.Y.ZrcN` releases:
 
@@ -116,7 +130,7 @@ Normal policy:
 
 - do **not** publish release candidates to PyPI
 
-## Final Release Flow
+## Future Final Release Flow (`v1.0` Or Later)
 
 Use this for `X.Y.Z` releases:
 

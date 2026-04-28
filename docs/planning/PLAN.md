@@ -2,7 +2,7 @@
 
 ## Current Release Status
 
-**V0.9 committed; Milestone 5 complete**
+**V0.9 complete; Milestone 6 complete**
 
 This file is the active execution record for the `v0.9` release series.
 
@@ -304,20 +304,28 @@ Prove KdV remains compatible with the existing structured-ingestion path while p
 
 ## Milestone 6 - Release Gate and Release Readiness
 
-**Status:** PENDING
+**Status:** COMPLETE
 
 ### Goal
 
-Add the compact `v0_9-release-gate`, align release-facing docs, and cut an RC-first release path.
+Add the compact `v0_9-release-gate`, align release-facing docs, and document the direct `0.9.0` Git tag path.
 
-### Planned Work
+### Completed Outcome
 
-- add `tests/test_v0_9_release_gate.py`
-- add `v0_9-release-gate` CI visibility job
-- update README, changelog, release readiness, package version, and final release docs
-- include KdV wheel-smoke coverage after build
-- cut `v0.9.0rc1` first for TestPyPI/preflight if publishing is configured
-- tag final `v0.9.0` only after full tests, build, smoke, historical gates, and `v0_9-release-gate` are green
+- added compact `tests/test_v0_9_release_gate.py`
+- added `v0_9-release-gate` CI visibility job
+- kept historical release-gate CI jobs unchanged
+- added KdV editable-install example smoke beside the Heat example smoke
+- added tiny KdV strong-path wheel smoke after build
+- updated README, changelog, release readiness, package version, roadmap, and publishing docs
+- aligned release docs around a direct Git tag release path
+- recorded that `v0.9.0` is Git-tag-only:
+  - no `v0.9.0rc1`
+  - no TestPyPI run
+  - no PyPI run
+  - package-index publishing deferred to `v1.0` or later
+- kept `API_STABILITY.md` unchanged after audit because the landed v0.9 APIs were already documented
+- recorded post-`v0.9` CI job consolidation as a follow-up, not part of M6
 
 ### Acceptance Criteria
 
@@ -328,6 +336,7 @@ Add the compact `v0_9-release-gate`, align release-facing docs, and cut an RC-fi
 - clean wheel smoke passes
 - KdV vertical slice passes
 - release-facing docs describe stable short-horizon normalized periodic KdV, not general KdV support
+- release-facing docs do not instruct PyPI or TestPyPI publication for `v0.9`
 
 ---
 
@@ -367,4 +376,4 @@ Milestone 6 -> release gate and release readiness
 - Milestone 3: COMPLETE
 - Milestone 4: COMPLETE
 - Milestone 5: COMPLETE
-- Milestone 6: PENDING
+- Milestone 6: COMPLETE
