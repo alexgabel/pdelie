@@ -49,12 +49,12 @@ Rules:
 
 ---
 
-## Current State
+## Earliest Stable Releases
 
 ### `v0.1.x` — Stabilization
-**Status:** Committed
+**Status:** Completed
 
-`v0.1.x` is the release series for the first proven vertical slice:
+`v0.1.x` was the release series for the first proven vertical slice:
 
 `FieldBatch -> DerivativeBatch -> ResidualBatch -> GeneratorFamily -> VerificationReport`
 
@@ -85,12 +85,12 @@ on the synthetic 1D heat equation with:
 
 ---
 
-## Previous Release Target
+## Second Completed Release
 
 ### `v0.2` — Second PDE under the current pipeline
-**Status:** Committed
+**Status:** Completed
 
-`v0.2` is the next stable release target.
+`v0.2` was the second stable release target.
 
 Its purpose is:
 
@@ -256,14 +256,72 @@ Frozen release definition:
 
 ## Current Completed Release
 
+### `v0.9` - Stable normalized periodic KdV strong path
+**Status:** Completed
+
+`v0.9` is the completed release after the `v0.8` weak residual report series.
+
+Its purpose is:
+
+> promote the existing tests-first KdV feasibility slice into a narrow stable runtime path for normalized, periodic, short-horizon KdV data.
+
+Completed stable scope:
+
+- extend `compute_spectral_fd_derivatives(...)` with `max_spatial_order` through `u_xxx`
+- add `pdelie.data.generate_kdv_1d_field_batch(...)`
+- add `pdelie.residuals.KdVResidualEvaluator`
+- keep KdV normalized as `u_t + 6*u*u_x + u_xxx = 0`
+- keep support limited to canonical scalar 1D uniform periodic `FieldBatch` inputs
+- add KdV translation fitting and held-out verification through the existing polynomial translation stack
+- add mandatory `from_numpy` parity and optional `from_xarray` parity for representative KdV data
+- add one compact `v0_9-release-gate`
+
+Completed release definition:
+
+`canonical scalar 1D uniform periodic FieldBatch -> spectral_fd with u_xxx -> normalized KdV residual evaluator -> translation fit/verification`
+
+Release interpretation:
+
+- this is stable normalized periodic short-horizon KdV support, not general KdV support
+- the stable numerical guarantee covers the frozen default short-horizon regime and release-gate fixtures
+- accepted generator parameters outside the release-guaranteed regime are user-risk in `v0.9`
+- `v0.9.0` is a Git-tag-only release; PyPI and TestPyPI publication are deferred to `v1.0` or later
+
+Explicit non-goals:
+
+- no weak KdV API
+- no weak derivative API expansion
+- no root `pdelie` exports for KdV APIs
+- no custom KdV initial-condition API
+- no variable-coefficient KdV
+- no PDEBench or The Well adapters
+- no multidimensional, multivariable, nonuniform-grid, operator, or broad adapter expansion
+- no new canonical object
+
+The authoritative `v0.9` scope freeze belongs in:
+
+- `V0_9_SCOPE.md`
+
+### Release Gate for `v0.9`
+
+`v0.9` is complete only if:
+
+- default derivative behavior remains compatible with `v0.8`
+- `u_xxx` matches exact Fourier fixtures under the frozen derivative test
+- KdV generator outputs are deterministic canonical `FieldBatch` objects
+- default KdV fixtures satisfy frozen residual and conservation thresholds
+- KdV translation fitting and held-out verification pass the frozen vertical slice
+- representative KdV data passes mandatory `from_numpy` parity and optional `from_xarray` parity when available
+- no weak KdV API or root KdV export is added
+
+---
+
+## Most Recent Prior Completed Release
+
 ### `v0.8` — Window-indexed weak residuals
 **Status:** Completed
 
 `v0.8` is the completed release after the `v0.7` structured-ingestion series.
-
-Its purpose is:
-
-> add a narrow stable weak-form residual path for the existing scalar 1D Heat/Burgers regime, with deterministic clean/noisy/coarse robustness comparisons against the current spectral/analytic path, while preserving canonical data and generator-family contracts.
 
 Completed stable scope:
 
@@ -284,30 +342,20 @@ Release interpretation:
 
 - the degraded weak-path wins are frozen as representative contract-stability signals
 - those degraded wins are fallback-backed release checks, not general weak-superiority claims
-- stable weak derivatives, weak `ResidualBatch` / `ResidualEvaluator` integration, and stable KdV promotion remain deferred
+- stable weak derivatives, weak `ResidualBatch` / `ResidualEvaluator` integration, and weak KdV remain deferred
 
 The authoritative `v0.8` scope freeze belongs in:
 
 - `V0_8_SCOPE.md`
 
-### Release Gate for `v0.8`
-
-`v0.8` is complete only if:
-
-- weak residual report outputs are deterministic under the frozen defaults
-- unsupported inputs fail with typed errors
-- clean Heat/Burgers fixtures show acceptable weak-path behavior
-- frozen noisy/coarse fixtures show a documented robustness signal against the current spectral/analytic path
-- no stable weak-derivative or stable KdV public surface is added
-
 ---
 
-## Most Recent Prior Completed Release
+## Earlier Completed Release
 
 ### `v0.7` — Structured external data ingestion
 **Status:** Completed
 
-`v0.7` is the completed structured-ingestion release carried forward into `v0.8`.
+`v0.7` is the completed structured-ingestion release carried forward into later releases.
 
 Completed scope:
 
@@ -327,21 +375,7 @@ The authoritative `v0.7` scope freeze belongs in:
 
 ## Medium-Term Horizon
 
-### `v0.9` — Broader PDE and dataset coverage
-**Status:** Planned / Experimental
-
-`v0.9` may broaden PDE and dataset coverage once structured ingestion and robust numerics are stable.
-
-Candidate directions:
-
-- stable KdV if not already promoted
-- wave equation after second-time-derivative semantics are clarified
-- reaction-diffusion systems
-- Kuramoto-Sivashinsky as a harder high-derivative stress test
-- PDEBench / The Well adapters after generic ingestion is proven
-- multidimensional structured grids if the 1D path is stable
-
-### `v1.0` — Stable public engine
+### `v1.0` - Stable public engine
 **Status:** Deferred
 
 `v1.0` should only happen once PDELie has a stable, supportable public surface for:
@@ -352,10 +386,24 @@ Candidate directions:
 - portability manifests
 - discovery utilities
 - selected structured external-data ingestion
+- selected stable strong-form PDE paths
 
 `v1.0` should be a stabilization milestone, not a scope-expansion milestone.
 
-### Later / Experimental — Operator-facing symmetry discovery
+### Later / Planned - Additional PDE and dataset coverage
+**Status:** Planned
+
+Additional PDE and dataset coverage remains planned after the stable KdV strong path.
+
+Candidate directions:
+
+- wave equation after second-time-derivative semantics are clarified
+- reaction-diffusion systems
+- Kuramoto-Sivashinsky as a harder high-derivative stress test
+- PDEBench / The Well adapters after generic ingestion is proven
+- multidimensional structured grids if the 1D path is stable
+
+### Later / Experimental - Operator-facing symmetry discovery
 **Status:** Experimental / Deferred
 
 Operator-facing symmetry work remains a later or separate track.
@@ -378,6 +426,7 @@ This is not part of the near-term non-operator Paper 1 path and should not be mi
 - `V0_6_SCOPE.md` once frozen
 - `V0_7_SCOPE.md` once frozen
 - `V0_8_SCOPE.md` once frozen
+- `V0_9_SCOPE.md` once frozen
 - `PLAN.md` for current execution only
 
 ### Non-authoritative for scheduling
@@ -410,6 +459,6 @@ It should **not** be edited every time a new idea appears.
 - `v0.6` = symmetry-guided PDE discovery utilities in the current Heat/Burgers regime
 - `v0.7` = structured external data ingestion into canonical `FieldBatch`
 - `v0.8` = window-indexed weak residual reports and representative robustness comparisons
-- `v0.9` = broader PDE and dataset coverage
+- `v0.9` = stable normalized periodic short-horizon KdV strong path
 - `v1.0` = stable public engine
 - later / experimental = operator-facing symmetry discovery

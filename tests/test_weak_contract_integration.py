@@ -28,6 +28,7 @@ _EXPECTED_METHOD_FAMILY = "local_separable_quartic_bump_trapezoid_v1"
 _EXPECTED_RESIDUALS_EXPORTS = {
     "BurgersResidualEvaluator",
     "HeatResidualEvaluator",
+    "KdVResidualEvaluator",
     "ResidualEvaluator",
     "evaluate_weak_burgers_residual",
     "evaluate_weak_heat_residual",

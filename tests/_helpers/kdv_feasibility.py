@@ -3,6 +3,7 @@ from __future__ import annotations
 import numpy as np
 
 from pdelie import DerivativeBatch, FieldBatch, ResidualBatch
+from pdelie.data import generate_kdv_1d_field_batch as _runtime_generate_kdv_1d_field_batch
 from pdelie.data.heat_1d import DEFAULT_DOMAIN_LENGTH
 from pdelie.errors import ShapeValidationError
 
@@ -133,46 +134,23 @@ def generate_kdv_1d_field_batch(
     batch_size: int = 2,
     num_times: int = 17,
     num_points: int = 64,
-    max_time: float = 0.05,
+    max_time: float = 0.03,
     num_modes: int = 3,
     amplitude: float = 0.08,
     seed: int = 0,
     num_substeps: int = 8,
     domain_length: float = DEFAULT_DOMAIN_LENGTH,
 ) -> FieldBatch:
-    x = np.linspace(0.0, domain_length, num_points, endpoint=False, dtype=float)
-    t = np.linspace(0.0, max_time, num_times, dtype=float)
-    cosine, sine = sample_kdv_mode_coefficients(
+    return _runtime_generate_kdv_1d_field_batch(
         batch_size=batch_size,
+        num_times=num_times,
+        num_points=num_points,
+        max_time=max_time,
         num_modes=num_modes,
-        seed=seed,
         amplitude=amplitude,
-    )
-    initial_values = evaluate_kdv_fourier_series(
-        x=x,
-        cosine_coefficients=cosine,
-        sine_coefficients=sine,
-    )
-    values = _rollout_kdv_periodic(
-        initial_values,
-        output_times=t,
-        domain_length=domain_length,
+        seed=seed,
         num_substeps=num_substeps,
-    )
-
-    return FieldBatch(
-        values=values[..., None],
-        dims=("batch", "time", "x", "var"),
-        coords={"time": t, "x": x},
-        var_names=["u"],
-        metadata={
-            "boundary_conditions": {"x": "periodic"},
-            "coordinate_system": "cartesian",
-            "grid_regularity": "uniform",
-            "grid_type": "rectilinear",
-            "parameter_tags": {"equation": "kdv_normalized"},
-        },
-        preprocess_log=[],
+        domain_length=domain_length,
     )
 
 

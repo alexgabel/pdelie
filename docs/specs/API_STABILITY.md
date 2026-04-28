@@ -103,6 +103,30 @@ Runtime public API for the frozen `v0.8` Milestone 2 slice:
 - these M2 APIs return runtime report dicts, not canonical `ResidualBatch` objects
 - their stable report shape and diagnostics surface are frozen by `docs/planning/V0_8_SCOPE.md`
 
+Runtime public API update for the frozen `v0.9` Milestone 1 slice:
+
+- `pdelie.derivatives.compute_spectral_fd_derivatives(field, *, max_spatial_order=2)` preserves the current default `spectral_fd` behavior and derivative outputs
+- `max_spatial_order=3` adds the third spatial derivative output `u_xxx`
+- `max_spatial_order=1` emits only the time derivative and first spatial derivative outputs
+- unsupported `max_spatial_order` values raise `ScopeValidationError`
+
+Runtime public API for the frozen `v0.9` Milestone 2 slice:
+
+- `pdelie.data.generate_kdv_1d_field_batch` for normalized periodic short-horizon synthetic KdV under the frozen `v0.9` generator regime
+- this API has no root `pdelie` export
+- this API does not accept custom initial conditions in `v0.9`
+- accepted generator parameters outside the release-guaranteed regime are user-risk
+
+Runtime public API for the frozen `v0.9` Milestone 3 slice:
+
+- `pdelie.residuals.KdVResidualEvaluator` for normalized periodic short-horizon KdV strong-form residuals under the frozen `v0.9` regime
+- this evaluator computes the formula-defined residual `u_t + 6*u*u_x + u_xxx = 0` using numerical derivatives
+- when derivatives are omitted, the evaluator computes `compute_spectral_fd_derivatives(field, max_spatial_order=3)`
+- when derivatives are supplied, they must validate against the field and include `u_t`, `u_x`, and `u_xxx`
+- stable inputs must include `field.metadata["parameter_tags"]["equation"] == "kdv_normalized"`
+- this API has no root `pdelie` export
+- this API does not expose configurable KdV coefficients or weak KdV behavior in `v0.9`
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 
