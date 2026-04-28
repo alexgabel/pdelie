@@ -25,7 +25,7 @@ Contracts and stable behavior belong in:
 - `docs/planning/ROADMAP.md`
 - `docs/planning/V0_11_SCOPE.md`
 
-`API_STABILITY.md` was audited in M0 and remains unchanged because no new `v0.11` public API lands in M0.
+`API_STABILITY.md` was audited in M0/M1 and remains unchanged because no new `v0.11` public API has landed yet.
 It must be updated in the same milestone where any public KS API or other public API lands.
 
 ---
@@ -86,20 +86,67 @@ M0 is complete only if:
 
 ## Milestone 1 - KS Equation and Numerical Semantics Freeze
 
-**Status:** PENDING
+**Status:** COMPLETE
 
 ### Goal
 
 Freeze the exact normalized KS equation and numerical semantics before any runtime prototype or public API is considered.
 
-### Planned Outcome
+### Completed Outcome
 
-- choose the exact normalized KS equation form and sign convention
-- freeze derivative-order requirements
-- freeze coordinate and boundary conventions
-- freeze candidate diagnostic metrics
-- freeze preliminary residual, conservation, fitting, and verification thresholds for feasibility work
-- keep public API names and stable promotion conditional
+- froze normalized nonconservative strong-form KS:
+  - `u_t + u*u_x + u_xx + u_xxxx = 0`
+- froze residual form:
+  - `u_t + u*u_x + u_xx + u_xxxx`
+- recorded the equivalent conservative nonlinear term `1/2*(u^2)_x` as explanatory only
+- froze required KS residual derivatives:
+  - `u_t`
+  - `u_x`
+  - `u_xx`
+  - `u_xxxx`
+- recorded that `u_xxx` is not required by the KS residual evaluator
+- froze future derivative-backend strategy:
+  - later `compute_spectral_fd_derivatives(..., max_spatial_order=4)` emits `u_t`, `u_x`, `u_xx`, `u_xxx`, and `u_xxxx`
+  - default `max_spatial_order=2` must preserve current behavior, arrays, config, and diagnostics
+  - `u_xxxx` must use the same FFT wavenumber convention as existing `u_x`, `u_xx`, and `u_xxx`
+  - unsupported orders still raise `ScopeValidationError`
+- froze coordinate and fixture conventions:
+  - dims exactly `("batch", "time", "x", "var")`
+  - scalar finite unmasked values only
+  - `x = linspace(0, domain_length, num_points, endpoint=False)`
+  - `time = linspace(0, max_time, num_times)`
+  - strictly increasing uniform `time`
+  - uniform periodic `x`
+  - zero-mean Fourier-mode initial conditions for synthetic feasibility fixtures
+  - two-thirds dealiasing
+  - periodic RK-style rollout unless M2 proves unsuitable
+- froze feasibility diagnostics:
+  - residual `max_abs_residual`
+  - residual `rms_residual`
+  - mass drift as the conserved diagnostic
+  - relative L2 drift as diagnostic-only
+  - translation span distance
+  - first-epsilon held-out verification error
+  - verification classification with acceptance requiring only `classification != "failed"`
+- froze preliminary feasibility targets:
+  - residual max `< 5e-2`
+  - residual RMS `< 1e-2`
+  - mass drift `<= 1e-8`
+  - translation span distance `<= 1e-1`
+  - first-epsilon held-out verification error `< 5e-4`
+  - verification classification is not `failed`
+- recorded that these are feasibility targets, not release gates
+- recorded that M4 must replace or confirm them with observed-margin thresholds before stable KS promotion
+- kept public API names and stable promotion conditional
+- left `docs/specs/API_STABILITY.md` unchanged because no public API landed in M1
+- left runtime code, tests, package metadata, CI, README, changelog, and release-readiness docs unchanged
+
+### Acceptance Criteria
+
+- `V0_11_SCOPE.md` and `PLAN.md` agree on KS equation, derivative requirements, coordinate conventions, diagnostics, and preliminary targets
+- `ROADMAP.md` still describes `v0.11` as feasibility-first, not stable KS support
+- `API_STABILITY.md` remains unchanged during M1
+- no runtime code, tests, package metadata, CI, README, changelog, or release-readiness docs are edited in M1
 
 ---
 
@@ -205,6 +252,7 @@ Milestone 6 -> release gate / readiness or no-go closeout
 - DO NOT add public KS APIs in M0.
 - DO NOT update `API_STABILITY.md` until a public `v0.11` API actually lands or an audit finds a real omission.
 - DO NOT describe `v0.11` as unconditional stable KS support before M5.
+- DO NOT treat preliminary M1 feasibility targets as final release gates without observed M4 margin.
 - DO NOT promote weak KS in `v0.11`.
 - DO NOT add a new weak derivative API in `v0.11`.
 - DO NOT broaden `v0.11` into broad adapters, multidimensional grids, nonuniform grids, multivariable systems, or operator-facing work.
@@ -218,7 +266,7 @@ Milestone 6 -> release gate / readiness or no-go closeout
 
 - `v0.10`: COMPLETE
 - Milestone 0: COMPLETE
-- Milestone 1: PENDING
+- Milestone 1: COMPLETE
 - Milestone 2: PENDING
 - Milestone 3: PENDING
 - Milestone 4: PENDING

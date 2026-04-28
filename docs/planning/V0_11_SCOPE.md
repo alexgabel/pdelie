@@ -34,18 +34,112 @@ The `v0.11` feasibility scope is limited to:
 - deterministic synthetic feasibility fixtures
 - eventual imported parity only through existing structured ingestion APIs if promotion remains plausible
 
-M0 intentionally does not freeze:
+M1 freezes the equation and numerical semantics below.
+Generator implementation details, promotion status, imported-parity requirements, and public API names remain conditional until later milestones.
 
-- exact KS equation normalization
-- derivative-order requirements
-- generator rollout method
-- generator stability regime
-- residual evaluator contract
-- residual, conservation, fitting, or verification thresholds
-- imported-parity requirements
-- public API names
+---
 
-Those decisions belong to later milestones after feasibility evidence exists.
+## KS Equation and Numerical Semantics
+
+Frozen normalized strong form:
+
+```text
+u_t + u*u_x + u_xx + u_xxxx = 0
+```
+
+Frozen residual form:
+
+```text
+u_t + u*u_x + u_xx + u_xxxx
+```
+
+Equation form:
+
+- normalized
+- nonconservative
+- strong-form residual
+- scalar `u`
+- one periodic spatial dimension `x`
+
+The equivalent conservative nonlinear term may be written as `1/2*(u^2)_x` in explanatory text, but runtime residual semantics use `u*u_x`.
+
+Required derivatives for KS residual feasibility:
+
+- `u_t`
+- `u_x`
+- `u_xx`
+- `u_xxxx`
+
+`u_xxx` is not required by the KS residual evaluator.
+If the derivative backend emits it as part of an order-4 derivative batch, the KS residual must not depend on it.
+
+Periodic boundary terms are assumed through canonical periodic `x`.
+
+---
+
+## Future Derivative Backend Semantics
+
+If KS feasibility proceeds to runtime implementation, the planned derivative extension is:
+
+```python
+compute_spectral_fd_derivatives(
+    field: FieldBatch,
+    *,
+    max_spatial_order: int = 4,
+) -> DerivativeBatch
+```
+
+Frozen order-4 behavior:
+
+- `max_spatial_order=4` emits `u_t`, `u_x`, `u_xx`, `u_xxx`, and `u_xxxx`
+- `max_spatial_order=2` remains the default and preserves current behavior, arrays, config, and diagnostics
+- `u_xxxx` uses the same FFT wavenumber convention already used for `u_x`, `u_xx`, and `u_xxx`
+- unsupported orders raise `ScopeValidationError`
+
+`API_STABILITY.md` is updated only when the order-4 public derivative API actually lands.
+
+---
+
+## Coordinate and Fixture Conventions
+
+Frozen feasibility conventions:
+
+- canonical dims are exactly `("batch", "time", "x", "var")`
+- scalar `var` only
+- finite unmasked values only
+- `x = linspace(0, domain_length, num_points, endpoint=False)`
+- `time = linspace(0, max_time, num_times)`
+- `time` is strictly increasing and uniform
+- `x` is uniform and periodic
+- synthetic feasibility fixtures should use zero-mean Fourier-mode initial conditions
+- synthetic feasibility fixtures should use two-thirds dealiasing
+- synthetic feasibility fixtures should use periodic RK-style rollout unless M2 proves this unsuitable
+
+---
+
+## Feasibility Diagnostics and Preliminary Targets
+
+Frozen feasibility diagnostics:
+
+- residual `max_abs_residual`
+- residual `rms_residual`
+- mass drift as the conserved diagnostic
+- relative L2 drift as diagnostic-only, not a conservation gate
+- translation span distance
+- first-epsilon held-out verification error
+- verification classification, with acceptance requiring only `classification != "failed"`
+
+Preliminary feasibility targets:
+
+- residual max `< 5e-2`
+- residual RMS `< 1e-2`
+- mass drift `<= 1e-8`
+- translation span distance `<= 1e-1`
+- first-epsilon held-out verification error `< 5e-4`
+- verification classification is not `failed`
+
+These are feasibility targets, not release gates.
+M4 must replace or confirm them with observed-margin thresholds before stable KS promotion.
 
 ---
 
@@ -111,7 +205,7 @@ Promote `v0.11` to committed feasibility-first status, add this scope freeze, re
 
 ### Milestone 1 - KS Equation and Numerical Semantics Freeze
 
-Freeze exact normalized KS equation form, derivative requirements, coordinate conventions, candidate diagnostics, and preliminary feasibility thresholds.
+Freeze the normalized KS equation as `u_t + u*u_x + u_xx + u_xxxx = 0`, freeze order-4 derivative semantics, coordinate conventions, candidate diagnostics, and preliminary feasibility targets.
 
 ### Milestone 2 - KS Feasibility Generator / Prototype
 
@@ -143,6 +237,7 @@ If not promoted, document the no-go/defer evidence and leave the stable public s
 - DO NOT add public KS APIs in M0.
 - DO NOT update `API_STABILITY.md` until a public `v0.11` API actually lands.
 - DO NOT promote weak KS in `v0.11`.
+- DO NOT treat preliminary M1 feasibility targets as final release gates without observed M4 margin.
 - DO NOT broaden `v0.11` into broad adapters, multidimensional grids, nonuniform grids, multivariable systems, or operator-facing work.
 - DO NOT add manuscript-specific logic.
 - DO preserve existing Heat/Burgers, `v0.8` weak-report, `v0.9` KdV, and `v0.10` reporting behavior.
@@ -153,7 +248,7 @@ If not promoted, document the no-go/defer evidence and leave the stable public s
 
 - `v0.10`: COMPLETE
 - Milestone 0: COMPLETE
-- Milestone 1: PENDING
+- Milestone 1: COMPLETE
 - Milestone 2: PENDING
 - Milestone 3: PENDING
 - Milestone 4: PENDING
