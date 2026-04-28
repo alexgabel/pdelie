@@ -122,7 +122,7 @@ def test_v0_8_quartic_bump_profile_is_not_valid_for_honest_kdv_weak_form() -> No
     np.testing.assert_allclose(_beta_second(endpoints), np.array([8.0, 8.0], dtype=float), atol=0.0, rtol=0.0)
 
 
-def test_v0_9_m2_kdv_feasibility_adds_only_data_surface() -> None:
+def test_v0_9_m3_kdv_feasibility_adds_only_stable_data_and_residual_surfaces() -> None:
     assert not hasattr(pdelie, "KdVResidualEvaluator")
     assert not hasattr(pdelie, "generate_kdv_1d_field_batch")
     assert not hasattr(pdelie, "sample_kdv_mode_coefficients")
@@ -131,4 +131,6 @@ def test_v0_9_m2_kdv_feasibility_adds_only_data_surface() -> None:
     residuals_module = importlib.import_module("pdelie.residuals")
     assert hasattr(data_module, "generate_kdv_1d_field_batch")
     assert not hasattr(data_module, "sample_kdv_mode_coefficients")
-    assert not hasattr(residuals_module, "KdVResidualEvaluator")
+    assert hasattr(residuals_module, "KdVResidualEvaluator")
+    assert not hasattr(residuals_module, "KDVResidualEvaluator")
+    assert not hasattr(residuals_module, "KdvResidualEvaluator")

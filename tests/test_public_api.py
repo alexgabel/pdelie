@@ -51,7 +51,7 @@ def test_runtime_package_api_is_importable() -> None:
         export_generator_family_manifest,
         import_generator_family_manifest,
     )
-    from pdelie.residuals import evaluate_weak_burgers_residual, evaluate_weak_heat_residual
+    from pdelie.residuals import KdVResidualEvaluator, evaluate_weak_burgers_residual, evaluate_weak_heat_residual
     from pdelie.symmetry import (
         compare_generator_spans,
         diagnose_generator_family_closure,
@@ -74,6 +74,7 @@ def test_runtime_package_api_is_importable() -> None:
     assert subsample_time is not None
     assert subsample_x is not None
     assert InvariantApplier is not None
+    assert KdVResidualEvaluator is not None
     assert evaluate_weak_burgers_residual is not None
     assert evaluate_weak_heat_residual is not None
     assert build_translation_canonical_discovery_inputs is not None
@@ -148,18 +149,20 @@ def test_data_package_runtime_api_matches_current_frozen_surface() -> None:
     assert not hasattr(data_module, "sample_kdv_mode_coefficients")
 
 
-def test_residuals_package_runtime_api_matches_frozen_v0_8_m2_surface() -> None:
+def test_residuals_package_runtime_api_matches_current_frozen_surface() -> None:
     residuals_module = importlib.import_module("pdelie.residuals")
 
     assert hasattr(residuals_module, "HeatResidualEvaluator")
     assert hasattr(residuals_module, "BurgersResidualEvaluator")
+    assert hasattr(residuals_module, "KdVResidualEvaluator")
     assert hasattr(residuals_module, "ResidualEvaluator")
     assert hasattr(residuals_module, "evaluate_weak_heat_residual")
     assert hasattr(residuals_module, "evaluate_weak_burgers_residual")
     assert not hasattr(residuals_module, "compute_weak_derivatives")
     assert not hasattr(residuals_module, "WeakHeatResidualEvaluator")
     assert not hasattr(residuals_module, "WeakBurgersResidualEvaluator")
-    assert not hasattr(residuals_module, "KdVResidualEvaluator")
+    assert not hasattr(residuals_module, "KDVResidualEvaluator")
+    assert not hasattr(residuals_module, "KdvResidualEvaluator")
 
 
 def test_discovery_package_runtime_api_matches_frozen_milestone_surface() -> None:

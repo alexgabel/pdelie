@@ -117,6 +117,16 @@ Runtime public API for the frozen `v0.9` Milestone 2 slice:
 - this API does not accept custom initial conditions in `v0.9`
 - accepted generator parameters outside the release-guaranteed regime are user-risk
 
+Runtime public API for the frozen `v0.9` Milestone 3 slice:
+
+- `pdelie.residuals.KdVResidualEvaluator` for normalized periodic short-horizon KdV strong-form residuals under the frozen `v0.9` regime
+- this evaluator computes the formula-defined residual `u_t + 6*u*u_x + u_xxx = 0` using numerical derivatives
+- when derivatives are omitted, the evaluator computes `compute_spectral_fd_derivatives(field, max_spatial_order=3)`
+- when derivatives are supplied, they must validate against the field and include `u_t`, `u_x`, and `u_xxx`
+- stable inputs must include `field.metadata["parameter_tags"]["equation"] == "kdv_normalized"`
+- this API has no root `pdelie` export
+- this API does not expose configurable KdV coefficients or weak KdV behavior in `v0.9`
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 

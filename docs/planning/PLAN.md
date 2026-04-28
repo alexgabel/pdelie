@@ -2,7 +2,7 @@
 
 ## Current Release Status
 
-**V0.9 committed; Milestone 0 complete**
+**V0.9 committed; Milestone 3 complete**
 
 This file is the active execution record for the `v0.9` release series.
 
@@ -173,21 +173,35 @@ Promote the tests-first KdV synthetic data generator into runtime as a narrow st
 
 ## Milestone 3 - KdV Residual Evaluator
 
-**Status:** PENDING
+**Status:** COMPLETE
 
 ### Goal
 
 Promote normalized KdV strong-form residual evaluation into runtime.
 
-### Planned Work
+### Completed Outcome
 
-- implement `pdelie.residuals.KdVResidualEvaluator`
-- freeze equation `u_t + 6*u*u_x + u_xxx = 0`
-- compute derivatives internally with `max_spatial_order=3` when derivatives are omitted
-- require supplied derivatives to include `u_t`, `u_x`, and `u_xxx`
+- implemented `pdelie.residuals.KdVResidualEvaluator`
+- froze the normalized KdV strong-form equation `u_t + 6*u*u_x + u_xxx = 0`
+- compute derivatives internally with `compute_spectral_fd_derivatives(field, max_spatial_order=3)` when derivatives are omitted
+- require supplied derivatives to validate against the field and include `u_t`, `u_x`, and `u_xxx`
+- reject missing `u_xxx` with a typed validation error before residual construction
+- keep supplied derivative backend compatibility field-based rather than requiring `backend == "spectral_fd"`
+- validate the normalized KdV stable scope:
+  - canonical dims `("batch", "time", "x", "var")`
+  - scalar `var`
+  - periodic `x`
+  - finite, unmasked values
+  - `field.metadata["parameter_tags"]["equation"] == "kdv_normalized"`
 - return `ResidualBatch(definition_type="analytic", normalization="none")`
-- include diagnostics `equation`, `backend`, `max_abs_residual`, and `rms_residual`
-- update `API_STABILITY.md` for the residual evaluator API when this milestone lands
+- include diagnostics:
+  - `equation`
+  - `backend`
+  - `max_abs_residual`
+  - `rms_residual`
+- expose the evaluator only from `pdelie.residuals`, not root `pdelie`
+- keep weak KdV and configurable KdV coefficients absent
+- updated `API_STABILITY.md` for the residual evaluator API
 
 ### Acceptance Criteria
 
@@ -318,7 +332,7 @@ Milestone 6 -> release gate and release readiness
 - Milestone 0: COMPLETE
 - Milestone 1: COMPLETE
 - Milestone 2: COMPLETE
-- Milestone 3: PENDING
+- Milestone 3: COMPLETE
 - Milestone 4: PENDING
 - Milestone 5: PENDING
 - Milestone 6: PENDING
