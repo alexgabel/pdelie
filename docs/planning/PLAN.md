@@ -2,7 +2,7 @@
 
 ## Current Release Status
 
-**V0.10 active; Milestone 1 complete**
+**V0.10 active; Milestone 2 complete**
 
 This file is the active execution record for the `v0.10` release series.
 
@@ -127,26 +127,39 @@ Freeze exactly what `v0.10` supportability reporting means before runtime implem
 
 ## Milestone 2 - Reporting Helper Implementation
 
-**Status:** PENDING
+**Status:** COMPLETE
 
 ### Goal
 
 Implement the frozen supportability reporting helpers from M1.
 
-### Planned Scope
+### Completed Outcome
 
-- implement only the helpers frozen in M1
-- keep helpers deterministic over frozen representative inputs
-- keep helpers scoped to existing stable runtime surfaces
-- add focused tests for structure, determinism, and numerical tolerance
-- update `API_STABILITY.md` if any helper is public
+- added public runtime submodule `pdelie.reporting`
+- exported the five M1-frozen helpers from `pdelie.reporting` only:
+  - `summarize_residual_batch(...)`
+  - `summarize_weak_residual_report(...)`
+  - `summarize_generator_family(...)`
+  - `summarize_verification_report(...)`
+  - `summarize_vertical_slice(...)`
+- kept root `pdelie` exports unchanged
+- implemented JSON-compatible summary conversion:
+  - NumPy arrays convert to lists
+  - NumPy scalars convert to Python scalars
+  - mappings and sequences convert recursively
+- implemented typed validation errors for wrong object types, malformed weak reports, non-finite metric arrays, and malformed extra metrics
+- kept helpers deterministic and scoped to existing stable runtime surfaces
+- added focused reporting tests for schemas, JSON serialization, summary metrics, non-mutation, and validation failures
+- updated public API tests for the new submodule and root-export guards
+- updated `docs/specs/API_STABILITY.md` for the landed `pdelie.reporting` APIs
+- did not change canonical object schemas, examples, CI, README, changelog, package metadata, or release-readiness docs
 
 ### Acceptance Criteria
 
 - reporting helpers pass focused tests
 - no existing canonical object schema changes
 - no new PDE, weak KdV, broad adapter, or operator scope lands
-- public helper APIs are documented in `API_STABILITY.md` if they land
+- public helper APIs are documented in `API_STABILITY.md`
 
 ---
 
@@ -287,7 +300,7 @@ Milestone 6 -> release readiness and documentation alignment
 - `v0.9`: COMPLETE
 - Milestone 0: COMPLETE
 - Milestone 1: COMPLETE
-- Milestone 2: PENDING
+- Milestone 2: COMPLETE
 - Milestone 3: PENDING
 - Milestone 4: PENDING
 - Milestone 5: PENDING
