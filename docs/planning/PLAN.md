@@ -2,7 +2,7 @@
 
 ## Current Release Status
 
-**V0.10 active; Milestone 2 complete**
+**V0.10 active; Milestone 3 complete**
 
 This file is the active execution record for the `v0.10` release series.
 
@@ -165,18 +165,35 @@ Implement the frozen supportability reporting helpers from M1.
 
 ## Milestone 3 - Example Consistency
 
-**Status:** PENDING
+**Status:** COMPLETE
 
 ### Goal
 
 Make existing examples easier to compare, smoke-test, and support without turning example outputs into canonical schemas.
 
-### Planned Scope
+### Completed Outcome
 
-- align Heat and KdV example summary style where useful
-- keep example outputs JSON-serializable
-- preserve existing example behavior unless a supportability issue requires a narrow change
-- add or adjust tests for determinism and subprocess JSON output
+- refactored `run_heat_vertical_slice_example()` to return `pdelie.reporting.summarize_vertical_slice(...)`
+- refactored `run_kdv_vertical_slice_example()` to return `pdelie.reporting.summarize_vertical_slice(...)`
+- kept command entrypoints unchanged:
+  - `python -m pdelie.examples.heat_vertical_slice`
+  - `python -m pdelie.examples.kdv_vertical_slice`
+- kept root `pdelie` exports unchanged
+- moved example-specific context into `extra_metrics`:
+  - Heat records example name, equation, training/heldout seeds, and batch sizes
+  - KdV records example name, equation, generator/split seeds, train size, mass drift, and relative L2 drift
+- kept example outputs JSON-only on stdout with no logging noise
+- intentionally did not preserve the old flat top-level example keys
+- recorded that example outputs are runtime smoke summaries, not canonical artifact schemas
+- updated example tests for:
+  - nested `vertical_slice` summary shape
+  - JSON serialization
+  - deterministic repeated output
+  - Heat and KdV subprocess JSON-only execution
+  - root-export guards
+- updated the representative `v0.9` release-gate example assertion to read the nested summary without preserving the old example schema
+- did not change fitting, verification, residual, derivative, data-generation, or reporting-helper behavior
+- left `API_STABILITY.md`, README, changelog, release-readiness docs, package metadata, and CI unchanged
 
 ### Acceptance Criteria
 
@@ -301,7 +318,7 @@ Milestone 6 -> release readiness and documentation alignment
 - Milestone 0: COMPLETE
 - Milestone 1: COMPLETE
 - Milestone 2: COMPLETE
-- Milestone 3: PENDING
+- Milestone 3: COMPLETE
 - Milestone 4: PENDING
 - Milestone 5: PENDING
 - Milestone 6: PENDING
