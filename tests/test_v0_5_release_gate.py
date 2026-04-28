@@ -295,8 +295,10 @@ def test_v0_5_release_gate_kdv_representative_outcome_remains_gated() -> None:
 
     assert not hasattr(pdelie, "KdVResidualEvaluator")
     assert not hasattr(pdelie, "generate_kdv_1d_field_batch")
+    assert not hasattr(pdelie, "sample_kdv_mode_coefficients")
 
     data_module = importlib.import_module("pdelie.data")
     residuals_module = importlib.import_module("pdelie.residuals")
-    assert not hasattr(data_module, "generate_kdv_1d_field_batch")
+    assert hasattr(data_module, "generate_kdv_1d_field_batch")
+    assert not hasattr(data_module, "sample_kdv_mode_coefficients")
     assert not hasattr(residuals_module, "KdVResidualEvaluator")

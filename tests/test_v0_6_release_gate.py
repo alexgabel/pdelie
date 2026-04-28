@@ -206,7 +206,7 @@ def test_v0_6_release_gate_robustness_slice_and_no_kdv_public_surface() -> None:
 
     for name in ("generate_kdv_1d_field_batch", "sample_kdv_mode_coefficients", "KDVResidualEvaluator", "KdVResidualEvaluator"):
         assert not hasattr(pdelie, name)
-    for name in ("generate_kdv_1d_field_batch", "sample_kdv_mode_coefficients"):
-        assert not hasattr(data_module, name)
+    assert hasattr(data_module, "generate_kdv_1d_field_batch")
+    assert not hasattr(data_module, "sample_kdv_mode_coefficients")
     for name in ("KDVResidualEvaluator", "KdVResidualEvaluator", "KdvResidualEvaluator"):
         assert not hasattr(residuals_module, name)

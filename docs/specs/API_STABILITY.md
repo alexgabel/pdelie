@@ -110,6 +110,13 @@ Runtime public API update for the frozen `v0.9` Milestone 1 slice:
 - `max_spatial_order=1` emits only the time derivative and first spatial derivative outputs
 - unsupported `max_spatial_order` values raise `ScopeValidationError`
 
+Runtime public API for the frozen `v0.9` Milestone 2 slice:
+
+- `pdelie.data.generate_kdv_1d_field_batch` for normalized periodic short-horizon synthetic KdV under the frozen `v0.9` generator regime
+- this API has no root `pdelie` export
+- this API does not accept custom initial conditions in `v0.9`
+- accepted generator parameters outside the release-guaranteed regime are user-risk
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 

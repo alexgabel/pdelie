@@ -111,18 +111,39 @@ Extend the existing `spectral_fd` derivative backend through third spatial order
 
 ## Milestone 2 - KdV Generator
 
-**Status:** PENDING
+**Status:** COMPLETE
 
 ### Goal
 
 Promote the tests-first KdV synthetic data generator into runtime as a narrow stable short-horizon normalized periodic generator.
 
-### Planned Work
+### Completed Outcome
 
-- implement `pdelie.data.generate_kdv_1d_field_batch(...)`
-- keep the exact M0 signature and defaults
-- keep no `dtype` parameter and no custom initial-condition API
-- validate:
+- implemented `pdelie.data.generate_kdv_1d_field_batch(...)`
+- kept the exact M0 signature and defaults:
+  - `batch_size=2`
+  - `num_times=17`
+  - `num_points=64`
+  - `max_time=0.03`
+  - `num_modes=3`
+  - `amplitude=0.08`
+  - `seed=0`
+  - `num_substeps=8`
+  - `domain_length=DEFAULT_DOMAIN_LENGTH`
+- kept no `dtype` parameter and no custom initial-condition API
+- froze coordinate conventions:
+  - `x = np.linspace(0.0, domain_length, num_points, endpoint=False)`
+  - `x` spans `[0, domain_length)`
+  - `time = np.linspace(0.0, max_time, num_times)`
+  - `time` spans `[0, max_time]`
+  - values shape is `(batch_size, num_times, num_points, 1)`
+- preserved canonical metadata:
+  - `boundary_conditions["x"] == "periodic"`
+  - `grid_type == "rectilinear"`
+  - `grid_regularity == "uniform"`
+  - `coordinate_system == "cartesian"`
+  - `parameter_tags == {"equation": "kdv_normalized"}`
+- validated:
   - positive integer `batch_size`
   - `num_times >= 3`
   - `num_points >= 16`
@@ -133,8 +154,11 @@ Promote the tests-first KdV synthetic data generator into runtime as a narrow st
   - integer `seed`
   - positive integer `num_substeps`
   - finite positive `domain_length`
-- preserve canonical `FieldBatch` dims, metadata, and `parameter_tags={"equation": "kdv_normalized"}`
-- update `API_STABILITY.md` for the generator API when this milestone lands
+- accepted Python integer and NumPy integer scalar parameters while rejecting bools
+- accepted `amplitude=0.0` as a valid zero-field case without using it for relative-L2 release assertions
+- refactored the test-only KdV feasibility helper to call the runtime generator while keeping residual/derivative feasibility helpers test-only
+- updated public-surface guards so `pdelie.data.generate_kdv_1d_field_batch` is public, root KdV exports remain absent, public coefficient-sampling helpers remain absent, and `KdVResidualEvaluator` remains pending for M3
+- updated `API_STABILITY.md` for the generator API
 
 ### Acceptance Criteria
 
@@ -293,7 +317,7 @@ Milestone 6 -> release gate and release readiness
 - `v0.8`: COMPLETE
 - Milestone 0: COMPLETE
 - Milestone 1: COMPLETE
-- Milestone 2: PENDING
+- Milestone 2: COMPLETE
 - Milestone 3: PENDING
 - Milestone 4: PENDING
 - Milestone 5: PENDING
