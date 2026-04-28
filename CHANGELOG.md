@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.10.0
+
+First final release for the frozen V0.10 supportability and `v1.0` readiness slice.
+
+- adds public runtime supportability helpers under `pdelie.reporting` for JSON-compatible summaries of residual batches, weak residual reports, generator families, verification reports, and vertical slices
+- refactors Heat and KdV vertical-slice examples to emit the shared nested `vertical_slice` summary shape while keeping their command entrypoints unchanged
+- adds focused API stability audit coverage and public-surface guards for stable submodule APIs, root-export boundaries, and explicitly deferred surfaces
+- consolidates CI release-gate visibility to a single current `v0_10-release-gate` job while keeping historical release-gate tests runnable locally and covered by full editable tests
+- preserves the prior Heat/Burgers strong paths, `v0.8` weak residual report APIs, `v0.9` normalized periodic KdV strong path, structured ingestion, and symmetry/discovery utilities
+
+Explicitly deferred for this final release:
+
+- new PDE support
+- weak KdV APIs
+- weak derivative APIs or broader weak-form expansion
+- broad dataset adapters such as PDEBench or The Well
+- multidimensional, multivariable, nonuniform-grid, operator, or broad adapter expansion
+- manuscript-specific reporting logic, tables, figures, or thresholds
+- new canonical reporting objects
+- PyPI and TestPyPI publication; package-index publishing is deferred to `v1.0` or later
+
 ## 0.9.0
 
 First final release for the frozen V0.9 normalized periodic KdV strong path.

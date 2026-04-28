@@ -256,6 +256,69 @@ Frozen release definition:
 
 ## Current Completed Release
 
+### `v0.10` - Supportability and `v1.0` readiness
+**Status:** Completed
+
+`v0.10` is the completed supportability release after the `v0.9` normalized periodic KdV strong-path release.
+
+Its purpose is:
+
+> harden the existing Heat/Burgers/weak-report/KdV engine into a more supportable public surface before adding more numerical scope.
+
+Completed stable scope:
+
+- compact runtime reporting helpers under `pdelie.reporting`
+- consistent Heat/KdV example summaries through nested `vertical_slice` reports
+- API stability audit across root exports, submodule exports, runtime-only APIs, and explicitly deferred surfaces
+- accidental-public-surface guards for stable and deferred APIs
+- CI release-gate cleanup:
+  - one current `v0_10-release-gate` CI job
+  - full editable test suite remains in CI
+  - historical release-gate tests remain runnable locally and covered by the full suite
+- package/readiness documentation cleanup for eventual `v1.0` publishing decisions
+
+Completed release definition:
+
+`existing stable Heat/Burgers/weak-report/KdV surfaces -> compact supportability reports -> consistent examples/release gates/docs -> v1.0 readiness`
+
+Release interpretation:
+
+- this is a supportability release, not a new numerics release
+- reporting helpers are runtime supportability APIs, not canonical objects or manuscript artifact schemas
+- example outputs are runtime smoke summaries, not stable scientific-result schemas
+- `v0.10.0` is a Git-tag-only release; PyPI and TestPyPI publication are deferred to `v1.0` or later
+
+Explicit non-goals:
+
+- no new PDE in `v0.10`
+- no weak KdV API
+- no new weak derivative API
+- no broad benchmark adapters
+- no multidimensional or nonuniform-grid expansion
+- no operator-facing symmetry work
+- no manuscript-specific reporting logic
+- no new canonical object
+
+The authoritative `v0.10` scope freeze belongs in:
+
+- `V0_10_SCOPE.md`
+
+### Release Gate for `v0.10`
+
+`v0.10` is complete only if:
+
+- reporting helpers are deterministic and scoped to existing runtime surfaces
+- example outputs remain JSON-serializable runtime smoke summaries, not canonical artifacts
+- API stability docs and public-surface tests agree
+- historical release-gate tests remain runnable locally
+- CI uses one current release-gate job plus full editable tests and package smoke
+- package/readiness docs state the `v1.0` publishing decision clearly
+- no new PDE, weak KdV, broad adapter, or operator scope lands
+
+---
+
+## Most Recent Prior Completed Release
+
 ### `v0.9` - Stable normalized periodic KdV strong path
 **Status:** Completed
 
@@ -316,7 +379,7 @@ The authoritative `v0.9` scope freeze belongs in:
 
 ---
 
-## Most Recent Prior Completed Release
+## Earlier Completed Release
 
 ### `v0.8` — Window-indexed weak residuals
 **Status:** Completed
@@ -375,6 +438,45 @@ The authoritative `v0.7` scope freeze belongs in:
 
 ## Medium-Term Horizon
 
+### `v0.11` - Next strong-path PDE feasibility or promotion
+**Status:** Planned / Conditional
+
+`v0.11` may add the next stable strong-path PDE only if `v0.10` leaves the public engine clean and the new PDE passes a serious feasibility/scope-freeze phase.
+
+Likely direction:
+
+- Kuramoto-Sivashinsky or another scalar 1D periodic strong-path PDE
+
+Required before commitment:
+
+- exact equation normalization
+- derivative-order requirements
+- generator stability regime
+- residual evaluator contract
+- vertical-slice thresholds with observed margin
+- imported-parity expectations
+- explicit non-goals around weak forms, broad adapters, and general PDE support
+
+Interpretation:
+
+- Kuramoto-Sivashinsky is attractive because it stress-tests higher-order scalar periodic numerics
+- it should not be promoted until stiffness, rollout stability, derivative accuracy, and residual thresholds are controlled
+- `v0.11` should start as a feasibility/scope-freeze effort, not assume stable promotion from the outset
+
+### `v0.12+` - Later PDE and dataset coverage
+**Status:** Planned
+
+Later PDE and dataset coverage remains planned after the supportability release and any conditional `v0.11` strong-path work.
+
+Candidate directions:
+
+- wave equation only after second-time-derivative semantics are frozen
+- reaction-diffusion systems after multivariable semantics are explicitly scoped
+- PDEBench / The Well adapters after generic ingestion and provenance policies are proven
+- multidimensional structured grids only after the 1D path is stable and supportable
+
+Each of these requires its own scope freeze before implementation.
+
 ### `v1.0` - Stable public engine
 **Status:** Deferred
 
@@ -389,19 +491,6 @@ The authoritative `v0.7` scope freeze belongs in:
 - selected stable strong-form PDE paths
 
 `v1.0` should be a stabilization milestone, not a scope-expansion milestone.
-
-### Later / Planned - Additional PDE and dataset coverage
-**Status:** Planned
-
-Additional PDE and dataset coverage remains planned after the stable KdV strong path.
-
-Candidate directions:
-
-- wave equation after second-time-derivative semantics are clarified
-- reaction-diffusion systems
-- Kuramoto-Sivashinsky as a harder high-derivative stress test
-- PDEBench / The Well adapters after generic ingestion is proven
-- multidimensional structured grids if the 1D path is stable
 
 ### Later / Experimental - Operator-facing symmetry discovery
 **Status:** Experimental / Deferred
@@ -427,6 +516,7 @@ This is not part of the near-term non-operator Paper 1 path and should not be mi
 - `V0_7_SCOPE.md` once frozen
 - `V0_8_SCOPE.md` once frozen
 - `V0_9_SCOPE.md` once frozen
+- `V0_10_SCOPE.md` once frozen
 - `PLAN.md` for current execution only
 
 ### Non-authoritative for scheduling
@@ -460,5 +550,8 @@ It should **not** be edited every time a new idea appears.
 - `v0.7` = structured external data ingestion into canonical `FieldBatch`
 - `v0.8` = window-indexed weak residual reports and representative robustness comparisons
 - `v0.9` = stable normalized periodic short-horizon KdV strong path
+- `v0.10` = supportability and `v1.0` readiness for the existing stable engine
+- `v0.11` = conditional next strong-path PDE feasibility or promotion
+- `v0.12+` = wave semantics, external benchmark adapters, and broader PDE coverage only after scope freezes
 - `v1.0` = stable public engine
 - later / experimental = operator-facing symmetry discovery

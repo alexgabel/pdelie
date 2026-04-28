@@ -1,16 +1,17 @@
-# PDELie - Execution Plan (V0.9)
+# PDELie - Execution Plan (V0.10)
 
 ## Current Release Status
 
-**V0.9 complete; Milestone 6 complete**
+**V0.10 complete; ready for direct `v0.10.0` tag after release PR CI**
 
-This file is the active execution record for the `v0.9` release series.
+This file is the active execution record for the `v0.10` release series.
 
-`v0.9` promotes the existing tests-first KdV feasibility slice into a narrow stable normalized periodic short-horizon KdV strong path.
+`v0.10` is a supportability and `v1.0` readiness release.
+It hardens the existing Heat/Burgers/weak-report/KdV engine before any new numerical scope is added.
 
 Stable release definition:
 
-`canonical scalar 1D uniform periodic FieldBatch -> spectral_fd with u_xxx -> normalized KdV residual evaluator -> translation fit/verification`
+`existing stable Heat/Burgers/weak-report/KdV surfaces -> compact supportability reports -> consistent examples/release gates/docs -> v1.0 readiness`
 
 This file should not redefine package contracts.
 Contracts and stable behavior belong in:
@@ -19,324 +20,315 @@ Contracts and stable behavior belong in:
 - `docs/specs/CONTRACTS_AND_DEFAULTS.md`
 - `docs/specs/API_STABILITY.md`
 - `docs/planning/ROADMAP.md`
-- `docs/planning/V0_9_SCOPE.md`
+- `docs/planning/V0_10_SCOPE.md`
 
-`API_STABILITY.md` remains unchanged in M0.
-It is updated in the milestone where each public runtime API actually lands.
+`API_STABILITY.md` was audited in M0, left unchanged in M0/M1, updated in M2 when the public `pdelie.reporting` helpers landed, and audited again in M4/M6 with no further changes required.
+It must continue to be updated in the same milestone where any future public helper or other public API lands.
 
 ---
 
-## V0.8 Closeout
+## V0.9 Closeout
 
-`v0.8` is complete as the window-indexed weak residual report release.
+`v0.9` is complete as the stable normalized periodic short-horizon KdV strong-path release.
 
 Completed outcome:
 
-- stable `pdelie.residuals.evaluate_weak_heat_residual(...)`
-- stable `pdelie.residuals.evaluate_weak_burgers_residual(...)`
-- deterministic window-indexed weak residual reports for scalar 1D Heat/Burgers
-- fallback-backed representative robustness comparisons against the existing strong path
-- compact `v0_8-release-gate`
-- explicit deferral of weak derivatives, weak `ResidualBatch` integration, and stable KdV runtime promotion
+- `compute_spectral_fd_derivatives(..., max_spatial_order=3)` with `u_xxx`
+- `pdelie.data.generate_kdv_1d_field_batch(...)`
+- `pdelie.residuals.KdVResidualEvaluator`
+- KdV vertical-slice example and release-gate coverage
+- mandatory representative `from_numpy` parity and optional `from_xarray` parity
+- explicit deferral of weak KdV, configurable KdV coefficients, custom KdV initial conditions, general KdV support, and broad adapter work
 
-`v0.9` begins from the frozen `v0.8` surface.
-It does not reopen weak-form numerics.
+`v0.10` begins from the frozen `v0.9` surface.
+It does not reopen KdV numerics or weak-form scope.
 
 ---
 
-## Milestone 0 - KdV Strong-Path Scope Freeze
+## Milestone 0 - Supportability Scope Reset
 
 **Status:** COMPLETE
 
 ### Goal
 
-Promote `v0.9` to the next committed release target, create `V0_9_SCOPE.md`, reset `PLAN.md`, and keep `API_STABILITY.md` unchanged.
+Promote `v0.10` to the next committed release target, create `V0_10_SCOPE.md`, reset `PLAN.md`, and audit `API_STABILITY.md` without changing it.
 
 ### Completed Outcome
 
-- promoted `v0.9` to committed KdV strong-path scope in `ROADMAP.md`
-- created `docs/planning/V0_9_SCOPE.md`
-- reset `docs/planning/PLAN.md` as the active `v0.9` execution record
-- froze exact planned public API signatures
-- froze derivative order behavior for `max_spatial_order`
-- froze KdV generator validation and release-guaranteed parameter regime
-- froze KdV residual evaluator semantics
-- froze KdV vertical-slice fixture and release-gate thresholds
-- left `docs/specs/API_STABILITY.md` unchanged
+- promoted `v0.10` to committed supportability / `v1.0` readiness scope in `ROADMAP.md`
+- created `docs/planning/V0_10_SCOPE.md`
+- reset `docs/planning/PLAN.md` as the active `v0.10` execution record
+- recorded `v0.9` as completed
+- recorded `v0.11` as conditional next strong-path PDE feasibility or promotion
+- recorded `v0.12+` as later PDE/dataset coverage only after separate scope freezes
+- audited `docs/specs/API_STABILITY.md`
+- left `docs/specs/API_STABILITY.md` unchanged because no new `v0.10` public API has landed
+- left `.github/workflows/ci.yml`, `README.md`, `CHANGELOG.md`, and `docs/releases/V0_10_RELEASE_READINESS.md` for later milestones
 
 ### Acceptance Criteria
 
 M0 is complete only if:
 
-- `ROADMAP.md`, `PLAN.md`, and `V0_9_SCOPE.md` are internally consistent
-- `v0.8` is consistently described as completed
-- `v0.9` is consistently described as the next committed release
-- `v0.9` is described as stable normalized periodic short-horizon KdV, not general KdV support
+- `ROADMAP.md`, `PLAN.md`, and `V0_10_SCOPE.md` are internally consistent
+- `v0.9` is consistently described as completed
+- `v0.10` is consistently described as the next committed release
+- `v0.10` is described as supportability and `v1.0` readiness, not new numerical scope
+- `v0.11` is conditional and not committed
+- `v0.12+` remains planned only after separate scope freezes
 - `API_STABILITY.md` remains unchanged during M0
-- no runtime code, tests, or package metadata are edited
+- no runtime code, tests, package metadata, CI, README, changelog, or release-readiness docs are edited in M0
 
 ---
 
-## Milestone 1 - Spectral `u_xxx`
+## Milestone 1 - Reporting Semantics Freeze
 
 **Status:** COMPLETE
 
 ### Goal
 
-Extend the existing `spectral_fd` derivative backend through third spatial order without breaking default Heat/Burgers behavior.
+Freeze exactly what `v0.10` supportability reporting means before runtime implementation.
 
 ### Completed Outcome
 
-- implemented `compute_spectral_fd_derivatives(field, *, max_spatial_order: int = 2)`
-- froze derivative key behavior:
-  - `1` -> `u_t`, `u_x`
-  - `2` -> `u_t`, `u_x`, `u_xx`
-  - `3` -> `u_t`, `u_x`, `u_xx`, `u_xxx`
-- accepted Python integer and NumPy integer scalar orders while rejecting bools and unsupported values
-- preserved default `max_spatial_order=2` derivative arrays, derivative-key set, config, and diagnostics
-- kept `spatial_max_order` out of the default config and recorded it only for non-default orders
-- computed `u_xxx` using the same spectral wavenumber convention as `u_x` and `u_xx`
-- added exact Fourier `u_xxx` accuracy tests
-- added default-regression tests proving existing default derivative arrays and metadata remain behavior-compatible
-- updated `API_STABILITY.md` for the derivative API change
+- chose a new public runtime submodule for M2: `pdelie.reporting`
+- froze no root `pdelie` exports for reporting helpers
+- froze reporting helpers as runtime-level public APIs, not canonical objects
+- froze future M2 helper names:
+  - `summarize_residual_batch(...)`
+  - `summarize_weak_residual_report(...)`
+  - `summarize_generator_family(...)`
+  - `summarize_verification_report(...)`
+  - `summarize_vertical_slice(...)`
+- froze common reporting rules:
+  - JSON-compatible plain Python dict outputs
+  - NumPy arrays convert to lists
+  - NumPy scalars convert to Python scalars
+  - existing typed validation errors for invalid inputs
+  - no input mutation
+  - no canonical object creation or schema changes
+  - no manuscript-specific table, figure, threshold, or label logic
+- froze summary schemas:
+  - residual batch summaries
+  - weak residual report summaries
+  - generator family summaries
+  - verification report summaries
+  - vertical-slice summaries
+- left `API_STABILITY.md` unchanged because the public APIs are frozen for M2 but not implemented in M1
+- left runtime code, tests, README, changelog, release-readiness docs, package metadata, and CI unchanged
 
 ### Acceptance Criteria
 
-- Heat/Burgers derivative tests pass under default `max_spatial_order=2`
-- `u_xxx` matches exact Fourier fixtures within frozen tolerance
-- invalid derivative orders raise typed errors
-- `API_STABILITY.md` documents the landed derivative API change
+- exact reporting semantics are frozen before implementation
+- no manuscript-specific reporting logic is introduced
+- example outputs remain runtime smoke summaries, not canonical artifacts
+- `API_STABILITY.md` remains unchanged until `pdelie.reporting` lands in M2
 
 ---
 
-## Milestone 2 - KdV Generator
+## Milestone 2 - Reporting Helper Implementation
 
 **Status:** COMPLETE
 
 ### Goal
 
-Promote the tests-first KdV synthetic data generator into runtime as a narrow stable short-horizon normalized periodic generator.
+Implement the frozen supportability reporting helpers from M1.
 
 ### Completed Outcome
 
-- implemented `pdelie.data.generate_kdv_1d_field_batch(...)`
-- kept the exact M0 signature and defaults:
-  - `batch_size=2`
-  - `num_times=17`
-  - `num_points=64`
-  - `max_time=0.03`
-  - `num_modes=3`
-  - `amplitude=0.08`
-  - `seed=0`
-  - `num_substeps=8`
-  - `domain_length=DEFAULT_DOMAIN_LENGTH`
-- kept no `dtype` parameter and no custom initial-condition API
-- froze coordinate conventions:
-  - `x = np.linspace(0.0, domain_length, num_points, endpoint=False)`
-  - `x` spans `[0, domain_length)`
-  - `time = np.linspace(0.0, max_time, num_times)`
-  - `time` spans `[0, max_time]`
-  - values shape is `(batch_size, num_times, num_points, 1)`
-- preserved canonical metadata:
-  - `boundary_conditions["x"] == "periodic"`
-  - `grid_type == "rectilinear"`
-  - `grid_regularity == "uniform"`
-  - `coordinate_system == "cartesian"`
-  - `parameter_tags == {"equation": "kdv_normalized"}`
-- validated:
-  - positive integer `batch_size`
-  - `num_times >= 3`
-  - `num_points >= 16`
-  - finite positive `max_time`
-  - integer `num_modes >= 1`
-  - `num_modes <= floor(num_points / 3)`
-  - finite nonnegative `amplitude`
-  - integer `seed`
-  - positive integer `num_substeps`
-  - finite positive `domain_length`
-- accepted Python integer and NumPy integer scalar parameters while rejecting bools
-- accepted `amplitude=0.0` as a valid zero-field case without using it for relative-L2 release assertions
-- refactored the test-only KdV feasibility helper to call the runtime generator while keeping residual/derivative feasibility helpers test-only
-- updated public-surface guards so `pdelie.data.generate_kdv_1d_field_batch` is public, root KdV exports remain absent, public coefficient-sampling helpers remain absent, and `KdVResidualEvaluator` remains pending for M3
-- updated `API_STABILITY.md` for the generator API
-
-### Acceptance Criteria
-
-- generated KdV fields are reproducible
-- generated fields validate as canonical `FieldBatch`
-- default fixture mass drift is `<= 1e-8`
-- default fixture relative L2 drift is `<= 5e-3`
-- invalid generator parameters raise typed errors
-- `API_STABILITY.md` documents the landed generator API
-
----
-
-## Milestone 3 - KdV Residual Evaluator
-
-**Status:** COMPLETE
-
-### Goal
-
-Promote normalized KdV strong-form residual evaluation into runtime.
-
-### Completed Outcome
-
-- implemented `pdelie.residuals.KdVResidualEvaluator`
-- froze the normalized KdV strong-form equation `u_t + 6*u*u_x + u_xxx = 0`
-- compute derivatives internally with `compute_spectral_fd_derivatives(field, max_spatial_order=3)` when derivatives are omitted
-- require supplied derivatives to validate against the field and include `u_t`, `u_x`, and `u_xxx`
-- reject missing `u_xxx` with a typed validation error before residual construction
-- keep supplied derivative backend compatibility field-based rather than requiring `backend == "spectral_fd"`
-- validate the normalized KdV stable scope:
-  - canonical dims `("batch", "time", "x", "var")`
-  - scalar `var`
-  - periodic `x`
-  - finite, unmasked values
-  - `field.metadata["parameter_tags"]["equation"] == "kdv_normalized"`
-- return `ResidualBatch(definition_type="analytic", normalization="none")`
-- include diagnostics:
-  - `equation`
-  - `backend`
-  - `max_abs_residual`
-  - `rms_residual`
-- expose the evaluator only from `pdelie.residuals`, not root `pdelie`
-- keep weak KdV and configurable KdV coefficients absent
-- updated `API_STABILITY.md` for the residual evaluator API
-
-### Acceptance Criteria
-
-- clean default KdV residual max absolute value is `< 1e-2`
-- clean default KdV residual RMS value is `< 2e-3`
-- missing required derivatives raise typed errors
-- unsupported fields raise typed errors
-- non-periodic or non-canonical inputs are rejected
-- `API_STABILITY.md` documents the landed residual evaluator API
-
----
-
-## Milestone 4 - KdV Vertical Slice
-
-**Status:** COMPLETE
-
-### Goal
-
-Prove KdV works through the existing translation fitting and held-out verification stack.
-
-### Completed Outcome
-
-- added KdV fit/verification coverage using the frozen fixture:
-  - generator seed `9001`
-  - `batch_size = 5`
-  - `train_size = 2`
-  - split seed `9002`
-  - all other generator settings default
-- added `python -m pdelie.examples.kdv_vertical_slice`
-- added lazy `pdelie.examples.run_kdv_vertical_slice_example`
+- added public runtime submodule `pdelie.reporting`
+- exported the five M1-frozen helpers from `pdelie.reporting` only:
+  - `summarize_residual_batch(...)`
+  - `summarize_weak_residual_report(...)`
+  - `summarize_generator_family(...)`
+  - `summarize_verification_report(...)`
+  - `summarize_vertical_slice(...)`
 - kept root `pdelie` exports unchanged
-- kept the vertical slice on the normalized periodic short-horizon strong path only
-- computed conservation diagnostics on the full generated fixture before train/heldout splitting
-- kept the example output as a JSON-serializable runtime smoke summary, not a stable canonical artifact schema
-- observed frozen-fixture values:
-  - max absolute residual: `0.0029755398453998883`
-  - RMS residual: `0.0005530662104030956`
-  - mass drift: `1.529348589458863e-16`
-  - relative L2 drift: `4.353026792731057e-14`
-  - translation span distance: `0.007441277120177836`
-  - first-epsilon held-out verification error: `3.7632323492784305e-06`
-  - verification classification: `approximate`
-  - fit mode: `svd`
-  - reference fallback used: `False`
+- implemented JSON-compatible summary conversion:
+  - NumPy arrays convert to lists
+  - NumPy scalars convert to Python scalars
+  - mappings and sequences convert recursively
+- implemented typed validation errors for wrong object types, malformed weak reports, non-finite metric arrays, and malformed extra metrics
+- kept helpers deterministic and scoped to existing stable runtime surfaces
+- added focused reporting tests for schemas, JSON serialization, summary metrics, non-mutation, and validation failures
+- updated public API tests for the new submodule and root-export guards
+- updated `docs/specs/API_STABILITY.md` for the landed `pdelie.reporting` APIs
+- did not change canonical object schemas, examples, CI, README, changelog, package metadata, or release-readiness docs
 
 ### Acceptance Criteria
 
-- translation span distance is `<= 5e-2`
-- first-epsilon held-out verification error is `< 1e-4`
-- verification classification is not `failed`
-- observed `approximate` classification is acceptable because the M4 gate requires only non-failed verification
-- example smoke runs without changing the existing Heat example
+- reporting helpers pass focused tests
+- no existing canonical object schema changes
+- no new PDE, weak KdV, broad adapter, or operator scope lands
+- public helper APIs are documented in `API_STABILITY.md`
 
 ---
 
-## Milestone 5 - Imported Parity and Non-goal Guards
+## Milestone 3 - Example Consistency
 
 **Status:** COMPLETE
 
 ### Goal
 
-Prove KdV remains compatible with the existing structured-ingestion path while protecting v0.9 scope boundaries.
+Make existing examples easier to compare, smoke-test, and support without turning example outputs into canonical schemas.
 
 ### Completed Outcome
 
-- added mandatory `from_numpy` parity for representative KdV train and heldout data
-- added optional `from_xarray` parity with `pytest.importorskip`
-- used the frozen M4 fixture:
-  - generator seed `9001`
-  - `batch_size = 5`
-  - `train_size = 2`
-  - split seed `9002`
-- verified imported train and heldout fields preserve:
-  - canonical dims, values, coordinates, and variable names
-  - `parameter_tags == {"equation": "kdv_normalized"}`
-  - mask state
-  - native preprocess-log prefix plus exactly one importer entry
-- compared native and imported KdV strong paths with tolerances:
-  - `compute_spectral_fd_derivatives(..., max_spatial_order=3)`
-  - `KdVResidualEvaluator`
-  - `fit_translation_generator`
-  - `verify_translation_generator`
-- compared stable summary fields only and avoided full diagnostic-dict equality for floating or implementation-specific diagnostics
-- observed mandatory `from_numpy` parity passed
-- observed optional `from_xarray` parity skipped cleanly because xarray is unavailable in the local test environment
-- asserted no weak KdV API
-- asserted no root `pdelie` exports for KdV runtime APIs or KdV example helpers
-- asserted v0.8 weak report APIs remain stable
-- did not add runtime APIs, KdV-specific importers, generic adapter helpers, or broad adapter expansion
+- refactored `run_heat_vertical_slice_example()` to return `pdelie.reporting.summarize_vertical_slice(...)`
+- refactored `run_kdv_vertical_slice_example()` to return `pdelie.reporting.summarize_vertical_slice(...)`
+- kept command entrypoints unchanged:
+  - `python -m pdelie.examples.heat_vertical_slice`
+  - `python -m pdelie.examples.kdv_vertical_slice`
+- kept root `pdelie` exports unchanged
+- moved example-specific context into `extra_metrics`:
+  - Heat records example name, equation, training/heldout seeds, and batch sizes
+  - KdV records example name, equation, generator/split seeds, train size, mass drift, and relative L2 drift
+- kept example outputs JSON-only on stdout with no logging noise
+- intentionally did not preserve the old flat top-level example keys
+- recorded that example outputs are runtime smoke summaries, not canonical artifact schemas
+- updated example tests for:
+  - nested `vertical_slice` summary shape
+  - JSON serialization
+  - deterministic repeated output
+  - Heat and KdV subprocess JSON-only execution
+  - root-export guards
+- updated the representative `v0.9` release-gate example assertion to read the nested summary without preserving the old example schema
+- did not change fitting, verification, residual, derivative, data-generation, or reporting-helper behavior
+- left `API_STABILITY.md`, README, changelog, release-readiness docs, package metadata, and CI unchanged
 
 ### Acceptance Criteria
 
-- native and imported KdV paths agree within frozen tolerances
-- optional xarray parity skips cleanly when xarray is unavailable
-- weak KdV remains absent
-- root exports remain unchanged
-- v0.8 weak report API tests remain green
+- examples remain deterministic runtime smokes
+- example summaries are not documented as canonical artifact schemas
+- Heat/Burgers/KdV stable runtime behavior remains unchanged
 
 ---
 
-## Milestone 6 - Release Gate and Release Readiness
+## Milestone 4 - API Stability Audit and Public-Surface Guards
 
 **Status:** COMPLETE
 
 ### Goal
 
-Add the compact `v0_9-release-gate`, align release-facing docs, and document the direct `0.9.0` Git tag path.
+Bring public-surface tests and `API_STABILITY.md` into a clean pre-`v1.0` posture.
 
 ### Completed Outcome
 
-- added compact `tests/test_v0_9_release_gate.py`
-- added `v0_9-release-gate` CI visibility job
-- kept historical release-gate CI jobs unchanged
-- added KdV editable-install example smoke beside the Heat example smoke
-- added tiny KdV strong-path wheel smoke after build
-- updated README, changelog, release readiness, package version, roadmap, and publishing docs
-- aligned release docs around a direct Git tag release path
-- recorded that `v0.9.0` is Git-tag-only:
-  - no `v0.9.0rc1`
-  - no TestPyPI run
-  - no PyPI run
-  - package-index publishing deferred to `v1.0` or later
-- kept `API_STABILITY.md` unchanged after audit because the landed v0.9 APIs were already documented
-- recorded post-`v0.9` CI job consolidation as a follow-up, not part of M6
+- added a focused API stability audit test
+- verified `docs/specs/API_STABILITY.md` documents:
+  - the `v0.10` `pdelie.reporting` helpers
+  - the frozen `v0.8` weak residual report APIs
+  - the frozen `v0.9` KdV strong-path APIs
+  - deferred weak derivatives, broader weak methods, and operator symmetry as non-stable surfaces
+- verified root `pdelie` remains limited to canonical objects, base evaluator, and typed errors
+- verified runtime helpers remain submodule-only:
+  - data generators/adapters and robustness utilities
+  - derivative backend helper
+  - residual evaluators and weak report functions
+  - reporting helpers
+  - examples
+  - discovery, portability, symmetry, and visualization helpers
+- verified deferred/private names remain absent from public modules:
+  - weak KdV APIs
+  - `compute_weak_derivatives`
+  - public KdV coefficient helpers
+  - broad dataset adapter aliases
+  - operator-facing names
+- kept public-surface tests specific-name based rather than freezing entire module contents
+- did not change `API_STABILITY.md`; the audit found no mismatch
+- did not add runtime APIs, canonical objects, numerical scope, CI changes, README/changelog updates, release-readiness docs, or package metadata changes
 
 ### Acceptance Criteria
 
-- historical release gates remain green
-- `v0_9-release-gate` is green
+- public-surface tests assert specific required/forbidden names without over-freezing unrelated module contents
+- stable APIs through `v0.10` are documented
+- deferred surfaces remain absent:
+  - weak KdV
+  - weak derivatives beyond the `v0.8` report functions
+  - broad adapters
+  - operator-facing APIs
+
+---
+
+## Milestone 5 - CI Cleanup and Release-Gate Consolidation
+
+**Status:** COMPLETE
+
+### Goal
+
+Reduce CI release-gate sprawl while keeping historical release-gate tests runnable locally.
+
+### Completed Outcome
+
+- added a compact `tests/test_v0_10_release_gate.py`
+- consolidated explicit release-gate CI visibility to one current job:
+  - `v0_10-release-gate`
+- removed historical explicit CI jobs:
+  - `v0_4-release-gate`
+  - `v0_5-release-gate`
+  - `v0_6-release-gate`
+  - `v0_7-release-gate`
+  - `v0_8-release-gate`
+  - `v0_9-release-gate`
+- kept all historical release-gate test modules in the repo
+- kept historical release-gate tests covered by the full `editable-tests` job
+- kept `editable-tests` running full `python -m pytest`
+- kept `package-smoke`
+- updated package-smoke example assertions for the nested `vertical_slice` summary shape introduced in M3
+- did not change historical release-gate test semantics
+- did not change runtime APIs, canonical objects, numerical behavior, README/changelog docs, release-readiness docs, package metadata, or package-index publishing behavior
+
+### Acceptance Criteria
+
+- CI remains release-useful
+- historical gate tests remain runnable locally
+- current release gate remains visible in CI
+- package smoke remains compact and representative
+
+---
+
+## Milestone 6 - Release Readiness and Documentation Alignment
+
+**Status:** COMPLETE
+
+### Goal
+
+Close `v0.10` with aligned release-facing docs, package metadata, release gate, and final tag checklist.
+
+### Completed Outcome
+
+- updated package metadata to `0.10.0`
+- updated README framing from `v0.9` to `v0.10`
+- documented `pdelie.reporting` supportability helpers and nested example summaries
+- added `CHANGELOG.md` entry for `0.10.0`
+- created `docs/releases/V0_10_RELEASE_READINESS.md`
+- updated `docs/releases/PUBLISHING.md` to include `v0.10.0` in the Git-tag-only `v0.x` release policy
+- updated `docs/planning/ROADMAP.md` so `v0.10` is the current completed release and `v0.11` remains conditional/planned
+- audited `docs/specs/API_STABILITY.md`; no changes were required
+- recorded final release checks:
+  - full pytest
+  - source/wheel build
+  - clean wheel smoke using `dist/pdelie-0.10.0-py3-none-any.whl`
+  - Heat and KdV example module execution
+  - `git diff --check`
+- recorded required release PR CI checks:
+  - `v0_10-release-gate`
+  - `editable-tests`
+  - `package-smoke`
+- recorded direct final Git tag path:
+  - merge release PR after CI is green
+  - tag merged `main` commit as `v0.10.0`
+  - do not publish to TestPyPI
+  - do not publish to PyPI
+  - defer package-index publishing until `v1.0` or later
+- verified no new PDE, weak KdV, weak derivative API, broad adapter, operator API, root runtime export, or canonical reporting object landed
+
+### Acceptance Criteria
+
 - full test suite passes
-- source and wheel build passes
-- clean wheel smoke passes
-- KdV vertical slice passes
-- release-facing docs describe stable short-horizon normalized periodic KdV, not general KdV support
-- release-facing docs do not instruct PyPI or TestPyPI publication for `v0.9`
+- build and clean wheel smoke pass
+- current release gate passes
+- release-facing docs describe supportability / `v1.0` readiness, not new PDE support
+- package-index publishing decision is explicit
 
 ---
 
@@ -344,32 +336,33 @@ Add the compact `v0_9-release-gate`, align release-facing docs, and document the
 
 Locked sequence:
 
-Milestone 0 -> KdV strong-path scope freeze
-Milestone 1 -> spectral `u_xxx`
-Milestone 2 -> KdV generator
-Milestone 3 -> KdV residual evaluator
-Milestone 4 -> KdV vertical slice
-Milestone 5 -> imported parity and non-goal guards
-Milestone 6 -> release gate and release readiness
+Milestone 0 -> supportability scope reset
+Milestone 1 -> reporting semantics freeze
+Milestone 2 -> reporting helper implementation
+Milestone 3 -> example consistency
+Milestone 4 -> API stability audit and public-surface guards
+Milestone 5 -> CI cleanup and release-gate consolidation
+Milestone 6 -> release readiness and documentation alignment
 
 ---
 
 ## Rules
 
-- DO NOT promote weak KdV in `v0.9`
-- DO NOT add root `pdelie` exports for KdV runtime APIs
-- DO NOT add custom KdV initial-condition APIs in `v0.9`
-- DO NOT broaden `v0.9` into general KdV support
-- DO NOT broaden `v0.9` into PDEBench, The Well, multidimensional, multivariable, nonuniform-grid, operator, or broad adapter work
-- DO NOT update `API_STABILITY.md` in M0
-- DO update `API_STABILITY.md` in the same milestone where each public API lands
-- DO preserve existing Heat/Burgers and v0.8 weak-report behavior
+- DO NOT add a new PDE in `v0.10`
+- DO NOT promote weak KdV in `v0.10`
+- DO NOT add a new weak derivative API in `v0.10`
+- DO NOT broaden `v0.10` into PDEBench, The Well, multidimensional, multivariable, nonuniform-grid, operator, or broad adapter work
+- DO NOT add manuscript-specific reporting logic
+- DO NOT add a new canonical object unless M1 proves runtime helpers cannot solve the supportability problem
+- DO NOT update `API_STABILITY.md` until a public `v0.10` API actually lands or an audit finds a real omission
+- DO preserve existing Heat/Burgers, v0.8 weak-report, and v0.9 KdV behavior
+- DO keep historical release-gate tests runnable locally through any CI cleanup
 
 ---
 
 ## Status
 
-- `v0.8`: COMPLETE
+- `v0.9`: COMPLETE
 - Milestone 0: COMPLETE
 - Milestone 1: COMPLETE
 - Milestone 2: COMPLETE

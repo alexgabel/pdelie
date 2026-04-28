@@ -152,15 +152,16 @@ def test_v0_9_release_gate_runtime_surface_and_api_stability_doc_are_aligned() -
 def test_v0_9_release_gate_representative_kdv_vertical_slice_holds() -> None:
     result = run_kdv_vertical_slice_example()
 
-    assert result["backend"] == "spectral_fd"
-    assert result["max_abs_residual"] < 1e-2
-    assert result["rms_residual"] < 2e-3
-    assert result["mass_drift"] <= 1e-8
-    assert result["relative_l2_drift"] <= 5e-3
-    assert result["parameterization"] == "polynomial_translation_affine"
-    assert result["span_distance"] <= 5e-2
-    assert result["error_curve"][0] < 1e-4
-    assert result["verification_classification"] != "failed"
+    assert result["summary_type"] == "vertical_slice"
+    assert result["derivative_backend"] == "spectral_fd"
+    assert result["residual"]["max_abs_residual"] < 1e-2
+    assert result["residual"]["rms_residual"] < 2e-3
+    assert result["extra_metrics"]["mass_drift"] <= 1e-8
+    assert result["extra_metrics"]["relative_l2_drift"] <= 5e-3
+    assert result["generator"]["parameterization"] == "polynomial_translation_affine"
+    assert result["generator"]["translation_span_distance"] <= 5e-2
+    assert result["verification"]["first_error"] < 1e-4
+    assert result["verification"]["classification"] != "failed"
 
 
 @pytest.mark.parametrize("importer", [_import_from_numpy, _import_from_xarray])
