@@ -2,7 +2,7 @@
 
 ## Current Release Status
 
-**V0.10 active; Milestone 4 complete**
+**V0.10 active; Milestone 5 complete**
 
 This file is the active execution record for the `v0.10` release series.
 
@@ -251,20 +251,31 @@ Bring public-surface tests and `API_STABILITY.md` into a clean pre-`v1.0` postur
 
 ## Milestone 5 - CI Cleanup and Release-Gate Consolidation
 
-**Status:** PENDING
+**Status:** COMPLETE
 
 ### Goal
 
 Reduce CI release-gate sprawl while keeping historical release-gate tests runnable locally.
 
-### Planned Scope
+### Completed Outcome
 
-- keep full editable tests
-- keep package smoke
-- keep one current release-gate CI job
-- keep historical release-gate test modules in the repo
-- remove redundant historical release-gate CI jobs only after confirming equivalent coverage remains available locally
-- avoid changing test semantics just for CI speed
+- added a compact `tests/test_v0_10_release_gate.py`
+- consolidated explicit release-gate CI visibility to one current job:
+  - `v0_10-release-gate`
+- removed historical explicit CI jobs:
+  - `v0_4-release-gate`
+  - `v0_5-release-gate`
+  - `v0_6-release-gate`
+  - `v0_7-release-gate`
+  - `v0_8-release-gate`
+  - `v0_9-release-gate`
+- kept all historical release-gate test modules in the repo
+- kept historical release-gate tests covered by the full `editable-tests` job
+- kept `editable-tests` running full `python -m pytest`
+- kept `package-smoke`
+- updated package-smoke example assertions for the nested `vertical_slice` summary shape introduced in M3
+- did not change historical release-gate test semantics
+- did not change runtime APIs, canonical objects, numerical behavior, README/changelog docs, release-readiness docs, package metadata, or package-index publishing behavior
 
 ### Acceptance Criteria
 
@@ -337,5 +348,5 @@ Milestone 6 -> release readiness and documentation alignment
 - Milestone 2: COMPLETE
 - Milestone 3: COMPLETE
 - Milestone 4: COMPLETE
-- Milestone 5: PENDING
+- Milestone 5: COMPLETE
 - Milestone 6: PENDING
