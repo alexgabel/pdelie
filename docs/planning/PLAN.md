@@ -1,17 +1,20 @@
-# PDELie - Execution Plan (V0.10)
+# PDELie - Execution Plan (V0.11)
 
 ## Current Release Status
 
-**V0.10 complete; ready for direct `v0.10.0` tag after release PR CI**
+**V0.11 committed as Kuramoto-Sivashinsky feasibility-first**
 
-This file is the active execution record for the `v0.10` release series.
+This file is the active execution record for the `v0.11` release series.
 
-`v0.10` is a supportability and `v1.0` readiness release.
-It hardens the existing Heat/Burgers/weak-report/KdV engine before any new numerical scope is added.
+`v0.11` is a feasibility-first release.
+It evaluates whether normalized scalar 1D periodic Kuramoto-Sivashinsky can be promoted safely into the stable strong-path runtime surface.
 
-Stable release definition:
+Candidate stable path:
 
-`existing stable Heat/Burgers/weak-report/KdV surfaces -> compact supportability reports -> consistent examples/release gates/docs -> v1.0 readiness`
+`canonical scalar 1D uniform periodic FieldBatch -> spectral_fd higher spatial derivatives -> normalized KS residual evaluator -> translation fit/verification`
+
+Stable runtime promotion is conditional.
+`v0.11` may close either as stable KS promotion or as an explicit no-go/defer feasibility release.
 
 This file should not redefine package contracts.
 Contracts and stable behavior belong in:
@@ -20,315 +23,166 @@ Contracts and stable behavior belong in:
 - `docs/specs/CONTRACTS_AND_DEFAULTS.md`
 - `docs/specs/API_STABILITY.md`
 - `docs/planning/ROADMAP.md`
-- `docs/planning/V0_10_SCOPE.md`
+- `docs/planning/V0_11_SCOPE.md`
 
-`API_STABILITY.md` was audited in M0, left unchanged in M0/M1, updated in M2 when the public `pdelie.reporting` helpers landed, and audited again in M4/M6 with no further changes required.
-It must continue to be updated in the same milestone where any future public helper or other public API lands.
+`API_STABILITY.md` was audited in M0 and remains unchanged because no new `v0.11` public API lands in M0.
+It must be updated in the same milestone where any public KS API or other public API lands.
 
 ---
 
-## V0.9 Closeout
+## V0.10 Closeout
 
-`v0.9` is complete as the stable normalized periodic short-horizon KdV strong-path release.
+`v0.10` is complete as the supportability and `v1.0` readiness release.
 
 Completed outcome:
 
-- `compute_spectral_fd_derivatives(..., max_spatial_order=3)` with `u_xxx`
-- `pdelie.data.generate_kdv_1d_field_batch(...)`
-- `pdelie.residuals.KdVResidualEvaluator`
-- KdV vertical-slice example and release-gate coverage
-- mandatory representative `from_numpy` parity and optional `from_xarray` parity
-- explicit deferral of weak KdV, configurable KdV coefficients, custom KdV initial conditions, general KdV support, and broad adapter work
+- public runtime reporting helpers under `pdelie.reporting`
+- consistent nested Heat/KdV example summaries
+- API stability and public-surface audit coverage
+- one current release-gate CI job plus full editable tests and package smoke
+- package/readiness documentation cleanup for eventual `v1.0` publishing decisions
+- explicit deferral of new PDE scope, weak KdV, broad adapters, operator work, and manuscript-specific reporting logic
 
-`v0.10` begins from the frozen `v0.9` surface.
-It does not reopen KdV numerics or weak-form scope.
+`v0.11` begins from the frozen `v0.10` surface.
+It does not reopen Heat/Burgers, weak-report, KdV, reporting, CI cleanup, or publishing decisions.
 
 ---
 
-## Milestone 0 - Supportability Scope Reset
+## Milestone 0 - KS Feasibility Scope Reset
 
 **Status:** COMPLETE
 
 ### Goal
 
-Promote `v0.10` to the next committed release target, create `V0_10_SCOPE.md`, reset `PLAN.md`, and audit `API_STABILITY.md` without changing it.
+Promote `v0.11` to the next committed release target, create `V0_11_SCOPE.md`, reset `PLAN.md`, and audit `API_STABILITY.md` without changing it.
 
 ### Completed Outcome
 
-- promoted `v0.10` to committed supportability / `v1.0` readiness scope in `ROADMAP.md`
-- created `docs/planning/V0_10_SCOPE.md`
-- reset `docs/planning/PLAN.md` as the active `v0.10` execution record
-- recorded `v0.9` as completed
-- recorded `v0.11` as conditional next strong-path PDE feasibility or promotion
-- recorded `v0.12+` as later PDE/dataset coverage only after separate scope freezes
+- promoted `v0.11` to committed feasibility-first scope in `ROADMAP.md`
+- created `docs/planning/V0_11_SCOPE.md`
+- reset `docs/planning/PLAN.md` as the active `v0.11` execution record
+- recorded `v0.10` as completed
+- recorded Kuramoto-Sivashinsky as the feasibility candidate
+- recorded stable KS promotion as conditional on later numerical evidence
+- recorded that `v0.11` may close as either stable KS promotion or no-go/defer
 - audited `docs/specs/API_STABILITY.md`
-- left `docs/specs/API_STABILITY.md` unchanged because no new `v0.10` public API has landed
-- left `.github/workflows/ci.yml`, `README.md`, `CHANGELOG.md`, and `docs/releases/V0_10_RELEASE_READINESS.md` for later milestones
+- left `docs/specs/API_STABILITY.md` unchanged because no new `v0.11` public API landed in M0
+- left runtime code, tests, package metadata, CI, README, changelog, and release-readiness docs unchanged
 
 ### Acceptance Criteria
 
 M0 is complete only if:
 
-- `ROADMAP.md`, `PLAN.md`, and `V0_10_SCOPE.md` are internally consistent
-- `v0.9` is consistently described as completed
-- `v0.10` is consistently described as the next committed release
-- `v0.10` is described as supportability and `v1.0` readiness, not new numerical scope
-- `v0.11` is conditional and not committed
-- `v0.12+` remains planned only after separate scope freezes
+- `ROADMAP.md`, `PLAN.md`, and `V0_11_SCOPE.md` are internally consistent
+- `v0.10` is consistently described as completed
+- `v0.11` is consistently described as committed and feasibility-first
+- `v0.11` is not described as unconditional stable KS support
+- exact KS equation normalization and numerical thresholds remain deferred to M1
+- public KS APIs remain uncommitted until later milestones
 - `API_STABILITY.md` remains unchanged during M0
 - no runtime code, tests, package metadata, CI, README, changelog, or release-readiness docs are edited in M0
 
 ---
 
-## Milestone 1 - Reporting Semantics Freeze
+## Milestone 1 - KS Equation and Numerical Semantics Freeze
 
-**Status:** COMPLETE
+**Status:** PENDING
 
 ### Goal
 
-Freeze exactly what `v0.10` supportability reporting means before runtime implementation.
+Freeze the exact normalized KS equation and numerical semantics before any runtime prototype or public API is considered.
 
-### Completed Outcome
+### Planned Outcome
 
-- chose a new public runtime submodule for M2: `pdelie.reporting`
-- froze no root `pdelie` exports for reporting helpers
-- froze reporting helpers as runtime-level public APIs, not canonical objects
-- froze future M2 helper names:
-  - `summarize_residual_batch(...)`
-  - `summarize_weak_residual_report(...)`
-  - `summarize_generator_family(...)`
-  - `summarize_verification_report(...)`
-  - `summarize_vertical_slice(...)`
-- froze common reporting rules:
-  - JSON-compatible plain Python dict outputs
-  - NumPy arrays convert to lists
-  - NumPy scalars convert to Python scalars
-  - existing typed validation errors for invalid inputs
-  - no input mutation
-  - no canonical object creation or schema changes
-  - no manuscript-specific table, figure, threshold, or label logic
-- froze summary schemas:
-  - residual batch summaries
-  - weak residual report summaries
-  - generator family summaries
-  - verification report summaries
-  - vertical-slice summaries
-- left `API_STABILITY.md` unchanged because the public APIs are frozen for M2 but not implemented in M1
-- left runtime code, tests, README, changelog, release-readiness docs, package metadata, and CI unchanged
-
-### Acceptance Criteria
-
-- exact reporting semantics are frozen before implementation
-- no manuscript-specific reporting logic is introduced
-- example outputs remain runtime smoke summaries, not canonical artifacts
-- `API_STABILITY.md` remains unchanged until `pdelie.reporting` lands in M2
+- choose the exact normalized KS equation form and sign convention
+- freeze derivative-order requirements
+- freeze coordinate and boundary conventions
+- freeze candidate diagnostic metrics
+- freeze preliminary residual, conservation, fitting, and verification thresholds for feasibility work
+- keep public API names and stable promotion conditional
 
 ---
 
-## Milestone 2 - Reporting Helper Implementation
+## Milestone 2 - KS Feasibility Generator / Prototype
 
-**Status:** COMPLETE
+**Status:** PENDING
 
 ### Goal
 
-Implement the frozen supportability reporting helpers from M1.
+Create or adapt a deterministic KS feasibility generator/prototype under the frozen M1 semantics.
 
-### Completed Outcome
+### Planned Outcome
 
-- added public runtime submodule `pdelie.reporting`
-- exported the five M1-frozen helpers from `pdelie.reporting` only:
-  - `summarize_residual_batch(...)`
-  - `summarize_weak_residual_report(...)`
-  - `summarize_generator_family(...)`
-  - `summarize_verification_report(...)`
-  - `summarize_vertical_slice(...)`
-- kept root `pdelie` exports unchanged
-- implemented JSON-compatible summary conversion:
-  - NumPy arrays convert to lists
-  - NumPy scalars convert to Python scalars
-  - mappings and sequences convert recursively
-- implemented typed validation errors for wrong object types, malformed weak reports, non-finite metric arrays, and malformed extra metrics
-- kept helpers deterministic and scoped to existing stable runtime surfaces
-- added focused reporting tests for schemas, JSON serialization, summary metrics, non-mutation, and validation failures
-- updated public API tests for the new submodule and root-export guards
-- updated `docs/specs/API_STABILITY.md` for the landed `pdelie.reporting` APIs
-- did not change canonical object schemas, examples, CI, README, changelog, package metadata, or release-readiness docs
-
-### Acceptance Criteria
-
-- reporting helpers pass focused tests
-- no existing canonical object schema changes
-- no new PDE, weak KdV, broad adapter, or operator scope lands
-- public helper APIs are documented in `API_STABILITY.md`
+- evaluate short-horizon rollout stability
+- record supported fixture sizes, seeds, and numerical margins
+- keep any prototype internal unless the milestone explicitly freezes a public API
+- avoid custom initial-condition APIs and configurable coefficient families
 
 ---
 
-## Milestone 3 - Example Consistency
+## Milestone 3 - KS Residual Feasibility Prototype
 
-**Status:** COMPLETE
+**Status:** PENDING
 
 ### Goal
 
-Make existing examples easier to compare, smoke-test, and support without turning example outputs into canonical schemas.
+Evaluate the strong-form KS residual path under the frozen semantics.
 
-### Completed Outcome
+### Planned Outcome
 
-- refactored `run_heat_vertical_slice_example()` to return `pdelie.reporting.summarize_vertical_slice(...)`
-- refactored `run_kdv_vertical_slice_example()` to return `pdelie.reporting.summarize_vertical_slice(...)`
-- kept command entrypoints unchanged:
-  - `python -m pdelie.examples.heat_vertical_slice`
-  - `python -m pdelie.examples.kdv_vertical_slice`
-- kept root `pdelie` exports unchanged
-- moved example-specific context into `extra_metrics`:
-  - Heat records example name, equation, training/heldout seeds, and batch sizes
-  - KdV records example name, equation, generator/split seeds, train size, mass drift, and relative L2 drift
-- kept example outputs JSON-only on stdout with no logging noise
-- intentionally did not preserve the old flat top-level example keys
-- recorded that example outputs are runtime smoke summaries, not canonical artifact schemas
-- updated example tests for:
-  - nested `vertical_slice` summary shape
-  - JSON serialization
-  - deterministic repeated output
-  - Heat and KdV subprocess JSON-only execution
-  - root-export guards
-- updated the representative `v0.9` release-gate example assertion to read the nested summary without preserving the old example schema
-- did not change fitting, verification, residual, derivative, data-generation, or reporting-helper behavior
-- left `API_STABILITY.md`, README, changelog, release-readiness docs, package metadata, and CI unchanged
-
-### Acceptance Criteria
-
-- examples remain deterministic runtime smokes
-- example summaries are not documented as canonical artifact schemas
-- Heat/Burgers/KdV stable runtime behavior remains unchanged
+- test derivative requirements and residual diagnostics
+- verify typed validation behavior
+- measure residual thresholds on frozen feasibility fixtures
+- keep public residual evaluator promotion conditional
 
 ---
 
-## Milestone 4 - API Stability Audit and Public-Surface Guards
+## Milestone 4 - KS Vertical-Slice Feasibility
 
-**Status:** COMPLETE
+**Status:** PENDING
 
 ### Goal
 
-Bring public-surface tests and `API_STABILITY.md` into a clean pre-`v1.0` posture.
+Run the candidate KS path through the existing strong-path fitting and verification stack.
 
-### Completed Outcome
+### Planned Outcome
 
-- added a focused API stability audit test
-- verified `docs/specs/API_STABILITY.md` documents:
-  - the `v0.10` `pdelie.reporting` helpers
-  - the frozen `v0.8` weak residual report APIs
-  - the frozen `v0.9` KdV strong-path APIs
-  - deferred weak derivatives, broader weak methods, and operator symmetry as non-stable surfaces
-- verified root `pdelie` remains limited to canonical objects, base evaluator, and typed errors
-- verified runtime helpers remain submodule-only:
-  - data generators/adapters and robustness utilities
-  - derivative backend helper
-  - residual evaluators and weak report functions
-  - reporting helpers
-  - examples
-  - discovery, portability, symmetry, and visualization helpers
-- verified deferred/private names remain absent from public modules:
-  - weak KdV APIs
-  - `compute_weak_derivatives`
-  - public KdV coefficient helpers
-  - broad dataset adapter aliases
-  - operator-facing names
-- kept public-surface tests specific-name based rather than freezing entire module contents
-- did not change `API_STABILITY.md`; the audit found no mismatch
-- did not add runtime APIs, canonical objects, numerical scope, CI changes, README/changelog updates, release-readiness docs, or package metadata changes
-
-### Acceptance Criteria
-
-- public-surface tests assert specific required/forbidden names without over-freezing unrelated module contents
-- stable APIs through `v0.10` are documented
-- deferred surfaces remain absent:
-  - weak KdV
-  - weak derivatives beyond the `v0.8` report functions
-  - broad adapters
-  - operator-facing APIs
+- build a deterministic KS vertical-slice fixture
+- run derivative computation, residual evaluation, translation fitting, and held-out verification
+- record span-distance and verification margins
+- decide whether the evidence is strong enough to continue toward promotion
 
 ---
 
-## Milestone 5 - CI Cleanup and Release-Gate Consolidation
+## Milestone 5 - Promotion Decision and Imported-Parity / Non-goal Guards
 
-**Status:** COMPLETE
+**Status:** PENDING
 
 ### Goal
 
-Reduce CI release-gate sprawl while keeping historical release-gate tests runnable locally.
+Make the explicit stable-promotion versus no-go decision.
 
-### Completed Outcome
+### Planned Outcome
 
-- added a compact `tests/test_v0_10_release_gate.py`
-- consolidated explicit release-gate CI visibility to one current job:
-  - `v0_10-release-gate`
-- removed historical explicit CI jobs:
-  - `v0_4-release-gate`
-  - `v0_5-release-gate`
-  - `v0_6-release-gate`
-  - `v0_7-release-gate`
-  - `v0_8-release-gate`
-  - `v0_9-release-gate`
-- kept all historical release-gate test modules in the repo
-- kept historical release-gate tests covered by the full `editable-tests` job
-- kept `editable-tests` running full `python -m pytest`
-- kept `package-smoke`
-- updated package-smoke example assertions for the nested `vertical_slice` summary shape introduced in M3
-- did not change historical release-gate test semantics
-- did not change runtime APIs, canonical objects, numerical behavior, README/changelog docs, release-readiness docs, package metadata, or package-index publishing behavior
-
-### Acceptance Criteria
-
-- CI remains release-useful
-- historical gate tests remain runnable locally
-- current release gate remains visible in CI
-- package smoke remains compact and representative
+- if KS promotion is justified, freeze public API names and representative imported parity
+- if KS promotion is not justified, close the branch as no-go/defer without runtime API expansion
+- keep weak KS, broad adapters, operator APIs, and root exports absent
 
 ---
 
-## Milestone 6 - Release Readiness and Documentation Alignment
+## Milestone 6 - Release Gate / Readiness or No-go Closeout
 
-**Status:** COMPLETE
+**Status:** PENDING
 
 ### Goal
 
-Close `v0.10` with aligned release-facing docs, package metadata, release gate, and final tag checklist.
+Close `v0.11` according to the M5 decision.
 
-### Completed Outcome
+### Planned Outcome
 
-- updated package metadata to `0.10.0`
-- updated README framing from `v0.9` to `v0.10`
-- documented `pdelie.reporting` supportability helpers and nested example summaries
-- added `CHANGELOG.md` entry for `0.10.0`
-- created `docs/releases/V0_10_RELEASE_READINESS.md`
-- updated `docs/releases/PUBLISHING.md` to include `v0.10.0` in the Git-tag-only `v0.x` release policy
-- updated `docs/planning/ROADMAP.md` so `v0.10` is the current completed release and `v0.11` remains conditional/planned
-- audited `docs/specs/API_STABILITY.md`; no changes were required
-- recorded final release checks:
-  - full pytest
-  - source/wheel build
-  - clean wheel smoke using `dist/pdelie-0.10.0-py3-none-any.whl`
-  - Heat and KdV example module execution
-  - `git diff --check`
-- recorded required release PR CI checks:
-  - `v0_10-release-gate`
-  - `editable-tests`
-  - `package-smoke`
-- recorded direct final Git tag path:
-  - merge release PR after CI is green
-  - tag merged `main` commit as `v0.10.0`
-  - do not publish to TestPyPI
-  - do not publish to PyPI
-  - defer package-index publishing until `v1.0` or later
-- verified no new PDE, weak KdV, weak derivative API, broad adapter, operator API, root runtime export, or canonical reporting object landed
-
-### Acceptance Criteria
-
-- full test suite passes
-- build and clean wheel smoke pass
-- current release gate passes
-- release-facing docs describe supportability / `v1.0` readiness, not new PDE support
-- package-index publishing decision is explicit
+- if promoted, add a compact release gate and release-facing docs
+- if not promoted, document the no-go/defer evidence and leave the stable public surface unchanged
+- keep package-index publishing policy unchanged unless separately scoped
 
 ---
 
@@ -336,37 +190,37 @@ Close `v0.10` with aligned release-facing docs, package metadata, release gate, 
 
 Locked sequence:
 
-Milestone 0 -> supportability scope reset
-Milestone 1 -> reporting semantics freeze
-Milestone 2 -> reporting helper implementation
-Milestone 3 -> example consistency
-Milestone 4 -> API stability audit and public-surface guards
-Milestone 5 -> CI cleanup and release-gate consolidation
-Milestone 6 -> release readiness and documentation alignment
+Milestone 0 -> KS feasibility scope reset
+Milestone 1 -> KS equation and numerical semantics freeze
+Milestone 2 -> KS feasibility generator / prototype
+Milestone 3 -> KS residual feasibility prototype
+Milestone 4 -> KS vertical-slice feasibility
+Milestone 5 -> promotion decision and imported-parity / non-goal guards
+Milestone 6 -> release gate / readiness or no-go closeout
 
 ---
 
 ## Rules
 
-- DO NOT add a new PDE in `v0.10`
-- DO NOT promote weak KdV in `v0.10`
-- DO NOT add a new weak derivative API in `v0.10`
-- DO NOT broaden `v0.10` into PDEBench, The Well, multidimensional, multivariable, nonuniform-grid, operator, or broad adapter work
-- DO NOT add manuscript-specific reporting logic
-- DO NOT add a new canonical object unless M1 proves runtime helpers cannot solve the supportability problem
-- DO NOT update `API_STABILITY.md` until a public `v0.10` API actually lands or an audit finds a real omission
-- DO preserve existing Heat/Burgers, v0.8 weak-report, and v0.9 KdV behavior
-- DO keep historical release-gate tests runnable locally through any CI cleanup
+- DO NOT add public KS APIs in M0.
+- DO NOT update `API_STABILITY.md` until a public `v0.11` API actually lands or an audit finds a real omission.
+- DO NOT describe `v0.11` as unconditional stable KS support before M5.
+- DO NOT promote weak KS in `v0.11`.
+- DO NOT add a new weak derivative API in `v0.11`.
+- DO NOT broaden `v0.11` into broad adapters, multidimensional grids, nonuniform grids, multivariable systems, or operator-facing work.
+- DO NOT add custom KS initial-condition APIs or configurable KS coefficient families unless a later milestone explicitly freezes them.
+- DO NOT add manuscript-specific logic.
+- DO preserve existing Heat/Burgers, `v0.8` weak-report, `v0.9` KdV, and `v0.10` reporting behavior.
 
 ---
 
 ## Status
 
-- `v0.9`: COMPLETE
+- `v0.10`: COMPLETE
 - Milestone 0: COMPLETE
-- Milestone 1: COMPLETE
-- Milestone 2: COMPLETE
-- Milestone 3: COMPLETE
-- Milestone 4: COMPLETE
-- Milestone 5: COMPLETE
-- Milestone 6: COMPLETE
+- Milestone 1: PENDING
+- Milestone 2: PENDING
+- Milestone 3: PENDING
+- Milestone 4: PENDING
+- Milestone 5: PENDING
+- Milestone 6: PENDING

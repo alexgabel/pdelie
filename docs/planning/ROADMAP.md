@@ -317,6 +317,66 @@ The authoritative `v0.10` scope freeze belongs in:
 
 ---
 
+## Committed Release Target
+
+### `v0.11` - Kuramoto-Sivashinsky strong-path feasibility
+**Status:** Committed / Feasibility-first
+
+`v0.11` is the committed next release target after the `v0.10` supportability release.
+
+Its purpose is:
+
+> evaluate whether a normalized scalar 1D periodic Kuramoto-Sivashinsky strong path can be promoted safely into the stable runtime surface.
+
+Candidate stable path:
+
+`canonical scalar 1D uniform periodic FieldBatch -> spectral_fd higher spatial derivatives -> normalized KS residual evaluator -> translation fit/verification`
+
+Release interpretation:
+
+- this is a feasibility-first release, not unconditional stable KS support
+- stable KS runtime promotion is conditional on observed numerical margin
+- `v0.11` may close as stable KS promotion or as an explicit no-go/defer feasibility release
+
+Required before promotion:
+
+- exact equation normalization
+- derivative-order requirements
+- generator stability regime
+- residual evaluator contract
+- residual, conservation, fitting, and verification thresholds with observed margin
+- imported-parity expectations
+- explicit non-goals around weak forms, broad adapters, root exports, and general PDE support
+
+Explicit M0 non-goals:
+
+- no public KS APIs in M0
+- no weak KS API
+- no broad dataset adapters
+- no multidimensional, multivariable, or nonuniform-grid expansion
+- no custom KS initial-condition API
+- no configurable KS coefficient family
+- no operator-facing symmetry work
+- no manuscript-specific logic
+
+The authoritative `v0.11` scope freeze belongs in:
+
+- `V0_11_SCOPE.md`
+
+### Feasibility Gate for `v0.11`
+
+`v0.11` can only promote stable KS support if later milestones establish:
+
+- deterministic KS feasibility fixtures
+- controlled short-horizon rollout stability
+- derivative accuracy and residual thresholds with margin
+- translation fitting and held-out verification thresholds with margin
+- imported parity and public-surface guards if runtime APIs land
+
+If those conditions are not met, `v0.11` should close as a documented no-go/defer release without stable KS runtime expansion.
+
+---
+
 ## Most Recent Prior Completed Release
 
 ### `v0.9` - Stable normalized periodic KdV strong path
@@ -438,35 +498,10 @@ The authoritative `v0.7` scope freeze belongs in:
 
 ## Medium-Term Horizon
 
-### `v0.11` - Next strong-path PDE feasibility or promotion
-**Status:** Planned / Conditional
-
-`v0.11` may add the next stable strong-path PDE only if `v0.10` leaves the public engine clean and the new PDE passes a serious feasibility/scope-freeze phase.
-
-Likely direction:
-
-- Kuramoto-Sivashinsky or another scalar 1D periodic strong-path PDE
-
-Required before commitment:
-
-- exact equation normalization
-- derivative-order requirements
-- generator stability regime
-- residual evaluator contract
-- vertical-slice thresholds with observed margin
-- imported-parity expectations
-- explicit non-goals around weak forms, broad adapters, and general PDE support
-
-Interpretation:
-
-- Kuramoto-Sivashinsky is attractive because it stress-tests higher-order scalar periodic numerics
-- it should not be promoted until stiffness, rollout stability, derivative accuracy, and residual thresholds are controlled
-- `v0.11` should start as a feasibility/scope-freeze effort, not assume stable promotion from the outset
-
 ### `v0.12+` - Later PDE and dataset coverage
 **Status:** Planned
 
-Later PDE and dataset coverage remains planned after the supportability release and any conditional `v0.11` strong-path work.
+Later PDE and dataset coverage remains planned after the supportability release and the committed `v0.11` KS feasibility-first work.
 
 Candidate directions:
 
@@ -551,7 +586,7 @@ It should **not** be edited every time a new idea appears.
 - `v0.8` = window-indexed weak residual reports and representative robustness comparisons
 - `v0.9` = stable normalized periodic short-horizon KdV strong path
 - `v0.10` = supportability and `v1.0` readiness for the existing stable engine
-- `v0.11` = conditional next strong-path PDE feasibility or promotion
+- `v0.11` = Kuramoto-Sivashinsky strong-path feasibility, with stable promotion conditional on evidence
 - `v0.12+` = wave semantics, external benchmark adapters, and broader PDE coverage only after scope freezes
 - `v1.0` = stable public engine
 - later / experimental = operator-facing symmetry discovery
