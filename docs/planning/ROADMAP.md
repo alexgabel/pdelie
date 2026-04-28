@@ -256,6 +256,69 @@ Frozen release definition:
 
 ## Current Completed Release
 
+### `v0.10` - Supportability and `v1.0` readiness
+**Status:** Completed
+
+`v0.10` is the completed supportability release after the `v0.9` normalized periodic KdV strong-path release.
+
+Its purpose is:
+
+> harden the existing Heat/Burgers/weak-report/KdV engine into a more supportable public surface before adding more numerical scope.
+
+Completed stable scope:
+
+- compact runtime reporting helpers under `pdelie.reporting`
+- consistent Heat/KdV example summaries through nested `vertical_slice` reports
+- API stability audit across root exports, submodule exports, runtime-only APIs, and explicitly deferred surfaces
+- accidental-public-surface guards for stable and deferred APIs
+- CI release-gate cleanup:
+  - one current `v0_10-release-gate` CI job
+  - full editable test suite remains in CI
+  - historical release-gate tests remain runnable locally and covered by the full suite
+- package/readiness documentation cleanup for eventual `v1.0` publishing decisions
+
+Completed release definition:
+
+`existing stable Heat/Burgers/weak-report/KdV surfaces -> compact supportability reports -> consistent examples/release gates/docs -> v1.0 readiness`
+
+Release interpretation:
+
+- this is a supportability release, not a new numerics release
+- reporting helpers are runtime supportability APIs, not canonical objects or manuscript artifact schemas
+- example outputs are runtime smoke summaries, not stable scientific-result schemas
+- `v0.10.0` is a Git-tag-only release; PyPI and TestPyPI publication are deferred to `v1.0` or later
+
+Explicit non-goals:
+
+- no new PDE in `v0.10`
+- no weak KdV API
+- no new weak derivative API
+- no broad benchmark adapters
+- no multidimensional or nonuniform-grid expansion
+- no operator-facing symmetry work
+- no manuscript-specific reporting logic
+- no new canonical object
+
+The authoritative `v0.10` scope freeze belongs in:
+
+- `V0_10_SCOPE.md`
+
+### Release Gate for `v0.10`
+
+`v0.10` is complete only if:
+
+- reporting helpers are deterministic and scoped to existing runtime surfaces
+- example outputs remain JSON-serializable runtime smoke summaries, not canonical artifacts
+- API stability docs and public-surface tests agree
+- historical release-gate tests remain runnable locally
+- CI uses one current release-gate job plus full editable tests and package smoke
+- package/readiness docs state the `v1.0` publishing decision clearly
+- no new PDE, weak KdV, broad adapter, or operator scope lands
+
+---
+
+## Most Recent Prior Completed Release
+
 ### `v0.9` - Stable normalized periodic KdV strong path
 **Status:** Completed
 
@@ -316,62 +379,7 @@ The authoritative `v0.9` scope freeze belongs in:
 
 ---
 
-## Next Committed Release
-
-### `v0.10` - Supportability and `v1.0` readiness
-**Status:** Committed
-
-`v0.10` is the next committed release after the `v0.9` normalized periodic KdV strong-path release.
-
-Its purpose is:
-
-> harden the existing Heat/Burgers/weak-report/KdV engine into a more supportable public surface before adding more numerical scope.
-
-Committed stable direction:
-
-- compact runtime reporting helpers for existing residual, fit, verification, and vertical-slice outputs
-- consistent Heat/KdV example summaries where useful, without making example output a canonical artifact schema
-- API stability audit across root exports, submodule exports, runtime-only APIs, and explicitly experimental surfaces
-- accidental-public-surface guards for stable and deferred APIs
-- CI cleanup around release gates:
-  - keep historical gate tests runnable locally
-  - prefer one current-release-gate CI job instead of historical job sprawl
-- package/readiness documentation cleanup for eventual `v1.0` publishing decisions
-- explicit decision record for whether package-index publishing resumes at `v1.0`
-
-Release definition:
-
-`existing stable Heat/Burgers/weak-report/KdV surfaces -> compact supportability reports -> consistent examples/release gates/docs -> v1.0 readiness`
-
-Explicit non-goals:
-
-- no new PDE in `v0.10`
-- no weak KdV API
-- no new weak derivative API
-- no broad benchmark adapters
-- no multidimensional or nonuniform-grid expansion
-- no operator-facing symmetry work
-- no new canonical object unless a repeated supportability problem proves one is necessary
-
-The authoritative `v0.10` scope freeze belongs in:
-
-- `V0_10_SCOPE.md` once frozen
-
-### Release Gate for `v0.10`
-
-`v0.10` is complete only if:
-
-- reporting helpers are deterministic and scoped to existing runtime surfaces
-- example outputs remain JSON-serializable runtime smoke summaries, not canonical artifacts
-- API stability docs and public-surface tests agree
-- historical release-gate tests remain runnable locally
-- CI no longer depends on redundant historical release-gate jobs unless intentionally retained
-- package/readiness docs state the `v1.0` publishing decision clearly
-- no new PDE, weak KdV, broad adapter, or operator scope lands
-
----
-
-## Most Recent Prior Completed Release
+## Earlier Completed Release
 
 ### `v0.8` — Window-indexed weak residuals
 **Status:** Completed

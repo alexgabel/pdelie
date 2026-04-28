@@ -2,13 +2,14 @@
 
 Numerical discovery and verification of Lie symmetries for PDE data.
 
-The current repository implements the frozen V0.9 normalized periodic KdV strong path, while retaining the V0.8 weak residual reports plus structured-ingestion and symmetry/discovery utilities core:
+The current repository implements the frozen V0.10 supportability layer for the existing Heat/Burgers/weak-report/KdV engine:
 
 - synthetic 1D heat equation
 - synthetic 1D Burgers equation
 - synthetic normalized periodic short-horizon KdV
 - strict external structured ingestion into canonical `FieldBatch`
 - deterministic window-indexed weak residual reports under `pdelie.residuals`
+- JSON-compatible runtime supportability summaries under `pdelie.reporting`
 - uniform periodic grid
 - `spectral_fd` derivatives through `u_xxx`
 - normalized KdV strong residuals under `pdelie.residuals.KdVResidualEvaluator`
@@ -26,6 +27,7 @@ The current repository implements the frozen V0.9 normalized periodic KdV strong
 - one runtime-only thin PySINDy discovery adapter under `pdelie.discovery`
 - one runtime-only translation-canonical discovery-input helper under `pdelie.discovery`
 - one runtime-only robustness helper layer under `pdelie.data`
+- one compact current release-gate CI job plus full editable tests and package smoke
 
 ## Setup
 
@@ -74,7 +76,7 @@ python -m pytest
 
 ## Tutorial Notebooks
 
-The repository includes exploratory notebooks under `notebooks/` for the shipped symmetry/discovery runtime surface retained through `v0.9`:
+The repository includes exploratory notebooks under `notebooks/` for the shipped symmetry/discovery runtime surface retained through `v0.10`:
 
 - `00_how_to_use_pdelie_v0_6.ipynb`
 - `01_raw_vs_translation_canonical_discovery.ipynb`
@@ -114,13 +116,14 @@ The KdV example demonstrates the frozen normalized periodic short-horizon KdV st
 4. evaluate the normalized KdV residual
 5. fit and verify the polynomial spatial-translation baseline
 
-You can also call the example programmatically:
+You can also call the examples programmatically.
+They return nested `pdelie.reporting.summarize_vertical_slice(...)` runtime summaries, not canonical artifact schemas:
 
 ```python
 from pdelie.examples import run_heat_vertical_slice_example, run_kdv_vertical_slice_example
 
 result = run_kdv_vertical_slice_example()
-print(result["verification_classification"])
+print(result["verification"]["classification"])
 ```
 
 ## Current Scope
@@ -132,6 +135,7 @@ Included in the current stable core:
 - strict structured external-data ingestion into canonical `FieldBatch` via `from_numpy(...)` and `from_xarray(...)`
 - stable weak residual report APIs under `pdelie.residuals` for Heat and Burgers
 - stable normalized KdV strong residual evaluator under `pdelie.residuals`
+- stable supportability reporting helpers under `pdelie.reporting`
 - polynomial translation baseline for the stable PDE slice
 - finite-transform verification for the stable PDE slice
 - family-shaped `GeneratorFamily` serialization and narrow translation compatibility migration
@@ -140,9 +144,10 @@ Included in the current stable core:
 - single-generator invariant map support
 - runtime-only discovery recovery metrics, backend-native PySINDy discovery fits, translation-canonical discovery inputs, robustness utilities, and structured-ingestion parity coverage for the current Heat/Burgers slice
 - matched Heat/Burgers benchmark and release-gate checks in the test layer
+- consolidated current release-gate CI visibility while retaining historical gate tests in the full test suite
 - KdV is stable only for the normalized periodic short-horizon strong path; weak KdV remains explicitly deferred
 
-Runtime-level public APIs in the frozen V0.9 slice:
+Runtime-level public APIs in the frozen V0.10 slice:
 
 - `pdelie.data.from_numpy` for strict runtime conversion of explicit NumPy/array-like 1D uniform rectilinear trajectory data into canonical `FieldBatch`
 - `pdelie.data.from_xarray` for strict runtime conversion of explicit `xarray.DataArray` 1D uniform rectilinear trajectory data into canonical `FieldBatch` when the optional `xarray` dependency is installed
@@ -152,6 +157,11 @@ Runtime-level public APIs in the frozen V0.9 slice:
 - `pdelie.examples.run_kdv_vertical_slice_example` for a runtime smoke example, not a canonical report schema
 - `pdelie.residuals.evaluate_weak_heat_residual` for deterministic window-indexed weak residual report dicts over canonical scalar 1D uniform periodic Heat `FieldBatch` data
 - `pdelie.residuals.evaluate_weak_burgers_residual` for deterministic window-indexed weak residual report dicts over canonical scalar 1D uniform periodic Burgers `FieldBatch` data
+- `pdelie.reporting.summarize_residual_batch` for JSON-compatible runtime summaries of `ResidualBatch` outputs
+- `pdelie.reporting.summarize_weak_residual_report` for JSON-compatible summaries of frozen weak residual report dicts
+- `pdelie.reporting.summarize_generator_family` for JSON-compatible summaries of `GeneratorFamily` coefficients and diagnostics
+- `pdelie.reporting.summarize_verification_report` for JSON-compatible summaries of finite-transform verification sweeps
+- `pdelie.reporting.summarize_vertical_slice` for nested derivative/residual/generator/verification runtime summaries
 - `pdelie.invariants.InvariantApplier` for single-generator periodic `x` uniform translation only
 - `pdelie.discovery.to_pysindy_trajectories` for the narrow backend-specific PySINDy bridge
 - `pdelie.discovery.evaluate_discovery_recovery` for runtime-only support/coefficient recovery metrics over caller-supplied canonical term strings
@@ -169,7 +179,9 @@ Runtime-level public APIs in the frozen V0.9 slice:
 
 The degraded weak-path release wins in `v0.8` are frozen as representative contract-stability signals. They are fallback-backed release checks, not a general weak-superiority claim.
 
-The KdV support in `v0.9` is normalized, periodic, scalar, 1D, and short-horizon. Accepted generator parameters outside the release-guaranteed regime are user-risk and are not general KdV stability guarantees.
+The KdV support retained through `v0.10` is normalized, periodic, scalar, 1D, and short-horizon. Accepted generator parameters outside the release-guaranteed regime are user-risk and are not general KdV stability guarantees.
+
+The `v0.10` reporting helpers are supportability APIs. They produce JSON-compatible runtime summaries, not canonical objects, manuscript tables, or artifact schemas.
 
 Explicitly deferred:
 - stable multi-generator PDE fitting

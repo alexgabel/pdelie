@@ -2,7 +2,7 @@
 
 ## Current Release Status
 
-**V0.10 active; Milestone 5 complete**
+**V0.10 complete; ready for direct `v0.10.0` tag after release PR CI**
 
 This file is the active execution record for the `v0.10` release series.
 
@@ -288,19 +288,39 @@ Reduce CI release-gate sprawl while keeping historical release-gate tests runnab
 
 ## Milestone 6 - Release Readiness and Documentation Alignment
 
-**Status:** PENDING
+**Status:** COMPLETE
 
 ### Goal
 
 Close `v0.10` with aligned release-facing docs, package metadata, release gate, and final tag checklist.
 
-### Planned Scope
+### Completed Outcome
 
-- update README, changelog, and release-readiness docs
-- update package version for the `v0.10` release
-- record the `v1.0` package-index publishing decision
-- document final local validation requirements
-- verify no new numerical scope landed
+- updated package metadata to `0.10.0`
+- updated README framing from `v0.9` to `v0.10`
+- documented `pdelie.reporting` supportability helpers and nested example summaries
+- added `CHANGELOG.md` entry for `0.10.0`
+- created `docs/releases/V0_10_RELEASE_READINESS.md`
+- updated `docs/releases/PUBLISHING.md` to include `v0.10.0` in the Git-tag-only `v0.x` release policy
+- updated `docs/planning/ROADMAP.md` so `v0.10` is the current completed release and `v0.11` remains conditional/planned
+- audited `docs/specs/API_STABILITY.md`; no changes were required
+- recorded final release checks:
+  - full pytest
+  - source/wheel build
+  - clean wheel smoke using `dist/pdelie-0.10.0-py3-none-any.whl`
+  - Heat and KdV example module execution
+  - `git diff --check`
+- recorded required release PR CI checks:
+  - `v0_10-release-gate`
+  - `editable-tests`
+  - `package-smoke`
+- recorded direct final Git tag path:
+  - merge release PR after CI is green
+  - tag merged `main` commit as `v0.10.0`
+  - do not publish to TestPyPI
+  - do not publish to PyPI
+  - defer package-index publishing until `v1.0` or later
+- verified no new PDE, weak KdV, weak derivative API, broad adapter, operator API, root runtime export, or canonical reporting object landed
 
 ### Acceptance Criteria
 
@@ -349,4 +369,4 @@ Milestone 6 -> release readiness and documentation alignment
 - Milestone 3: COMPLETE
 - Milestone 4: COMPLETE
 - Milestone 5: COMPLETE
-- Milestone 6: PENDING
+- Milestone 6: COMPLETE
