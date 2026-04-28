@@ -62,6 +62,45 @@ def test_kdv_generator_freezes_canonical_shape_coordinates_and_metadata() -> Non
     field.validate()
 
 
+def test_kdv_generator_scales_fourier_phase_for_nondefault_domain_length() -> None:
+    batch_size = 2
+    num_modes = 3
+    num_points = 32
+    domain_length = 5.0
+    amplitude = 0.05
+    seed = 9025
+
+    field = generate_kdv_1d_field_batch(
+        batch_size=batch_size,
+        num_times=3,
+        num_points=num_points,
+        num_modes=num_modes,
+        amplitude=amplitude,
+        domain_length=domain_length,
+        seed=seed,
+    )
+
+    rng = np.random.default_rng(seed)
+    modes = np.arange(1, num_modes + 1, dtype=float)
+    mode_scale = amplitude / modes
+    cosine = rng.normal(size=(batch_size, num_modes)) * mode_scale
+    sine = rng.normal(size=(batch_size, num_modes)) * mode_scale
+    phase = (2.0 * np.pi / domain_length) * field.coords["x"]
+    expected = np.sum(
+        cosine[:, :, None] * np.cos(np.outer(modes, phase))[None, :, :]
+        + sine[:, :, None] * np.sin(np.outer(modes, phase))[None, :, :],
+        axis=1,
+    )
+
+    np.testing.assert_allclose(field.values[:, 0, :, 0], expected, atol=1e-14, rtol=1e-14)
+    raw_x_expected = np.sum(
+        cosine[:, :, None] * np.cos(np.outer(modes, field.coords["x"]))[None, :, :]
+        + sine[:, :, None] * np.sin(np.outer(modes, field.coords["x"]))[None, :, :],
+        axis=1,
+    )
+    assert not np.allclose(field.values[:, 0, :, 0], raw_x_expected, atol=1e-12, rtol=1e-12)
+
+
 def test_kdv_default_fixture_preserves_mass_and_l2_norm() -> None:
     field = generate_kdv_1d_field_batch(seed=9030)
     dx = float(field.coords["x"][1] - field.coords["x"][0])

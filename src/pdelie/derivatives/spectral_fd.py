@@ -49,7 +49,6 @@ def compute_spectral_fd_derivatives(field: FieldBatch, *, max_spatial_order: int
     wavenumbers = 2.0 * np.pi * np.fft.fftfreq(x.size, d=dx).reshape(_reshape_for_axis(values, x_axis, x.size))
     spectrum = np.fft.fft(values, axis=x_axis)
     u_x = np.real(np.fft.ifft((1j * wavenumbers) * spectrum, axis=x_axis))
-    u_xx = np.real(np.fft.ifft(-(wavenumbers**2) * spectrum, axis=x_axis))
     u_t = np.gradient(values, dt, axis=t_axis, edge_order=2)
 
     derivative_arrays = {
@@ -57,6 +56,7 @@ def compute_spectral_fd_derivatives(field: FieldBatch, *, max_spatial_order: int
         "u_t": np.asarray(u_t, dtype=float),
     }
     if normalized_max_spatial_order >= 2:
+        u_xx = np.real(np.fft.ifft(-(wavenumbers**2) * spectrum, axis=x_axis))
         derivative_arrays = {
             "u_x": np.asarray(u_x, dtype=float),
             "u_xx": np.asarray(u_xx, dtype=float),

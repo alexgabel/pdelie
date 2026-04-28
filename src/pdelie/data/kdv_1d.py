@@ -66,6 +66,7 @@ def _apply_two_thirds_filter(values: np.ndarray) -> np.ndarray:
 def _evaluate_kdv_fourier_series(
     *,
     x: np.ndarray,
+    domain_length: float,
     cosine_coefficients: np.ndarray,
     sine_coefficients: np.ndarray,
 ) -> np.ndarray:
@@ -79,8 +80,9 @@ def _evaluate_kdv_fourier_series(
         raise ShapeValidationError("Coefficient arrays must have shape (batch, num_modes).")
 
     modes = np.arange(1, cosine_coefficients.shape[1] + 1, dtype=float)
-    spatial_cos = np.cos(np.outer(modes, x))
-    spatial_sin = np.sin(np.outer(modes, x))
+    phase = (2.0 * np.pi / float(domain_length)) * x
+    spatial_cos = np.cos(np.outer(modes, phase))
+    spatial_sin = np.sin(np.outer(modes, phase))
     batch_cos = cosine_coefficients[:, :, None]
     batch_sin = sine_coefficients[:, :, None]
     values = np.sum(batch_cos * spatial_cos[None, :, :] + batch_sin * spatial_sin[None, :, :], axis=1)
@@ -179,6 +181,7 @@ def generate_kdv_1d_field_batch(
     )
     initial_values = _evaluate_kdv_fourier_series(
         x=x,
+        domain_length=normalized_domain_length,
         cosine_coefficients=cosine,
         sine_coefficients=sine,
     )

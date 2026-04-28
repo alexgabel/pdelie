@@ -111,6 +111,23 @@ def test_spectral_fd_first_order_emits_only_time_and_first_spatial_derivative() 
     np.testing.assert_allclose(derivatives.derivatives["u_x"], expected_u_x, atol=1e-10, rtol=1e-10)
 
 
+def test_spectral_fd_first_order_skips_higher_order_inverse_ffts(monkeypatch: pytest.MonkeyPatch) -> None:
+    field, _, _, _ = make_exact_heat_field()
+    original_ifft = np.fft.ifft
+    ifft_calls = []
+
+    def counting_ifft(*args: object, **kwargs: object) -> np.ndarray:
+        ifft_calls.append((args, kwargs))
+        return original_ifft(*args, **kwargs)
+
+    monkeypatch.setattr(np.fft, "ifft", counting_ifft)
+
+    derivatives = compute_spectral_fd_derivatives(field, max_spatial_order=1)
+
+    assert set(derivatives.derivatives) == {"u_t", "u_x"}
+    assert len(ifft_calls) == 1
+
+
 def test_spectral_fd_third_order_matches_exact_fourier_derivative() -> None:
     field, _, _, expected_u_xxx = make_exact_heat_field()
 
