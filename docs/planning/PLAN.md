@@ -2,7 +2,7 @@
 
 ## Current Release Status
 
-**V0.10 active; Milestone 3 complete**
+**V0.10 active; Milestone 4 complete**
 
 This file is the active execution record for the `v0.10` release series.
 
@@ -205,20 +205,37 @@ Make existing examples easier to compare, smoke-test, and support without turnin
 
 ## Milestone 4 - API Stability Audit and Public-Surface Guards
 
-**Status:** PENDING
+**Status:** COMPLETE
 
 ### Goal
 
 Bring public-surface tests and `API_STABILITY.md` into a clean pre-`v1.0` posture.
 
-### Planned Scope
+### Completed Outcome
 
-- audit root exports
-- audit submodule exports
-- audit runtime-only APIs
-- audit experimental/deferred surfaces
-- add targeted guards against accidental exports
-- update `API_STABILITY.md` only for actual public API changes or omissions
+- added a focused API stability audit test
+- verified `docs/specs/API_STABILITY.md` documents:
+  - the `v0.10` `pdelie.reporting` helpers
+  - the frozen `v0.8` weak residual report APIs
+  - the frozen `v0.9` KdV strong-path APIs
+  - deferred weak derivatives, broader weak methods, and operator symmetry as non-stable surfaces
+- verified root `pdelie` remains limited to canonical objects, base evaluator, and typed errors
+- verified runtime helpers remain submodule-only:
+  - data generators/adapters and robustness utilities
+  - derivative backend helper
+  - residual evaluators and weak report functions
+  - reporting helpers
+  - examples
+  - discovery, portability, symmetry, and visualization helpers
+- verified deferred/private names remain absent from public modules:
+  - weak KdV APIs
+  - `compute_weak_derivatives`
+  - public KdV coefficient helpers
+  - broad dataset adapter aliases
+  - operator-facing names
+- kept public-surface tests specific-name based rather than freezing entire module contents
+- did not change `API_STABILITY.md`; the audit found no mismatch
+- did not add runtime APIs, canonical objects, numerical scope, CI changes, README/changelog updates, release-readiness docs, or package metadata changes
 
 ### Acceptance Criteria
 
@@ -319,6 +336,6 @@ Milestone 6 -> release readiness and documentation alignment
 - Milestone 1: COMPLETE
 - Milestone 2: COMPLETE
 - Milestone 3: COMPLETE
-- Milestone 4: PENDING
+- Milestone 4: COMPLETE
 - Milestone 5: PENDING
 - Milestone 6: PENDING
