@@ -253,18 +253,52 @@ Evaluate the strong-form KS residual path under the frozen semantics.
 
 ## Milestone 4 - KS Vertical-Slice Feasibility
 
-**Status:** PENDING
+**Status:** COMPLETE
 
 ### Goal
 
 Run the candidate KS path through the existing strong-path fitting and verification stack.
 
-### Planned Outcome
+### Completed Outcome
 
-- build a deterministic KS vertical-slice fixture
-- run derivative computation, residual evaluation, translation fitting, and held-out verification
-- record span-distance and verification margins
-- decide whether the evidence is strong enough to continue toward promotion
+- added internal KS vertical-slice feasibility coverage under tests only
+- used frozen KS fixture from `generate_ks_feasibility_field_batch()`
+- split train/heldout with `train_size = 2` and `seed = 11102`
+- computed train derivatives with `compute_spectral_fd_derivatives(..., max_spatial_order=4)`
+- evaluated train residual with internal `KSFeasibilityResidualEvaluator`
+- fit with `fit_translation_generator(..., epsilon=1e-4)`
+- verified heldout data with `verify_translation_generator(...)`
+- verified derivative keys:
+  - `u_t`
+  - `u_x`
+  - `u_xx`
+  - `u_xxx`
+  - `u_xxxx`
+- observed M4 feasibility metrics:
+  - residual max absolute value: `2.276047466221332e-09`
+  - residual RMS value: `3.450580898077348e-10`
+  - mass drift: `4.686823294199099e-16`
+  - relative L2 drift: `0.0070894859776733715`
+  - selected span distance: `0.0`
+  - SVD span distance: `0.4178159498317849`
+  - fit mode: `reference_fallback`
+  - reference fallback used: `True`
+  - fallback reason: `svd_translation_span_drift`
+  - first-epsilon heldout verification error: `2.533384127588474e-13`
+  - verification classification: `exact`
+  - transform mode: `uniform_translation`
+  - evidence label: `reference_fallback`
+- recorded that relative L2 drift is diagnostic-only for KS
+- recorded that KS feasibility passed via reference fallback, not direct SVD in-tolerance recovery
+- verified no public KS generator, residual evaluator, root export, example, broad adapter, or runtime surface landed
+
+### Acceptance Criteria
+
+- KS vertical slice passes M1 feasibility thresholds for residual, mass drift, selected span, first-epsilon verification error, and classification
+- relative L2 drift is recorded but not used as a gate
+- fallback-backed evidence records fallback reason and SVD span distance
+- repeated vertical-slice summaries are deterministic within numerical tolerance
+- public-surface tests keep KS generator and residual APIs absent
 
 ---
 
@@ -321,6 +355,7 @@ Milestone 6 -> release gate / readiness or no-go closeout
 - DO NOT describe `v0.11` as unconditional stable KS support before M5.
 - DO NOT treat the internal M2 KS generator helper as public API.
 - DO NOT treat the internal M3 KS residual evaluator as public API.
+- DO NOT treat M4 fallback-backed verification as direct KS residual-fit recovery.
 - DO NOT treat preliminary M1 feasibility targets as final release gates without observed M4 margin.
 - DO NOT promote weak KS in `v0.11`.
 - DO NOT add a new weak derivative API in `v0.11`.
@@ -338,6 +373,6 @@ Milestone 6 -> release gate / readiness or no-go closeout
 - Milestone 1: COMPLETE
 - Milestone 2: COMPLETE
 - Milestone 3: COMPLETE
-- Milestone 4: PENDING
+- Milestone 4: COMPLETE
 - Milestone 5: PENDING
 - Milestone 6: PENDING
