@@ -304,17 +304,47 @@ Run the candidate KS path through the existing strong-path fitting and verificat
 
 ## Milestone 5 - Promotion Decision and Imported-Parity / Non-goal Guards
 
-**Status:** PENDING
+**Status:** COMPLETE
 
 ### Goal
 
 Make the explicit stable-promotion versus no-go decision.
 
-### Planned Outcome
+### Completed Outcome
 
-- if KS promotion is justified, freeze public API names and representative imported parity
-- if KS promotion is not justified, close the branch as no-go/defer without runtime API expansion
-- keep weak KS, broad adapters, operator APIs, and root exports absent
+- decided to defer stable KS promotion for `v0.11`
+- recorded the outcome as no-go/defer for stable KS runtime APIs in this release
+- preserved the M2 public derivative extension as the only public `v0.11` API change so far:
+  - `compute_spectral_fd_derivatives(..., max_spatial_order=4)`
+- recorded M4 feasibility evidence:
+  - residual evaluation passes with large margin:
+    - max absolute residual: `2.276047466221332e-09`
+    - RMS residual: `3.450580898077348e-10`
+  - mass conservation passes with large margin:
+    - mass drift: `4.686823294199099e-16`
+  - held-out canonical translation verification passes:
+    - first-epsilon heldout verification error: `2.533384127588474e-13`
+    - verification classification: `exact`
+  - selected span distance passes because canonical reference fallback is used:
+    - selected span distance: `0.0`
+    - fit mode: `reference_fallback`
+    - fallback reason: `svd_translation_span_drift`
+  - direct SVD span distance is out of tolerance:
+    - SVD span distance: `0.4178159498317849`
+  - M4 evidence label: `reference_fallback`
+- recorded that the M4 evidence is strong feasibility evidence but not direct residual-based fitting recovery
+- kept KS as internal feasibility evidence in `v0.11`
+- did not add stable KS data generator, residual evaluator, vertical-slice example, imported parity, root export, weak KS API, or broad adapter scope
+- skipped KS imported parity because there is no stable public KS runtime surface to validate
+- added focused no-go guard coverage tying the decision to reference-fallback evidence and absent public KS APIs
+
+### Acceptance Criteria
+
+- M4 feasibility tests remain green
+- public KS generator/residual/example exports remain absent
+- `API_STABILITY.md` still documents no stable public KS generator or residual evaluator
+- `PLAN.md` and `V0_11_SCOPE.md` state KS promotion is deferred for `v0.11`
+- no runtime source files change in M5
 
 ---
 
@@ -356,6 +386,8 @@ Milestone 6 -> release gate / readiness or no-go closeout
 - DO NOT treat the internal M2 KS generator helper as public API.
 - DO NOT treat the internal M3 KS residual evaluator as public API.
 - DO NOT treat M4 fallback-backed verification as direct KS residual-fit recovery.
+- DO NOT add KS imported parity unless a stable public KS runtime surface is promoted.
+- DO NOT promote a stable KS generator, residual evaluator, or example in `v0.11` after the M5 no-go/defer decision.
 - DO NOT treat preliminary M1 feasibility targets as final release gates without observed M4 margin.
 - DO NOT promote weak KS in `v0.11`.
 - DO NOT add a new weak derivative API in `v0.11`.
@@ -374,5 +406,5 @@ Milestone 6 -> release gate / readiness or no-go closeout
 - Milestone 2: COMPLETE
 - Milestone 3: COMPLETE
 - Milestone 4: COMPLETE
-- Milestone 5: PENDING
+- Milestone 5: COMPLETE
 - Milestone 6: PENDING

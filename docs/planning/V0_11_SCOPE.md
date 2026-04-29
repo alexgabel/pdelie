@@ -166,6 +166,40 @@ The KS generator remains an internal feasibility helper in M2 and does not becom
 
 ---
 
+## M5 Promotion Decision
+
+Stable KS promotion is deferred for `v0.11`.
+
+M2-M4 produced useful feasibility evidence, but not enough to land a stable public KS strong path in this release.
+The frozen KS fixture shows strong residual and canonical translation verification behavior:
+
+- residual max absolute value: `2.276047466221332e-09`
+- residual RMS value: `3.450580898077348e-10`
+- mass drift: `4.686823294199099e-16`
+- first-epsilon held-out verification error: `2.533384127588474e-13`
+- verification classification: `exact`
+
+The blocker for promotion is translation fitting evidence:
+
+- selected span distance passes because canonical reference fallback is used: `0.0`
+- direct SVD span distance is out of tolerance: `0.4178159498317849`
+- fit mode is `reference_fallback`
+- fallback reason is `svd_translation_span_drift`
+- M4 evidence label is `reference_fallback`
+
+Interpretation:
+
+- KS remains internal feasibility evidence in `v0.11`
+- no stable KS data generator lands in `v0.11`
+- no stable KS residual evaluator lands in `v0.11`
+- no KS vertical-slice example lands in `v0.11`
+- no KS imported parity lands in `v0.11` because there is no stable public KS runtime surface to validate
+- `compute_spectral_fd_derivatives(..., max_spatial_order=4)` remains the only public `v0.11` API change so far
+
+M6 should close `v0.11` as a no-go/defer feasibility release unless a later explicit scope change reopens the promotion decision.
+
+---
+
 ## Promotion Gate
 
 Stable KS promotion requires later milestones to establish:
@@ -228,14 +262,12 @@ Run the candidate KS path through derivative computation, residual evaluation, t
 
 ### Milestone 5 - Promotion Decision and Imported-Parity / Non-goal Guards
 
-Make the explicit stable-promotion versus no-go decision.
-If promotion proceeds, add representative imported parity and public-surface guards.
-If not, close KS as deferred without runtime API expansion.
+Complete the stable-promotion versus no-go decision.
+M5 defers stable KS promotion for `v0.11`, records the reference-fallback evidence, and keeps KS runtime APIs absent.
 
 ### Milestone 6 - Release Gate / Readiness or No-go Closeout
 
-If promoted, add the compact release gate and release-facing docs.
-If not promoted, document the no-go/defer evidence and leave the stable public surface unchanged.
+Document the no-go/defer evidence and leave the stable public surface unchanged.
 
 ---
 
@@ -244,6 +276,10 @@ If not promoted, document the no-go/defer evidence and leave the stable public s
 - DO NOT add public KS APIs in M0.
 - DO NOT update `API_STABILITY.md` for KS generator or residual APIs until those public APIs actually land.
 - DO NOT treat the internal M2 KS generator helper as public API.
+- DO NOT treat the internal M3 KS residual evaluator as public API.
+- DO NOT treat M4 fallback-backed verification as direct KS residual-fit recovery.
+- DO NOT add KS imported parity unless a stable public KS runtime surface is promoted.
+- DO NOT promote a stable KS generator, residual evaluator, or example in `v0.11` after the M5 no-go/defer decision.
 - DO NOT promote weak KS in `v0.11`.
 - DO NOT treat preliminary M1 feasibility targets as final release gates without observed M4 margin.
 - DO NOT broaden `v0.11` into broad adapters, multidimensional grids, nonuniform grids, multivariable systems, or operator-facing work.
@@ -258,7 +294,7 @@ If not promoted, document the no-go/defer evidence and leave the stable public s
 - Milestone 0: COMPLETE
 - Milestone 1: COMPLETE
 - Milestone 2: COMPLETE
-- Milestone 3: PENDING
-- Milestone 4: PENDING
-- Milestone 5: PENDING
+- Milestone 3: COMPLETE
+- Milestone 4: COMPLETE
+- Milestone 5: COMPLETE
 - Milestone 6: PENDING
