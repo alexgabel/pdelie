@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import numpy as np
 
-from pdelie import FieldBatch
-from pdelie.errors import ShapeValidationError
+from pdelie import DerivativeBatch, FieldBatch, ResidualBatch
+from pdelie.derivatives import compute_spectral_fd_derivatives
+from pdelie.errors import SchemaValidationError, ScopeValidationError, ShapeValidationError
+from pdelie.residuals.base import ResidualEvaluator
 
 
 KS_FEASIBILITY_CONFIG: dict[str, object] = {
@@ -20,6 +22,7 @@ KS_FEASIBILITY_CONFIG: dict[str, object] = {
     "rollout": "ETDRK4",
     "nonlinear_form": "conservative_spectral_half_d_x_u_squared",
 }
+_REQUIRED_KS_DERIVATIVES = ("u_t", "u_x", "u_xx", "u_xxxx")
 
 
 def _reshape_last_axis(values: np.ndarray) -> tuple[int, ...]:
@@ -218,3 +221,63 @@ def compute_l2_norm(field: FieldBatch) -> np.ndarray:
     values = np.asarray(field.values[..., 0], dtype=float)
     dx = float(field.coords["x"][1] - field.coords["x"][0])
     return np.sqrt(dx * np.sum(values**2, axis=-1))
+
+
+def _validate_ks_feasibility_field(field: FieldBatch) -> None:
+    field.validate()
+
+    if field.dims != ("batch", "time", "x", "var"):
+        raise ScopeValidationError("KSFeasibilityResidualEvaluator only supports dims ('batch', 'time', 'x', 'var').")
+    if len(field.var_names) != 1 or field.values.shape[-1] != 1:
+        raise ScopeValidationError("KSFeasibilityResidualEvaluator only supports scalar FieldBatch inputs.")
+    if field.mask is not None:
+        raise ScopeValidationError("KSFeasibilityResidualEvaluator does not support masked fields.")
+    if not np.all(np.isfinite(field.values)):
+        raise ScopeValidationError("KSFeasibilityResidualEvaluator requires finite field values.")
+    if field.metadata["boundary_conditions"].get("x") != "periodic":
+        raise ScopeValidationError("KSFeasibilityResidualEvaluator requires periodic boundary conditions in x.")
+
+    parameter_tags = field.metadata.get("parameter_tags")
+    if not isinstance(parameter_tags, dict):
+        raise SchemaValidationError("KSFeasibilityResidualEvaluator requires field.metadata['parameter_tags'] to be a mapping.")
+    if parameter_tags.get("equation") != "ks_normalized":
+        raise ScopeValidationError(
+            "KSFeasibilityResidualEvaluator requires field.metadata['parameter_tags']['equation'] == 'ks_normalized'."
+        )
+
+
+class KSFeasibilityResidualEvaluator(ResidualEvaluator):
+    def evaluate(
+        self,
+        field: FieldBatch,
+        derivatives: DerivativeBatch | None = None,
+    ) -> ResidualBatch:
+        _validate_ks_feasibility_field(field)
+        if derivatives is None:
+            derivatives = compute_spectral_fd_derivatives(field, max_spatial_order=4)
+        derivatives.validate_against(field)
+
+        for name in _REQUIRED_KS_DERIVATIVES:
+            if name not in derivatives.derivatives:
+                raise SchemaValidationError(f"KSFeasibilityResidualEvaluator requires derivative '{name}'.")
+
+        values = np.asarray(field.values, dtype=float)
+        residual = (
+            derivatives.derivatives["u_t"]
+            + values * derivatives.derivatives["u_x"]
+            + derivatives.derivatives["u_xx"]
+            + derivatives.derivatives["u_xxxx"]
+        )
+        batch = ResidualBatch(
+            residual=residual,
+            definition_type="analytic",
+            normalization="none",
+            diagnostics={
+                "equation": KS_FEASIBILITY_CONFIG["equation"],
+                "backend": derivatives.backend,
+                "max_abs_residual": float(np.max(np.abs(residual))),
+                "rms_residual": float(np.sqrt(np.mean(np.square(residual)))),
+            },
+        )
+        batch.validate_against(field)
+        return batch

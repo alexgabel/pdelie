@@ -205,18 +205,49 @@ Create or adapt a deterministic KS feasibility generator/prototype under the fro
 
 ## Milestone 3 - KS Residual Feasibility Prototype
 
-**Status:** PENDING
+**Status:** COMPLETE
 
 ### Goal
 
 Evaluate the strong-form KS residual path under the frozen semantics.
 
-### Planned Outcome
+### Completed Outcome
 
-- test derivative requirements and residual diagnostics
-- verify typed validation behavior
-- measure residual thresholds on frozen feasibility fixtures
-- keep public residual evaluator promotion conditional
+- added internal `KSFeasibilityResidualEvaluator` under test helpers only
+- implemented frozen residual:
+  - `u_t + u*u_x + u_xx + u_xxxx`
+- implemented derivative contract:
+  - omitted derivatives compute `compute_spectral_fd_derivatives(field, max_spatial_order=4)`
+  - supplied derivatives must validate against the field
+  - supplied derivatives must include `u_t`, `u_x`, `u_xx`, and `u_xxxx`
+  - `u_xxx` may be present but is not used
+- returned `ResidualBatch(definition_type="analytic", normalization="none")`
+- froze diagnostics:
+  - `equation`
+  - `backend`
+  - `max_abs_residual`
+  - `rms_residual`
+- verified local validation:
+  - dims exactly `("batch", "time", "x", "var")`
+  - scalar `var`
+  - finite unmasked values
+  - periodic `x`
+  - `field.metadata["parameter_tags"]["equation"] == "ks_normalized"`
+- verified valid-looking Heat and KdV fields are rejected by equation tag
+- verified public KS generator/residual/root exports remain absent
+- observed frozen-fixture residual diagnostics:
+  - max absolute residual: `4.042559716230937e-09`
+  - RMS residual: `3.756593955706264e-10`
+- kept public residual evaluator promotion conditional
+- left `docs/specs/API_STABILITY.md` unchanged because no public API landed in M3
+
+### Acceptance Criteria
+
+- internal and explicit order-4 derivative residual paths match
+- order-3 derivatives fail clearly because `u_xxxx` is missing
+- residual diagnostics satisfy M1 feasibility targets
+- public-surface tests keep KS generator and residual APIs absent
+- no README, changelog, package metadata, release-readiness docs, or CI changes land in M3
 
 ---
 
@@ -289,6 +320,7 @@ Milestone 6 -> release gate / readiness or no-go closeout
 - DO NOT update `API_STABILITY.md` for KS generator or residual APIs until those public APIs actually land or an audit finds a real omission.
 - DO NOT describe `v0.11` as unconditional stable KS support before M5.
 - DO NOT treat the internal M2 KS generator helper as public API.
+- DO NOT treat the internal M3 KS residual evaluator as public API.
 - DO NOT treat preliminary M1 feasibility targets as final release gates without observed M4 margin.
 - DO NOT promote weak KS in `v0.11`.
 - DO NOT add a new weak derivative API in `v0.11`.
@@ -305,7 +337,7 @@ Milestone 6 -> release gate / readiness or no-go closeout
 - Milestone 0: COMPLETE
 - Milestone 1: COMPLETE
 - Milestone 2: COMPLETE
-- Milestone 3: PENDING
+- Milestone 3: COMPLETE
 - Milestone 4: PENDING
 - Milestone 5: PENDING
 - Milestone 6: PENDING
