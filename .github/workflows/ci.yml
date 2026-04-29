@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  v0_10-release-gate:
+  v0_11-release-gate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -32,8 +32,8 @@ jobs:
           retry 3 python -m pip install -e .[test]
       - name: Check dependencies
         run: python -m pip check
-      - name: Run V0.10 release gate
-        run: python -m pytest tests/test_v0_10_release_gate.py
+      - name: Run V0.11 release gate
+        run: python -m pytest tests/test_v0_11_release_gate.py
   editable-tests:
     runs-on: ubuntu-latest
     steps:
@@ -117,7 +117,32 @@ jobs:
         run: /tmp/pdelie-rc-venv/bin/python -m pip check
       - name: Stable import smoke
         run: |
-          /tmp/pdelie-rc-venv/bin/python -c "from pdelie import FieldBatch, DerivativeBatch, ResidualBatch, ResidualEvaluator, GeneratorFamily, VerificationReport; print('stable-import-ok')"
+          /tmp/pdelie-rc-venv/bin/python - <<'PY'
+          import pdelie
+
+          from pdelie import FieldBatch, DerivativeBatch, ResidualBatch, ResidualEvaluator, GeneratorFamily, VerificationReport
+          from pdelie.reporting import (
+              summarize_generator_family,
+              summarize_residual_batch,
+              summarize_verification_report,
+              summarize_vertical_slice,
+              summarize_weak_residual_report,
+          )
+
+          assert FieldBatch is not None
+          assert DerivativeBatch is not None
+          assert ResidualBatch is not None
+          assert ResidualEvaluator is not None
+          assert GeneratorFamily is not None
+          assert VerificationReport is not None
+          assert summarize_generator_family is not None
+          assert summarize_residual_batch is not None
+          assert summarize_verification_report is not None
+          assert summarize_vertical_slice is not None
+          assert summarize_weak_residual_report is not None
+          assert not hasattr(pdelie, "summarize_vertical_slice")
+          print("stable-import-ok")
+          PY
       - name: Weak residual report smoke
         run: |
           /tmp/pdelie-rc-venv/bin/python - <<'PY'
@@ -164,6 +189,23 @@ jobs:
           assert np.isfinite(float(residual.diagnostics["max_abs_residual"]))
           assert np.isfinite(float(residual.diagnostics["rms_residual"]))
           print("kdv-smoke-ok")
+          PY
+      - name: Order-4 derivative smoke
+        run: |
+          /tmp/pdelie-rc-venv/bin/python - <<'PY'
+          import numpy as np
+          import pdelie
+
+          from pdelie.data import generate_heat_1d_field_batch
+          from pdelie.derivatives import compute_spectral_fd_derivatives
+
+          assert not hasattr(pdelie, "compute_spectral_fd_derivatives")
+          field = generate_heat_1d_field_batch(batch_size=1, num_times=5, num_points=16, seed=11011)
+          derivatives = compute_spectral_fd_derivatives(field, max_spatial_order=4)
+          assert "u_xxxx" in derivatives.derivatives
+          assert np.all(np.isfinite(derivatives.derivatives["u_xxxx"]))
+          assert not hasattr(pdelie, "generate_ks_1d_field_batch")
+          print("order4-smoke-ok")
           PY
       - name: Example smoke and determinism
         run: |

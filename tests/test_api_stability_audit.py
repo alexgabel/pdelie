@@ -48,6 +48,8 @@ _ROOT_RUNTIME_NAMES = {
 }
 _DEFERRED_OR_PRIVATE_NAMES = {
     "OperatorSymmetry",
+    "KSResidualEvaluator",
+    "KuramotoSivashinskyResidualEvaluator",
     "WeakBurgersResidualEvaluator",
     "WeakHeatResidualEvaluator",
     "WeakKdVResidualEvaluator",
@@ -55,6 +57,8 @@ _DEFERRED_OR_PRIVATE_NAMES = {
     "evaluate_weak_kdv_residual",
     "from_pdebench",
     "from_the_well",
+    "generate_ks_1d_field_batch",
+    "generate_ks_feasibility_field_batch",
     "load_pdebench",
     "load_the_well",
     "sample_kdv_mode_coefficients",
@@ -75,6 +79,9 @@ _V0_9_KDV_APIS = {
     "pdelie.data.generate_kdv_1d_field_batch",
     "pdelie.residuals.KdVResidualEvaluator",
 }
+_V0_11_DERIVATIVE_APIS = {
+    "pdelie.derivatives.compute_spectral_fd_derivatives(field, *, max_spatial_order=4)",
+}
 
 
 def _api_stability_text() -> str:
@@ -84,9 +91,10 @@ def _api_stability_text() -> str:
 def test_api_stability_doc_covers_current_stable_runtime_surface() -> None:
     text = _api_stability_text()
 
-    for api_name in sorted(_V0_10_REPORTING_APIS | _V0_8_WEAK_APIS | _V0_9_KDV_APIS):
+    for api_name in sorted(_V0_10_REPORTING_APIS | _V0_8_WEAK_APIS | _V0_9_KDV_APIS | _V0_11_DERIVATIVE_APIS):
         assert api_name in text
 
+    assert "does not add a stable public Kuramoto-Sivashinsky data generator or residual evaluator" in text
     assert "these APIs have no root `pdelie` exports" in text
     assert "not canonical objects, artifact schemas, manuscript-table generators, or figure/rendering APIs" in text
     assert "weak-form derivatives and weak-form methods beyond the frozen `v0.8` weak residual report slice" in text

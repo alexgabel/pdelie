@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.11.0
+
+First final release for the frozen V0.11 Kuramoto-Sivashinsky feasibility/no-go closeout.
+
+- extends `pdelie.derivatives.compute_spectral_fd_derivatives(...)` with `max_spatial_order=4` and stable `u_xxxx` output while preserving the `max_spatial_order=2` default behavior
+- adds internal KS feasibility coverage for the normalized strong form `u_t + u*u_x + u_xx + u_xxxx = 0`
+- records strong internal KS residual, mass-conservation, and held-out canonical translation-verification evidence
+- closes stable KS runtime promotion as no-go/defer for `v0.11` because the frozen fixture relies on `reference_fallback` rather than direct SVD in-tolerance fitting
+- adds compact `v0_11-release-gate` CI visibility while preserving the full editable test suite and package smoke
+- preserves the prior Heat/Burgers strong paths, `v0.8` weak residual report APIs, `v0.9` normalized periodic KdV strong path, and `v0.10` reporting helpers
+
+Explicitly deferred for this final release:
+
+- stable KS data generator
+- stable KS residual evaluator
+- KS vertical-slice example
+- KS imported parity
+- weak KS APIs
+- root `pdelie` exports for KS runtime APIs
+- broad dataset adapters such as PDEBench or The Well
+- multidimensional, multivariable, nonuniform-grid, operator, or broad adapter expansion
+- manuscript-specific experiment logic, tables, figures, or thresholds
+- PyPI and TestPyPI publication; package-index publishing is deferred to `v1.0` or later
+
 ## 0.10.0
 
 First final release for the frozen V0.10 supportability and `v1.0` readiness slice.
