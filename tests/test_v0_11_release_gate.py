@@ -10,7 +10,7 @@ import numpy as np
 import pdelie
 from pdelie.data import generate_heat_1d_field_batch
 from pdelie.derivatives import compute_spectral_fd_derivatives
-from tests.test_ks_vertical_slice_feasibility import _run_ks_vertical_slice_summary
+from tests._helpers.ks_vertical_slice import cached_ks_vertical_slice_summary
 
 
 def _repo_text(path: str) -> str:
@@ -61,7 +61,7 @@ def test_v0_11_release_gate_no_public_ks_runtime_surface() -> None:
 
 
 def test_v0_11_release_gate_ks_closeout_remains_reference_fallback_no_go() -> None:
-    summary = _run_ks_vertical_slice_summary()
+    summary = cached_ks_vertical_slice_summary()
 
     assert summary["evidence_label"] == "reference_fallback"
     assert summary["reference_fallback_used"] is True

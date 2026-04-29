@@ -4,11 +4,11 @@ import importlib
 from pathlib import Path
 
 import pdelie
-from tests.test_ks_vertical_slice_feasibility import _run_ks_vertical_slice_summary
+from tests._helpers.ks_vertical_slice import cached_ks_vertical_slice_summary
 
 
 def test_m5_ks_promotion_decision_records_reference_fallback_no_go_evidence() -> None:
-    summary = _run_ks_vertical_slice_summary()
+    summary = cached_ks_vertical_slice_summary()
 
     assert summary["evidence_label"] == "reference_fallback"
     assert summary["reference_fallback_used"] is True
