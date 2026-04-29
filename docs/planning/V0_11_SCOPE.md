@@ -111,9 +111,13 @@ Frozen feasibility conventions:
 - `time = linspace(0, max_time, num_times)`
 - `time` is strictly increasing and uniform
 - `x` is uniform and periodic
-- synthetic feasibility fixtures should use zero-mean Fourier-mode initial conditions
-- synthetic feasibility fixtures should use two-thirds dealiasing
-- synthetic feasibility fixtures should use periodic RK-style rollout unless M2 proves this unsuitable
+- synthetic feasibility fixtures use zero-mean Fourier-mode initial conditions
+- synthetic feasibility fixtures use two-thirds dealiasing
+- synthetic feasibility rollout uses ETDRK4
+- rollout evolution is `u_t = -u*u_x - u_xx - u_xxxx`
+- nonlinear evaluation uses conservative spectral form `u*u_x = 0.5*(u^2)_x`
+- nonlinear products are dealised with the two-thirds rule
+- the zero Fourier mode is explicitly preserved through rollout
 
 ---
 
@@ -152,10 +156,13 @@ If promotion succeeds, the likely public runtime surface is:
 - a KS vertical-slice example under `pdelie.examples`
 
 All candidate APIs remain uncommitted in M0.
-No `API_STABILITY.md` update is made until an actual public `v0.11` API lands.
+No KS generator or residual entry is added to `API_STABILITY.md` until an actual public KS API lands.
 
 Candidate KS APIs must remain submodule-only unless a later milestone explicitly freezes otherwise.
 No root `pdelie` exports are part of M0.
+
+M2 adds only the public derivative-backend order-4 extension.
+The KS generator remains an internal feasibility helper in M2 and does not become public API.
 
 ---
 
@@ -209,7 +216,7 @@ Freeze the normalized KS equation as `u_t + u*u_x + u_xx + u_xxxx = 0`, freeze o
 
 ### Milestone 2 - KS Feasibility Generator / Prototype
 
-Build or adapt an internal deterministic KS feasibility generator/prototype without committing a stable runtime API unless the milestone explicitly freezes one.
+Extend the public derivative backend through `max_spatial_order=4`, then build an internal deterministic KS feasibility generator/prototype using ETDRK4, conservative spectral nonlinear evaluation, two-thirds dealiasing, and explicit zero-mode preservation.
 
 ### Milestone 3 - KS Residual Feasibility Prototype
 
@@ -235,7 +242,8 @@ If not promoted, document the no-go/defer evidence and leave the stable public s
 ## Rules
 
 - DO NOT add public KS APIs in M0.
-- DO NOT update `API_STABILITY.md` until a public `v0.11` API actually lands.
+- DO NOT update `API_STABILITY.md` for KS generator or residual APIs until those public APIs actually land.
+- DO NOT treat the internal M2 KS generator helper as public API.
 - DO NOT promote weak KS in `v0.11`.
 - DO NOT treat preliminary M1 feasibility targets as final release gates without observed M4 margin.
 - DO NOT broaden `v0.11` into broad adapters, multidimensional grids, nonuniform grids, multivariable systems, or operator-facing work.
@@ -249,7 +257,7 @@ If not promoted, document the no-go/defer evidence and leave the stable public s
 - `v0.10`: COMPLETE
 - Milestone 0: COMPLETE
 - Milestone 1: COMPLETE
-- Milestone 2: PENDING
+- Milestone 2: COMPLETE
 - Milestone 3: PENDING
 - Milestone 4: PENDING
 - Milestone 5: PENDING

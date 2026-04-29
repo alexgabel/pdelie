@@ -25,7 +25,7 @@ Contracts and stable behavior belong in:
 - `docs/planning/ROADMAP.md`
 - `docs/planning/V0_11_SCOPE.md`
 
-`API_STABILITY.md` was audited in M0/M1 and remains unchanged because no new `v0.11` public API has landed yet.
+`API_STABILITY.md` was audited in M0/M1, then updated in M2 when the public order-4 derivative API landed.
 It must be updated in the same milestone where any public KS API or other public API lands.
 
 ---
@@ -152,18 +152,54 @@ Freeze the exact normalized KS equation and numerical semantics before any runti
 
 ## Milestone 2 - KS Feasibility Generator / Prototype
 
-**Status:** PENDING
+**Status:** COMPLETE
 
 ### Goal
 
 Create or adapt a deterministic KS feasibility generator/prototype under the frozen M1 semantics.
 
-### Planned Outcome
+### Completed Outcome
 
-- evaluate short-horizon rollout stability
-- record supported fixture sizes, seeds, and numerical margins
-- keep any prototype internal unless the milestone explicitly freezes a public API
-- avoid custom initial-condition APIs and configurable coefficient families
+- extended public `compute_spectral_fd_derivatives(...)` to accept `max_spatial_order=4`
+- preserved default `max_spatial_order=2` behavior, arrays, config, and diagnostics
+- froze order-4 derivative output keys:
+  - `u_t`
+  - `u_x`
+  - `u_xx`
+  - `u_xxx`
+  - `u_xxxx`
+- computed `u_xxxx` with the same FFT wavenumber convention as the existing spectral derivatives
+- kept invalid derivative orders rejected with typed `ScopeValidationError`
+- updated `docs/specs/API_STABILITY.md` for the public order-4 derivative API
+- added internal KS feasibility generator helpers under tests only
+- froze internal KS generator defaults:
+  - `seed = 11101`
+  - `batch_size = 5`
+  - `num_times = 33`
+  - `num_points = 128`
+  - `max_time = 0.2`
+  - `num_modes = 6`
+  - `amplitude = 0.08`
+  - `num_substeps = 8`
+  - `domain_length = 32*pi`
+- froze KS rollout evolution:
+  - `u_t = -u*u_x - u_xx - u_xxxx`
+- froze nonlinear evaluation:
+  - conservative spectral form `u*u_x = 0.5*(u^2)_x`
+  - two-thirds dealiasing for nonlinear products
+- froze ETDRK4 as the internal rollout scheme
+- explicitly preserved the zero Fourier mode through rollout
+- verified the internal generator is deterministic, canonical, finite, zero-mean, and mass-preserving within the M1 target
+- verified exact Fourier `u_xxxx` sign convention through derivative tests
+- verified no public KS generator, residual evaluator, root export, custom initial-condition API, or configurable KS coefficient family landed
+
+### Acceptance Criteria
+
+- order-4 derivative tests pass
+- internal KS generator feasibility tests pass
+- `API_STABILITY.md` documents only the public derivative extension, not KS generator/residual APIs
+- public-surface tests keep KS generator and residual APIs absent
+- no README, changelog, package metadata, release-readiness docs, or CI changes land in M2
 
 ---
 
@@ -250,8 +286,9 @@ Milestone 6 -> release gate / readiness or no-go closeout
 ## Rules
 
 - DO NOT add public KS APIs in M0.
-- DO NOT update `API_STABILITY.md` until a public `v0.11` API actually lands or an audit finds a real omission.
+- DO NOT update `API_STABILITY.md` for KS generator or residual APIs until those public APIs actually land or an audit finds a real omission.
 - DO NOT describe `v0.11` as unconditional stable KS support before M5.
+- DO NOT treat the internal M2 KS generator helper as public API.
 - DO NOT treat preliminary M1 feasibility targets as final release gates without observed M4 margin.
 - DO NOT promote weak KS in `v0.11`.
 - DO NOT add a new weak derivative API in `v0.11`.
@@ -267,7 +304,7 @@ Milestone 6 -> release gate / readiness or no-go closeout
 - `v0.10`: COMPLETE
 - Milestone 0: COMPLETE
 - Milestone 1: COMPLETE
-- Milestone 2: PENDING
+- Milestone 2: COMPLETE
 - Milestone 3: PENDING
 - Milestone 4: PENDING
 - Milestone 5: PENDING

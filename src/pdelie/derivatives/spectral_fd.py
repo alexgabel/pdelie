@@ -14,10 +14,10 @@ def _reshape_for_axis(values: np.ndarray, axis: int, axis_size: int) -> tuple[in
 
 def _validate_max_spatial_order(max_spatial_order: object) -> int:
     if isinstance(max_spatial_order, (bool, np.bool_)) or not isinstance(max_spatial_order, (int, np.integer)):
-        raise ScopeValidationError("spectral_fd max_spatial_order must be one of 1, 2, or 3.")
+        raise ScopeValidationError("spectral_fd max_spatial_order must be one of 1, 2, 3, or 4.")
     normalized = int(max_spatial_order)
-    if normalized not in {1, 2, 3}:
-        raise ScopeValidationError("spectral_fd max_spatial_order must be one of 1, 2, or 3.")
+    if normalized not in {1, 2, 3, 4}:
+        raise ScopeValidationError("spectral_fd max_spatial_order must be one of 1, 2, 3, or 4.")
     return normalized
 
 
@@ -65,6 +65,9 @@ def compute_spectral_fd_derivatives(field: FieldBatch, *, max_spatial_order: int
     if normalized_max_spatial_order >= 3:
         u_xxx = np.real(np.fft.ifft(((1j * wavenumbers) ** 3) * spectrum, axis=x_axis))
         derivative_arrays["u_xxx"] = np.asarray(u_xxx, dtype=float)
+    if normalized_max_spatial_order >= 4:
+        u_xxxx = np.real(np.fft.ifft((wavenumbers**4) * spectrum, axis=x_axis))
+        derivative_arrays["u_xxxx"] = np.asarray(u_xxxx, dtype=float)
 
     config = {
         "spatial_method": "spectral",

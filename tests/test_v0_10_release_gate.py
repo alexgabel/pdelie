@@ -16,12 +16,16 @@ _REPORTING_HELPERS = {
     "summarize_weak_residual_report",
 }
 _DEFERRED_OR_FORBIDDEN_NAMES = {
+    "KSResidualEvaluator",
+    "KuramotoSivashinskyResidualEvaluator",
     "OperatorSymmetry",
     "WeakKdVResidualEvaluator",
     "compute_weak_derivatives",
     "evaluate_weak_kdv_residual",
     "from_pdebench",
     "from_the_well",
+    "generate_ks_1d_field_batch",
+    "generate_ks_feasibility_field_batch",
     "load_pdebench",
     "load_the_well",
     "sample_kdv_mode_coefficients",

@@ -110,6 +110,13 @@ Runtime public API update for the frozen `v0.9` Milestone 1 slice:
 - `max_spatial_order=1` emits only the time derivative and first spatial derivative outputs
 - unsupported `max_spatial_order` values raise `ScopeValidationError`
 
+Runtime public API update for the frozen `v0.11` Milestone 2 slice:
+
+- `pdelie.derivatives.compute_spectral_fd_derivatives(field, *, max_spatial_order=4)` adds the fourth spatial derivative output `u_xxxx`
+- `max_spatial_order=4` emits `u_t`, `u_x`, `u_xx`, `u_xxx`, and `u_xxxx`
+- this API update preserves the existing default `max_spatial_order=2` behavior, config, diagnostics, and derivative outputs
+- this derivative extension does not add a stable public Kuramoto-Sivashinsky data generator or residual evaluator
+
 Runtime public API for the frozen `v0.9` Milestone 2 slice:
 
 - `pdelie.data.generate_kdv_1d_field_batch` for normalized periodic short-horizon synthetic KdV under the frozen `v0.9` generator regime
