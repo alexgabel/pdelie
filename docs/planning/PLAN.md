@@ -2,19 +2,18 @@
 
 ## Current Release Status
 
-**V0.11 committed as Kuramoto-Sivashinsky feasibility-first**
+**V0.11 complete as Kuramoto-Sivashinsky feasibility/no-go closeout**
 
-This file is the active execution record for the `v0.11` release series.
+This file is the completed execution record for the `v0.11` release series.
 
-`v0.11` is a feasibility-first release.
-It evaluates whether normalized scalar 1D periodic Kuramoto-Sivashinsky can be promoted safely into the stable strong-path runtime surface.
+`v0.11` is a feasibility-first release that evaluated whether normalized scalar 1D periodic Kuramoto-Sivashinsky could be promoted safely into the stable strong-path runtime surface.
 
 Candidate stable path:
 
 `canonical scalar 1D uniform periodic FieldBatch -> spectral_fd higher spatial derivatives -> normalized KS residual evaluator -> translation fit/verification`
 
-Stable runtime promotion is conditional.
-`v0.11` may close either as stable KS promotion or as an explicit no-go/defer feasibility release.
+Stable KS runtime promotion is deferred.
+`v0.11` closes as an explicit no-go/defer feasibility release while retaining the public order-4 derivative extension.
 
 This file should not redefine package contracts.
 Contracts and stable behavior belong in:
@@ -350,17 +349,40 @@ Make the explicit stable-promotion versus no-go decision.
 
 ## Milestone 6 - Release Gate / Readiness or No-go Closeout
 
-**Status:** PENDING
+**Status:** COMPLETE
 
 ### Goal
 
 Close `v0.11` according to the M5 decision.
 
-### Planned Outcome
+### Completed Outcome
 
-- if promoted, add a compact release gate and release-facing docs
-- if not promoted, document the no-go/defer evidence and leave the stable public surface unchanged
-- keep package-index publishing policy unchanged unless separately scoped
+- added compact `tests/test_v0_11_release_gate.py`
+- replaced the explicit current CI release-gate job with `v0_11-release-gate`
+- kept full `editable-tests` and `package-smoke` CI coverage
+- kept package smoke compact:
+  - stable root imports
+  - `pdelie.reporting` submodule imports
+  - weak Heat report smoke
+  - KdV strong-path residual smoke
+  - order-4 derivative smoke
+- bumped package metadata to `0.11.0`
+- aligned README and changelog with the `v0.11` no-go/defer closeout
+- created `docs/releases/V0_11_RELEASE_READINESS.md`
+- updated publishing docs to include `v0.11.0` in the Git-tag-only `v0.x` deferral policy
+- updated `ROADMAP.md` to mark `v0.11` completed and leave `v0.12+` conditional
+- audited `docs/specs/API_STABILITY.md`
+- left `API_STABILITY.md` unchanged because it already documented only the order-4 derivative extension and no stable KS generator/residual APIs
+- left the stable public surface unchanged except for the existing M2 order-4 derivative API
+- documented that no PyPI or TestPyPI publishing is part of `v0.11`
+
+### Acceptance Criteria
+
+- `v0_11-release-gate`, `editable-tests`, and `package-smoke` are the required CI checks before tagging
+- release-facing docs describe `v0.11` as a KS feasibility/no-go release
+- `pyproject.toml` version is `0.11.0`
+- no stable KS generator, residual evaluator, example, imported parity, weak API, or root export lands
+- release docs state package-index publishing remains deferred until `v1.0` or later
 
 ---
 
@@ -374,7 +396,7 @@ Milestone 2 -> KS feasibility generator / prototype
 Milestone 3 -> KS residual feasibility prototype
 Milestone 4 -> KS vertical-slice feasibility
 Milestone 5 -> promotion decision and imported-parity / non-goal guards
-Milestone 6 -> release gate / readiness or no-go closeout
+Milestone 6 -> release gate / readiness and no-go closeout
 
 ---
 
@@ -407,4 +429,4 @@ Milestone 6 -> release gate / readiness or no-go closeout
 - Milestone 3: COMPLETE
 - Milestone 4: COMPLETE
 - Milestone 5: COMPLETE
-- Milestone 6: PENDING
+- Milestone 6: COMPLETE

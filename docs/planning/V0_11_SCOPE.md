@@ -77,15 +77,15 @@ Periodic boundary terms are assumed through canonical periodic `x`.
 
 ---
 
-## Future Derivative Backend Semantics
+## Public Derivative Backend Semantics
 
-If KS feasibility proceeds to runtime implementation, the planned derivative extension is:
+The public `v0.11` derivative extension is:
 
 ```python
 compute_spectral_fd_derivatives(
     field: FieldBatch,
     *,
-    max_spatial_order: int = 4,
+    max_spatial_order: int = 2,
 ) -> DerivativeBatch
 ```
 
@@ -96,7 +96,7 @@ Frozen order-4 behavior:
 - `u_xxxx` uses the same FFT wavenumber convention already used for `u_x`, `u_xx`, and `u_xxx`
 - unsupported orders raise `ScopeValidationError`
 
-`API_STABILITY.md` is updated only when the order-4 public derivative API actually lands.
+`API_STABILITY.md` documents this order-4 derivative API as the only public `v0.11` API change.
 
 ---
 
@@ -196,7 +196,7 @@ Interpretation:
 - no KS imported parity lands in `v0.11` because there is no stable public KS runtime surface to validate
 - `compute_spectral_fd_derivatives(..., max_spatial_order=4)` remains the only public `v0.11` API change so far
 
-M6 should close `v0.11` as a no-go/defer feasibility release unless a later explicit scope change reopens the promotion decision.
+M6 closes `v0.11` as a no-go/defer feasibility release.
 
 ---
 
@@ -267,7 +267,7 @@ M5 defers stable KS promotion for `v0.11`, records the reference-fallback eviden
 
 ### Milestone 6 - Release Gate / Readiness or No-go Closeout
 
-Document the no-go/defer evidence and leave the stable public surface unchanged.
+Add the compact `v0_11-release-gate`, align release-facing docs and package metadata, document the no-go/defer evidence, and leave the stable public surface unchanged except for the order-4 derivative API.
 
 ---
 
@@ -297,4 +297,4 @@ Document the no-go/defer evidence and leave the stable public surface unchanged.
 - Milestone 3: COMPLETE
 - Milestone 4: COMPLETE
 - Milestone 5: COMPLETE
-- Milestone 6: PENDING
+- Milestone 6: COMPLETE

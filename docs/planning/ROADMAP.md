@@ -254,7 +254,7 @@ Frozen release definition:
 
 ---
 
-## Current Completed Release
+## Recent Completed Release
 
 ### `v0.10` - Supportability and `v1.0` readiness
 **Status:** Completed
@@ -317,40 +317,48 @@ The authoritative `v0.10` scope freeze belongs in:
 
 ---
 
-## Committed Release Target
+## Current Completed Release
 
 ### `v0.11` - Kuramoto-Sivashinsky strong-path feasibility
-**Status:** Committed / Feasibility-first
+**Status:** Completed / Feasibility no-go
 
-`v0.11` is the committed next release target after the `v0.10` supportability release.
+`v0.11` is the completed feasibility-first release after the `v0.10` supportability release.
 
 Its purpose is:
 
 > evaluate whether a normalized scalar 1D periodic Kuramoto-Sivashinsky strong path can be promoted safely into the stable runtime surface.
 
-Candidate stable path:
+Candidate stable path evaluated internally:
 
 `canonical scalar 1D uniform periodic FieldBatch -> spectral_fd higher spatial derivatives -> normalized KS residual evaluator -> translation fit/verification`
 
+Completed scope:
+
+- stable public `compute_spectral_fd_derivatives(..., max_spatial_order=4)` with `u_xxxx`
+- internal normalized KS generator feasibility helper under tests only
+- internal KS residual feasibility helper under tests only
+- internal KS vertical-slice feasibility coverage
+- explicit no-go/defer decision for stable KS runtime promotion
+- compact `v0_11-release-gate` CI visibility
+
+Completed release definition:
+
+`existing Heat/Burgers/weak-report/KdV/reporting surfaces -> order-4 spectral derivatives -> internal KS feasibility evidence -> explicit stable-KS no-go/defer closeout`
+
 Release interpretation:
 
-- this is a feasibility-first release, not unconditional stable KS support
-- stable KS runtime promotion is conditional on observed numerical margin
-- `v0.11` may close as stable KS promotion or as an explicit no-go/defer feasibility release
+- this is a feasibility/no-go release, not stable KS support
+- order-4 spectral derivatives are stable public API
+- KS residual and vertical-slice feasibility evidence is internal only
+- stable KS runtime promotion is deferred because translation fitting is reference-fallback-backed, not direct SVD in-tolerance recovery
+- `v0.11.0` is a Git-tag-only release; PyPI and TestPyPI publication are deferred to `v1.0` or later
 
-Required before promotion:
+Explicit non-goals:
 
-- exact equation normalization
-- derivative-order requirements
-- generator stability regime
-- residual evaluator contract
-- residual, conservation, fitting, and verification thresholds with observed margin
-- imported-parity expectations
-- explicit non-goals around weak forms, broad adapters, root exports, and general PDE support
-
-Explicit M0 non-goals:
-
-- no public KS APIs in M0
+- no public KS generator
+- no public KS residual evaluator
+- no public KS vertical-slice example
+- no KS imported parity
 - no weak KS API
 - no broad dataset adapters
 - no multidimensional, multivariable, or nonuniform-grid expansion
@@ -363,21 +371,27 @@ The authoritative `v0.11` scope freeze belongs in:
 
 - `V0_11_SCOPE.md`
 
-### Feasibility Gate for `v0.11`
+### Release Gate for `v0.11`
 
-`v0.11` can only promote stable KS support if later milestones establish:
+`v0.11` is complete only if:
 
-- deterministic KS feasibility fixtures
-- controlled short-horizon rollout stability
-- derivative accuracy and residual thresholds with margin
-- translation fitting and held-out verification thresholds with margin
-- imported parity and public-surface guards if runtime APIs land
-
-If those conditions are not met, `v0.11` should close as a documented no-go/defer release without stable KS runtime expansion.
+- order-4 derivative behavior is documented and covered by tests
+- `API_STABILITY.md` states that order-4 derivatives do not add stable KS generator/residual APIs
+- internal KS feasibility evidence is recorded as reference-fallback-backed
+- public KS generator, residual evaluator, example, weak API, and root exports remain absent
+- CI uses `v0_11-release-gate` plus full editable tests and package smoke
+- package/readiness docs state the no-go/defer decision clearly
 
 ---
 
-## Most Recent Prior Completed Release
+## No Committed Release Target
+
+No next release is committed after `v0.11`.
+`v0.12+` remains planned and conditional until a separate scope freeze is accepted.
+
+---
+
+## Earlier Completed KdV Release
 
 ### `v0.9` - Stable normalized periodic KdV strong path
 **Status:** Completed
@@ -501,7 +515,7 @@ The authoritative `v0.7` scope freeze belongs in:
 ### `v0.12+` - Later PDE and dataset coverage
 **Status:** Planned
 
-Later PDE and dataset coverage remains planned after the supportability release and the committed `v0.11` KS feasibility-first work.
+Later PDE and dataset coverage remains planned after the supportability release and the completed `v0.11` KS feasibility no-go closeout.
 
 Candidate directions:
 
@@ -552,6 +566,7 @@ This is not part of the near-term non-operator Paper 1 path and should not be mi
 - `V0_8_SCOPE.md` once frozen
 - `V0_9_SCOPE.md` once frozen
 - `V0_10_SCOPE.md` once frozen
+- `V0_11_SCOPE.md` once frozen
 - `PLAN.md` for current execution only
 
 ### Non-authoritative for scheduling
@@ -586,7 +601,7 @@ It should **not** be edited every time a new idea appears.
 - `v0.8` = window-indexed weak residual reports and representative robustness comparisons
 - `v0.9` = stable normalized periodic short-horizon KdV strong path
 - `v0.10` = supportability and `v1.0` readiness for the existing stable engine
-- `v0.11` = Kuramoto-Sivashinsky strong-path feasibility, with stable promotion conditional on evidence
+- `v0.11` = order-4 spectral derivatives and Kuramoto-Sivashinsky feasibility no-go/defer closeout
 - `v0.12+` = wave semantics, external benchmark adapters, and broader PDE coverage only after scope freezes
 - `v1.0` = stable public engine
 - later / experimental = operator-facing symmetry discovery

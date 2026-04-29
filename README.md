@@ -2,7 +2,7 @@
 
 Numerical discovery and verification of Lie symmetries for PDE data.
 
-The current repository implements the frozen V0.10 supportability layer for the existing Heat/Burgers/weak-report/KdV engine:
+The current repository implements the frozen V0.11 feasibility/no-go closeout for the existing Heat/Burgers/weak-report/KdV engine:
 
 - synthetic 1D heat equation
 - synthetic 1D Burgers equation
@@ -11,8 +11,9 @@ The current repository implements the frozen V0.10 supportability layer for the 
 - deterministic window-indexed weak residual reports under `pdelie.residuals`
 - JSON-compatible runtime supportability summaries under `pdelie.reporting`
 - uniform periodic grid
-- `spectral_fd` derivatives through `u_xxx`
+- `spectral_fd` derivatives through `u_xxxx`
 - normalized KdV strong residuals under `pdelie.residuals.KdVResidualEvaluator`
+- internal Kuramoto-Sivashinsky feasibility evidence with stable runtime promotion deferred
 - `FieldBatch -> DerivativeBatch -> ResidualBatch -> GeneratorFamily -> InvariantMapSpec -> VerificationReport`
 - one stable derivative backend: `spectral_fd`
 - family-shaped `GeneratorFamily` with explicit `basis_spec`
@@ -27,7 +28,7 @@ The current repository implements the frozen V0.10 supportability layer for the 
 - one runtime-only thin PySINDy discovery adapter under `pdelie.discovery`
 - one runtime-only translation-canonical discovery-input helper under `pdelie.discovery`
 - one runtime-only robustness helper layer under `pdelie.data`
-- one compact current release-gate CI job plus full editable tests and package smoke
+- one compact current `v0_11-release-gate` CI job plus full editable tests and package smoke
 
 ## Setup
 
@@ -76,7 +77,7 @@ python -m pytest
 
 ## Tutorial Notebooks
 
-The repository includes exploratory notebooks under `notebooks/` for the shipped symmetry/discovery runtime surface retained through `v0.10`:
+The repository includes exploratory notebooks under `notebooks/` for the shipped symmetry/discovery runtime surface retained through `v0.11`:
 
 - `00_how_to_use_pdelie_v0_6.ipynb`
 - `01_raw_vs_translation_canonical_discovery.ipynb`
@@ -146,12 +147,13 @@ Included in the current stable core:
 - matched Heat/Burgers benchmark and release-gate checks in the test layer
 - consolidated current release-gate CI visibility while retaining historical gate tests in the full test suite
 - KdV is stable only for the normalized periodic short-horizon strong path; weak KdV remains explicitly deferred
+- KS remains internal feasibility evidence in `v0.11`; no stable KS runtime API is promoted
 
-Runtime-level public APIs in the frozen V0.10 slice:
+Runtime-level public APIs in the frozen V0.11 slice:
 
 - `pdelie.data.from_numpy` for strict runtime conversion of explicit NumPy/array-like 1D uniform rectilinear trajectory data into canonical `FieldBatch`
 - `pdelie.data.from_xarray` for strict runtime conversion of explicit `xarray.DataArray` 1D uniform rectilinear trajectory data into canonical `FieldBatch` when the optional `xarray` dependency is installed
-- `pdelie.derivatives.compute_spectral_fd_derivatives(..., max_spatial_order=3)` for `u_xxx` on the existing uniform periodic `spectral_fd` backend
+- `pdelie.derivatives.compute_spectral_fd_derivatives(..., max_spatial_order=4)` for `u_xxxx` on the existing uniform periodic `spectral_fd` backend; the default `max_spatial_order=2` behavior remains preserved
 - `pdelie.data.generate_kdv_1d_field_batch` for normalized periodic short-horizon synthetic KdV under the frozen v0.9 generator regime
 - `pdelie.residuals.KdVResidualEvaluator` for the normalized strong-form residual `u_t + 6*u*u_x + u_xxx = 0`
 - `pdelie.examples.run_kdv_vertical_slice_example` for a runtime smoke example, not a canonical report schema
@@ -183,6 +185,8 @@ The KdV support retained through `v0.10` is normalized, periodic, scalar, 1D, an
 
 The `v0.10` reporting helpers are supportability APIs. They produce JSON-compatible runtime summaries, not canonical objects, manuscript tables, or artifact schemas.
 
+The `v0.11` KS feasibility track does not promote stable KS runtime support. Internal feasibility evidence passes residual, mass, and canonical held-out verification checks, but translation fitting is reference-fallback-backed rather than direct SVD in-tolerance recovery.
+
 Explicitly deferred:
 - stable multi-generator PDE fitting
 - multi-generator invariant machinery
@@ -196,4 +200,5 @@ Explicitly deferred:
 - weak KdV APIs
 - custom KdV initial conditions or configurable KdV coefficients
 - general KdV support outside the frozen normalized periodic short-horizon regime
+- stable KS data generator, residual evaluator, vertical-slice example, imported parity, weak KS API, or root KS export
 - broad adapters and interoperability work
