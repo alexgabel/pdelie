@@ -129,6 +129,79 @@ It should change only if M2 or M4 actually lands a public reporting/diagnostic A
 
 ---
 
+## M1 Fit and Verification Diagnostic Semantics Freeze
+
+M1 freezes one future M2 public reporting helper:
+
+```python
+pdelie.reporting.summarize_generator_fit_diagnostics(
+    generator: GeneratorFamily,
+) -> dict[str, Any]
+```
+
+Public helper policy:
+
+- helper lives under `pdelie.reporting` only
+- no root `pdelie` export
+- input is a `GeneratorFamily`
+- output is a JSON-compatible plain Python dict
+- summary type is `generator_fit_diagnostics`
+- summary schema version is `"0.1"`
+- wrong input type raises the existing typed schema validation error in M2
+- helper summarizes existing and future `GeneratorFamily.diagnostics`
+- helper does not create a canonical object
+- helper does not mutate inputs
+
+Frozen generator-fit diagnostic fields for M2:
+
+- `parameterization`
+- `fit_mode`
+- `training_epsilon`
+- `basis`
+- `basis_delta_norms`
+- `design_column_norms`
+- `singular_values`
+- `condition_number`
+- `fit_residual`
+- `min_delta_basis`
+- `selected_coefficients`
+- `svd_coefficients`
+- `selected_span_distance`
+- `svd_span_distance`
+- `reference_fallback_used`
+- `fallback_reason`
+- `evidence_label`
+
+Diagnostic conventions:
+
+- `condition_number = largest_singular_value / smallest_singular_value`
+- if the denominator is zero or nonfinite, report `condition_number = None`
+- `fallback_reason` is a stable category string, not prose
+- current stable fallback category remains `svd_translation_span_drift`
+- `evidence_label` categories are:
+  - `direct_svd_in_tolerance`
+  - `direct_svd_out_of_tolerance`
+  - `reference_fallback`
+  - `mixed`
+  - `unavailable`
+
+Verification diagnostic semantics:
+
+- `pdelie.reporting.summarize_verification_report(...)` remains the verification summary surface
+- M2 may harden top-level verification summary fields for transform, span, and batch-error diagnostics if needed
+- M1 and M2 do not change verification classification rules
+- M1 and M2 do not change finite-transform behavior
+
+M3 internal KS sweep semantics:
+
+- internal KS sweeps record epsilon, fit mode, fallback status/reason, selected span, SVD span, first verification error, classification, singular values, and condition number
+- sweeps are diagnostic artifacts, not promotion gates
+
+`API_STABILITY.md` remains unchanged in M1.
+It should be updated in M2 only if `summarize_generator_fit_diagnostics(...)` lands as public runtime API.
+
+---
+
 ## Milestones
 
 ### Milestone 0 - Scope Freeze
@@ -142,22 +215,22 @@ It does not change runtime code, tests, package metadata, README, changelog, rel
 
 Freeze diagnostic semantics before implementation.
 
-Expected decisions:
+Completed decisions:
 
-- fit diagnostic summary fields
-- verification diagnostic summary fields
-- singular-value and condition-number reporting policy
-- basis delta norm and column scaling fields
-- epsilon sweep summary shape
-- fallback reason category policy
-- whether later helpers are public under `pdelie.reporting` or internal only
+- future M2 helper is `pdelie.reporting.summarize_generator_fit_diagnostics(...)`
+- helper is submodule-only and returns a JSON-compatible runtime dict
+- summary type is `generator_fit_diagnostics`
+- summary schema version is `"0.1"`
+- fit diagnostic fields, condition-number policy, fallback category policy, and evidence labels are frozen above
+- verification keeps `summarize_verification_report(...)` as its public summary surface
+- M3 KS sweep semantics are diagnostic-only and not promotion gates
 
 ### Milestone 2 - Diagnostic / Reporting Helper Implementation
 
 Implement the M1-frozen diagnostics.
 
-Public API is allowed only if M1 freezes exact helper names and schemas.
-If public helpers land, update `API_STABILITY.md` in M2.
+Implement `pdelie.reporting.summarize_generator_fit_diagnostics(...)`.
+If the helper lands as public runtime API, update `API_STABILITY.md` in M2.
 
 No algorithmic fitting changes are part of M2 unless a deterministic blocker appears.
 
@@ -263,7 +336,7 @@ Historical release-gate tests should remain runnable locally and covered by the 
 
 - `v0.11`: COMPLETE as KS feasibility/no-go closeout
 - Milestone 0: COMPLETE
-- Milestone 1: PENDING
+- Milestone 1: COMPLETE
 - Milestone 2: PENDING
 - Milestone 3: PENDING
 - Milestone 4: PENDING

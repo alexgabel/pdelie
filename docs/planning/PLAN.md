@@ -29,8 +29,8 @@ Contracts and stable behavior belong in:
 - `docs/planning/ROADMAP.md`
 - `docs/planning/V0_12_SCOPE.md`
 
-`API_STABILITY.md` was audited in M0 and remains unchanged because no new `v0.12` public API lands in M0.
-It should change only if M2 or M4 lands a public reporting or diagnostic API.
+`API_STABILITY.md` was audited in M0 and M1 and remains unchanged because no new `v0.12` public API lands in either milestone.
+It should change in M2 if the frozen public reporting helper lands.
 
 ---
 
@@ -99,36 +99,72 @@ M0 is complete only if:
 
 ## Milestone 1 - Fit / Verification Diagnostic Semantics Freeze
 
-**Status:** PENDING
+**Status:** COMPLETE
 
 ### Goal
 
 Freeze diagnostic semantics before implementation.
 
-### Planned Scope
+### Completed Outcome
 
-- define fit diagnostic summary fields:
-  - singular values
-  - condition number
-  - basis delta norms
-  - column norms or scaling diagnostics
-  - selected span distance
-  - SVD span distance
-  - fallback status
-  - stable fallback category
-  - epsilon sweep structure
-- define verification diagnostic summary fields
-- decide whether later helpers are public under `pdelie.reporting` or remain internal
-- decide whether any public helper names are frozen for M2
-- keep M1 docs-only unless a docs consistency test needs a tiny update
+- froze one future M2 public reporting helper:
+  - `pdelie.reporting.summarize_generator_fit_diagnostics(generator: GeneratorFamily) -> dict[str, Any]`
+- froze public helper policy:
+  - submodule-only under `pdelie.reporting`
+  - no root `pdelie` export
+  - JSON-compatible plain dict output
+  - input is `GeneratorFamily`
+  - wrong input type raises the existing typed schema validation error in M2
+  - helper summarizes `GeneratorFamily.diagnostics`
+  - helper does not create a canonical object or mutate inputs
+- froze summary metadata:
+  - `summary_schema_version = "0.1"`
+  - `summary_type = "generator_fit_diagnostics"`
+- froze fit diagnostic fields:
+  - `parameterization`
+  - `fit_mode`
+  - `training_epsilon`
+  - `basis`
+  - `basis_delta_norms`
+  - `design_column_norms`
+  - `singular_values`
+  - `condition_number`
+  - `fit_residual`
+  - `min_delta_basis`
+  - `selected_coefficients`
+  - `svd_coefficients`
+  - `selected_span_distance`
+  - `svd_span_distance`
+  - `reference_fallback_used`
+  - `fallback_reason`
+  - `evidence_label`
+- froze condition-number policy:
+  - `condition_number = largest_singular_value / smallest_singular_value`
+  - if the denominator is zero or nonfinite, report `condition_number = None`
+- froze fallback reason policy:
+  - `fallback_reason` is a stable category string, not prose
+  - current stable fallback category remains `svd_translation_span_drift`
+- froze evidence labels:
+  - `direct_svd_in_tolerance`
+  - `direct_svd_out_of_tolerance`
+  - `reference_fallback`
+  - `mixed`
+  - `unavailable`
+- froze verification diagnostic semantics:
+  - keep `pdelie.reporting.summarize_verification_report(...)` as the verification summary surface
+  - M2 may harden its top-level summary fields for transform, span, and batch-error diagnostics if needed
+  - M1/M2 do not change verification classification rules or finite-transform behavior
+- froze M3 internal KS sweep semantics:
+  - sweeps record epsilon, fit mode, fallback status/reason, selected span, SVD span, first verification error, classification, singular values, and condition number
+  - sweeps are diagnostic artifacts, not promotion gates
+- left `docs/specs/API_STABILITY.md` unchanged because no public API landed in M1
 
-### Explicit Non-goals
+### Acceptance Criteria
 
-- no runtime implementation
-- no algorithmic fitting changes
-- no public KS runtime APIs
-- no orbit augmentation implementation
-- no API stability update unless a real contradiction is found
+- `V0_12_SCOPE.md` and `PLAN.md` agree on the future public helper name and diagnostic fields
+- `ROADMAP.md` still describes `v0.12` as diagnostics/supportability, not new numerical scope
+- `API_STABILITY.md` remains unchanged during M1
+- no runtime source, tests, README, changelog, release docs, package metadata, or CI files change in M1
 
 ---
 
@@ -138,20 +174,28 @@ Freeze diagnostic semantics before implementation.
 
 ### Goal
 
-Implement the M1-frozen diagnostic/reporting helpers.
+Implement the M1-frozen diagnostic/reporting helper.
 
 ### Planned Scope
 
-- implement only helpers whose names and schemas were frozen in M1
+- add `pdelie.reporting.summarize_generator_fit_diagnostics(...)`
+- update `pdelie.reporting.summarize_generator_family(...)` only if needed to share internal formatting or include the fit summary without changing canonical objects
 - keep outputs JSON-compatible and supportability-oriented
-- include singular-value and condition-number diagnostics if frozen in M1
+- add missing fit diagnostics to `fit_translation_generator(...)` if required for the frozen summary:
+  - singular values
+  - condition number
+  - design column norms
+  - selected coefficients
+  - selected span distance
+  - evidence label
 - preserve existing canonical object schemas
-- preserve existing fitting and verification behavior unless a deterministic blocker appears
-- update `API_STABILITY.md` only if public helpers land
+- preserve fitting selection behavior unless a deterministic blocker appears
+- update `API_STABILITY.md` when the public reporting helper lands
 
 ### Explicit Non-goals
 
 - no new canonical object unless M1 proves it is necessary
+- no fitting algorithm change
 - no KS generator/residual promotion
 - no weak KS
 - no private-paper reporting policy
@@ -294,7 +338,7 @@ Milestone 6 -> release gate and readiness
 
 - `v0.11`: COMPLETE
 - Milestone 0: COMPLETE
-- Milestone 1: PENDING
+- Milestone 1: COMPLETE
 - Milestone 2: PENDING
 - Milestone 3: PENDING
 - Milestone 4: PENDING
