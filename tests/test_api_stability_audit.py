@@ -249,15 +249,16 @@ def test_v0_12_planning_docs_record_m4_internal_and_m5_audit_scope() -> None:
     assert "no API stability entry for the internal feasibility helper" in plan
     assert "## Milestone 5 - API / Public-surface Audit" in plan
     assert "left `docs/specs/API_STABILITY.md` unchanged because no mismatch was found" in plan
-    assert "**Status:** PENDING" in plan
     assert "## Milestone 6 - Release Gate and Readiness" in plan
+    assert "updated CI so the current explicit release gate is `v0_12-release-gate`" in plan
+    assert "- Milestone 6: COMPLETE" in plan
 
     assert "M4 did not implement private-paper policy, train-augmentation recipes" in scope
     assert "public orbit/coverage helpers" in scope
     assert "- Milestone 4: COMPLETE" in scope
     assert "- Milestone 5: COMPLETE" in scope
-    assert "- Milestone 6: PENDING" in scope
+    assert "- Milestone 6: COMPLETE" in scope
 
-    assert "`v0.12` is the committed release" in roadmap
+    assert "`v0.12` is the completed diagnostics/supportability release" in roadmap
     assert "without adding new numerical scope" in roadmap
     assert "- no new PDE" in roadmap

@@ -317,7 +317,7 @@ The authoritative `v0.10` scope freeze belongs in:
 
 ---
 
-## Current Completed Release
+## Recent Completed Feasibility Release
 
 ### `v0.11` - Kuramoto-Sivashinsky strong-path feasibility
 **Status:** Completed / Feasibility no-go
@@ -384,36 +384,38 @@ The authoritative `v0.11` scope freeze belongs in:
 
 ---
 
-## Next Committed Release Target
+## Current Completed Release
 
 ### `v0.12` - Diagnostics and supportability hardening
-**Status:** Committed
+**Status:** Completed
 
-`v0.12` is the committed release after the completed `v0.11` KS feasibility no-go closeout.
+`v0.12` is the completed diagnostics/supportability release after the completed `v0.11` KS feasibility no-go closeout.
 
 Its purpose is:
 
 > harden diagnostics and reporting around generator fitting, verification, and orbit/coverage supportability without adding new numerical scope.
 
-Committed release definition:
+Completed release definition:
 
 `existing stable Heat/Burgers/weak-report/KdV/reporting surfaces -> fit and verification diagnostics -> orbit/coverage reporting feasibility -> release supportability`
 
-Committed scope:
+Completed scope:
 
 - fit and verification diagnostic semantics
-- diagnostic/reporting helper implementation if exact public helper names are frozen
+- `pdelie.reporting.summarize_generator_fit_diagnostics(...)` as the only public `v0.12` API addition
+- richer translation-fit diagnostics without changing fitting behavior
 - internal KS diagnostic sweeps, with KS remaining unpromoted
-- paper-agnostic orbit/coverage diagnostic feasibility
+- paper-agnostic orbit/coverage diagnostic feasibility kept internal
 - API and public-surface audit
-- compact current release-gate readiness
+- compact current `v0_12-release-gate` readiness
 
 Release interpretation:
 
 - this is a supportability release, not a new PDE release
 - KS remains internal feasibility/no-go evidence from `v0.11`
-- public `v0.12` APIs, if any, must be reporting or diagnostic helpers frozen before implementation
-- `API_STABILITY.md` changes only if such public helpers land
+- public `v0.12` API growth is limited to the reporting helper documented in `API_STABILITY.md`
+- internal KS diagnostic sweeps and orbit/coverage feasibility remain test-only evidence
+- `v0.12.0` is a Git-tag-only release; PyPI and TestPyPI publication are deferred to `v1.0` or later
 
 Explicit non-goals:
 
@@ -429,6 +431,7 @@ Explicit non-goals:
 - no operator-facing symmetry work
 - no private-paper experiment policy
 - no root export expansion unless explicitly accepted by a later milestone
+- no public orbit/coverage helper or augmentation utility
 
 The authoritative `v0.12` scope freeze belongs in:
 

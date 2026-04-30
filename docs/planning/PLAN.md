@@ -2,9 +2,9 @@
 
 ## Current Release Status
 
-**V0.12 is active as diagnostics and supportability hardening**
+**V0.12 is complete as diagnostics and supportability hardening**
 
-This file is the active execution record for the `v0.12` release series.
+This file is the completed execution record for the `v0.12` release series.
 
 `v0.12` is not a new numerics release. It is a supportability release focused on:
 
@@ -29,8 +29,8 @@ Contracts and stable behavior belong in:
 - `docs/planning/ROADMAP.md`
 - `docs/planning/V0_12_SCOPE.md`
 
-`API_STABILITY.md` was audited in M0 and M1 and remains unchanged because no new `v0.12` public API lands in either milestone.
-It should change in M2 if the frozen public reporting helper lands.
+`API_STABILITY.md` was audited in M0 and M1 with no changes because no public `v0.12` API landed in either milestone.
+It was updated in M2 when the frozen `pdelie.reporting.summarize_generator_fit_diagnostics(...)` helper landed.
 
 ---
 
@@ -454,20 +454,29 @@ Audit API stability and public exports after M2/M4 helper decisions.
 
 ## Milestone 6 - Release Gate and Readiness
 
-**Status:** PENDING
+**Status:** COMPLETE
 
 ### Goal
 
 Close `v0.12` with compact release-gate coverage, docs alignment, package metadata, and direct Git-tag readiness.
 
-### Planned Scope
+### Completed Outcome
 
-- add compact `v0_12-release-gate`
-- keep full editable tests as historical gate coverage
-- keep package smoke small
-- update README, changelog, release readiness, roadmap, and package metadata
-- audit `API_STABILITY.md`
-- document final release path
+- added compact `tests/test_v0_12_release_gate.py`
+- updated CI so the current explicit release gate is `v0_12-release-gate`
+- kept full editable tests as historical gate coverage
+- kept package smoke small and added a tiny generator-fit diagnostic summary smoke
+- bumped package metadata to `0.12.0`
+- updated README, changelog, publishing docs, release readiness, roadmap, and package metadata for `v0.12.0`
+- audited `API_STABILITY.md` and left it unchanged because it already documents the only public `v0.12` API addition
+- documented the direct Git-tag release path
+- preserved all non-goals:
+  - no KS promotion
+  - no public orbit/coverage helper
+  - no public augmentation utility
+  - no weak KS
+  - no broad adapters
+  - no package-index publishing before `v1.0`
 
 ### Explicit Non-goals
 
@@ -512,4 +521,4 @@ Milestone 6 -> release gate and readiness
 - Milestone 3: COMPLETE
 - Milestone 4: COMPLETE
 - Milestone 5: COMPLETE
-- Milestone 6: PENDING
+- Milestone 6: COMPLETE

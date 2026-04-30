@@ -319,6 +319,18 @@ Release-gate expectations stay representative:
 - no KS promotion claims
 - no PyPI or TestPyPI publishing before the v1.0 publishing policy is accepted
 
+Milestone 6: COMPLETE.
+
+Completed closeout:
+
+- package metadata is aligned with `0.12.0`
+- release-facing docs are aligned with `v0.12.0`
+- CI exposes one compact current `v0_12-release-gate`
+- full editable tests remain the historical gate coverage
+- package smoke remains compact and includes a tiny generator-fit diagnostic summary check
+- `API_STABILITY.md` remains aligned and required no M6 change
+- M3 internal KS diagnostics and M4 orbit/coverage diagnostics remain internal
+
 ---
 
 ## Relationship to Downstream Orbit-augmentation Work
@@ -375,4 +387,4 @@ Historical release-gate tests should remain runnable locally and covered by the 
 - Milestone 3: COMPLETE
 - Milestone 4: COMPLETE
 - Milestone 5: COMPLETE
-- Milestone 6: PENDING
+- Milestone 6: COMPLETE

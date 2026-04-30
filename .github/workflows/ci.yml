@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  v0_11-release-gate:
+  v0_12-release-gate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -32,8 +32,8 @@ jobs:
           retry 3 python -m pip install -e .[test]
       - name: Check dependencies
         run: python -m pip check
-      - name: Run V0.11 release gate
-        run: python -m pytest tests/test_v0_11_release_gate.py
+      - name: Run V0.12 release gate
+        run: python -m pytest tests/test_v0_12_release_gate.py
   editable-tests:
     runs-on: ubuntu-latest
     steps:
@@ -122,6 +122,7 @@ jobs:
 
           from pdelie import FieldBatch, DerivativeBatch, ResidualBatch, ResidualEvaluator, GeneratorFamily, VerificationReport
           from pdelie.reporting import (
+              summarize_generator_fit_diagnostics,
               summarize_generator_family,
               summarize_residual_batch,
               summarize_verification_report,
@@ -135,13 +136,62 @@ jobs:
           assert ResidualEvaluator is not None
           assert GeneratorFamily is not None
           assert VerificationReport is not None
+          assert summarize_generator_fit_diagnostics is not None
           assert summarize_generator_family is not None
           assert summarize_residual_batch is not None
           assert summarize_verification_report is not None
           assert summarize_vertical_slice is not None
           assert summarize_weak_residual_report is not None
+          assert not hasattr(pdelie, "summarize_generator_fit_diagnostics")
           assert not hasattr(pdelie, "summarize_vertical_slice")
           print("stable-import-ok")
+          PY
+      - name: Generator fit diagnostics smoke
+        run: |
+          /tmp/pdelie-rc-venv/bin/python - <<'PY'
+          import json
+          import numpy as np
+
+          import pdelie
+          from pdelie import GeneratorFamily
+          from pdelie.contracts import _translation_generator_basis_spec
+          from pdelie.reporting import summarize_generator_fit_diagnostics
+
+          generator = GeneratorFamily(
+              parameterization="polynomial_translation_affine",
+              coefficients=np.asarray([[1.0, 0.0, 0.0, 0.0]], dtype=float),
+              basis_spec=_translation_generator_basis_spec(),
+              normalization="l2_unit",
+              diagnostics={
+                  "fit_mode": "svd",
+                  "training_epsilon": 1e-4,
+                  "basis": ["1", "t", "x", "u"],
+                  "basis_delta_norms": {"1": 1.0, "t": 2.0, "x": 3.0, "u": 4.0},
+                  "design_column_norms": {"1": 1.0, "t": 2.0, "x": 3.0, "u": 4.0},
+                  "singular_values": [4.0, 2.0, 1.0],
+                  "condition_number": 4.0,
+                  "fit_residual": 1e-8,
+                  "min_delta_basis": "1",
+                  "selected_coefficients": [1.0, 0.0, 0.0, 0.0],
+                  "svd_coefficients": [1.0, 0.0, 0.0, 0.0],
+                  "selected_span_distance": 0.0,
+                  "svd_span_distance": 0.0,
+                  "reference_fallback_used": False,
+                  "fallback_reason": None,
+                  "evidence_label": "direct_svd_in_tolerance",
+              },
+          )
+          summary = summarize_generator_fit_diagnostics(generator)
+          json.dumps(summary)
+          assert summary["summary_type"] == "generator_fit_diagnostics"
+          assert summary["condition_number"] == 4.0
+          assert summary["evidence_label"] == "direct_svd_in_tolerance"
+          assert not hasattr(pdelie, "summarize_generator_fit_diagnostics")
+          assert not hasattr(pdelie, "generate_ks_1d_field_batch")
+          assert not hasattr(pdelie, "summarize_orbit_coverage")
+          assert not hasattr(pdelie, "augment_translation_orbit")
+          assert not hasattr(pdelie, "WeakKSResidualEvaluator")
+          print("generator-fit-diagnostics-smoke-ok")
           PY
       - name: Weak residual report smoke
         run: |

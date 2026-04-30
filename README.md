@@ -2,7 +2,7 @@
 
 Numerical discovery and verification of Lie symmetries for PDE data.
 
-The current repository implements the frozen V0.11 feasibility/no-go closeout for the existing Heat/Burgers/weak-report/KdV engine:
+The current repository implements the frozen V0.12 diagnostics and supportability hardening slice for the existing Heat/Burgers/weak-report/KdV engine:
 
 - synthetic 1D heat equation
 - synthetic 1D Burgers equation
@@ -10,10 +10,12 @@ The current repository implements the frozen V0.11 feasibility/no-go closeout fo
 - strict external structured ingestion into canonical `FieldBatch`
 - deterministic window-indexed weak residual reports under `pdelie.residuals`
 - JSON-compatible runtime supportability summaries under `pdelie.reporting`
+- generator-fit diagnostic summaries under `pdelie.reporting.summarize_generator_fit_diagnostics`
 - uniform periodic grid
 - `spectral_fd` derivatives through `u_xxxx`
 - normalized KdV strong residuals under `pdelie.residuals.KdVResidualEvaluator`
-- internal Kuramoto-Sivashinsky feasibility evidence with stable runtime promotion deferred
+- internal Kuramoto-Sivashinsky diagnostic sweep evidence with stable runtime promotion deferred
+- internal orbit/coverage diagnostic feasibility over stable Heat and KdV fixtures
 - `FieldBatch -> DerivativeBatch -> ResidualBatch -> GeneratorFamily -> InvariantMapSpec -> VerificationReport`
 - one stable derivative backend: `spectral_fd`
 - family-shaped `GeneratorFamily` with explicit `basis_spec`
@@ -28,7 +30,7 @@ The current repository implements the frozen V0.11 feasibility/no-go closeout fo
 - one runtime-only thin PySINDy discovery adapter under `pdelie.discovery`
 - one runtime-only translation-canonical discovery-input helper under `pdelie.discovery`
 - one runtime-only robustness helper layer under `pdelie.data`
-- one compact current `v0_11-release-gate` CI job plus full editable tests and package smoke
+- one compact current `v0_12-release-gate` CI job plus full editable tests and package smoke
 
 ## Setup
 
@@ -77,7 +79,7 @@ python -m pytest
 
 ## Tutorial Notebooks
 
-The repository includes exploratory notebooks under `notebooks/` for the shipped symmetry/discovery runtime surface retained through `v0.11`:
+The repository includes exploratory notebooks under `notebooks/` for the shipped symmetry/discovery runtime surface retained through `v0.12`:
 
 - `00_how_to_use_pdelie_v0_6.ipynb`
 - `01_raw_vs_translation_canonical_discovery.ipynb`
@@ -136,7 +138,7 @@ Included in the current stable core:
 - strict structured external-data ingestion into canonical `FieldBatch` via `from_numpy(...)` and `from_xarray(...)`
 - stable weak residual report APIs under `pdelie.residuals` for Heat and Burgers
 - stable normalized KdV strong residual evaluator under `pdelie.residuals`
-- stable supportability reporting helpers under `pdelie.reporting`
+- stable supportability reporting helpers under `pdelie.reporting`, including generator-fit diagnostic summaries
 - polynomial translation baseline for the stable PDE slice
 - finite-transform verification for the stable PDE slice
 - family-shaped `GeneratorFamily` serialization and narrow translation compatibility migration
@@ -147,9 +149,10 @@ Included in the current stable core:
 - matched Heat/Burgers benchmark and release-gate checks in the test layer
 - consolidated current release-gate CI visibility while retaining historical gate tests in the full test suite
 - KdV is stable only for the normalized periodic short-horizon strong path; weak KdV remains explicitly deferred
-- KS remains internal feasibility evidence in `v0.11`; no stable KS runtime API is promoted
+- KS remains internal feasibility/no-go evidence from `v0.11` plus internal diagnostic sweep evidence in `v0.12`; no stable KS runtime API is promoted
+- orbit/coverage work in `v0.12` is internal diagnostic feasibility only; no public orbit/coverage or augmentation API is promoted
 
-Runtime-level public APIs in the frozen V0.11 slice:
+Runtime-level public APIs in the frozen V0.12 slice:
 
 - `pdelie.data.from_numpy` for strict runtime conversion of explicit NumPy/array-like 1D uniform rectilinear trajectory data into canonical `FieldBatch`
 - `pdelie.data.from_xarray` for strict runtime conversion of explicit `xarray.DataArray` 1D uniform rectilinear trajectory data into canonical `FieldBatch` when the optional `xarray` dependency is installed
@@ -162,6 +165,7 @@ Runtime-level public APIs in the frozen V0.11 slice:
 - `pdelie.reporting.summarize_residual_batch` for JSON-compatible runtime summaries of `ResidualBatch` outputs
 - `pdelie.reporting.summarize_weak_residual_report` for JSON-compatible summaries of frozen weak residual report dicts
 - `pdelie.reporting.summarize_generator_family` for JSON-compatible summaries of `GeneratorFamily` coefficients and diagnostics
+- `pdelie.reporting.summarize_generator_fit_diagnostics` for JSON-compatible summaries of generator-fit diagnostics, singular values, condition number, selected/SVD span distances, fallback status, and evidence labels
 - `pdelie.reporting.summarize_verification_report` for JSON-compatible summaries of finite-transform verification sweeps
 - `pdelie.reporting.summarize_vertical_slice` for nested derivative/residual/generator/verification runtime summaries
 - `pdelie.invariants.InvariantApplier` for single-generator periodic `x` uniform translation only
@@ -187,6 +191,8 @@ The `v0.10` reporting helpers are supportability APIs. They produce JSON-compati
 
 The `v0.11` KS feasibility track does not promote stable KS runtime support. Internal feasibility evidence passes residual, mass, and canonical held-out verification checks, but translation fitting is reference-fallback-backed rather than direct SVD in-tolerance recovery.
 
+The `v0.12` diagnostics work hardens supportability without changing numerical scope. The public addition is the submodule-only `summarize_generator_fit_diagnostics(...)` helper. The internal KS diagnostic sweep and orbit/coverage feasibility helpers remain test-only evidence, not public runtime APIs.
+
 Explicitly deferred:
 - stable multi-generator PDE fitting
 - multi-generator invariant machinery
@@ -201,4 +207,5 @@ Explicitly deferred:
 - custom KdV initial conditions or configurable KdV coefficients
 - general KdV support outside the frozen normalized periodic short-horizon regime
 - stable KS data generator, residual evaluator, vertical-slice example, imported parity, weak KS API, or root KS export
+- public orbit/coverage helpers or augmentation utilities
 - broad adapters and interoperability work

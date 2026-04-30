@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import importlib
 import re
-import tomllib
 from pathlib import Path
 
 import numpy as np
@@ -74,7 +73,6 @@ def test_v0_11_release_gate_ks_closeout_remains_reference_fallback_no_go() -> No
 
 
 def test_v0_11_release_gate_metadata_docs_and_ci_are_aligned() -> None:
-    pyproject = tomllib.loads(_repo_text("pyproject.toml"))
     workflow = _repo_text(".github/workflows/ci.yml")
     readiness = _repo_text("docs/releases/V0_11_RELEASE_READINESS.md")
     readme = _repo_text("README.md")
@@ -82,15 +80,14 @@ def test_v0_11_release_gate_metadata_docs_and_ci_are_aligned() -> None:
     publishing = _repo_text("docs/releases/PUBLISHING.md")
     release_gate_jobs = re.findall(r"^  (v0_\d+-release-gate):", workflow, flags=re.MULTILINE)
 
-    assert pyproject["project"]["version"] == "0.11.0"
-    assert release_gate_jobs == ["v0_11-release-gate"]
-    assert "python -m pytest tests/test_v0_11_release_gate.py" in workflow
+    assert release_gate_jobs == ["v0_12-release-gate"]
+    assert "python -m pytest tests/test_v0_12_release_gate.py" in workflow
 
     assert "## 0.11.0" in changelog
-    assert "V0.11" in readme
+    assert "V0.12" in readme
     assert "stable KS runtime" in readme
     assert "package version: `0.11.0`" in readiness
     assert "git tag: `v0.11.0`" in readiness
     assert "no-go/defer" in readiness
     assert "Do not run TestPyPI or PyPI publishing for `v0.11`" in readiness
-    assert "including `v0.11.0`" in publishing
+    assert "including `v0.12.0`" in publishing
