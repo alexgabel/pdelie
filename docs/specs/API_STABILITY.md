@@ -144,6 +144,13 @@ Runtime public API for the frozen `v0.10` Milestone 2 slice:
 - these APIs are runtime supportability helpers, not canonical objects, artifact schemas, manuscript-table generators, or figure/rendering APIs
 - these APIs have no root `pdelie` exports
 
+Runtime public API for the frozen `v0.12` Milestone 2 slice:
+
+- `pdelie.reporting.summarize_generator_fit_diagnostics` for JSON-compatible runtime summaries of `GeneratorFamily` fit diagnostics, including singular values, condition number, selected/SVD span distances, fallback status, and evidence labels
+- this API summarizes existing `GeneratorFamily` diagnostics and coefficients; it does not create a canonical object or mutate the generator
+- this API is a runtime supportability helper, not a manuscript table, fitting algorithm, promotion gate, or stable KS runtime surface
+- this API has no root `pdelie` export
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 

@@ -1,4 +1,5 @@
 from pdelie.reporting.summaries import (
+    summarize_generator_fit_diagnostics,
     summarize_generator_family,
     summarize_residual_batch,
     summarize_verification_report,
@@ -7,6 +8,7 @@ from pdelie.reporting.summaries import (
 )
 
 __all__ = [
+    "summarize_generator_fit_diagnostics",
     "summarize_generator_family",
     "summarize_residual_batch",
     "summarize_verification_report",

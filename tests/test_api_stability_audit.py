@@ -37,6 +37,7 @@ _ROOT_RUNTIME_NAMES = {
     "split_batch_train_heldout",
     "subsample_time",
     "subsample_x",
+    "summarize_generator_fit_diagnostics",
     "summarize_generator_family",
     "summarize_recovery_grid",
     "summarize_residual_batch",
@@ -82,6 +83,9 @@ _V0_9_KDV_APIS = {
 _V0_11_DERIVATIVE_APIS = {
     "pdelie.derivatives.compute_spectral_fd_derivatives(field, *, max_spatial_order=4)",
 }
+_V0_12_REPORTING_APIS = {
+    "pdelie.reporting.summarize_generator_fit_diagnostics",
+}
 
 
 def _api_stability_text() -> str:
@@ -91,7 +95,13 @@ def _api_stability_text() -> str:
 def test_api_stability_doc_covers_current_stable_runtime_surface() -> None:
     text = _api_stability_text()
 
-    for api_name in sorted(_V0_10_REPORTING_APIS | _V0_8_WEAK_APIS | _V0_9_KDV_APIS | _V0_11_DERIVATIVE_APIS):
+    for api_name in sorted(
+        _V0_10_REPORTING_APIS
+        | _V0_8_WEAK_APIS
+        | _V0_9_KDV_APIS
+        | _V0_11_DERIVATIVE_APIS
+        | _V0_12_REPORTING_APIS
+    ):
         assert api_name in text
 
     assert "does not add a stable public Kuramoto-Sivashinsky data generator or residual evaluator" in text
@@ -135,6 +145,7 @@ def test_required_runtime_submodule_apis_remain_importable() -> None:
             "import_generator_family_manifest",
         },
         "pdelie.reporting": {
+            "summarize_generator_fit_diagnostics",
             "summarize_generator_family",
             "summarize_residual_batch",
             "summarize_verification_report",

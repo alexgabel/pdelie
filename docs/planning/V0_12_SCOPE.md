@@ -229,10 +229,14 @@ Completed decisions:
 
 Implement the M1-frozen diagnostics.
 
-Implement `pdelie.reporting.summarize_generator_fit_diagnostics(...)`.
-If the helper lands as public runtime API, update `API_STABILITY.md` in M2.
+Completed implementation:
 
-No algorithmic fitting changes are part of M2 unless a deterministic blocker appears.
+- added `pdelie.reporting.summarize_generator_fit_diagnostics(...)`
+- enriched translation-fit diagnostics with singular values, condition number, design column norms, selected coefficients, selected span distance, and evidence label
+- updated `API_STABILITY.md` for the new public reporting helper
+- kept fitting coefficient selection unchanged
+- kept existing reporting summary shapes unchanged except for the new helper
+- kept KS public runtime APIs absent
 
 ### Milestone 3 - Internal KS Diagnostic Sweep Harness
 
@@ -337,7 +341,7 @@ Historical release-gate tests should remain runnable locally and covered by the 
 - `v0.11`: COMPLETE as KS feasibility/no-go closeout
 - Milestone 0: COMPLETE
 - Milestone 1: COMPLETE
-- Milestone 2: PENDING
+- Milestone 2: COMPLETE
 - Milestone 3: PENDING
 - Milestone 4: PENDING
 - Milestone 5: PENDING

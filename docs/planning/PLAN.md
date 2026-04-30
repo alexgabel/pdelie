@@ -170,36 +170,60 @@ Freeze diagnostic semantics before implementation.
 
 ## Milestone 2 - Diagnostic / Reporting Helper Implementation
 
-**Status:** PENDING
+**Status:** COMPLETE
 
 ### Goal
 
 Implement the M1-frozen diagnostic/reporting helper.
 
-### Planned Scope
+### Completed Outcome
 
-- add `pdelie.reporting.summarize_generator_fit_diagnostics(...)`
-- update `pdelie.reporting.summarize_generator_family(...)` only if needed to share internal formatting or include the fit summary without changing canonical objects
-- keep outputs JSON-compatible and supportability-oriented
-- add missing fit diagnostics to `fit_translation_generator(...)` if required for the frozen summary:
-  - singular values
-  - condition number
-  - design column norms
-  - selected coefficients
-  - selected span distance
-  - evidence label
-- preserve existing canonical object schemas
-- preserve fitting selection behavior unless a deterministic blocker appears
-- update `API_STABILITY.md` when the public reporting helper lands
+- added public submodule-only helper:
+  - `pdelie.reporting.summarize_generator_fit_diagnostics(...)`
+- exported the helper from `pdelie.reporting`
+- kept root `pdelie` unchanged
+- kept `summarize_generator_family(...)` top-level keys unchanged
+- kept `summarize_vertical_slice(...)` output shape unchanged
+- enriched `fit_translation_generator(...)` diagnostics without changing coefficient selection:
+  - `singular_values`
+  - `condition_number`
+  - `design_column_norms`
+  - `selected_coefficients`
+  - `selected_span_distance`
+  - `evidence_label`
+- preserved existing fit diagnostics:
+  - `fit_mode`
+  - `fallback_reason`
+  - `reference_fallback_used`
+  - `svd_coefficients`
+  - `svd_span_distance`
+  - `fit_residual`
+  - `basis`
+  - `basis_delta_norms`
+  - `min_delta_basis`
+  - `training_epsilon`
+- implemented the frozen condition-number policy:
+  - `largest_singular_value / smallest_singular_value`
+  - `None` if denominator is zero or nonfinite
+- implemented deterministic evidence labels:
+  - `direct_svd_in_tolerance`
+  - `direct_svd_out_of_tolerance`
+  - `reference_fallback`
+  - `unavailable` for insufficient manually supplied diagnostics
+- updated `docs/specs/API_STABILITY.md` for the new public reporting helper
+- kept canonical object schemas unchanged
+- kept verification classification and finite-transform behavior unchanged
+- kept KS generator/residual/example/imported-parity APIs absent
 
-### Explicit Non-goals
+### Acceptance Criteria
 
-- no new canonical object unless M1 proves it is necessary
-- no fitting algorithm change
-- no KS generator/residual promotion
-- no weak KS
-- no private-paper reporting policy
-- no root export expansion unless explicitly frozen
+- new helper is importable from `pdelie.reporting`
+- new helper is absent from root `pdelie`
+- helper output is JSON-compatible and includes the M1-frozen fields
+- Heat direct-SVD and Burgers reference-fallback fits expose the richer diagnostics
+- sparse manually supplied diagnostics summarize as `evidence_label == "unavailable"`
+- `API_STABILITY.md` documents the new helper
+- no new numerical scope, KS promotion, weak KS, private-paper policy, or root export lands
 
 ---
 
@@ -339,7 +363,7 @@ Milestone 6 -> release gate and readiness
 - `v0.11`: COMPLETE
 - Milestone 0: COMPLETE
 - Milestone 1: COMPLETE
-- Milestone 2: PENDING
+- Milestone 2: COMPLETE
 - Milestone 3: PENDING
 - Milestone 4: PENDING
 - Milestone 5: PENDING

@@ -17,6 +17,26 @@ from pdelie.symmetry.parameterization.polynomial_translation import (
 TRANSLATION_FALLBACK_SPAN_TOLERANCE = DEFAULT_TRANSLATION_SPAN_TOLERANCE
 
 
+def _condition_number(singular_values: np.ndarray) -> float | None:
+    largest = float(singular_values[0])
+    smallest = float(singular_values[-1])
+    if not np.isfinite(largest) or not np.isfinite(smallest) or smallest == 0.0:
+        return None
+    return largest / smallest
+
+
+def _translation_evidence_label(
+    *,
+    reference_fallback_used: bool,
+    svd_span_distance: float,
+) -> str:
+    if reference_fallback_used:
+        return "reference_fallback"
+    if svd_span_distance <= TRANSLATION_FALLBACK_SPAN_TOLERANCE:
+        return "direct_svd_in_tolerance"
+    return "direct_svd_out_of_tolerance"
+
+
 def _select_translation_coefficients(
     svd_coefficients: np.ndarray,
     basis_delta_norms: dict[str, float],
@@ -59,11 +79,13 @@ def fit_translation_generator(
     design = np.column_stack(columns)
     _, singular_values, vh = np.linalg.svd(design, full_matrices=False)
     svd_coefficients = normalize_translation_coefficients(vh[-1])
+    svd_span_distance = float(translation_span_distance(svd_coefficients))
 
     coefficients, fit_mode, reference_fallback_used, fallback_reason, min_delta_basis = _select_translation_coefficients(
         svd_coefficients,
         basis_delta_norms,
     )
+    selected_span_distance = float(translation_span_distance(coefficients))
 
     return GeneratorFamily(
         parameterization="polynomial_translation_affine",
@@ -73,13 +95,22 @@ def fit_translation_generator(
         diagnostics={
             "basis": list(POLYNOMIAL_TRANSLATION_BASIS),
             "basis_delta_norms": basis_delta_norms,
+            "condition_number": _condition_number(singular_values),
+            "design_column_norms": dict(basis_delta_norms),
+            "evidence_label": _translation_evidence_label(
+                reference_fallback_used=reference_fallback_used,
+                svd_span_distance=svd_span_distance,
+            ),
             "fallback_reason": fallback_reason,
             "fit_mode": fit_mode,
             "fit_residual": float(singular_values[-1]),
             "min_delta_basis": min_delta_basis,
             "reference_fallback_used": reference_fallback_used,
+            "selected_coefficients": coefficients.tolist(),
+            "selected_span_distance": selected_span_distance,
+            "singular_values": singular_values.tolist(),
             "svd_coefficients": svd_coefficients.tolist(),
-            "svd_span_distance": float(translation_span_distance(svd_coefficients)),
+            "svd_span_distance": svd_span_distance,
             "training_epsilon": float(epsilon),
         },
     )

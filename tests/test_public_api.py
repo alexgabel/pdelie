@@ -53,6 +53,7 @@ def test_runtime_package_api_is_importable() -> None:
     )
     from pdelie.residuals import KdVResidualEvaluator, evaluate_weak_burgers_residual, evaluate_weak_heat_residual
     from pdelie.reporting import (
+        summarize_generator_fit_diagnostics,
         summarize_generator_family,
         summarize_residual_batch,
         summarize_verification_report,
@@ -84,6 +85,7 @@ def test_runtime_package_api_is_importable() -> None:
     assert KdVResidualEvaluator is not None
     assert evaluate_weak_burgers_residual is not None
     assert evaluate_weak_heat_residual is not None
+    assert summarize_generator_fit_diagnostics is not None
     assert summarize_generator_family is not None
     assert summarize_residual_batch is not None
     assert summarize_verification_report is not None
@@ -123,6 +125,7 @@ def test_root_package_does_not_export_runtime_invariant_applier() -> None:
     assert not hasattr(pdelie, "subsample_time")
     assert not hasattr(pdelie, "subsample_x")
     assert not hasattr(pdelie, "summarize_recovery_grid")
+    assert not hasattr(pdelie, "summarize_generator_fit_diagnostics")
     assert not hasattr(pdelie, "summarize_generator_family")
     assert not hasattr(pdelie, "summarize_residual_batch")
     assert not hasattr(pdelie, "summarize_verification_report")
@@ -196,6 +199,7 @@ def test_residuals_package_runtime_api_matches_current_frozen_surface() -> None:
 def test_reporting_package_runtime_api_matches_frozen_m2_surface() -> None:
     reporting_module = importlib.import_module("pdelie.reporting")
 
+    assert hasattr(reporting_module, "summarize_generator_fit_diagnostics")
     assert hasattr(reporting_module, "summarize_generator_family")
     assert hasattr(reporting_module, "summarize_residual_batch")
     assert hasattr(reporting_module, "summarize_verification_report")
