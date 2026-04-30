@@ -242,15 +242,32 @@ Completed implementation:
 
 Keep KS internal and diagnostic-only.
 
-Expected scope:
+Completed scope:
 
 - bounded epsilon sweeps
 - selected span distance
 - SVD span distance
 - fallback status and reason
 - first verification error
-- singular values and condition number if M2 exposes them
+- singular values and condition number from the M2 fit diagnostics
 - no promotion gate
+
+Completed sweep matrix:
+
+- epsilons: `1e-5`, `3e-5`, `1e-4`, `3e-4`, `1e-3`
+- variants:
+  - `default`
+  - `lower_amplitude` with `amplitude=0.04`
+  - `shorter_time` with `max_time=0.1`
+
+Completed diagnosis:
+
+- all frozen variants concluded `fallback_stable_across_epsilons`
+- no epsilon or cheap fixture variant recovered direct SVD in-tolerance behavior
+- fallback reason was stable as `svd_translation_span_drift`
+- residual and verification evidence remained healthy
+- relative L2 drift remained diagnostic-only
+- no public KS generator, residual evaluator, example, imported parity, weak API, or root export landed
 
 ### Milestone 4 - Orbit / Coverage Diagnostic Feasibility
 
@@ -342,7 +359,7 @@ Historical release-gate tests should remain runnable locally and covered by the 
 - Milestone 0: COMPLETE
 - Milestone 1: COMPLETE
 - Milestone 2: COMPLETE
-- Milestone 3: PENDING
+- Milestone 3: COMPLETE
 - Milestone 4: PENDING
 - Milestone 5: PENDING
 - Milestone 6: PENDING

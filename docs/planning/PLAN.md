@@ -229,22 +229,91 @@ Implement the M1-frozen diagnostic/reporting helper.
 
 ## Milestone 3 - Internal KS Diagnostic Sweep Harness
 
-**Status:** PENDING
+**Status:** COMPLETE
 
 ### Goal
 
 Keep KS internal and add bounded diagnostics for the `v0.11` no-go failure mode.
 
-### Planned Scope
+### Completed Outcome
 
-- bounded epsilon sweeps
-- selected span distance
-- SVD span distance
-- fallback status and reason
-- first verification error
-- singular values and condition number if M2 exposes them
-- cheap fixture variants only if they remain internal and non-gated
-- no promotion gate
+- added internal test-only helper:
+  - `tests._helpers.ks_diagnostic_sweep.run_ks_fit_diagnostic_sweep()`
+- kept the helper out of runtime `src/`
+- kept output as a JSON-compatible plain dict only
+- wrote no artifact files by default
+- froze sweep epsilons:
+  - `1e-5`
+  - `3e-5`
+  - `1e-4`
+  - `3e-4`
+  - `1e-3`
+- froze sweep variants:
+  - `default`
+  - `lower_amplitude` with `amplitude=0.04`
+  - `shorter_time` with `max_time=0.1`
+- reused existing internal KS feasibility helpers
+- reused `pdelie.reporting.summarize_generator_fit_diagnostics(...)`
+- recorded per-fit diagnostics:
+  - selected span distance
+  - SVD span distance
+  - fallback status and reason
+  - evidence label
+  - first verification error
+  - verification classification
+  - transform mode
+  - singular values
+  - condition number
+- recorded variant-level aggregates:
+  - min/median/max finite condition number
+  - min/median/max SVD span distance
+  - direct-SVD recovery boolean
+  - fallback reason stability
+  - categorical conclusion
+- confirmed no public KS generator, residual evaluator, example, imported parity, weak API, or root export landed
+
+### Observed Sweep Evidence
+
+All frozen variants concluded:
+
+`fallback_stable_across_epsilons`
+
+Default variant:
+
+- residual max: `2.276047466221332e-09`
+- residual RMS: `3.450580898077348e-10`
+- mass drift: `4.686823294199099e-16`
+- relative L2 drift: `0.0070894859776733715` diagnostic-only
+- condition number summary:
+  - min: `214493.66414183375`
+  - median: `214513.53360977306`
+  - max: `214713.8659786387`
+- SVD span-distance summary:
+  - min: `0.4173259267972907`
+  - median: `0.4178159498317849`
+  - max: `0.41786515613952585`
+- direct SVD in tolerance: `False`
+- fallback reason stable: `True`
+- fallback reason: `svd_translation_span_drift`
+
+Cheap variants:
+
+- `lower_amplitude` also remained fallback-backed:
+  - residual max: `6.365170833444976e-10`
+  - SVD span-distance median: `0.4231999049223962`
+  - condition-number median: `421919.8443762055`
+- `shorter_time` also remained fallback-backed:
+  - residual max: `5.564387484851066e-10`
+  - SVD span-distance median: `0.41787321170397507`
+  - condition-number median: `215280.21488729605`
+
+M3 strengthens the no-go diagnosis:
+
+- KS residuals are healthy
+- canonical translation verification remains healthy after fallback
+- direct residual-based SVD fitting remains out of tolerance across the bounded epsilon and cheap-variant sweep
+- changing only amplitude or horizon did not recover direct SVD behavior
+- the stable failure category remains `svd_translation_span_drift`
 
 ### Explicit Non-goals
 
@@ -253,6 +322,8 @@ Keep KS internal and add bounded diagnostics for the `v0.11` no-go failure mode.
 - no KS vertical-slice example
 - no KS imported parity
 - no API stability entry for KS generator/residual APIs
+- no API stability entry for the internal sweep helper
+- no release gate or package smoke dependency on internal KS sweeps
 
 ---
 
@@ -364,7 +435,7 @@ Milestone 6 -> release gate and readiness
 - Milestone 0: COMPLETE
 - Milestone 1: COMPLETE
 - Milestone 2: COMPLETE
-- Milestone 3: PENDING
+- Milestone 3: COMPLETE
 - Milestone 4: PENDING
 - Milestone 5: PENDING
 - Milestone 6: PENDING
