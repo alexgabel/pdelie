@@ -273,14 +273,24 @@ Completed diagnosis:
 
 Evaluate paper-agnostic orbit and coverage diagnostics.
 
-Allowed direction:
+Completed direction:
 
-- read-only finite-transform or orbit views, if scoped tightly
-- periodic `x` coverage diagnostics
-- augmentation provenance summaries
-- finite-transform consistency checks
+- internal test-only periodic `x` coverage diagnostics
+- internal test-only finite-transform consistency diagnostics
+- deterministic JSON-compatible summary output
+- no artifact files by default
+- no public API promotion
 
-M4 must not implement private-paper policy or train-augmentation recipes.
+Completed evidence:
+
+- half-coverage quarter-shift case covered `32 / 64` points with coverage fraction `0.5`
+- full-coverage quarter-shift case covered `64 / 64` points with coverage fraction `1.0`
+- stable Heat and KdV fixtures preserved dims, coords, var names, metadata, and mask under uniform translations
+- inverse-transform and period-wrap errors remained at floating-point noise levels
+- residual RMS was stable under shifts for both fixtures
+- transform provenance recorded `invariant_apply` and `uniform_translation`
+
+M4 did not implement private-paper policy, train-augmentation recipes, public orbit/coverage helpers, or API stability entries.
 
 ### Milestone 5 - API / Public-surface Audit
 
@@ -360,6 +370,6 @@ Historical release-gate tests should remain runnable locally and covered by the 
 - Milestone 1: COMPLETE
 - Milestone 2: COMPLETE
 - Milestone 3: COMPLETE
-- Milestone 4: PENDING
+- Milestone 4: COMPLETE
 - Milestone 5: PENDING
 - Milestone 6: PENDING

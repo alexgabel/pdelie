@@ -329,19 +329,78 @@ M3 strengthens the no-go diagnosis:
 
 ## Milestone 4 - Orbit / Coverage Diagnostic Feasibility
 
-**Status:** PENDING
+**Status:** COMPLETE
 
 ### Goal
 
 Evaluate paper-agnostic orbit and coverage diagnostics without implementing downstream experiment policy.
 
-### Planned Scope
+### Completed Outcome
 
-- read-only finite-transform or orbit views if scoped tightly
-- periodic `x` coverage diagnostics
-- augmentation provenance summaries
-- finite-transform consistency checks
-- reporting-only coverage summaries before any mutation or augmentation API
+- added internal test-only helper:
+  - `tests._helpers.orbit_coverage_feasibility.run_orbit_coverage_feasibility()`
+- kept the helper out of runtime `src/`
+- kept output as a JSON-compatible plain dict only
+- wrote no artifact files by default
+- reused existing canonical objects and stable runtime surfaces:
+  - `FieldBatch`
+  - `InvariantMapSpec`
+  - `InvariantApplier`
+  - `HeatResidualEvaluator`
+  - `KdVResidualEvaluator`
+- recorded periodic-window coverage diagnostics over a 64-point `x` grid on `[0, 2*pi)`
+- recorded transform consistency diagnostics for stable Heat and KdV fixtures
+- confirmed transform provenance uses:
+  - `operation == "invariant_apply"`
+  - `construction_method == "uniform_translation"`
+- confirmed no public orbit/coverage helper, augmentation API, KS API, weak KS API, broad adapter, or root export landed
+
+### Observed Coverage Evidence
+
+Coverage cases:
+
+- `half_coverage_quarter_shifts`
+  - base window width: `pi/4`
+  - shifts: `0`, `pi/2`, `pi`, `3*pi/2`
+  - covered grid points: `32` of `64`
+  - coverage fraction: `0.5`
+  - min/max coverage count: `0` / `1`
+  - mean coverage count: `0.5`
+  - max uncovered run: `8` grid points
+- `full_coverage_quarter_shifts`
+  - base window width: `pi/2`
+  - shifts: `0`, `pi/2`, `pi`, `3*pi/2`
+  - covered grid points: `64` of `64`
+  - coverage fraction: `1.0`
+  - min/max coverage count: `1` / `1`
+  - mean coverage count: `1.0`
+  - max uncovered run: `0` grid points
+
+Transform consistency cases:
+
+- shifts tested:
+  - `0`
+  - one grid spacing: `0.09817477042468103`
+  - `pi/4`
+  - `-pi/4`
+  - `2*pi`
+- Heat fixture:
+  - residual RMS before shift: `6.40792354432063e-05`
+  - maximum inverse-transform relative L2 error: `2.9650883564194283e-16`
+  - maximum period-wrap relative L2 error: `9.323430358904992e-16`
+  - maximum residual relative RMS delta: `3.2117841724670052e-12`
+- KdV fixture:
+  - residual RMS before shift: `0.0003844090459507004`
+  - maximum inverse-transform relative L2 error: `2.932669879841721e-16`
+  - maximum period-wrap relative L2 error: `7.866600220513022e-16`
+  - maximum residual relative RMS delta: `5.571776753786444e-13`
+
+M4 conclusion:
+
+- periodic-window coverage diagnostics are feasible and deterministic
+- uniform-translation transform consistency diagnostics are feasible over stable Heat and KdV fixtures
+- these diagnostics are not promoted as public APIs in M4
+- public orbit/coverage APIs require a later explicit API freeze before implementation
 
 ### Explicit Non-goals
 
@@ -350,6 +409,9 @@ Evaluate paper-agnostic orbit and coverage diagnostics without implementing down
 - no train-augmentation recipes
 - no PDEBench or The Well
 - no multidimensional, nonuniform, or multivariable expansion
+- no public orbit/coverage helper
+- no public augmentation utility
+- no API stability entry for the internal feasibility helper
 
 ---
 
@@ -436,6 +498,6 @@ Milestone 6 -> release gate and readiness
 - Milestone 1: COMPLETE
 - Milestone 2: COMPLETE
 - Milestone 3: COMPLETE
-- Milestone 4: PENDING
+- Milestone 4: COMPLETE
 - Milestone 5: PENDING
 - Milestone 6: PENDING
