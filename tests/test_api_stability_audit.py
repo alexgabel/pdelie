@@ -51,11 +51,16 @@ _DEFERRED_OR_PRIVATE_NAMES = {
     "OperatorSymmetry",
     "KSResidualEvaluator",
     "KuramotoSivashinskyResidualEvaluator",
+    "WeakKSResidualEvaluator",
     "WeakBurgersResidualEvaluator",
     "WeakHeatResidualEvaluator",
     "WeakKdVResidualEvaluator",
+    "augment_translation_orbit",
+    "build_translation_orbit_views",
+    "compute_coverage_diagnostics",
     "compute_weak_derivatives",
     "evaluate_weak_kdv_residual",
+    "evaluate_weak_ks_residual",
     "from_pdebench",
     "from_the_well",
     "generate_ks_1d_field_batch",
@@ -63,6 +68,25 @@ _DEFERRED_OR_PRIVATE_NAMES = {
     "load_pdebench",
     "load_the_well",
     "sample_kdv_mode_coefficients",
+    "summarize_orbit_coverage",
+    "summarize_orbit_coverage_feasibility",
+}
+_DEFERRED_API_STABILITY_NAMES = {
+    "pdelie.data.augment_translation_orbit",
+    "pdelie.data.build_translation_orbit_views",
+    "pdelie.data.compute_coverage_diagnostics",
+    "pdelie.data.from_pdebench",
+    "pdelie.data.from_the_well",
+    "pdelie.data.generate_ks_1d_field_batch",
+    "pdelie.data.load_pdebench",
+    "pdelie.data.load_the_well",
+    "pdelie.reporting.summarize_orbit_coverage",
+    "pdelie.reporting.summarize_orbit_coverage_feasibility",
+    "pdelie.residuals.KSResidualEvaluator",
+    "pdelie.residuals.KuramotoSivashinskyResidualEvaluator",
+    "pdelie.residuals.WeakKSResidualEvaluator",
+    "pdelie.residuals.evaluate_weak_ks_residual",
+    "pdelie.symmetry.OperatorSymmetry",
 }
 _V0_10_REPORTING_APIS = {
     "pdelie.reporting.summarize_residual_batch",
@@ -92,6 +116,10 @@ def _api_stability_text() -> str:
     return (Path(__file__).resolve().parents[1] / "docs/specs/API_STABILITY.md").read_text(encoding="utf-8")
 
 
+def _repo_text(path: str) -> str:
+    return (Path(__file__).resolve().parents[1] / path).read_text(encoding="utf-8")
+
+
 def test_api_stability_doc_covers_current_stable_runtime_surface() -> None:
     text = _api_stability_text()
 
@@ -109,6 +137,19 @@ def test_api_stability_doc_covers_current_stable_runtime_surface() -> None:
     assert "not canonical objects, artifact schemas, manuscript-table generators, or figure/rendering APIs" in text
     assert "weak-form derivatives and weak-form methods beyond the frozen `v0.8` weak residual report slice" in text
     assert "operator symmetry" in text
+
+
+def test_api_stability_doc_does_not_promote_deferred_v0_12_surfaces() -> None:
+    text = _api_stability_text()
+
+    for api_name in sorted(_DEFERRED_API_STABILITY_NAMES):
+        assert api_name not in text
+
+    assert "PDEBench" not in text
+    assert "The Well" not in text
+    assert "multidimensional grids" not in text
+    assert "nonuniform grids" not in text
+    assert "public orbit/coverage" not in text
 
 
 def test_root_package_still_exposes_only_stable_canonical_surface() -> None:
@@ -195,3 +236,28 @@ def test_deferred_and_private_names_are_not_public_submodule_exports() -> None:
     for module in modules:
         for name in sorted(_DEFERRED_OR_PRIVATE_NAMES):
             assert not hasattr(module, name), f"{module.__name__}.{name}"
+
+
+def test_v0_12_planning_docs_record_m4_internal_and_m5_audit_scope() -> None:
+    plan = _repo_text("docs/planning/PLAN.md")
+    scope = _repo_text("docs/planning/V0_12_SCOPE.md")
+    roadmap = _repo_text("docs/planning/ROADMAP.md")
+
+    assert "**Status:** COMPLETE" in plan
+    assert "Milestone 4 - Orbit / Coverage Diagnostic Feasibility" in plan
+    assert "these diagnostics are not promoted as public APIs in M4" in plan
+    assert "no API stability entry for the internal feasibility helper" in plan
+    assert "## Milestone 5 - API / Public-surface Audit" in plan
+    assert "left `docs/specs/API_STABILITY.md` unchanged because no mismatch was found" in plan
+    assert "**Status:** PENDING" in plan
+    assert "## Milestone 6 - Release Gate and Readiness" in plan
+
+    assert "M4 did not implement private-paper policy, train-augmentation recipes" in scope
+    assert "public orbit/coverage helpers" in scope
+    assert "- Milestone 4: COMPLETE" in scope
+    assert "- Milestone 5: COMPLETE" in scope
+    assert "- Milestone 6: PENDING" in scope
+
+    assert "`v0.12` is the committed release" in roadmap
+    assert "without adding new numerical scope" in roadmap
+    assert "- no new PDE" in roadmap

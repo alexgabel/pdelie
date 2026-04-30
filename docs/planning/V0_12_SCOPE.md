@@ -296,13 +296,16 @@ M4 did not implement private-paper policy, train-augmentation recipes, public or
 
 Audit API stability and public exports after any M2/M4 helper decisions.
 
-Required checks:
+Completed checks:
 
 - `API_STABILITY.md` matches actual public helper surface
 - root exports remain narrow
 - KS generator/residual/example APIs remain absent
 - weak KS remains absent
 - broad adapters remain absent
+- M4 orbit/coverage diagnostics remain internal test-only helpers
+- no public augmentation utilities landed
+- `API_STABILITY.md` required no update in M5
 
 ### Milestone 6 - Release Gate and Readiness
 
@@ -371,5 +374,5 @@ Historical release-gate tests should remain runnable locally and covered by the 
 - Milestone 2: COMPLETE
 - Milestone 3: COMPLETE
 - Milestone 4: COMPLETE
-- Milestone 5: PENDING
+- Milestone 5: COMPLETE
 - Milestone 6: PENDING

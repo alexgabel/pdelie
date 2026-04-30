@@ -417,26 +417,38 @@ M4 conclusion:
 
 ## Milestone 5 - API / Public-surface Audit
 
-**Status:** PENDING
+**Status:** COMPLETE
 
 ### Goal
 
 Audit API stability and public exports after M2/M4 helper decisions.
 
-### Planned Scope
+### Completed Outcome
 
-- verify `API_STABILITY.md` matches any public reporting/diagnostic helpers that landed
-- verify root exports remain narrow
-- verify public KS generator/residual/example APIs remain absent
-- verify weak KS remains absent
-- verify broad adapters remain absent
-- update public-surface guards only for real scope changes
+- tightened API stability audit coverage
+- confirmed `API_STABILITY.md` documents the only public `v0.12` API addition:
+  - `pdelie.reporting.summarize_generator_fit_diagnostics`
+- confirmed `API_STABILITY.md` still documents stable carried surfaces:
+  - `v0.8` weak Heat/Burgers report APIs
+  - `v0.9` normalized periodic KdV APIs
+  - `v0.10` reporting helpers
+  - `v0.11` `max_spatial_order=4` derivative extension
+- confirmed `API_STABILITY.md` does not document public orbit/coverage helpers, augmentation utilities, stable KS generator/residual APIs, weak KS APIs, broad dataset adapters, multidimensional/nonuniform support, or operator-facing APIs
+- tightened specific-name public-surface guards without freezing complete module export lists
+- confirmed root `pdelie` remains limited to canonical objects, the base evaluator, and typed errors
+- confirmed M4 orbit/coverage diagnostics remain internal test-only helpers
+- confirmed no runtime behavior, canonical object schema, numerical scope, or CI behavior changed in M5
+- left `docs/specs/API_STABILITY.md` unchanged because no mismatch was found
 
 ### Explicit Non-goals
 
 - no new numerical scope
 - no CI restructuring beyond release-gate hygiene
 - no release-facing metadata changes before M6
+- no public orbit/coverage helper
+- no public augmentation utility
+- no KS promotion
+- no weak KS or broad adapter scope
 
 ---
 
@@ -499,5 +511,5 @@ Milestone 6 -> release gate and readiness
 - Milestone 2: COMPLETE
 - Milestone 3: COMPLETE
 - Milestone 4: COMPLETE
-- Milestone 5: PENDING
+- Milestone 5: COMPLETE
 - Milestone 6: PENDING
