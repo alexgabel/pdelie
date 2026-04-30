@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.12.0
+
+First final release for the frozen V0.12 diagnostics and supportability hardening slice.
+
+- adds `pdelie.reporting.summarize_generator_fit_diagnostics(...)` for JSON-compatible summaries of generator-fit diagnostics, singular values, condition number, selected/SVD span distances, fallback status, and evidence labels
+- enriches `fit_translation_generator(...)` diagnostics without changing coefficient selection or fitting behavior
+- adds internal KS diagnostic sweep evidence showing residuals and verification remain healthy while direct residual-based SVD fitting remains fallback-backed across frozen epsilons and cheap fixture variants
+- adds internal orbit/coverage feasibility diagnostics over stable Heat and KdV fixtures, including periodic-window coverage and uniform-translation consistency checks
+- tightens API stability and public-surface guards so KS, orbit/coverage, augmentation, weak KS, broad adapter, and root runtime exports remain absent
+- updates CI to the compact current `v0_12-release-gate` while preserving full editable tests and package smoke
+- preserves the prior Heat/Burgers strong paths, `v0.8` weak residual report APIs, `v0.9` normalized periodic KdV strong path, `v0.10` reporting helpers, and `v0.11` order-4 derivative API
+
+Explicitly deferred for this final release:
+
+- new PDE support
+- stable KS data generator, residual evaluator, vertical-slice example, imported parity, weak API, or root KS exports
+- public orbit/coverage helpers
+- public augmentation utilities
+- broad dataset adapters such as PDEBench or The Well
+- multidimensional, multivariable, nonuniform-grid, operator, or broad adapter expansion
+- manuscript-specific experiment logic, tables, figures, or thresholds
+- PyPI and TestPyPI publication; package-index publishing is deferred to `v1.0` or later
+
 ## 0.11.0
 
 First final release for the frozen V0.11 Kuramoto-Sivashinsky feasibility/no-go closeout.

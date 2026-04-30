@@ -1,19 +1,24 @@
-# PDELie - Execution Plan (V0.11)
+# PDELie - Execution Plan (V0.12)
 
 ## Current Release Status
 
-**V0.11 complete as Kuramoto-Sivashinsky feasibility/no-go closeout**
+**V0.12 is complete as diagnostics and supportability hardening**
 
-This file is the completed execution record for the `v0.11` release series.
+This file is the completed execution record for the `v0.12` release series.
 
-`v0.11` is a feasibility-first release that evaluated whether normalized scalar 1D periodic Kuramoto-Sivashinsky could be promoted safely into the stable strong-path runtime surface.
+`v0.12` is not a new numerics release. It is a supportability release focused on:
 
-Candidate stable path:
+- generator-fit diagnostics
+- verification diagnostics
+- reporting helper hardening
+- internal KS diagnostic sweeps
+- orbit/coverage diagnostic feasibility
+- API/public-surface audit
+- compact release-gate readiness
 
-`canonical scalar 1D uniform periodic FieldBatch -> spectral_fd higher spatial derivatives -> normalized KS residual evaluator -> translation fit/verification`
+Committed release theme:
 
-Stable KS runtime promotion is deferred.
-`v0.11` closes as an explicit no-go/defer feasibility release while retaining the public order-4 derivative extension.
+`existing stable Heat/Burgers/weak-report/KdV/reporting surfaces -> fit and verification diagnostics -> orbit/coverage reporting feasibility -> release supportability`
 
 This file should not redefine package contracts.
 Contracts and stable behavior belong in:
@@ -22,407 +27,494 @@ Contracts and stable behavior belong in:
 - `docs/specs/CONTRACTS_AND_DEFAULTS.md`
 - `docs/specs/API_STABILITY.md`
 - `docs/planning/ROADMAP.md`
-- `docs/planning/V0_11_SCOPE.md`
+- `docs/planning/V0_12_SCOPE.md`
 
-`API_STABILITY.md` was audited in M0/M1, then updated in M2 when the public order-4 derivative API landed.
-It must be updated in the same milestone where any public KS API or other public API lands.
+`API_STABILITY.md` was audited in M0 and M1 with no changes because no public `v0.12` API landed in either milestone.
+It was updated in M2 when the frozen `pdelie.reporting.summarize_generator_fit_diagnostics(...)` helper landed.
 
 ---
 
-## V0.10 Closeout
+## V0.11 Closeout
 
-`v0.10` is complete as the supportability and `v1.0` readiness release.
+`v0.11` is complete as a Kuramoto-Sivashinsky feasibility/no-go release.
 
 Completed outcome:
 
-- public runtime reporting helpers under `pdelie.reporting`
-- consistent nested Heat/KdV example summaries
-- API stability and public-surface audit coverage
-- one current release-gate CI job plus full editable tests and package smoke
-- package/readiness documentation cleanup for eventual `v1.0` publishing decisions
-- explicit deferral of new PDE scope, weak KdV, broad adapters, operator work, and manuscript-specific reporting logic
+- public `compute_spectral_fd_derivatives(..., max_spatial_order=4)` order-4 derivative extension
+- internal KS generator feasibility helper under tests only
+- internal KS residual feasibility helper under tests only
+- internal KS vertical-slice feasibility coverage
+- explicit no-go/defer decision for stable KS runtime promotion
+- compact `v0_11-release-gate` CI visibility
 
-`v0.11` begins from the frozen `v0.10` surface.
-It does not reopen Heat/Burgers, weak-report, KdV, reporting, CI cleanup, or publishing decisions.
+The important `v0.11` conclusion is unchanged:
+
+- KS residual feasibility passed with large margin
+- mass drift passed with large margin
+- held-out canonical translation verification passed
+- direct residual-based SVD fitting was out of tolerance
+- vertical-slice evidence was reference-fallback-backed
+- stable KS generator/residual/example promotion was deferred
+
+`v0.12` begins from that closeout.
+It does not reopen KS promotion.
 
 ---
 
-## Milestone 0 - KS Feasibility Scope Reset
+## Milestone 0 - Scope Freeze
 
 **Status:** COMPLETE
 
 ### Goal
 
-Promote `v0.11` to the next committed release target, create `V0_11_SCOPE.md`, reset `PLAN.md`, and audit `API_STABILITY.md` without changing it.
+Freeze `v0.12` as diagnostics and supportability hardening, not a numerical expansion release.
 
 ### Completed Outcome
 
-- promoted `v0.11` to committed feasibility-first scope in `ROADMAP.md`
-- created `docs/planning/V0_11_SCOPE.md`
-- reset `docs/planning/PLAN.md` as the active `v0.11` execution record
-- recorded `v0.10` as completed
-- recorded Kuramoto-Sivashinsky as the feasibility candidate
-- recorded stable KS promotion as conditional on later numerical evidence
-- recorded that `v0.11` may close as either stable KS promotion or no-go/defer
+- added `docs/planning/V0_12_SCOPE.md`
+- kept `docs/planning/V0_12_OPTIONS.md` as the supporting diagnosis/options document
+- reset `docs/planning/PLAN.md` as the active `v0.12` execution record
+- updated `docs/planning/ROADMAP.md` to make `v0.12` the next committed release target
+- recorded `v0.11` as completed/no-go feasibility history
+- recorded that KS remains internal feasibility/no-go evidence from `v0.11`
+- recorded that `v0.12` does not add a new PDE, weak KS, stable KS runtime APIs, broad adapters, multidimensional grids, or private-paper policy
+- recorded that any public `v0.12` API must be a reporting/diagnostic helper frozen in M1 before implementation
 - audited `docs/specs/API_STABILITY.md`
-- left `docs/specs/API_STABILITY.md` unchanged because no new `v0.11` public API landed in M0
-- left runtime code, tests, package metadata, CI, README, changelog, and release-readiness docs unchanged
+- left `docs/specs/API_STABILITY.md` unchanged because no public API landed in M0
+- left runtime source, tests, README, changelog, package metadata, release readiness, and CI unchanged
 
 ### Acceptance Criteria
 
 M0 is complete only if:
 
-- `ROADMAP.md`, `PLAN.md`, and `V0_11_SCOPE.md` are internally consistent
-- `v0.10` is consistently described as completed
-- `v0.11` is consistently described as committed and feasibility-first
-- `v0.11` is not described as unconditional stable KS support
-- exact KS equation normalization and numerical thresholds remain deferred to M1
-- public KS APIs remain uncommitted until later milestones
-- `API_STABILITY.md` remains unchanged during M0
-- no runtime code, tests, package metadata, CI, README, changelog, or release-readiness docs are edited in M0
+- `V0_12_SCOPE.md`, `PLAN.md`, and `ROADMAP.md` agree on the committed `v0.12` scope
+- `v0.11` remains described as a completed KS feasibility/no-go release
+- `v0.12` is described as diagnostics and supportability hardening
+- no stable KS generator, residual evaluator, example, imported parity, weak API, or root export is promoted
+- no new PDE or broad adapter scope is introduced
+- `API_STABILITY.md` remains unchanged
+- no runtime source files change
 
 ---
 
-## Milestone 1 - KS Equation and Numerical Semantics Freeze
+## Milestone 1 - Fit / Verification Diagnostic Semantics Freeze
 
 **Status:** COMPLETE
 
 ### Goal
 
-Freeze the exact normalized KS equation and numerical semantics before any runtime prototype or public API is considered.
+Freeze diagnostic semantics before implementation.
 
 ### Completed Outcome
 
-- froze normalized nonconservative strong-form KS:
-  - `u_t + u*u_x + u_xx + u_xxxx = 0`
-- froze residual form:
-  - `u_t + u*u_x + u_xx + u_xxxx`
-- recorded the equivalent conservative nonlinear term `1/2*(u^2)_x` as explanatory only
-- froze required KS residual derivatives:
-  - `u_t`
-  - `u_x`
-  - `u_xx`
-  - `u_xxxx`
-- recorded that `u_xxx` is not required by the KS residual evaluator
-- froze future derivative-backend strategy:
-  - later `compute_spectral_fd_derivatives(..., max_spatial_order=4)` emits `u_t`, `u_x`, `u_xx`, `u_xxx`, and `u_xxxx`
-  - default `max_spatial_order=2` must preserve current behavior, arrays, config, and diagnostics
-  - `u_xxxx` must use the same FFT wavenumber convention as existing `u_x`, `u_xx`, and `u_xxx`
-  - unsupported orders still raise `ScopeValidationError`
-- froze coordinate and fixture conventions:
-  - dims exactly `("batch", "time", "x", "var")`
-  - scalar finite unmasked values only
-  - `x = linspace(0, domain_length, num_points, endpoint=False)`
-  - `time = linspace(0, max_time, num_times)`
-  - strictly increasing uniform `time`
-  - uniform periodic `x`
-  - zero-mean Fourier-mode initial conditions for synthetic feasibility fixtures
-  - two-thirds dealiasing
-  - periodic RK-style rollout unless M2 proves unsuitable
-- froze feasibility diagnostics:
-  - residual `max_abs_residual`
-  - residual `rms_residual`
-  - mass drift as the conserved diagnostic
-  - relative L2 drift as diagnostic-only
-  - translation span distance
-  - first-epsilon held-out verification error
-  - verification classification with acceptance requiring only `classification != "failed"`
-- froze preliminary feasibility targets:
-  - residual max `< 5e-2`
-  - residual RMS `< 1e-2`
-  - mass drift `<= 1e-8`
-  - translation span distance `<= 1e-1`
-  - first-epsilon held-out verification error `< 5e-4`
-  - verification classification is not `failed`
-- recorded that these are feasibility targets, not release gates
-- recorded that M4 must replace or confirm them with observed-margin thresholds before stable KS promotion
-- kept public API names and stable promotion conditional
+- froze one future M2 public reporting helper:
+  - `pdelie.reporting.summarize_generator_fit_diagnostics(generator: GeneratorFamily) -> dict[str, Any]`
+- froze public helper policy:
+  - submodule-only under `pdelie.reporting`
+  - no root `pdelie` export
+  - JSON-compatible plain dict output
+  - input is `GeneratorFamily`
+  - wrong input type raises the existing typed schema validation error in M2
+  - helper summarizes `GeneratorFamily.diagnostics`
+  - helper does not create a canonical object or mutate inputs
+- froze summary metadata:
+  - `summary_schema_version = "0.1"`
+  - `summary_type = "generator_fit_diagnostics"`
+- froze fit diagnostic fields:
+  - `parameterization`
+  - `fit_mode`
+  - `training_epsilon`
+  - `basis`
+  - `basis_delta_norms`
+  - `design_column_norms`
+  - `singular_values`
+  - `condition_number`
+  - `fit_residual`
+  - `min_delta_basis`
+  - `selected_coefficients`
+  - `svd_coefficients`
+  - `selected_span_distance`
+  - `svd_span_distance`
+  - `reference_fallback_used`
+  - `fallback_reason`
+  - `evidence_label`
+- froze condition-number policy:
+  - `condition_number = largest_singular_value / smallest_singular_value`
+  - if the denominator is zero or nonfinite, report `condition_number = None`
+- froze fallback reason policy:
+  - `fallback_reason` is a stable category string, not prose
+  - current stable fallback category remains `svd_translation_span_drift`
+- froze evidence labels:
+  - `direct_svd_in_tolerance`
+  - `direct_svd_out_of_tolerance`
+  - `reference_fallback`
+  - `mixed`
+  - `unavailable`
+- froze verification diagnostic semantics:
+  - keep `pdelie.reporting.summarize_verification_report(...)` as the verification summary surface
+  - M2 may harden its top-level summary fields for transform, span, and batch-error diagnostics if needed
+  - M1/M2 do not change verification classification rules or finite-transform behavior
+- froze M3 internal KS sweep semantics:
+  - sweeps record epsilon, fit mode, fallback status/reason, selected span, SVD span, first verification error, classification, singular values, and condition number
+  - sweeps are diagnostic artifacts, not promotion gates
 - left `docs/specs/API_STABILITY.md` unchanged because no public API landed in M1
-- left runtime code, tests, package metadata, CI, README, changelog, and release-readiness docs unchanged
 
 ### Acceptance Criteria
 
-- `V0_11_SCOPE.md` and `PLAN.md` agree on KS equation, derivative requirements, coordinate conventions, diagnostics, and preliminary targets
-- `ROADMAP.md` still describes `v0.11` as feasibility-first, not stable KS support
+- `V0_12_SCOPE.md` and `PLAN.md` agree on the future public helper name and diagnostic fields
+- `ROADMAP.md` still describes `v0.12` as diagnostics/supportability, not new numerical scope
 - `API_STABILITY.md` remains unchanged during M1
-- no runtime code, tests, package metadata, CI, README, changelog, or release-readiness docs are edited in M1
+- no runtime source, tests, README, changelog, release docs, package metadata, or CI files change in M1
 
 ---
 
-## Milestone 2 - KS Feasibility Generator / Prototype
+## Milestone 2 - Diagnostic / Reporting Helper Implementation
 
 **Status:** COMPLETE
 
 ### Goal
 
-Create or adapt a deterministic KS feasibility generator/prototype under the frozen M1 semantics.
+Implement the M1-frozen diagnostic/reporting helper.
 
 ### Completed Outcome
 
-- extended public `compute_spectral_fd_derivatives(...)` to accept `max_spatial_order=4`
-- preserved default `max_spatial_order=2` behavior, arrays, config, and diagnostics
-- froze order-4 derivative output keys:
-  - `u_t`
-  - `u_x`
-  - `u_xx`
-  - `u_xxx`
-  - `u_xxxx`
-- computed `u_xxxx` with the same FFT wavenumber convention as the existing spectral derivatives
-- kept invalid derivative orders rejected with typed `ScopeValidationError`
-- updated `docs/specs/API_STABILITY.md` for the public order-4 derivative API
-- added internal KS feasibility generator helpers under tests only
-- froze internal KS generator defaults:
-  - `seed = 11101`
-  - `batch_size = 5`
-  - `num_times = 33`
-  - `num_points = 128`
-  - `max_time = 0.2`
-  - `num_modes = 6`
-  - `amplitude = 0.08`
-  - `num_substeps = 8`
-  - `domain_length = 32*pi`
-- froze KS rollout evolution:
-  - `u_t = -u*u_x - u_xx - u_xxxx`
-- froze nonlinear evaluation:
-  - conservative spectral form `u*u_x = 0.5*(u^2)_x`
-  - two-thirds dealiasing for nonlinear products
-- froze ETDRK4 as the internal rollout scheme
-- explicitly preserved the zero Fourier mode through rollout
-- verified the internal generator is deterministic, canonical, finite, zero-mean, and mass-preserving within the M1 target
-- verified exact Fourier `u_xxxx` sign convention through derivative tests
-- verified no public KS generator, residual evaluator, root export, custom initial-condition API, or configurable KS coefficient family landed
+- added public submodule-only helper:
+  - `pdelie.reporting.summarize_generator_fit_diagnostics(...)`
+- exported the helper from `pdelie.reporting`
+- kept root `pdelie` unchanged
+- kept `summarize_generator_family(...)` top-level keys unchanged
+- kept `summarize_vertical_slice(...)` output shape unchanged
+- enriched `fit_translation_generator(...)` diagnostics without changing coefficient selection:
+  - `singular_values`
+  - `condition_number`
+  - `design_column_norms`
+  - `selected_coefficients`
+  - `selected_span_distance`
+  - `evidence_label`
+- preserved existing fit diagnostics:
+  - `fit_mode`
+  - `fallback_reason`
+  - `reference_fallback_used`
+  - `svd_coefficients`
+  - `svd_span_distance`
+  - `fit_residual`
+  - `basis`
+  - `basis_delta_norms`
+  - `min_delta_basis`
+  - `training_epsilon`
+- implemented the frozen condition-number policy:
+  - `largest_singular_value / smallest_singular_value`
+  - `None` if denominator is zero or nonfinite
+- implemented deterministic evidence labels:
+  - `direct_svd_in_tolerance`
+  - `direct_svd_out_of_tolerance`
+  - `reference_fallback`
+  - `unavailable` for insufficient manually supplied diagnostics
+- updated `docs/specs/API_STABILITY.md` for the new public reporting helper
+- kept canonical object schemas unchanged
+- kept verification classification and finite-transform behavior unchanged
+- kept KS generator/residual/example/imported-parity APIs absent
 
 ### Acceptance Criteria
 
-- order-4 derivative tests pass
-- internal KS generator feasibility tests pass
-- `API_STABILITY.md` documents only the public derivative extension, not KS generator/residual APIs
-- public-surface tests keep KS generator and residual APIs absent
-- no README, changelog, package metadata, release-readiness docs, or CI changes land in M2
+- new helper is importable from `pdelie.reporting`
+- new helper is absent from root `pdelie`
+- helper output is JSON-compatible and includes the M1-frozen fields
+- Heat direct-SVD and Burgers reference-fallback fits expose the richer diagnostics
+- sparse manually supplied diagnostics summarize as `evidence_label == "unavailable"`
+- `API_STABILITY.md` documents the new helper
+- no new numerical scope, KS promotion, weak KS, private-paper policy, or root export lands
 
 ---
 
-## Milestone 3 - KS Residual Feasibility Prototype
+## Milestone 3 - Internal KS Diagnostic Sweep Harness
 
 **Status:** COMPLETE
 
 ### Goal
 
-Evaluate the strong-form KS residual path under the frozen semantics.
+Keep KS internal and add bounded diagnostics for the `v0.11` no-go failure mode.
 
 ### Completed Outcome
 
-- added internal `KSFeasibilityResidualEvaluator` under test helpers only
-- implemented frozen residual:
-  - `u_t + u*u_x + u_xx + u_xxxx`
-- implemented derivative contract:
-  - omitted derivatives compute `compute_spectral_fd_derivatives(field, max_spatial_order=4)`
-  - supplied derivatives must validate against the field
-  - supplied derivatives must include `u_t`, `u_x`, `u_xx`, and `u_xxxx`
-  - `u_xxx` may be present but is not used
-- returned `ResidualBatch(definition_type="analytic", normalization="none")`
-- froze diagnostics:
-  - `equation`
-  - `backend`
-  - `max_abs_residual`
-  - `rms_residual`
-- verified local validation:
-  - dims exactly `("batch", "time", "x", "var")`
-  - scalar `var`
-  - finite unmasked values
-  - periodic `x`
-  - `field.metadata["parameter_tags"]["equation"] == "ks_normalized"`
-- verified valid-looking Heat and KdV fields are rejected by equation tag
-- verified public KS generator/residual/root exports remain absent
-- observed frozen-fixture residual diagnostics:
-  - max absolute residual: `4.042559716230937e-09`
-  - RMS residual: `3.756593955706264e-10`
-- kept public residual evaluator promotion conditional
-- left `docs/specs/API_STABILITY.md` unchanged because no public API landed in M3
+- added internal test-only helper:
+  - `tests._helpers.ks_diagnostic_sweep.run_ks_fit_diagnostic_sweep()`
+- kept the helper out of runtime `src/`
+- kept output as a JSON-compatible plain dict only
+- wrote no artifact files by default
+- froze sweep epsilons:
+  - `1e-5`
+  - `3e-5`
+  - `1e-4`
+  - `3e-4`
+  - `1e-3`
+- froze sweep variants:
+  - `default`
+  - `lower_amplitude` with `amplitude=0.04`
+  - `shorter_time` with `max_time=0.1`
+- reused existing internal KS feasibility helpers
+- reused `pdelie.reporting.summarize_generator_fit_diagnostics(...)`
+- recorded per-fit diagnostics:
+  - selected span distance
+  - SVD span distance
+  - fallback status and reason
+  - evidence label
+  - first verification error
+  - verification classification
+  - transform mode
+  - singular values
+  - condition number
+- recorded variant-level aggregates:
+  - min/median/max finite condition number
+  - min/median/max SVD span distance
+  - direct-SVD recovery boolean
+  - fallback reason stability
+  - categorical conclusion
+- confirmed no public KS generator, residual evaluator, example, imported parity, weak API, or root export landed
 
-### Acceptance Criteria
+### Observed Sweep Evidence
 
-- internal and explicit order-4 derivative residual paths match
-- order-3 derivatives fail clearly because `u_xxxx` is missing
-- residual diagnostics satisfy M1 feasibility targets
-- public-surface tests keep KS generator and residual APIs absent
-- no README, changelog, package metadata, release-readiness docs, or CI changes land in M3
+All frozen variants concluded:
+
+`fallback_stable_across_epsilons`
+
+Default variant:
+
+- residual max: `2.276047466221332e-09`
+- residual RMS: `3.450580898077348e-10`
+- mass drift: `4.686823294199099e-16`
+- relative L2 drift: `0.0070894859776733715` diagnostic-only
+- condition number summary:
+  - min: `214493.66414183375`
+  - median: `214513.53360977306`
+  - max: `214713.8659786387`
+- SVD span-distance summary:
+  - min: `0.4173259267972907`
+  - median: `0.4178159498317849`
+  - max: `0.41786515613952585`
+- direct SVD in tolerance: `False`
+- fallback reason stable: `True`
+- fallback reason: `svd_translation_span_drift`
+
+Cheap variants:
+
+- `lower_amplitude` also remained fallback-backed:
+  - residual max: `6.365170833444976e-10`
+  - SVD span-distance median: `0.4231999049223962`
+  - condition-number median: `421919.8443762055`
+- `shorter_time` also remained fallback-backed:
+  - residual max: `5.564387484851066e-10`
+  - SVD span-distance median: `0.41787321170397507`
+  - condition-number median: `215280.21488729605`
+
+M3 strengthens the no-go diagnosis:
+
+- KS residuals are healthy
+- canonical translation verification remains healthy after fallback
+- direct residual-based SVD fitting remains out of tolerance across the bounded epsilon and cheap-variant sweep
+- changing only amplitude or horizon did not recover direct SVD behavior
+- the stable failure category remains `svd_translation_span_drift`
+
+### Explicit Non-goals
+
+- no stable KS data generator
+- no stable KS residual evaluator
+- no KS vertical-slice example
+- no KS imported parity
+- no API stability entry for KS generator/residual APIs
+- no API stability entry for the internal sweep helper
+- no release gate or package smoke dependency on internal KS sweeps
 
 ---
 
-## Milestone 4 - KS Vertical-Slice Feasibility
+## Milestone 4 - Orbit / Coverage Diagnostic Feasibility
 
 **Status:** COMPLETE
 
 ### Goal
 
-Run the candidate KS path through the existing strong-path fitting and verification stack.
+Evaluate paper-agnostic orbit and coverage diagnostics without implementing downstream experiment policy.
 
 ### Completed Outcome
 
-- added internal KS vertical-slice feasibility coverage under tests only
-- used frozen KS fixture from `generate_ks_feasibility_field_batch()`
-- split train/heldout with `train_size = 2` and `seed = 11102`
-- computed train derivatives with `compute_spectral_fd_derivatives(..., max_spatial_order=4)`
-- evaluated train residual with internal `KSFeasibilityResidualEvaluator`
-- fit with `fit_translation_generator(..., epsilon=1e-4)`
-- verified heldout data with `verify_translation_generator(...)`
-- verified derivative keys:
-  - `u_t`
-  - `u_x`
-  - `u_xx`
-  - `u_xxx`
-  - `u_xxxx`
-- observed M4 feasibility metrics:
-  - residual max absolute value: `2.276047466221332e-09`
-  - residual RMS value: `3.450580898077348e-10`
-  - mass drift: `4.686823294199099e-16`
-  - relative L2 drift: `0.0070894859776733715`
-  - selected span distance: `0.0`
-  - SVD span distance: `0.4178159498317849`
-  - fit mode: `reference_fallback`
-  - reference fallback used: `True`
-  - fallback reason: `svd_translation_span_drift`
-  - first-epsilon heldout verification error: `2.533384127588474e-13`
-  - verification classification: `exact`
-  - transform mode: `uniform_translation`
-  - evidence label: `reference_fallback`
-- recorded that relative L2 drift is diagnostic-only for KS
-- recorded that KS feasibility passed via reference fallback, not direct SVD in-tolerance recovery
-- verified no public KS generator, residual evaluator, root export, example, broad adapter, or runtime surface landed
+- added internal test-only helper:
+  - `tests._helpers.orbit_coverage_feasibility.run_orbit_coverage_feasibility()`
+- kept the helper out of runtime `src/`
+- kept output as a JSON-compatible plain dict only
+- wrote no artifact files by default
+- reused existing canonical objects and stable runtime surfaces:
+  - `FieldBatch`
+  - `InvariantMapSpec`
+  - `InvariantApplier`
+  - `HeatResidualEvaluator`
+  - `KdVResidualEvaluator`
+- recorded periodic-window coverage diagnostics over a 64-point `x` grid on `[0, 2*pi)`
+- recorded transform consistency diagnostics for stable Heat and KdV fixtures
+- confirmed transform provenance uses:
+  - `operation == "invariant_apply"`
+  - `construction_method == "uniform_translation"`
+- confirmed no public orbit/coverage helper, augmentation API, KS API, weak KS API, broad adapter, or root export landed
 
-### Acceptance Criteria
+### Observed Coverage Evidence
 
-- KS vertical slice passes M1 feasibility thresholds for residual, mass drift, selected span, first-epsilon verification error, and classification
-- relative L2 drift is recorded but not used as a gate
-- fallback-backed evidence records fallback reason and SVD span distance
-- repeated vertical-slice summaries are deterministic within numerical tolerance
-- public-surface tests keep KS generator and residual APIs absent
+Coverage cases:
+
+- `half_coverage_quarter_shifts`
+  - base window width: `pi/4`
+  - shifts: `0`, `pi/2`, `pi`, `3*pi/2`
+  - covered grid points: `32` of `64`
+  - coverage fraction: `0.5`
+  - min/max coverage count: `0` / `1`
+  - mean coverage count: `0.5`
+  - max uncovered run: `8` grid points
+- `full_coverage_quarter_shifts`
+  - base window width: `pi/2`
+  - shifts: `0`, `pi/2`, `pi`, `3*pi/2`
+  - covered grid points: `64` of `64`
+  - coverage fraction: `1.0`
+  - min/max coverage count: `1` / `1`
+  - mean coverage count: `1.0`
+  - max uncovered run: `0` grid points
+
+Transform consistency cases:
+
+- shifts tested:
+  - `0`
+  - one grid spacing: `0.09817477042468103`
+  - `pi/4`
+  - `-pi/4`
+  - `2*pi`
+- Heat fixture:
+  - residual RMS before shift: `6.40792354432063e-05`
+  - maximum inverse-transform relative L2 error: `2.9650883564194283e-16`
+  - maximum period-wrap relative L2 error: `9.323430358904992e-16`
+  - maximum residual relative RMS delta: `3.2117841724670052e-12`
+- KdV fixture:
+  - residual RMS before shift: `0.0003844090459507004`
+  - maximum inverse-transform relative L2 error: `2.932669879841721e-16`
+  - maximum period-wrap relative L2 error: `7.866600220513022e-16`
+  - maximum residual relative RMS delta: `5.571776753786444e-13`
+
+M4 conclusion:
+
+- periodic-window coverage diagnostics are feasible and deterministic
+- uniform-translation transform consistency diagnostics are feasible over stable Heat and KdV fixtures
+- these diagnostics are not promoted as public APIs in M4
+- public orbit/coverage APIs require a later explicit API freeze before implementation
+
+### Explicit Non-goals
+
+- no private sparse-discovery branch logic
+- no manuscript-specific thresholds, labels, tables, or figures
+- no train-augmentation recipes
+- no PDEBench or The Well
+- no multidimensional, nonuniform, or multivariable expansion
+- no public orbit/coverage helper
+- no public augmentation utility
+- no API stability entry for the internal feasibility helper
 
 ---
 
-## Milestone 5 - Promotion Decision and Imported-Parity / Non-goal Guards
+## Milestone 5 - API / Public-surface Audit
 
 **Status:** COMPLETE
 
 ### Goal
 
-Make the explicit stable-promotion versus no-go decision.
+Audit API stability and public exports after M2/M4 helper decisions.
 
 ### Completed Outcome
 
-- decided to defer stable KS promotion for `v0.11`
-- recorded the outcome as no-go/defer for stable KS runtime APIs in this release
-- preserved the M2 public derivative extension as the only public `v0.11` API change so far:
-  - `compute_spectral_fd_derivatives(..., max_spatial_order=4)`
-- recorded M4 feasibility evidence:
-  - residual evaluation passes with large margin:
-    - max absolute residual: `2.276047466221332e-09`
-    - RMS residual: `3.450580898077348e-10`
-  - mass conservation passes with large margin:
-    - mass drift: `4.686823294199099e-16`
-  - held-out canonical translation verification passes:
-    - first-epsilon heldout verification error: `2.533384127588474e-13`
-    - verification classification: `exact`
-  - selected span distance passes because canonical reference fallback is used:
-    - selected span distance: `0.0`
-    - fit mode: `reference_fallback`
-    - fallback reason: `svd_translation_span_drift`
-  - direct SVD span distance is out of tolerance:
-    - SVD span distance: `0.4178159498317849`
-  - M4 evidence label: `reference_fallback`
-- recorded that the M4 evidence is strong feasibility evidence but not direct residual-based fitting recovery
-- kept KS as internal feasibility evidence in `v0.11`
-- did not add stable KS data generator, residual evaluator, vertical-slice example, imported parity, root export, weak KS API, or broad adapter scope
-- skipped KS imported parity because there is no stable public KS runtime surface to validate
-- added focused no-go guard coverage tying the decision to reference-fallback evidence and absent public KS APIs
+- tightened API stability audit coverage
+- confirmed `API_STABILITY.md` documents the only public `v0.12` API addition:
+  - `pdelie.reporting.summarize_generator_fit_diagnostics`
+- confirmed `API_STABILITY.md` still documents stable carried surfaces:
+  - `v0.8` weak Heat/Burgers report APIs
+  - `v0.9` normalized periodic KdV APIs
+  - `v0.10` reporting helpers
+  - `v0.11` `max_spatial_order=4` derivative extension
+- confirmed `API_STABILITY.md` does not document public orbit/coverage helpers, augmentation utilities, stable KS generator/residual APIs, weak KS APIs, broad dataset adapters, multidimensional/nonuniform support, or operator-facing APIs
+- tightened specific-name public-surface guards without freezing complete module export lists
+- confirmed root `pdelie` remains limited to canonical objects, the base evaluator, and typed errors
+- confirmed M4 orbit/coverage diagnostics remain internal test-only helpers
+- confirmed no runtime behavior, canonical object schema, numerical scope, or CI behavior changed in M5
+- left `docs/specs/API_STABILITY.md` unchanged because no mismatch was found
 
-### Acceptance Criteria
+### Explicit Non-goals
 
-- M4 feasibility tests remain green
-- public KS generator/residual/example exports remain absent
-- `API_STABILITY.md` still documents no stable public KS generator or residual evaluator
-- `PLAN.md` and `V0_11_SCOPE.md` state KS promotion is deferred for `v0.11`
-- no runtime source files change in M5
+- no new numerical scope
+- no CI restructuring beyond release-gate hygiene
+- no release-facing metadata changes before M6
+- no public orbit/coverage helper
+- no public augmentation utility
+- no KS promotion
+- no weak KS or broad adapter scope
 
 ---
 
-## Milestone 6 - Release Gate / Readiness or No-go Closeout
+## Milestone 6 - Release Gate and Readiness
 
 **Status:** COMPLETE
 
 ### Goal
 
-Close `v0.11` according to the M5 decision.
+Close `v0.12` with compact release-gate coverage, docs alignment, package metadata, and direct Git-tag readiness.
 
 ### Completed Outcome
 
-- added compact `tests/test_v0_11_release_gate.py`
-- replaced the explicit current CI release-gate job with `v0_11-release-gate`
-- kept full `editable-tests` and `package-smoke` CI coverage
-- kept package smoke compact:
-  - stable root imports
-  - `pdelie.reporting` submodule imports
-  - weak Heat report smoke
-  - KdV strong-path residual smoke
-  - order-4 derivative smoke
-- bumped package metadata to `0.11.0`
-- aligned README and changelog with the `v0.11` no-go/defer closeout
-- created `docs/releases/V0_11_RELEASE_READINESS.md`
-- updated publishing docs to include `v0.11.0` in the Git-tag-only `v0.x` deferral policy
-- updated `ROADMAP.md` to mark `v0.11` completed and leave `v0.12+` conditional
-- audited `docs/specs/API_STABILITY.md`
-- left `API_STABILITY.md` unchanged because it already documented only the order-4 derivative extension and no stable KS generator/residual APIs
-- left the stable public surface unchanged except for the existing M2 order-4 derivative API
-- documented that no PyPI or TestPyPI publishing is part of `v0.11`
+- added compact `tests/test_v0_12_release_gate.py`
+- updated CI so the current explicit release gate is `v0_12-release-gate`
+- kept full editable tests as historical gate coverage
+- kept package smoke small and added a tiny generator-fit diagnostic summary smoke
+- bumped package metadata to `0.12.0`
+- updated README, changelog, publishing docs, release readiness, roadmap, and package metadata for `v0.12.0`
+- audited `API_STABILITY.md` and left it unchanged because it already documents the only public `v0.12` API addition
+- documented the direct Git-tag release path
+- preserved all non-goals:
+  - no KS promotion
+  - no public orbit/coverage helper
+  - no public augmentation utility
+  - no weak KS
+  - no broad adapters
+  - no package-index publishing before `v1.0`
 
-### Acceptance Criteria
+### Explicit Non-goals
 
-- `v0_11-release-gate`, `editable-tests`, and `package-smoke` are the required CI checks before tagging
-- release-facing docs describe `v0.11` as a KS feasibility/no-go release
-- `pyproject.toml` version is `0.11.0`
-- no stable KS generator, residual evaluator, example, imported parity, weak API, or root export lands
-- release docs state package-index publishing remains deferred until `v1.0` or later
+- no package-index publishing before the `v1.0` policy is accepted
+- no KS promotion unless a prior milestone explicitly changes the no-go decision with evidence
+- no new PDE or broad adapter scope
 
 ---
 
-## Executed Milestone Sequence
+## Locked Milestone Sequence
 
-Locked sequence:
-
-Milestone 0 -> KS feasibility scope reset
-Milestone 1 -> KS equation and numerical semantics freeze
-Milestone 2 -> KS feasibility generator / prototype
-Milestone 3 -> KS residual feasibility prototype
-Milestone 4 -> KS vertical-slice feasibility
-Milestone 5 -> promotion decision and imported-parity / non-goal guards
-Milestone 6 -> release gate / readiness and no-go closeout
+Milestone 0 -> scope freeze
+Milestone 1 -> fit / verification diagnostic semantics freeze
+Milestone 2 -> diagnostic / reporting helper implementation
+Milestone 3 -> internal KS diagnostic sweep harness
+Milestone 4 -> orbit / coverage diagnostic feasibility
+Milestone 5 -> API / public-surface audit
+Milestone 6 -> release gate and readiness
 
 ---
 
 ## Rules
 
-- DO NOT add public KS APIs in M0.
-- DO NOT update `API_STABILITY.md` for KS generator or residual APIs until those public APIs actually land or an audit finds a real omission.
-- DO NOT describe `v0.11` as unconditional stable KS support before M5.
-- DO NOT treat the internal M2 KS generator helper as public API.
-- DO NOT treat the internal M3 KS residual evaluator as public API.
-- DO NOT treat M4 fallback-backed verification as direct KS residual-fit recovery.
-- DO NOT add KS imported parity unless a stable public KS runtime surface is promoted.
-- DO NOT promote a stable KS generator, residual evaluator, or example in `v0.11` after the M5 no-go/defer decision.
-- DO NOT treat preliminary M1 feasibility targets as final release gates without observed M4 margin.
-- DO NOT promote weak KS in `v0.11`.
-- DO NOT add a new weak derivative API in `v0.11`.
-- DO NOT broaden `v0.11` into broad adapters, multidimensional grids, nonuniform grids, multivariable systems, or operator-facing work.
-- DO NOT add custom KS initial-condition APIs or configurable KS coefficient families unless a later milestone explicitly freezes them.
-- DO NOT add manuscript-specific logic.
-- DO preserve existing Heat/Burgers, `v0.8` weak-report, `v0.9` KdV, and `v0.10` reporting behavior.
+- DO NOT add a new PDE in `v0.12`.
+- DO NOT promote public KS generator, residual evaluator, example, imported parity, weak API, or root exports.
+- DO NOT implement weak KS.
+- DO NOT add broad dataset adapters, PDEBench, The Well, multidimensional grids, nonuniform grids, or multivariable systems.
+- DO NOT implement private-paper experiment policy.
+- DO NOT implement orbit augmentation utilities before M4 scope is frozen.
+- DO NOT implement reporting helpers before M1 freezes exact semantics and M2 accepts implementation.
+- DO NOT update `API_STABILITY.md` unless a public API lands or an audit finds a real mismatch.
+- DO preserve existing Heat/Burgers, `v0.8` weak-report, `v0.9` KdV, `v0.10` reporting, and `v0.11` order-4 derivative behavior.
 
 ---
 
 ## Status
 
-- `v0.10`: COMPLETE
+- `v0.11`: COMPLETE
 - Milestone 0: COMPLETE
 - Milestone 1: COMPLETE
 - Milestone 2: COMPLETE
