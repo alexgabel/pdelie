@@ -217,6 +217,78 @@ def test_summarize_generator_fit_diagnostics_reports_unavailable_for_sparse_diag
     _assert_json_serializable(summary)
 
 
+def test_summarize_generator_fit_diagnostics_normalizes_nonfinite_optional_scalars() -> None:
+    generator = GeneratorFamily(
+        parameterization="polynomial_translation_affine",
+        coefficients=np.array([[1.0, 0.0, 0.0, 0.0]], dtype=float),
+        basis_spec=_translation_generator_basis_spec(),
+        normalization="l2_unit",
+        diagnostics={
+            "training_epsilon": np.inf,
+            "fit_residual": np.nan,
+            "singular_values": [2.0, 1.0],
+        },
+    )
+
+    summary = summarize_generator_fit_diagnostics(generator)
+
+    assert summary["training_epsilon"] is None
+    assert summary["fit_residual"] is None
+    assert summary["condition_number"] == pytest.approx(2.0)
+    _assert_json_serializable(summary)
+
+
+def test_summarize_generator_fit_diagnostics_rejects_non_scalar_mapping_values() -> None:
+    generator = GeneratorFamily(
+        parameterization="polynomial_translation_affine",
+        coefficients=np.array([[1.0, 0.0, 0.0, 0.0]], dtype=float),
+        basis_spec=_translation_generator_basis_spec(),
+        normalization="l2_unit",
+        diagnostics={
+            "basis_delta_norms": {"1": [1.0, 2.0]},
+            "singular_values": [2.0, 1.0],
+        },
+    )
+
+    with pytest.raises(SchemaValidationError, match=r"basis_delta_norms\.1"):
+        summarize_generator_fit_diagnostics(generator)
+
+
+def test_summarize_generator_fit_diagnostics_rejects_non_floatlike_mapping_values() -> None:
+    generator = GeneratorFamily(
+        parameterization="polynomial_translation_affine",
+        coefficients=np.array([[1.0, 0.0, 0.0, 0.0]], dtype=float),
+        basis_spec=_translation_generator_basis_spec(),
+        normalization="l2_unit",
+        diagnostics={
+            "design_column_norms": {"1": "not-a-number"},
+            "singular_values": [2.0, 1.0],
+        },
+    )
+
+    with pytest.raises(SchemaValidationError, match=r"design_column_norms\.1"):
+        summarize_generator_fit_diagnostics(generator)
+
+
+def test_summarize_generator_fit_diagnostics_computes_condition_number_from_unsorted_singular_values() -> None:
+    generator = GeneratorFamily(
+        parameterization="polynomial_translation_affine",
+        coefficients=np.array([[1.0, 0.0, 0.0, 0.0]], dtype=float),
+        basis_spec=_translation_generator_basis_spec(),
+        normalization="l2_unit",
+        diagnostics={
+            "singular_values": [1.0, 4.0, 2.0],
+            "condition_number": 99.0,
+        },
+    )
+
+    summary = summarize_generator_fit_diagnostics(generator)
+
+    assert summary["condition_number"] == pytest.approx(4.0)
+    assert summary["singular_values"] == [1.0, 4.0, 2.0]
+    _assert_json_serializable(summary)
+
+
 def test_summarize_verification_report_returns_sweep_metrics(heat_artifacts: dict[str, object]) -> None:
     report = heat_artifacts["verification"]
 

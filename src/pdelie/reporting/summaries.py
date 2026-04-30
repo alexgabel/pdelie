@@ -76,7 +76,9 @@ def _finite_float_or_none(value: Any, *, name: str) -> float | None:
     try:
         normalized = float(value)
     except (TypeError, ValueError) as exc:
-        raise SchemaValidationError(f"{name} must be a finite float or None.") from exc
+        raise SchemaValidationError(
+            f"{name} must be a float-like value or None; non-finite values are normalized to None."
+        ) from exc
     if not np.isfinite(normalized):
         return None
     return normalized
@@ -92,10 +94,17 @@ def _finite_mapping_or_none(value: Any, *, name: str) -> dict[str, float] | None
     if value is None:
         return None
     value_mapping = _require_mapping(value, name=name)
-    return {
-        str(key): float(_require_finite(np.asarray(item, dtype=float), name=f"{name}.{key}"))
-        for key, item in value_mapping.items()
-    }
+    normalized_mapping: dict[str, float] = {}
+    for key, item in value_mapping.items():
+        field_name = f"{name}.{key}"
+        try:
+            normalized = _require_finite(np.asarray(item, dtype=float), name=field_name)
+        except (TypeError, ValueError) as exc:
+            raise SchemaValidationError(f"{field_name} must be a finite scalar float.") from exc
+        if normalized.size != 1:
+            raise SchemaValidationError(f"{field_name} must be a finite scalar float.")
+        normalized_mapping[str(key)] = float(normalized.item())
+    return normalized_mapping
 
 
 def _summary_payload(summary_type: str, **items: Any) -> dict[str, Any]:
@@ -171,11 +180,11 @@ def _translation_span_or_none(coefficients: Any, *, parameterization: str) -> fl
 def _condition_number_from_diagnostics(diagnostics: Mapping[str, Any]) -> float | None:
     singular_values = diagnostics.get("singular_values")
     if singular_values is not None:
-        normalized = _require_finite(np.asarray(singular_values, dtype=float), name="singular_values")
+        normalized = _require_finite(np.asarray(singular_values, dtype=float), name="singular_values").ravel()
         if normalized.size == 0:
             return None
-        largest = float(normalized[0])
-        smallest = float(normalized[-1])
+        largest = float(np.max(normalized))
+        smallest = float(np.min(normalized))
         if not np.isfinite(largest) or not np.isfinite(smallest) or smallest == 0.0:
             return None
         return largest / smallest
