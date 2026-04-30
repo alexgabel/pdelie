@@ -1,0 +1,271 @@
+# V0.12 Scope Freeze
+
+## Summary
+
+`v0.12` is the diagnostics and supportability hardening release for `pdelie`.
+
+Its purpose is:
+
+> harden diagnostics and reporting around generator fitting, verification, and orbit/coverage supportability without adding new numerical scope.
+
+Committed release theme:
+
+`existing stable Heat/Burgers/weak-report/KdV/reporting surfaces -> fit and verification diagnostics -> orbit/coverage reporting feasibility -> release supportability`
+
+`v0.12` does not add a new PDE and does not promote Kuramoto-Sivashinsky runtime APIs.
+The `v0.11` KS evidence remains internal feasibility/no-go evidence.
+
+---
+
+## Motivation From V0.11 KS No-go
+
+`v0.11` added the public order-4 derivative backend extension:
+
+```python
+compute_spectral_fd_derivatives(field, *, max_spatial_order=4)
+```
+
+It also evaluated normalized scalar 1D periodic Kuramoto-Sivashinsky internally.
+The result was useful but not strong enough for public runtime promotion:
+
+- KS residual feasibility passed with large margin
+- mass drift passed with large margin
+- held-out canonical translation verification passed
+- vertical-slice evidence passed through `reference_fallback`
+- direct residual-based SVD fitting was out of tolerance
+- direct SVD span distance was around `0.418`
+- stable KS generator/residual/example promotion was deferred
+
+The main supportability gap is diagnostic, not PDE coverage:
+
+- fit diagnostics do not expose full singular values
+- fit diagnostics do not expose condition number
+- epsilon sensitivity is not standardized
+- fallback-backed versus direct-fit evidence needs clearer reporting
+- orbit/coverage diagnostics are not yet reusable library utilities
+
+`v0.12` should address those supportability gaps before any further numerical expansion.
+
+---
+
+## Stable Scope
+
+The stable scope carried into `v0.12` remains:
+
+- canonical `FieldBatch`, `DerivativeBatch`, `ResidualBatch`, `GeneratorFamily`, `InvariantMapSpec`, and `VerificationReport`
+- uniform rectilinear scalar 1D stable paths
+- Heat and Burgers strong-form paths
+- frozen `v0.8` weak Heat/Burgers residual report APIs
+- frozen `v0.9` normalized periodic short-horizon KdV strong path
+- frozen `v0.10` supportability reporting helpers under `pdelie.reporting`
+- frozen `v0.11` order-4 spectral derivative extension
+- existing polynomial translation fitting and finite-transform verification
+
+The new `v0.12` scope is supportability around those existing surfaces:
+
+- generator-fit diagnostic semantics
+- verification diagnostic semantics
+- reporting helper hardening, if public helper names are frozen in M1/M2
+- internal KS diagnostic sweep reporting, without promotion
+- orbit/coverage diagnostic feasibility, without augmentation APIs in M0
+- API/public-surface audit and compact release-gate coverage
+
+---
+
+## Non-goals
+
+`v0.12` explicitly does not include:
+
+- a new PDE
+- stable KS generator promotion
+- stable KS residual evaluator promotion
+- stable KS vertical-slice example promotion
+- KS imported parity
+- weak KS
+- weak derivative expansion
+- broad dataset adapters
+- PDEBench or The Well support
+- multidimensional grids
+- nonuniform grids
+- multivariable systems
+- custom KS initial-condition APIs
+- configurable KS coefficient families
+- neural generators
+- operator-facing symmetry work
+- manuscript-specific experiment policy
+- private-paper branch logic
+- private-paper thresholds, tables, figures, or labels
+- public orbit augmentation utilities in M0
+- public reporting helpers in M0
+- root `pdelie` export expansion unless a later milestone explicitly accepts it
+
+---
+
+## Candidate Public API Policy
+
+M0 lands no public API.
+
+If `v0.12` lands public APIs later, they must be reporting or diagnostic helpers only.
+Candidate public APIs must be frozen in M1 before implementation in M2 or M4.
+
+Likely allowed API direction:
+
+- submodule-only helpers under `pdelie.reporting`
+- JSON-compatible runtime summaries
+- diagnostic reports over existing canonical objects and runtime reports
+- no new canonical object unless a later milestone proves it is necessary
+
+Likely rejected API direction:
+
+- root `pdelie` exports
+- stable KS generator/residual APIs
+- broad adapter APIs
+- manuscript-table or figure APIs
+- mutation-heavy augmentation APIs
+- downstream sparse-discovery experiment policy
+
+`docs/specs/API_STABILITY.md` remains unchanged in M0.
+It should change only if M2 or M4 actually lands a public reporting/diagnostic API.
+
+---
+
+## Milestones
+
+### Milestone 0 - Scope Freeze
+
+Freeze `v0.12` as diagnostics and supportability hardening, add this scope document, reset `PLAN.md`, and update `ROADMAP.md`.
+
+M0 is docs-only.
+It does not change runtime code, tests, package metadata, README, changelog, release readiness, or API stability docs.
+
+### Milestone 1 - Fit / Verification Diagnostic Semantics Freeze
+
+Freeze diagnostic semantics before implementation.
+
+Expected decisions:
+
+- fit diagnostic summary fields
+- verification diagnostic summary fields
+- singular-value and condition-number reporting policy
+- basis delta norm and column scaling fields
+- epsilon sweep summary shape
+- fallback reason category policy
+- whether later helpers are public under `pdelie.reporting` or internal only
+
+### Milestone 2 - Diagnostic / Reporting Helper Implementation
+
+Implement the M1-frozen diagnostics.
+
+Public API is allowed only if M1 freezes exact helper names and schemas.
+If public helpers land, update `API_STABILITY.md` in M2.
+
+No algorithmic fitting changes are part of M2 unless a deterministic blocker appears.
+
+### Milestone 3 - Internal KS Diagnostic Sweep Harness
+
+Keep KS internal and diagnostic-only.
+
+Expected scope:
+
+- bounded epsilon sweeps
+- selected span distance
+- SVD span distance
+- fallback status and reason
+- first verification error
+- singular values and condition number if M2 exposes them
+- no promotion gate
+
+### Milestone 4 - Orbit / Coverage Diagnostic Feasibility
+
+Evaluate paper-agnostic orbit and coverage diagnostics.
+
+Allowed direction:
+
+- read-only finite-transform or orbit views, if scoped tightly
+- periodic `x` coverage diagnostics
+- augmentation provenance summaries
+- finite-transform consistency checks
+
+M4 must not implement private-paper policy or train-augmentation recipes.
+
+### Milestone 5 - API / Public-surface Audit
+
+Audit API stability and public exports after any M2/M4 helper decisions.
+
+Required checks:
+
+- `API_STABILITY.md` matches actual public helper surface
+- root exports remain narrow
+- KS generator/residual/example APIs remain absent
+- weak KS remains absent
+- broad adapters remain absent
+
+### Milestone 6 - Release Gate and Readiness
+
+Add compact `v0_12-release-gate`, align release-facing docs and package metadata, and close the direct Git-tag release path.
+
+Release-gate expectations stay representative:
+
+- current release gate is compact
+- full editable tests cover historical gates
+- package smoke remains small
+- no KS promotion claims
+- no PyPI or TestPyPI publishing before the v1.0 publishing policy is accepted
+
+---
+
+## Relationship to Downstream Orbit-augmentation Work
+
+Downstream work has shown that coverage-mediated translation-orbit augmentation can help sparse PDE recovery under localized observations.
+
+The reusable `pdelie` candidates are the generic mechanics:
+
+- finite-transform or orbit views over canonical `FieldBatch`
+- periodic `x` window coverage diagnostics
+- generic augmentation provenance summaries
+- runtime summaries for residual, fit, verification, and coverage results
+- finite-transform consistency checks
+
+The downstream-only pieces remain outside `pdelie`:
+
+- manuscript-specific branch naming
+- sparse-regression policy decisions
+- dataset-specific train/test policy
+- paper-specific thresholds and labels
+- automatic augmentation recipes tuned to one experiment
+
+`v0.12` may evaluate reusable diagnostics for this direction.
+It must not implement private-paper experiment policy.
+
+---
+
+## Release-gate Expectations
+
+The eventual `v0_12-release-gate` should be compact and representative.
+It should not duplicate full diagnostic, reporting, KS, or historical release-gate suites.
+
+Expected release-gate shape:
+
+- public reporting/diagnostic APIs exist only if frozen and implemented in M2/M4
+- root export boundaries remain intact
+- stable Heat/Burgers/weak-report/KdV surfaces remain importable
+- order-4 derivative API remains documented and available
+- public KS generator/residual/example APIs remain absent
+- no weak KS API appears
+- examples remain JSON-compatible runtime summaries
+- package smoke remains small and avoids KS internal feasibility sweeps
+
+Historical release-gate tests should remain runnable locally and covered by the full editable test suite.
+
+---
+
+## Status
+
+- `v0.11`: COMPLETE as KS feasibility/no-go closeout
+- Milestone 0: COMPLETE
+- Milestone 1: PENDING
+- Milestone 2: PENDING
+- Milestone 3: PENDING
+- Milestone 4: PENDING
+- Milestone 5: PENDING
+- Milestone 6: PENDING

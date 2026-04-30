@@ -384,10 +384,67 @@ The authoritative `v0.11` scope freeze belongs in:
 
 ---
 
-## No Committed Release Target
+## Next Committed Release Target
 
-No next release is committed after `v0.11`.
-`v0.12+` remains planned and conditional until a separate scope freeze is accepted.
+### `v0.12` - Diagnostics and supportability hardening
+**Status:** Committed
+
+`v0.12` is the committed release after the completed `v0.11` KS feasibility no-go closeout.
+
+Its purpose is:
+
+> harden diagnostics and reporting around generator fitting, verification, and orbit/coverage supportability without adding new numerical scope.
+
+Committed release definition:
+
+`existing stable Heat/Burgers/weak-report/KdV/reporting surfaces -> fit and verification diagnostics -> orbit/coverage reporting feasibility -> release supportability`
+
+Committed scope:
+
+- fit and verification diagnostic semantics
+- diagnostic/reporting helper implementation if exact public helper names are frozen
+- internal KS diagnostic sweeps, with KS remaining unpromoted
+- paper-agnostic orbit/coverage diagnostic feasibility
+- API and public-surface audit
+- compact current release-gate readiness
+
+Release interpretation:
+
+- this is a supportability release, not a new PDE release
+- KS remains internal feasibility/no-go evidence from `v0.11`
+- public `v0.12` APIs, if any, must be reporting or diagnostic helpers frozen before implementation
+- `API_STABILITY.md` changes only if such public helpers land
+
+Explicit non-goals:
+
+- no new PDE
+- no stable KS generator
+- no stable KS residual evaluator
+- no KS vertical-slice example
+- no KS imported parity
+- no weak KS API
+- no broad dataset adapters
+- no PDEBench or The Well support
+- no multidimensional, multivariable, or nonuniform-grid expansion
+- no operator-facing symmetry work
+- no private-paper experiment policy
+- no root export expansion unless explicitly accepted by a later milestone
+
+The authoritative `v0.12` scope freeze belongs in:
+
+- `V0_12_SCOPE.md`
+
+### Release Gate for `v0.12`
+
+`v0.12` is complete only if:
+
+- fit/verification diagnostics are frozen before implementation
+- any new public reporting/diagnostic helpers are documented in `API_STABILITY.md`
+- KS public generator, residual, example, weak API, imported parity, and root exports remain absent
+- orbit/coverage work remains paper-agnostic and diagnostic unless explicitly frozen otherwise
+- examples and reporting remain JSON-compatible runtime summaries
+- CI uses one compact current release gate plus full editable tests and package smoke
+- package/readiness docs preserve the `v1.0` package-index publishing deferral
 
 ---
 
@@ -512,10 +569,10 @@ The authoritative `v0.7` scope freeze belongs in:
 
 ## Medium-Term Horizon
 
-### `v0.12+` - Later PDE and dataset coverage
+### `v0.13+` - Later PDE and dataset coverage
 **Status:** Planned
 
-Later PDE and dataset coverage remains planned after the supportability release and the completed `v0.11` KS feasibility no-go closeout.
+Later PDE and dataset coverage remains planned after the `v0.12` diagnostics/supportability release and the completed `v0.11` KS feasibility no-go closeout.
 
 Candidate directions:
 
@@ -567,6 +624,7 @@ This is not part of the near-term non-operator Paper 1 path and should not be mi
 - `V0_9_SCOPE.md` once frozen
 - `V0_10_SCOPE.md` once frozen
 - `V0_11_SCOPE.md` once frozen
+- `V0_12_SCOPE.md` once frozen
 - `PLAN.md` for current execution only
 
 ### Non-authoritative for scheduling
@@ -602,6 +660,7 @@ It should **not** be edited every time a new idea appears.
 - `v0.9` = stable normalized periodic short-horizon KdV strong path
 - `v0.10` = supportability and `v1.0` readiness for the existing stable engine
 - `v0.11` = order-4 spectral derivatives and Kuramoto-Sivashinsky feasibility no-go/defer closeout
-- `v0.12+` = wave semantics, external benchmark adapters, and broader PDE coverage only after scope freezes
+- `v0.12` = diagnostics and supportability hardening for fitting, verification, reporting, and orbit/coverage diagnostics
+- `v0.13+` = wave semantics, external benchmark adapters, and broader PDE coverage only after scope freezes
 - `v1.0` = stable public engine
 - later / experimental = operator-facing symmetry discovery
