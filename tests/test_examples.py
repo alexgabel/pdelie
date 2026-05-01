@@ -12,6 +12,7 @@ from pdelie.examples import (
     run_invariant_workflow_summary_example,
     run_kdv_vertical_slice_example,
     run_orbit_coverage_diagnostics_example,
+    run_translation_orbit_batch_example,
 )
 
 
@@ -197,3 +198,36 @@ def test_invariant_workflow_summary_module_prints_json_only() -> None:
     for workflow in parsed["workflows"]:
         assert workflow["summary_type"] == "invariant_workflow"
         assert workflow["orbit"]["orbit_passed"] is True
+
+
+def test_translation_orbit_batch_example_runs_end_to_end() -> None:
+    result = run_translation_orbit_batch_example()
+
+    assert json.loads(json.dumps(result)) == result
+    assert result["summary_schema_version"] == "0.1"
+    assert result["summary_type"] == "translation_orbit_batch_example"
+    assert result["extra_metrics"]["example_name"] == "translation_orbit_batch"
+    assert result["extra_metrics"]["duplicate_shifts_preserved"] is True
+    assert result["extra_metrics"]["ordering"] == "shift_major"
+    assert len(result["cases"]) == 2
+    cases = {case["case_name"]: case for case in result["cases"]}
+    assert set(cases) == {"heat", "kdv"}
+    for case in cases.values():
+        assert case["orbit_shape"][0] == case["source_shape"][0] * len(result["extra_metrics"]["shifts"])
+        assert case["orbit_report"]["summary_type"] == "uniform_translation_orbit_batch"
+        assert case["orbit_report"]["duplicate_shifts_preserved"] is True
+        assert case["orbit_report"]["ordering"] == "shift_major"
+        assert case["orbit_report"]["source_batch_indices"] == [0, 1] * len(result["extra_metrics"]["shifts"])
+        assert case["residual"]["summary_type"] == "residual_batch"
+        assert np.isfinite(float(case["residual"]["max_abs_residual"]))
+    assert cases["kdv"]["orbit_report"]["source_field_id"] == "kdv_seed_15012"
+    assert not hasattr(pdelie, "run_translation_orbit_batch_example")
+
+
+def test_translation_orbit_batch_module_prints_json_only() -> None:
+    parsed = _run_module_json("pdelie.examples.translation_orbit_batch")
+
+    assert parsed["summary_type"] == "translation_orbit_batch_example"
+    assert len(parsed["cases"]) == 2
+    for case in parsed["cases"]:
+        assert case["orbit_report"]["summary_type"] == "uniform_translation_orbit_batch"

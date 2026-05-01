@@ -453,6 +453,81 @@ The authoritative `v0.12` scope freeze belongs in:
 
 ## Current Completed Release
 
+### `v0.15` - Materialized uniform translation orbit batches
+**Status:** Completed
+
+`v0.15` is the completed materialized translation orbit batch release after the `v0.14` invariant workflow summary release.
+
+Its purpose is:
+
+> promote the first conservative user-facing data utility for materializing finite uniform translation orbits from canonical `FieldBatch` inputs.
+
+Completed release definition:
+
+`canonical scalar 1D periodic FieldBatch + finite uniform x-shifts -> materialized orbit FieldBatch + JSON-compatible provenance report`
+
+Completed scope:
+
+- `pdelie.invariants.build_uniform_translation_orbit_batch(...)`
+- `pdelie.invariants.OrbitBatchResult`
+- shift-major batch materialization
+- duplicate-shift preservation
+- optional `source_field_id` provenance metadata
+- optional source and shift index reporting
+- aggregate orbit-materialization metadata and preprocess provenance
+- Heat and KdV translation orbit batch example
+- API/public-surface audit
+- compact current `v0_15-release-gate` readiness
+
+Release interpretation:
+
+- this is the first conservative user-facing data utility beyond diagnostics
+- it materializes a `FieldBatch`, but does not manage experimental partitions
+- no train/test policy, split management, or heldout-leakage detection is promoted
+- time-translation diagnostics remain deferred
+- `v0.15.0` is a Git-tag-only release; PyPI and TestPyPI publication are deferred to `v1.0` or later
+
+Explicit non-goals:
+
+- no train/test policy
+- no split management
+- no heldout-leakage detection
+- no sparse-discovery branch policy
+- no private-paper augmentation recipe
+- no time-translation APIs
+- no new PDE
+- no stable KS generator or residual evaluator
+- no weak KS API
+- no broad dataset adapters
+- no PDEBench or The Well support
+- no multidimensional, multivariable, or nonuniform-grid expansion
+- no operator-facing symmetry work
+- no root export expansion
+
+The authoritative `v0.15` scope freeze belongs in:
+
+- `V0_15_SCOPE.md`
+
+### Release Gate for `v0.15`
+
+`v0.15` is complete only if:
+
+- orbit-batch materialization is documented and covered by tests
+- new APIs are importable from `pdelie.invariants` only
+- root `pdelie` remains unchanged
+- representative Heat and KdV orbit batches validate as `FieldBatch` objects
+- output shape and provenance follow the frozen shift-major ordering
+- duplicate shifts remain traceable
+- residual diagnostics remain finite on representative materialized batches
+- the translation-orbit-batch example emits JSON only
+- no public train/test policy, split management, time-translation, KS, weak KS, broad adapter, or operator API lands
+- CI uses one compact current release gate plus full editable tests and package smoke
+- package/readiness docs preserve the `v1.0` package-index publishing deferral
+
+---
+
+## Recent Completed Release
+
 ### `v0.14` - Invariant workflow summaries and read-only orbit reports
 **Status:** Completed
 
@@ -710,42 +785,6 @@ The authoritative `v0.7` scope freeze belongs in:
 
 ## Medium-Term Horizon
 
-### `v0.15` - Materialized uniform translation orbit batches
-**Status:** Planned
-
-`v0.15` is the planned next major direction after the `v0.14` invariant workflow summary release, but it is not yet the active committed release until a `v0.15` M0 scope freeze opens.
-
-Planned theme:
-
-> promote the first conservative user-facing data utility for materializing finite uniform translation orbits from canonical `FieldBatch` inputs.
-
-Candidate API direction:
-
-- `pdelie.invariants.build_uniform_translation_orbit_batch(...)`
-
-Scope to freeze before implementation:
-
-- augmentation appends along the batch dimension
-- duplicate shifts are preserved
-- source indices and shift indices are recorded as provenance/report metadata
-- masks are transformed and concatenated consistently with existing `InvariantApplier` behavior
-- preprocess logs append one orbit-materialization entry
-- metadata records group/action parameters
-- no train/test policy is applied
-- no split management or heldout-leakage detection is attempted
-- return shape is explicit, preferably `(FieldBatch, report)` or a named structured pair rather than a silent `FieldBatch`-only result
-
-Interpretation:
-
-- this would be the first truly user-facing data utility beyond diagnostics
-- it remains paper-agnostic
-- it does not add sparse-discovery branch policy or train/heldout management
-- it does not add time translation, a new PDE, or root exports
-
-The detailed strategy note belongs in:
-
-- `V0_15_PLUS_STRATEGY.md`
-
 ### `v0.16` - External symmetry-candidate interop
 **Status:** Planned
 
@@ -862,6 +901,7 @@ This is not part of the near-term non-operator Paper 1 path and should not be mi
 - `V0_12_SCOPE.md` once frozen
 - `V0_13_SCOPE.md` once frozen
 - `V0_14_SCOPE.md` once frozen
+- `V0_15_SCOPE.md` once frozen
 - `PLAN.md` for current execution only
 
 ### Non-authoritative for scheduling
@@ -901,7 +941,7 @@ It should **not** be edited every time a new idea appears.
 - `v0.12` = diagnostics and supportability hardening for fitting, verification, reporting, and orbit/coverage diagnostics
 - `v0.13` = public orbit/coverage diagnostics under `pdelie.invariants`, without augmentation
 - `v0.14` = invariant workflow summaries and read-only uniform translation orbit reports, without augmentation
-- `v0.15` = materialized uniform translation orbit batches after a dedicated scope freeze
+- `v0.15` = materialized uniform translation orbit batches under `pdelie.invariants`
 - `v0.16` = external symmetry-candidate interop and validation, not detector training
 - `v0.17` = formula-backed and non-polynomial generator support after schema semantics are frozen
 - `v0.18+` = scoped PDE expansion, with reaction/advection-diffusion preferred unless KS residual-only is deliberately scoped

@@ -169,6 +169,17 @@ Runtime public API for the frozen `v0.14` Milestone 2/M3 slice:
 - time-translation diagnostics remain deferred; `InvariantApplier` still exposes only uniform periodic `x` translation in the stable runtime path
 - these APIs have no root `pdelie` exports
 
+Runtime public API for the frozen `v0.15` Milestone 2 slice:
+
+- `pdelie.invariants.build_uniform_translation_orbit_batch` for materializing finite uniform `x`-translation orbit batches from canonical scalar 1D periodic `FieldBatch` inputs
+- `pdelie.invariants.OrbitBatchResult` as a runtime-only structured result containing the materialized `FieldBatch` and a JSON-compatible provenance report
+- the materialized output appends along the batch dimension, preserves raw shift order and duplicate shifts, and records optional source/shift indices in the report
+- the helper reuses `InvariantApplier` uniform translation and does not introduce a second translation implementation
+- the helper records orbit-materialization metadata and appends one aggregate preprocess-log entry
+- this API is a conservative data utility, not a train/test splitter, split-management helper, leakage detector, sparse-discovery branch policy, canonical object, figure/rendering API, or manuscript artifact schema
+- time-translation, public KS runtime APIs, weak KS, broad adapters, and operator-facing APIs remain deferred
+- these APIs have no root `pdelie` exports
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 

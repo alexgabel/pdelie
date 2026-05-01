@@ -47,6 +47,8 @@ def test_runtime_package_api_is_importable() -> None:
     )
     from pdelie.invariants import (
         InvariantApplier,
+        OrbitBatchResult,
+        build_uniform_translation_orbit_batch,
         compute_periodic_window_coverage,
         diagnose_uniform_translation_consistency,
         summarize_uniform_translation_orbit,
@@ -88,6 +90,8 @@ def test_runtime_package_api_is_importable() -> None:
     assert subsample_time is not None
     assert subsample_x is not None
     assert InvariantApplier is not None
+    assert OrbitBatchResult is not None
+    assert build_uniform_translation_orbit_batch is not None
     assert compute_periodic_window_coverage is not None
     assert diagnose_uniform_translation_consistency is not None
     assert summarize_uniform_translation_orbit is not None
@@ -122,7 +126,9 @@ def test_runtime_package_api_is_importable() -> None:
 
 def test_root_package_does_not_export_runtime_invariant_applier() -> None:
     assert not hasattr(pdelie, "InvariantApplier")
+    assert not hasattr(pdelie, "OrbitBatchResult")
     assert not hasattr(pdelie, "add_gaussian_noise")
+    assert not hasattr(pdelie, "build_uniform_translation_orbit_batch")
     assert not hasattr(pdelie, "build_translation_canonical_discovery_inputs")
     assert not hasattr(pdelie, "build_translation_orbit_dataset")
     assert not hasattr(pdelie, "build_translation_orbit_views")
@@ -165,11 +171,15 @@ def test_root_package_does_not_export_runtime_invariant_applier() -> None:
     assert not hasattr(pdelie, "generate_ks_feasibility_field_batch")
     assert not hasattr(pdelie, "KSResidualEvaluator")
     assert not hasattr(pdelie, "KuramotoSivashinskyResidualEvaluator")
+    assert not hasattr(pdelie, "materialize_uniform_translation_orbit")
+    assert not hasattr(pdelie, "split_orbit_train_heldout")
+    assert not hasattr(pdelie, "train_test_translation_orbit_split")
     assert not hasattr(pdelie, "WeakKSResidualEvaluator")
     assert not hasattr(pdelie, "OperatorSymmetry")
     assert not hasattr(pdelie, "run_invariant_workflow_summary_example")
     assert not hasattr(pdelie, "run_kdv_vertical_slice_example")
     assert not hasattr(pdelie, "run_orbit_coverage_diagnostics_example")
+    assert not hasattr(pdelie, "run_translation_orbit_batch_example")
     assert not hasattr(pdelie, "sample_kdv_mode_coefficients")
     assert not hasattr(pdelie, "compare_generator_spans")
     assert not hasattr(pdelie, "diagnose_generator_family_closure")
@@ -186,6 +196,8 @@ def test_invariants_package_runtime_api_matches_frozen_milestone_surface() -> No
     invariants_module = importlib.import_module("pdelie.invariants")
 
     assert hasattr(invariants_module, "InvariantApplier")
+    assert hasattr(invariants_module, "OrbitBatchResult")
+    assert hasattr(invariants_module, "build_uniform_translation_orbit_batch")
     assert hasattr(invariants_module, "compute_periodic_window_coverage")
     assert hasattr(invariants_module, "diagnose_uniform_translation_consistency")
     assert hasattr(invariants_module, "summarize_uniform_translation_orbit")
@@ -194,6 +206,9 @@ def test_invariants_package_runtime_api_matches_frozen_milestone_surface() -> No
     assert not hasattr(invariants_module, "build_translation_orbit_views")
     assert not hasattr(invariants_module, "diagnose_time_translation_consistency")
     assert not hasattr(invariants_module, "InvariantMapSpec")
+    assert not hasattr(invariants_module, "materialize_uniform_translation_orbit")
+    assert not hasattr(invariants_module, "split_orbit_train_heldout")
+    assert not hasattr(invariants_module, "train_test_translation_orbit_split")
 
 
 def test_data_package_runtime_api_matches_current_frozen_surface() -> None:
@@ -262,6 +277,7 @@ def test_examples_package_runtime_api_matches_current_frozen_surface() -> None:
     assert hasattr(examples_module, "run_invariant_workflow_summary_example")
     assert hasattr(examples_module, "run_kdv_vertical_slice_example")
     assert hasattr(examples_module, "run_orbit_coverage_diagnostics_example")
+    assert hasattr(examples_module, "run_translation_orbit_batch_example")
     assert not hasattr(examples_module, "run_ks_vertical_slice_example")
     assert not hasattr(examples_module, "run_orbit_coverage_feasibility")
 

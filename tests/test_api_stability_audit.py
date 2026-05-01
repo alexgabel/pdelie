@@ -9,6 +9,7 @@ import pdelie
 _ROOT_RUNTIME_NAMES = {
     "InvariantApplier",
     "add_gaussian_noise",
+    "build_uniform_translation_orbit_batch",
     "build_translation_canonical_discovery_inputs",
     "coerce_generator_family",
     "compare_generator_spans",
@@ -39,6 +40,7 @@ _ROOT_RUNTIME_NAMES = {
     "run_kdv_vertical_slice_example",
     "run_orbit_coverage_diagnostics_example",
     "run_invariant_workflow_summary_example",
+    "run_translation_orbit_batch_example",
     "split_batch_train_heldout",
     "subsample_time",
     "subsample_x",
@@ -75,9 +77,12 @@ _DEFERRED_OR_PRIVATE_NAMES = {
     "generate_ks_feasibility_field_batch",
     "load_pdebench",
     "load_the_well",
+    "materialize_uniform_translation_orbit",
     "sample_kdv_mode_coefficients",
+    "split_orbit_train_heldout",
     "summarize_orbit_coverage",
     "summarize_orbit_coverage_feasibility",
+    "train_test_translation_orbit_split",
 }
 _DEFERRED_API_STABILITY_NAMES = {
     "pdelie.data.augment_translation_orbit",
@@ -127,6 +132,10 @@ _V0_14_INVARIANT_WORKFLOW_APIS = {
     "pdelie.invariants.summarize_uniform_translation_orbit",
     "pdelie.reporting.summarize_invariant_workflow",
 }
+_V0_15_ORBIT_BATCH_APIS = {
+    "pdelie.invariants.build_uniform_translation_orbit_batch",
+    "pdelie.invariants.OrbitBatchResult",
+}
 
 
 def _api_stability_text() -> str:
@@ -148,6 +157,7 @@ def test_api_stability_doc_covers_current_stable_runtime_surface() -> None:
         | _V0_12_REPORTING_APIS
         | _V0_13_INVARIANT_APIS
         | _V0_14_INVARIANT_WORKFLOW_APIS
+        | _V0_15_ORBIT_BATCH_APIS
     ):
         assert api_name in text
 
@@ -207,9 +217,12 @@ def test_required_runtime_submodule_apis_remain_importable() -> None:
             "run_invariant_workflow_summary_example",
             "run_kdv_vertical_slice_example",
             "run_orbit_coverage_diagnostics_example",
+            "run_translation_orbit_batch_example",
         },
         "pdelie.invariants": {
             "InvariantApplier",
+            "OrbitBatchResult",
+            "build_uniform_translation_orbit_batch",
             "compute_periodic_window_coverage",
             "diagnose_uniform_translation_consistency",
             "summarize_uniform_translation_orbit",
@@ -274,31 +287,32 @@ def test_deferred_and_private_names_are_not_public_submodule_exports() -> None:
             assert not hasattr(module, name), f"{module.__name__}.{name}"
 
 
-def test_v0_14_planning_docs_record_invariant_workflow_and_no_augmentation_scope() -> None:
+def test_v0_15_planning_docs_record_orbit_batch_and_no_split_policy_scope() -> None:
     plan = _repo_text("docs/planning/PLAN.md")
-    scope = _repo_text("docs/planning/V0_14_SCOPE.md")
+    scope = _repo_text("docs/planning/V0_15_SCOPE.md")
     roadmap = _repo_text("docs/planning/ROADMAP.md")
 
     assert "**Status:** COMPLETE" in plan
-    assert "Milestone 2 - Combined Invariant Workflow Summary" in plan
-    assert "pdelie.reporting.summarize_invariant_workflow" in plan
-    assert "Milestone 3 - Uniform Translation Orbit Report" in plan
-    assert "pdelie.invariants.summarize_uniform_translation_orbit" in plan
-    assert "read-only runtime reports, not augmented datasets" in plan
+    assert "Milestone 2 - Orbit Batch Implementation" in plan
+    assert "pdelie.invariants.build_uniform_translation_orbit_batch" in plan
+    assert "pdelie.invariants.OrbitBatchResult" in plan
+    assert "Milestone 3 - Compatibility And Diagnostics" in plan
+    assert "shift-major" in plan
+    assert "no split-management or leakage-detection helper landed" in plan
     assert "## Milestone 5 - API / Public-surface Audit" in plan
-    assert "no public augmentation utilities landed" in plan
     assert "## Milestone 6 - Release Gate and Readiness" in plan
-    assert "updated CI so the current explicit release gate is `v0_14-release-gate`" in plan
+    assert "updated CI so the current explicit release gate is `v0_15-release-gate`" in plan
     assert "- Milestone 6: COMPLETE" in plan
 
-    assert "read-only uniform translation orbit reports" in scope
-    assert "no time-translation API" in scope
-    assert "pdelie.reporting.summarize_invariant_workflow" in scope
-    assert "pdelie.invariants.summarize_uniform_translation_orbit" in scope
+    assert "materialized uniform translation orbit batches" in scope
+    assert "no train/test policy" in scope
+    assert "no time-translation APIs" in scope
+    assert "pdelie.invariants.build_uniform_translation_orbit_batch" in scope
+    assert "pdelie.invariants.OrbitBatchResult" in scope
     assert "- Milestone 4: COMPLETE" in scope
     assert "- Milestone 5: COMPLETE" in scope
     assert "- Milestone 6: COMPLETE" in scope
 
-    assert "`v0.14` is the completed invariant workflow summary and orbit report release" in roadmap
-    assert "read-only runtime reports, not augmented datasets" in roadmap
+    assert "`v0.15` is the completed materialized translation orbit batch release" in roadmap
+    assert "no train/test policy, split management, or heldout-leakage detection is promoted" in roadmap
     assert "- no new PDE" in roadmap
