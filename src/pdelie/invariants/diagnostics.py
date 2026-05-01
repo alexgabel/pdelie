@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from copy import deepcopy
 import json
 from collections.abc import Mapping, Sequence
 from typing import Any
@@ -231,9 +232,12 @@ def _translation_generator() -> GeneratorFamily:
     )
 
 
+_TRANSLATION_GENERATOR_METADATA = _translation_generator().to_dict()
+
+
 def _translation_spec(shift: float) -> InvariantMapSpec:
     return InvariantMapSpec(
-        generator_metadata=_translation_generator().to_dict(),
+        generator_metadata=deepcopy(_TRANSLATION_GENERATOR_METADATA),
         construction_method="uniform_translation",
         parameters={"axis": "x", "shift": float(shift)},
         domain_validity="global",
@@ -308,14 +312,16 @@ def diagnose_uniform_translation_consistency(
         period_wrapped = applier.apply(field, _translation_spec(raw_shift + domain_length))
         provenance = transformed.preprocess_log[-1]
         parameters = provenance.get("parameters", {})
+        inverse_relative_l2_error = _relative_l2(inverted.values, field.values)
+        period_wrap_relative_l2_error = _relative_l2(period_wrapped.values, transformed.values)
         report: dict[str, Any] = {
             "shift": raw_shift,
             "normalized_shift": normalized_shift,
             **_structure_flags(transformed, field),
-            "inverse_relative_l2_error": _relative_l2(inverted.values, field.values),
-            "period_wrap_relative_l2_error": _relative_l2(period_wrapped.values, transformed.values),
-            "inverse_passed": _relative_l2(inverted.values, field.values) <= 1e-8,
-            "period_wrap_passed": _relative_l2(period_wrapped.values, transformed.values) <= 1e-8,
+            "inverse_relative_l2_error": inverse_relative_l2_error,
+            "period_wrap_relative_l2_error": period_wrap_relative_l2_error,
+            "inverse_passed": inverse_relative_l2_error <= 1e-8,
+            "period_wrap_passed": period_wrap_relative_l2_error <= 1e-8,
             "preprocess_log_length_delta": len(transformed.preprocess_log) - len(field.preprocess_log),
             "provenance_operation": provenance.get("operation"),
             "provenance_construction_method": provenance.get("construction_method"),
