@@ -13,6 +13,7 @@ from pdelie.errors import SchemaValidationError, ScopeValidationError
 from pdelie.reporting import (
     summarize_generator_fit_diagnostics,
     summarize_generator_family,
+    summarize_invariant_workflow,
     summarize_residual_batch,
     summarize_verification_report,
     summarize_vertical_slice,
@@ -23,6 +24,11 @@ from pdelie.residuals import (
     HeatResidualEvaluator,
     evaluate_weak_burgers_residual,
     evaluate_weak_heat_residual,
+)
+from pdelie.invariants import (
+    compute_periodic_window_coverage,
+    diagnose_uniform_translation_consistency,
+    summarize_uniform_translation_orbit,
 )
 from pdelie.symmetry.fitting import fit_translation_generator
 from pdelie.symmetry.parameterization import translation_span_distance
@@ -353,6 +359,96 @@ def test_summarize_vertical_slice_defaults_extra_metrics_to_empty_mapping(heat_a
     )
 
     assert summary["extra_metrics"] == {}
+
+
+def test_summarize_invariant_workflow_combines_reports_and_canonical_objects(
+    heat_artifacts: dict[str, object],
+) -> None:
+    field = generate_heat_1d_field_batch(batch_size=1, num_times=5, num_points=16, seed=14020)
+    domain_length = 2.0 * np.pi
+    shifts = [0.0, domain_length / 16.0, domain_length]
+    coverage = compute_periodic_window_coverage(
+        x=field.coords["x"],
+        windows=[{"start": 0.0, "width": domain_length / 4.0}],
+        shifts=shifts,
+        domain_length=domain_length,
+    )
+    consistency = diagnose_uniform_translation_consistency(
+        field,
+        shifts=shifts,
+        residual_evaluator=HeatResidualEvaluator(),
+    )
+    orbit = summarize_uniform_translation_orbit(
+        field,
+        shifts=shifts,
+        windows=[{"start": 0.0, "width": domain_length / 4.0}],
+        residual_evaluator=HeatResidualEvaluator(),
+        source_field_id="heat-reporting-fixture",
+    )
+
+    summary = summarize_invariant_workflow(
+        orbit=orbit,
+        coverage=[coverage],
+        consistency=consistency,
+        generator=heat_artifacts["generator"],
+        verification=heat_artifacts["verification"],
+        extra_metrics={"numpy_array": np.asarray([1.0, 2.0])},
+    )
+
+    assert set(summary) == _SUMMARY_PREFIX_KEYS | {
+        "orbit",
+        "coverage",
+        "consistency",
+        "generator",
+        "fit_diagnostics",
+        "verification",
+        "extra_metrics",
+    }
+    assert summary["summary_schema_version"] == "0.1"
+    assert summary["summary_type"] == "invariant_workflow"
+    assert summary["orbit"]["summary_type"] == "uniform_translation_orbit"
+    assert summary["coverage"][0]["summary_type"] == "periodic_window_coverage"
+    assert summary["consistency"]["summary_type"] == "uniform_translation_consistency"
+    assert summary["generator"]["summary_type"] == "generator_family"
+    assert summary["fit_diagnostics"]["summary_type"] == "generator_fit_diagnostics"
+    assert summary["verification"]["summary_type"] == "verification_report"
+    assert summary["extra_metrics"] == {"numpy_array": [1.0, 2.0]}
+    _assert_json_serializable(summary)
+
+
+def test_summarize_invariant_workflow_accepts_precomputed_fit_summary(
+    heat_artifacts: dict[str, object],
+) -> None:
+    fit_summary = summarize_generator_fit_diagnostics(heat_artifacts["generator"])
+    verification_summary = summarize_verification_report(heat_artifacts["verification"])
+
+    summary = summarize_invariant_workflow(
+        fit_diagnostics=fit_summary,
+        verification=verification_summary,
+    )
+
+    assert summary["orbit"] is None
+    assert summary["coverage"] is None
+    assert summary["consistency"] is None
+    assert summary["generator"] is None
+    assert summary["fit_diagnostics"] == fit_summary
+    assert summary["verification"] == verification_summary
+    assert summary["extra_metrics"] == {}
+    _assert_json_serializable(summary)
+
+
+def test_summarize_invariant_workflow_rejects_malformed_reports() -> None:
+    with pytest.raises(SchemaValidationError, match="orbit"):
+        summarize_invariant_workflow(orbit={"summary_type": "periodic_window_coverage"})
+
+    with pytest.raises(SchemaValidationError, match="coverage"):
+        summarize_invariant_workflow(coverage={"summary_type": "uniform_translation_orbit"})
+
+    with pytest.raises(SchemaValidationError, match="report mapping"):
+        summarize_invariant_workflow(consistency=object())
+
+    with pytest.raises(SchemaValidationError, match="extra_metrics"):
+        summarize_invariant_workflow(extra_metrics=["not", "a", "mapping"])  # type: ignore[arg-type]
 
 
 @pytest.mark.parametrize(

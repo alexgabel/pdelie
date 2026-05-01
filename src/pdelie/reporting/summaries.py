@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from typing import Any
 
 import numpy as np
@@ -32,6 +32,14 @@ _WEAK_REPORT_KEYS = frozenset(
         "x_window_centers",
         "normalization",
         "diagnostics",
+    }
+)
+
+_INVARIANT_REPORT_SUMMARY_TYPES = frozenset(
+    {
+        "periodic_window_coverage",
+        "uniform_translation_consistency",
+        "uniform_translation_orbit",
     }
 )
 
@@ -114,6 +122,63 @@ def _summary_payload(summary_type: str, **items: Any) -> dict[str, Any]:
         **items,
     }
     return _validate_json_compatible(payload, name=f"{summary_type} summary")
+
+
+def _runtime_report(
+    value: Any,
+    *,
+    name: str,
+    expected_summary_types: set[str] | frozenset[str],
+) -> dict[str, Any]:
+    report = _require_mapping(value, name=name)
+    summary_type = report.get("summary_type")
+    if summary_type not in expected_summary_types:
+        raise SchemaValidationError(
+            f"{name} must have summary_type in {sorted(expected_summary_types)}."
+        )
+    return _validate_json_compatible(dict(report), name=name)
+
+
+def _runtime_report_or_list(
+    value: Any,
+    *,
+    name: str,
+    expected_summary_types: set[str] | frozenset[str],
+) -> dict[str, Any] | list[dict[str, Any]] | None:
+    if value is None:
+        return None
+    if isinstance(value, Mapping):
+        return _runtime_report(value, name=name, expected_summary_types=expected_summary_types)
+    if isinstance(value, (str, bytes)) or not isinstance(value, Sequence):
+        raise SchemaValidationError(f"{name} must be a report mapping or sequence of report mappings.")
+    return [
+        _runtime_report(item, name=f"{name}[{index}]", expected_summary_types=expected_summary_types)
+        for index, item in enumerate(value)
+    ]
+
+
+def _generator_summary_or_none(value: Any, *, name: str) -> dict[str, Any] | None:
+    if value is None:
+        return None
+    if isinstance(value, GeneratorFamily):
+        return summarize_generator_family(value)
+    return _runtime_report(value, name=name, expected_summary_types={"generator_family"})
+
+
+def _fit_diagnostic_summary_or_none(value: Any, *, name: str) -> dict[str, Any] | None:
+    if value is None:
+        return None
+    if isinstance(value, GeneratorFamily):
+        return summarize_generator_fit_diagnostics(value)
+    return _runtime_report(value, name=name, expected_summary_types={"generator_fit_diagnostics"})
+
+
+def _verification_summary_or_none(value: Any, *, name: str) -> dict[str, Any] | None:
+    if value is None:
+        return None
+    if isinstance(value, VerificationReport):
+        return summarize_verification_report(value)
+    return _runtime_report(value, name=name, expected_summary_types={"verification_report"})
 
 
 def summarize_residual_batch(residual: ResidualBatch) -> dict[str, Any]:
@@ -317,5 +382,50 @@ def summarize_vertical_slice(
         residual=summarize_residual_batch(residual),
         generator=summarize_generator_family(generator),
         verification=summarize_verification_report(verification),
+        extra_metrics=normalized_extra_metrics,
+    )
+
+
+def summarize_invariant_workflow(
+    *,
+    orbit: Mapping[str, Any] | Sequence[Mapping[str, Any]] | None = None,
+    coverage: Mapping[str, Any] | Sequence[Mapping[str, Any]] | None = None,
+    consistency: Mapping[str, Any] | Sequence[Mapping[str, Any]] | None = None,
+    generator: GeneratorFamily | Mapping[str, Any] | None = None,
+    verification: VerificationReport | Mapping[str, Any] | None = None,
+    fit_diagnostics: GeneratorFamily | Mapping[str, Any] | None = None,
+    extra_metrics: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    if extra_metrics is None:
+        normalized_extra_metrics: Mapping[str, Any] = {}
+    else:
+        normalized_extra_metrics = _require_mapping(extra_metrics, name="extra_metrics")
+
+    generator_summary = _generator_summary_or_none(generator, name="generator")
+    if fit_diagnostics is None and isinstance(generator, GeneratorFamily):
+        fit_summary = summarize_generator_fit_diagnostics(generator)
+    else:
+        fit_summary = _fit_diagnostic_summary_or_none(fit_diagnostics, name="fit_diagnostics")
+
+    return _summary_payload(
+        "invariant_workflow",
+        orbit=_runtime_report_or_list(
+            orbit,
+            name="orbit",
+            expected_summary_types={"uniform_translation_orbit"},
+        ),
+        coverage=_runtime_report_or_list(
+            coverage,
+            name="coverage",
+            expected_summary_types={"periodic_window_coverage"},
+        ),
+        consistency=_runtime_report_or_list(
+            consistency,
+            name="consistency",
+            expected_summary_types={"uniform_translation_consistency"},
+        ),
+        generator=generator_summary,
+        fit_diagnostics=fit_summary,
+        verification=_verification_summary_or_none(verification, name="verification"),
         extra_metrics=normalized_extra_metrics,
     )

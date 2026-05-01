@@ -9,7 +9,11 @@ import pytest
 from pdelie.contracts import FieldBatch
 from pdelie.data import generate_heat_1d_field_batch, generate_kdv_1d_field_batch
 from pdelie.errors import SchemaValidationError, ScopeValidationError
-from pdelie.invariants import compute_periodic_window_coverage, diagnose_uniform_translation_consistency
+from pdelie.invariants import (
+    compute_periodic_window_coverage,
+    diagnose_uniform_translation_consistency,
+    summarize_uniform_translation_orbit,
+)
 from pdelie.residuals import HeatResidualEvaluator, KdVResidualEvaluator
 
 
@@ -206,6 +210,76 @@ def test_uniform_translation_consistency_without_residual_evaluator_omits_residu
     assert report["residual_absolute_rms_delta"] is None
     assert report["residual_relative_rms_delta"] is None
     assert report["residual_stability_passed"] is None
+
+
+def test_uniform_translation_orbit_report_combines_coverage_consistency_and_provenance() -> None:
+    field = generate_heat_1d_field_batch(batch_size=2, num_times=17, num_points=64, seed=14011)
+    snapshot = field.to_dict()
+    shifts = [0.0, DOMAIN_LENGTH / 64.0, DOMAIN_LENGTH / 8.0, DOMAIN_LENGTH / 8.0, DOMAIN_LENGTH]
+    windows = [{"start": 0.0, "width": DOMAIN_LENGTH / 4.0}]
+
+    summary = summarize_uniform_translation_orbit(
+        field,
+        shifts=shifts,
+        windows=windows,
+        residual_evaluator=HeatResidualEvaluator(),
+        source_field_id="heat-orbit-fixture",
+    )
+
+    assert json.loads(json.dumps(summary)) == summary
+    _assert_json_plain(summary)
+    assert summary["summary_schema_version"] == "0.1"
+    assert summary["summary_type"] == "uniform_translation_orbit"
+    assert summary["source_field_id"] == "heat-orbit-fixture"
+    assert summary["field_dims"] == list(field.dims)
+    assert summary["field_shape"] == list(field.values.shape)
+    assert summary["equation"] is None
+    assert summary["raw_shifts"] == pytest.approx(shifts)
+    assert summary["normalized_shifts"] == pytest.approx([shift % DOMAIN_LENGTH for shift in shifts])
+    assert summary["transform_axis"] == "x"
+    assert summary["construction_method"] == "uniform_translation"
+    assert summary["transform_count"] == len(shifts)
+    assert summary["coverage"]["summary_type"] == "periodic_window_coverage"
+    assert summary["consistency"]["summary_type"] == "uniform_translation_consistency"
+    assert len(summary["orbit_reports"]) == len(shifts)
+    assert summary["orbit_passed"] is True
+    assert [report["shift"] for report in summary["orbit_reports"]] == pytest.approx(shifts)
+    for report in summary["orbit_reports"]:
+        assert report["transform_spec"]["construction_method"] == "uniform_translation"
+        assert report["transform_spec"]["parameters"]["axis"] == "x"
+        assert report["inverse_passed"] is True
+        assert report["period_wrap_passed"] is True
+        assert report["residual_stability_passed"] is True
+        assert report["consistency_passed"] is True
+        assert report["provenance_operation"] == "invariant_apply"
+        assert report["provenance_construction_method"] == "uniform_translation"
+    assert field.to_dict() == snapshot
+
+
+def test_uniform_translation_orbit_report_allows_report_only_minimal_mode() -> None:
+    field = generate_heat_1d_field_batch(batch_size=1, num_times=5, num_points=16, seed=14012)
+
+    summary = summarize_uniform_translation_orbit(
+        field,
+        shifts=[0.0, DOMAIN_LENGTH],
+        source_field_id={"dataset": "synthetic", "index": 1},
+    )
+
+    assert summary["coverage"] is None
+    assert summary["source_field_id"] == {"dataset": "synthetic", "index": 1}
+    assert summary["orbit_passed"] is True
+    for report in summary["orbit_reports"]:
+        assert report["residual_stability_passed"] is None
+        assert report["consistency_passed"] is True
+    for report in summary["consistency"]["shift_reports"]:
+        assert report["residual_rms_before"] is None
+
+
+def test_uniform_translation_orbit_report_rejects_non_json_source_field_id() -> None:
+    field = generate_heat_1d_field_batch(batch_size=1, num_times=5, num_points=16, seed=14013)
+
+    with pytest.raises(SchemaValidationError, match="source_field_id"):
+        summarize_uniform_translation_orbit(field, shifts=[0.0], source_field_id=object())
 
 
 def test_uniform_translation_consistency_rejects_unsupported_inputs() -> None:

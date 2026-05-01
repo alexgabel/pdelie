@@ -16,6 +16,7 @@ _ROOT_RUNTIME_NAMES = {
     "compute_spectral_fd_derivatives",
     "diagnose_generator_family_closure",
     "diagnose_uniform_translation_consistency",
+    "diagnose_time_translation_consistency",
     "evaluate_discovery_recovery",
     "evaluate_weak_burgers_residual",
     "evaluate_weak_heat_residual",
@@ -37,16 +38,19 @@ _ROOT_RUNTIME_NAMES = {
     "run_heat_vertical_slice_example",
     "run_kdv_vertical_slice_example",
     "run_orbit_coverage_diagnostics_example",
+    "run_invariant_workflow_summary_example",
     "split_batch_train_heldout",
     "subsample_time",
     "subsample_x",
     "summarize_generator_fit_diagnostics",
     "summarize_generator_family",
+    "summarize_invariant_workflow",
     "summarize_recovery_grid",
     "summarize_residual_batch",
     "summarize_verification_report",
     "summarize_vertical_slice",
     "summarize_weak_residual_report",
+    "summarize_uniform_translation_orbit",
     "to_pysindy_trajectories",
     "to_sympy_component_expressions",
 }
@@ -59,6 +63,7 @@ _DEFERRED_OR_PRIVATE_NAMES = {
     "WeakHeatResidualEvaluator",
     "WeakKdVResidualEvaluator",
     "augment_translation_orbit",
+    "build_translation_orbit_dataset",
     "build_translation_orbit_views",
     "compute_coverage_diagnostics",
     "compute_weak_derivatives",
@@ -76,6 +81,7 @@ _DEFERRED_OR_PRIVATE_NAMES = {
 }
 _DEFERRED_API_STABILITY_NAMES = {
     "pdelie.data.augment_translation_orbit",
+    "pdelie.data.build_translation_orbit_dataset",
     "pdelie.data.build_translation_orbit_views",
     "pdelie.data.compute_coverage_diagnostics",
     "pdelie.data.from_pdebench",
@@ -117,6 +123,10 @@ _V0_13_INVARIANT_APIS = {
     "pdelie.invariants.compute_periodic_window_coverage",
     "pdelie.invariants.diagnose_uniform_translation_consistency",
 }
+_V0_14_INVARIANT_WORKFLOW_APIS = {
+    "pdelie.invariants.summarize_uniform_translation_orbit",
+    "pdelie.reporting.summarize_invariant_workflow",
+}
 
 
 def _api_stability_text() -> str:
@@ -137,13 +147,15 @@ def test_api_stability_doc_covers_current_stable_runtime_surface() -> None:
         | _V0_11_DERIVATIVE_APIS
         | _V0_12_REPORTING_APIS
         | _V0_13_INVARIANT_APIS
+        | _V0_14_INVARIANT_WORKFLOW_APIS
     ):
         assert api_name in text
 
     assert "does not add a stable public Kuramoto-Sivashinsky data generator or residual evaluator" in text
     assert "these APIs have no root `pdelie` exports" in text
     assert "not canonical objects, artifact schemas, manuscript-table generators, or figure/rendering APIs" in text
-    assert "do not construct augmented datasets, orbit views, training branches" in text
+    assert "do not construct augmented datasets, orbit datasets, or transformed `FieldBatch` collections" in text
+    assert "time-translation diagnostics remain deferred" in text
     assert "weak-form derivatives and weak-form methods beyond the frozen `v0.8` weak residual report slice" in text
     assert "operator symmetry" in text
 
@@ -160,6 +172,8 @@ def test_api_stability_doc_does_not_promote_deferred_v0_13_surfaces() -> None:
     assert "nonuniform grids" not in text
     assert "augment_translation_orbit" not in text
     assert "build_translation_orbit_views" not in text
+    assert "build_translation_orbit_dataset" not in text
+    assert "diagnose_time_translation_consistency" not in text
 
 
 def test_root_package_still_exposes_only_stable_canonical_surface() -> None:
@@ -190,6 +204,7 @@ def test_required_runtime_submodule_apis_remain_importable() -> None:
         },
         "pdelie.examples": {
             "run_heat_vertical_slice_example",
+            "run_invariant_workflow_summary_example",
             "run_kdv_vertical_slice_example",
             "run_orbit_coverage_diagnostics_example",
         },
@@ -197,6 +212,7 @@ def test_required_runtime_submodule_apis_remain_importable() -> None:
             "InvariantApplier",
             "compute_periodic_window_coverage",
             "diagnose_uniform_translation_consistency",
+            "summarize_uniform_translation_orbit",
         },
         "pdelie.portability": {
             "coerce_generator_family",
@@ -206,6 +222,7 @@ def test_required_runtime_submodule_apis_remain_importable() -> None:
         "pdelie.reporting": {
             "summarize_generator_fit_diagnostics",
             "summarize_generator_family",
+            "summarize_invariant_workflow",
             "summarize_residual_batch",
             "summarize_verification_report",
             "summarize_vertical_slice",
@@ -257,31 +274,31 @@ def test_deferred_and_private_names_are_not_public_submodule_exports() -> None:
             assert not hasattr(module, name), f"{module.__name__}.{name}"
 
 
-def test_v0_13_planning_docs_record_public_diagnostics_and_no_augmentation_scope() -> None:
+def test_v0_14_planning_docs_record_invariant_workflow_and_no_augmentation_scope() -> None:
     plan = _repo_text("docs/planning/PLAN.md")
-    scope = _repo_text("docs/planning/V0_13_SCOPE.md")
+    scope = _repo_text("docs/planning/V0_14_SCOPE.md")
     roadmap = _repo_text("docs/planning/ROADMAP.md")
 
     assert "**Status:** COMPLETE" in plan
-    assert "Milestone 2 - Periodic Coverage Diagnostic" in plan
-    assert "pdelie.invariants.compute_periodic_window_coverage" in plan
-    assert "Milestone 3 - Translation Consistency Diagnostic" in plan
-    assert "pdelie.invariants.diagnose_uniform_translation_consistency" in plan
-    assert "diagnostics support invariant/finite-transform workflows but do not construct augmented datasets" in plan
+    assert "Milestone 2 - Combined Invariant Workflow Summary" in plan
+    assert "pdelie.reporting.summarize_invariant_workflow" in plan
+    assert "Milestone 3 - Uniform Translation Orbit Report" in plan
+    assert "pdelie.invariants.summarize_uniform_translation_orbit" in plan
+    assert "read-only runtime reports, not augmented datasets" in plan
     assert "## Milestone 5 - API / Public-surface Audit" in plan
     assert "no public augmentation utilities landed" in plan
     assert "## Milestone 6 - Release Gate and Readiness" in plan
-    assert "updated CI so the current explicit release gate is `v0_13-release-gate`" in plan
+    assert "updated CI so the current explicit release gate is `v0_14-release-gate`" in plan
     assert "- Milestone 6: COMPLETE" in plan
 
-    assert "diagnostics support invariant/finite-transform workflows but do not construct augmented datasets" in scope
-    assert "stable public augmentation utilities" in scope
-    assert "pdelie.invariants.compute_periodic_window_coverage" in scope
-    assert "pdelie.invariants.diagnose_uniform_translation_consistency" in scope
+    assert "read-only uniform translation orbit reports" in scope
+    assert "no time-translation API" in scope
+    assert "pdelie.reporting.summarize_invariant_workflow" in scope
+    assert "pdelie.invariants.summarize_uniform_translation_orbit" in scope
     assert "- Milestone 4: COMPLETE" in scope
     assert "- Milestone 5: COMPLETE" in scope
     assert "- Milestone 6: COMPLETE" in scope
 
-    assert "`v0.13` is the completed public orbit/coverage diagnostics release" in roadmap
-    assert "do not construct augmented datasets" in roadmap
+    assert "`v0.14` is the completed invariant workflow summary and orbit report release" in roadmap
+    assert "read-only runtime reports, not augmented datasets" in roadmap
     assert "- no new PDE" in roadmap

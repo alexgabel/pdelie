@@ -159,6 +159,16 @@ Runtime public API for the frozen `v0.13` Milestone 2/M3 slice:
 - these APIs do not construct augmented datasets, orbit views, training branches, canonical artifacts, figures, or manuscript tables
 - these APIs have no root `pdelie` exports
 
+Runtime public API for the frozen `v0.14` Milestone 2/M3 slice:
+
+- `pdelie.reporting.summarize_invariant_workflow` for JSON-compatible runtime summaries that combine coverage, consistency, orbit, generator, fit-diagnostic, verification, and optional extra-metric reports
+- `pdelie.invariants.summarize_uniform_translation_orbit` for JSON-compatible read-only reports over finite uniform `x` translations of canonical scalar 1D periodic `FieldBatch` inputs
+- these APIs support invariant and finite-transform workflows by reporting combined workflow and orbit metadata only
+- these APIs do not construct augmented datasets, orbit datasets, or transformed `FieldBatch` collections
+- `source_field_id` is optional JSON-compatible provenance metadata only, not a canonical identity system
+- time-translation diagnostics remain deferred; `InvariantApplier` still exposes only uniform periodic `x` translation in the stable runtime path
+- these APIs have no root `pdelie` exports
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 

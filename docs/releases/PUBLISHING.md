@@ -16,14 +16,14 @@ These files must be aligned before any release candidate or final release is pub
 
 ## V0.x Package-Index Deferral
 
-For the current `v0.x` series, including `v0.13.0`, release completion means:
+For the current `v0.x` series, including `v0.14.0`, release completion means:
 
 - metadata, docs, tests, build, and wheel-smoke checks pass
 - the release PR is merged
 - the merged commit is tagged in Git as the final version
 
-`v0.13.0` is intentionally a Git-tag-only release.
-Do not run TestPyPI or PyPI publishing for `v0.13`.
+`v0.14.0` is intentionally a Git-tag-only release.
+Do not run TestPyPI or PyPI publishing for `v0.14`.
 
 Package-index publishing through TestPyPI or PyPI is deferred until `v1.0` or later.
 The publishing model below remains the intended future package-index workflow once publication is re-enabled.
@@ -101,13 +101,16 @@ git clean -fdx
 python -m pytest
 python -m build --sdist --wheel
 python -m pdelie.examples.heat_vertical_slice
+python -m pdelie.examples.kdv_vertical_slice
+python -m pdelie.examples.orbit_coverage_diagnostics
+python -m pdelie.examples.invariant_workflow_summary
 ls -1 dist
 ~~~
 
 Expected local checks:
 
 - the package builds successfully
-- the stable example still runs
+- the stable examples still run
 - `dist/` contains the expected `sdist` and wheel for the release version
 
 For a stricter local smoke pass, install the wheel into a clean virtual environment before publishing.

@@ -1,6 +1,7 @@
 from pdelie.reporting.summaries import (
     summarize_generator_fit_diagnostics,
     summarize_generator_family,
+    summarize_invariant_workflow,
     summarize_residual_batch,
     summarize_verification_report,
     summarize_vertical_slice,
@@ -10,6 +11,7 @@ from pdelie.reporting.summaries import (
 __all__ = [
     "summarize_generator_fit_diagnostics",
     "summarize_generator_family",
+    "summarize_invariant_workflow",
     "summarize_residual_batch",
     "summarize_verification_report",
     "summarize_vertical_slice",

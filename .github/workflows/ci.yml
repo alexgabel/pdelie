@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  v0_13-release-gate:
+  v0_14-release-gate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -32,8 +32,8 @@ jobs:
           retry 3 python -m pip install -e .[test]
       - name: Check dependencies
         run: python -m pip check
-      - name: Run V0.13 release gate
-        run: python -m pytest tests/test_v0_13_release_gate.py
+      - name: Run V0.14 release gate
+        run: python -m pytest tests/test_v0_14_release_gate.py
   editable-tests:
     runs-on: ubuntu-latest
     steps:
@@ -68,6 +68,7 @@ jobs:
           python -m pdelie.examples.heat_vertical_slice
           python -m pdelie.examples.kdv_vertical_slice
           python -m pdelie.examples.orbit_coverage_diagnostics
+          python -m pdelie.examples.invariant_workflow_summary
   package-smoke:
     runs-on: ubuntu-latest
     steps:
@@ -122,10 +123,15 @@ jobs:
           import pdelie
 
           from pdelie import FieldBatch, DerivativeBatch, ResidualBatch, ResidualEvaluator, GeneratorFamily, VerificationReport
-          from pdelie.invariants import compute_periodic_window_coverage, diagnose_uniform_translation_consistency
+          from pdelie.invariants import (
+              compute_periodic_window_coverage,
+              diagnose_uniform_translation_consistency,
+              summarize_uniform_translation_orbit,
+          )
           from pdelie.reporting import (
               summarize_generator_fit_diagnostics,
               summarize_generator_family,
+              summarize_invariant_workflow,
               summarize_residual_batch,
               summarize_verification_report,
               summarize_vertical_slice,
@@ -140,8 +146,10 @@ jobs:
           assert VerificationReport is not None
           assert compute_periodic_window_coverage is not None
           assert diagnose_uniform_translation_consistency is not None
+          assert summarize_uniform_translation_orbit is not None
           assert summarize_generator_fit_diagnostics is not None
           assert summarize_generator_family is not None
+          assert summarize_invariant_workflow is not None
           assert summarize_residual_batch is not None
           assert summarize_verification_report is not None
           assert summarize_vertical_slice is not None
@@ -150,6 +158,8 @@ jobs:
           assert not hasattr(pdelie, "summarize_vertical_slice")
           assert not hasattr(pdelie, "compute_periodic_window_coverage")
           assert not hasattr(pdelie, "diagnose_uniform_translation_consistency")
+          assert not hasattr(pdelie, "summarize_uniform_translation_orbit")
+          assert not hasattr(pdelie, "summarize_invariant_workflow")
           print("stable-import-ok")
           PY
       - name: Invariant diagnostics smoke
@@ -160,7 +170,12 @@ jobs:
           import pdelie
 
           from pdelie.data import generate_heat_1d_field_batch
-          from pdelie.invariants import compute_periodic_window_coverage, diagnose_uniform_translation_consistency
+          from pdelie.invariants import (
+              compute_periodic_window_coverage,
+              diagnose_uniform_translation_consistency,
+              summarize_uniform_translation_orbit,
+          )
+          from pdelie.reporting import summarize_invariant_workflow
           from pdelie.residuals import HeatResidualEvaluator
 
           domain_length = 2.0 * np.pi
@@ -185,9 +200,29 @@ jobs:
           assert consistency["summary_type"] == "uniform_translation_consistency"
           assert all(report["inverse_passed"] for report in consistency["shift_reports"])
           assert all(report["period_wrap_passed"] for report in consistency["shift_reports"])
+          orbit = summarize_uniform_translation_orbit(
+              field,
+              shifts=[0.0, domain_length],
+              windows=[{"start": 0.0, "width": domain_length / 4.0}],
+              residual_evaluator=HeatResidualEvaluator(),
+              source_field_id="package-smoke-heat",
+          )
+          workflow = summarize_invariant_workflow(
+              orbit=orbit,
+              coverage=orbit["coverage"],
+              consistency=orbit["consistency"],
+              extra_metrics={"smoke": "invariant_workflow"},
+          )
+          json.dumps(workflow)
+          assert orbit["summary_type"] == "uniform_translation_orbit"
+          assert orbit["orbit_passed"] is True
+          assert workflow["summary_type"] == "invariant_workflow"
           assert not hasattr(pdelie, "compute_periodic_window_coverage")
           assert not hasattr(pdelie, "diagnose_uniform_translation_consistency")
+          assert not hasattr(pdelie, "summarize_uniform_translation_orbit")
+          assert not hasattr(pdelie, "summarize_invariant_workflow")
           assert not hasattr(pdelie, "augment_translation_orbit")
+          assert not hasattr(pdelie, "build_translation_orbit_dataset")
           print("invariant-diagnostics-smoke-ok")
           PY
       - name: Generator fit diagnostics smoke

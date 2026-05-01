@@ -222,6 +222,11 @@ def compute_periodic_window_coverage(
     )
 
 
+def _json_compatible_value(value: Any, *, name: str) -> Any:
+    safe_payload = _validate_json_compatible({"value": value}, name=name)
+    return safe_payload["value"]
+
+
 def _translation_generator() -> GeneratorFamily:
     return GeneratorFamily(
         parameterization="polynomial_translation_affine",
@@ -373,4 +378,84 @@ def diagnose_uniform_translation_consistency(
             "shift_reports": shift_reports,
         },
         name="uniform_translation_consistency summary",
+    )
+
+
+def summarize_uniform_translation_orbit(
+    field: FieldBatch,
+    *,
+    shifts: Any,
+    windows: Any | None = None,
+    residual_evaluator: ResidualEvaluator | None = None,
+    source_field_id: Any | None = None,
+) -> dict[str, Any]:
+    dx, domain_length = _validate_consistency_field(field)
+    raw_shifts = _finite_sequence(shifts, name="shifts")
+    normalized_shifts = [float(shift % domain_length) for shift in raw_shifts]
+    normalized_source_field_id = _json_compatible_value(source_field_id, name="source_field_id")
+
+    consistency = diagnose_uniform_translation_consistency(
+        field,
+        shifts=raw_shifts,
+        residual_evaluator=residual_evaluator,
+    )
+    coverage = (
+        None
+        if windows is None
+        else compute_periodic_window_coverage(
+            x=field.coords["x"],
+            windows=windows,
+            shifts=raw_shifts,
+            domain_length=domain_length,
+        )
+    )
+
+    orbit_reports: list[dict[str, Any]] = []
+    for index, (raw_shift, normalized_shift, consistency_report) in enumerate(
+        zip(raw_shifts, normalized_shifts, consistency["shift_reports"], strict=True)
+    ):
+        residual_stability = consistency_report["residual_stability_passed"]
+        orbit_reports.append(
+            {
+                "index": index,
+                "shift": raw_shift,
+                "normalized_shift": normalized_shift,
+                "transform_spec": _translation_spec(raw_shift).to_dict(),
+                "provenance_operation": consistency_report["provenance_operation"],
+                "provenance_construction_method": consistency_report["provenance_construction_method"],
+                "provenance_axis": consistency_report["provenance_axis"],
+                "provenance_shift": consistency_report["provenance_shift"],
+                "inverse_passed": consistency_report["inverse_passed"],
+                "period_wrap_passed": consistency_report["period_wrap_passed"],
+                "residual_stability_passed": residual_stability,
+                "consistency_passed": (
+                    consistency_report["inverse_passed"] is True
+                    and consistency_report["period_wrap_passed"] is True
+                    and residual_stability is not False
+                ),
+            }
+        )
+
+    orbit_passed = all(report["consistency_passed"] for report in orbit_reports)
+    return _validate_json_compatible(
+        {
+            "summary_schema_version": _SUMMARY_SCHEMA_VERSION,
+            "summary_type": "uniform_translation_orbit",
+            "source_field_id": normalized_source_field_id,
+            "field_dims": field.dims,
+            "field_shape": list(field.values.shape),
+            "equation": field.metadata["parameter_tags"].get("equation"),
+            "domain_length": domain_length,
+            "dx": dx,
+            "raw_shifts": raw_shifts,
+            "normalized_shifts": normalized_shifts,
+            "transform_axis": "x",
+            "construction_method": "uniform_translation",
+            "transform_count": len(raw_shifts),
+            "coverage": coverage,
+            "consistency": consistency,
+            "orbit_reports": orbit_reports,
+            "orbit_passed": orbit_passed,
+        },
+        name="uniform_translation_orbit summary",
     )
