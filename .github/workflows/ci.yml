@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  v0_12-release-gate:
+  v0_13-release-gate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -32,8 +32,8 @@ jobs:
           retry 3 python -m pip install -e .[test]
       - name: Check dependencies
         run: python -m pip check
-      - name: Run V0.12 release gate
-        run: python -m pytest tests/test_v0_12_release_gate.py
+      - name: Run V0.13 release gate
+        run: python -m pytest tests/test_v0_13_release_gate.py
   editable-tests:
     runs-on: ubuntu-latest
     steps:
@@ -67,6 +67,7 @@ jobs:
         run: |
           python -m pdelie.examples.heat_vertical_slice
           python -m pdelie.examples.kdv_vertical_slice
+          python -m pdelie.examples.orbit_coverage_diagnostics
   package-smoke:
     runs-on: ubuntu-latest
     steps:
@@ -121,6 +122,7 @@ jobs:
           import pdelie
 
           from pdelie import FieldBatch, DerivativeBatch, ResidualBatch, ResidualEvaluator, GeneratorFamily, VerificationReport
+          from pdelie.invariants import compute_periodic_window_coverage, diagnose_uniform_translation_consistency
           from pdelie.reporting import (
               summarize_generator_fit_diagnostics,
               summarize_generator_family,
@@ -136,6 +138,8 @@ jobs:
           assert ResidualEvaluator is not None
           assert GeneratorFamily is not None
           assert VerificationReport is not None
+          assert compute_periodic_window_coverage is not None
+          assert diagnose_uniform_translation_consistency is not None
           assert summarize_generator_fit_diagnostics is not None
           assert summarize_generator_family is not None
           assert summarize_residual_batch is not None
@@ -144,7 +148,47 @@ jobs:
           assert summarize_weak_residual_report is not None
           assert not hasattr(pdelie, "summarize_generator_fit_diagnostics")
           assert not hasattr(pdelie, "summarize_vertical_slice")
+          assert not hasattr(pdelie, "compute_periodic_window_coverage")
+          assert not hasattr(pdelie, "diagnose_uniform_translation_consistency")
           print("stable-import-ok")
+          PY
+      - name: Invariant diagnostics smoke
+        run: |
+          /tmp/pdelie-rc-venv/bin/python - <<'PY'
+          import json
+          import numpy as np
+          import pdelie
+
+          from pdelie.data import generate_heat_1d_field_batch
+          from pdelie.invariants import compute_periodic_window_coverage, diagnose_uniform_translation_consistency
+          from pdelie.residuals import HeatResidualEvaluator
+
+          domain_length = 2.0 * np.pi
+          x = np.linspace(0.0, domain_length, 16, endpoint=False)
+          coverage = compute_periodic_window_coverage(
+              x=x,
+              windows=[{"start": 0.0, "width": domain_length / 4.0}],
+              shifts=[0.0, domain_length / 2.0],
+              domain_length=domain_length,
+          )
+          json.dumps(coverage)
+          assert coverage["summary_type"] == "periodic_window_coverage"
+          assert coverage["coverage_fraction"] == 0.5
+
+          field = generate_heat_1d_field_batch(batch_size=1, num_times=5, num_points=16, seed=13013)
+          consistency = diagnose_uniform_translation_consistency(
+              field,
+              shifts=[0.0, domain_length],
+              residual_evaluator=HeatResidualEvaluator(),
+          )
+          json.dumps(consistency)
+          assert consistency["summary_type"] == "uniform_translation_consistency"
+          assert all(report["inverse_passed"] for report in consistency["shift_reports"])
+          assert all(report["period_wrap_passed"] for report in consistency["shift_reports"])
+          assert not hasattr(pdelie, "compute_periodic_window_coverage")
+          assert not hasattr(pdelie, "diagnose_uniform_translation_consistency")
+          assert not hasattr(pdelie, "augment_translation_orbit")
+          print("invariant-diagnostics-smoke-ok")
           PY
       - name: Generator fit diagnostics smoke
         run: |

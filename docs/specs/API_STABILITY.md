@@ -151,6 +151,14 @@ Runtime public API for the frozen `v0.12` Milestone 2 slice:
 - this API is a runtime supportability helper, not a manuscript table, fitting algorithm, promotion gate, or stable KS runtime surface
 - this API has no root `pdelie` export
 
+Runtime public API for the frozen `v0.13` Milestone 2/M3 slice:
+
+- `pdelie.invariants.compute_periodic_window_coverage` for JSON-compatible grid-point coverage diagnostics over 1D uniform endpoint-excluded periodic grids, half-open periodic windows, and uniform translation shifts
+- `pdelie.invariants.diagnose_uniform_translation_consistency` for JSON-compatible diagnostics of single-generator uniform periodic translation consistency over canonical scalar 1D periodic `FieldBatch` inputs
+- these APIs support invariant and finite-transform workflows by reporting coverage and consistency only
+- these APIs do not construct augmented datasets, orbit views, training branches, canonical artifacts, figures, or manuscript tables
+- these APIs have no root `pdelie` exports
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 

@@ -384,7 +384,7 @@ The authoritative `v0.11` scope freeze belongs in:
 
 ---
 
-## Current Completed Release
+## Recent Completed Release
 
 ### `v0.12` - Diagnostics and supportability hardening
 **Status:** Completed
@@ -446,6 +446,78 @@ The authoritative `v0.12` scope freeze belongs in:
 - KS public generator, residual, example, weak API, imported parity, and root exports remain absent
 - orbit/coverage work remains paper-agnostic and diagnostic unless explicitly frozen otherwise
 - examples and reporting remain JSON-compatible runtime summaries
+- CI uses one compact current release gate plus full editable tests and package smoke
+- package/readiness docs preserve the `v1.0` package-index publishing deferral
+
+---
+
+## Current Completed Release
+
+### `v0.13` - Public orbit and coverage diagnostics
+**Status:** Completed
+
+`v0.13` is the completed public orbit/coverage diagnostics release after the `v0.12` supportability hardening release.
+
+Its purpose is:
+
+> promote reusable orbit/coverage diagnostics under `pdelie.invariants` while keeping augmentation and downstream experiment policy out of the library.
+
+Completed release definition:
+
+`canonical periodic 1D FieldBatch + uniform translation action -> grid-point coverage diagnostics + transform-consistency diagnostics -> compact example/release gate`
+
+Completed scope:
+
+- `pdelie.invariants.compute_periodic_window_coverage(...)`
+- `pdelie.invariants.diagnose_uniform_translation_consistency(...)`
+- explicit grid-point coverage semantics for endpoint-excluded periodic grids
+- explicit field-shift-then-fixed-window coverage convention
+- typed validation for invalid grids, windows, shifts, and domain lengths
+- uniform-translation consistency diagnostics over canonical scalar 1D periodic `FieldBatch` inputs
+- optional residual-stability diagnostics with robust absolute-or-relative delta policy
+- `python -m pdelie.examples.orbit_coverage_diagnostics`
+- API/public-surface audit
+- compact current `v0_13-release-gate` readiness
+
+Release interpretation:
+
+- diagnostics support invariant/finite-transform workflows but do not construct augmented datasets
+- the new APIs are JSON-compatible runtime reports, not canonical objects or manuscript schemas
+- public orbit-view builders and augmentation utilities remain deferred
+- KS remains internal feasibility/no-go evidence from `v0.11` and `v0.12`
+- `v0.13.0` is a Git-tag-only release; PyPI and TestPyPI publication are deferred to `v1.0` or later
+
+Explicit non-goals:
+
+- no new PDE
+- no stable KS generator
+- no stable KS residual evaluator
+- no weak KS API
+- no broad dataset adapters
+- no PDEBench or The Well support
+- no multidimensional, multivariable, or nonuniform-grid expansion
+- no operator-facing symmetry work
+- no public augmentation utilities
+- no public orbit-view builders
+- no train-augmentation policy
+- no sparse-discovery branch policy
+- no private-paper experiment logic
+- no root export expansion
+
+The authoritative `v0.13` scope freeze belongs in:
+
+- `V0_13_SCOPE.md`
+
+### Release Gate for `v0.13`
+
+`v0.13` is complete only if:
+
+- coverage and consistency diagnostics are documented and covered by tests
+- new APIs are importable from `pdelie.invariants` only
+- root `pdelie` remains unchanged
+- representative coverage and transform-consistency reports are JSON-compatible
+- the orbit/coverage example emits JSON only
+- no public augmentation, orbit-view, KS, weak KS, broad adapter, or operator API lands
 - CI uses one compact current release gate plus full editable tests and package smoke
 - package/readiness docs preserve the `v1.0` package-index publishing deferral
 
@@ -572,13 +644,14 @@ The authoritative `v0.7` scope freeze belongs in:
 
 ## Medium-Term Horizon
 
-### `v0.13+` - Later PDE and dataset coverage
+### `v0.14+` - Later PDE, augmentation, and dataset coverage
 **Status:** Planned
 
-Later PDE and dataset coverage remains planned after the `v0.12` diagnostics/supportability release and the completed `v0.11` KS feasibility no-go closeout.
+Later PDE, augmentation, and dataset coverage remains planned after the `v0.13` public orbit/coverage diagnostics release.
 
 Candidate directions:
 
+- public orbit-view or train-augmentation utilities only after an explicit API freeze
 - wave equation only after second-time-derivative semantics are frozen
 - reaction-diffusion systems after multivariable semantics are explicitly scoped
 - PDEBench / The Well adapters after generic ingestion and provenance policies are proven
@@ -628,6 +701,7 @@ This is not part of the near-term non-operator Paper 1 path and should not be mi
 - `V0_10_SCOPE.md` once frozen
 - `V0_11_SCOPE.md` once frozen
 - `V0_12_SCOPE.md` once frozen
+- `V0_13_SCOPE.md` once frozen
 - `PLAN.md` for current execution only
 
 ### Non-authoritative for scheduling
@@ -664,6 +738,7 @@ It should **not** be edited every time a new idea appears.
 - `v0.10` = supportability and `v1.0` readiness for the existing stable engine
 - `v0.11` = order-4 spectral derivatives and Kuramoto-Sivashinsky feasibility no-go/defer closeout
 - `v0.12` = diagnostics and supportability hardening for fitting, verification, reporting, and orbit/coverage diagnostics
-- `v0.13+` = wave semantics, external benchmark adapters, and broader PDE coverage only after scope freezes
+- `v0.13` = public orbit/coverage diagnostics under `pdelie.invariants`, without augmentation
+- `v0.14+` = augmentation, wave semantics, external benchmark adapters, and broader PDE coverage only after scope freezes
 - `v1.0` = stable public engine
 - later / experimental = operator-facing symmetry discovery

@@ -56,19 +56,19 @@ def test_v0_12_release_gate_metadata_docs_and_ci_are_aligned() -> None:
     roadmap = _repo_text("docs/planning/ROADMAP.md")
     release_gate_jobs = re.findall(r"^  (v0_\d+-release-gate):", workflow, flags=re.MULTILINE)
 
-    assert pyproject["project"]["version"] == "0.12.0"
-    assert release_gate_jobs == ["v0_12-release-gate"]
-    assert "python -m pytest tests/test_v0_12_release_gate.py" in workflow
-    assert "v0_11-release-gate" not in workflow
+    assert pyproject["project"]["version"] == "0.13.0"
+    assert release_gate_jobs == ["v0_13-release-gate"]
+    assert "python -m pytest tests/test_v0_13_release_gate.py" in workflow
+    assert "v0_12-release-gate" not in workflow
 
     assert "## 0.12.0" in changelog
-    assert "V0.12" in readme
+    assert "V0.13" in readme
     assert "summarize_generator_fit_diagnostics" in readme
     assert "package version: `0.12.0`" in readiness
     assert "git tag: `v0.12.0`" in readiness
     assert "Do not run TestPyPI or PyPI publishing for `v0.12`" in readiness
-    assert "including `v0.12.0`" in publishing
-    assert "Milestone 6: COMPLETE" in plan
+    assert "including `v0.13.0`" in publishing
+    assert "v0.12` is complete" in plan
     assert "Milestone 6: COMPLETE" in scope
     assert "`v0.12` - Diagnostics and supportability hardening" in roadmap
     assert "**Status:** Completed" in roadmap
@@ -139,7 +139,7 @@ def test_v0_12_release_gate_does_not_promote_ks_or_orbit_coverage_in_docs() -> N
     scope = _repo_text("docs/planning/V0_12_SCOPE.md")
 
     assert "internal KS diagnostic sweep" in readme
-    assert "internal orbit/coverage diagnostic feasibility" in readme
+    assert "no stable KS runtime API is promoted" in readme
     assert "no stable KS runtime API is promoted" in readiness
     assert "no public orbit/coverage helper" in readiness
     assert "no public augmentation utility" in readiness

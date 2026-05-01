@@ -1,4 +1,8 @@
-__all__ = ["run_heat_vertical_slice_example", "run_kdv_vertical_slice_example"]
+__all__ = [
+    "run_heat_vertical_slice_example",
+    "run_kdv_vertical_slice_example",
+    "run_orbit_coverage_diagnostics_example",
+]
 
 
 def run_heat_vertical_slice_example() -> dict[str, object]:
@@ -9,5 +13,11 @@ def run_heat_vertical_slice_example() -> dict[str, object]:
 
 def run_kdv_vertical_slice_example() -> dict[str, object]:
     from pdelie.examples.kdv_vertical_slice import run_kdv_vertical_slice_example as _impl
+
+    return _impl()
+
+
+def run_orbit_coverage_diagnostics_example() -> dict[str, object]:
+    from pdelie.examples.orbit_coverage_diagnostics import run_orbit_coverage_diagnostics_example as _impl
 
     return _impl()
