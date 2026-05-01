@@ -1,6 +1,6 @@
 # Notebooks
 
-This directory contains tutorial notebooks for the shipped `v0.13` runtime surface.
+This directory contains tutorial notebooks for the shipped `v0.14` runtime surface.
 
 These notebooks are:
 
@@ -37,8 +37,8 @@ The ordering is progressive, but each notebook has a distinct theme.
 ## Notebook Index
 
 - `00_how_to_use_pdelie_v0_6.ipynb`
-  - current `v0.13` tour despite the historical filename
-  - fields, derivatives, residuals, nested reports, KdV, weak reports, and invariant diagnostics
+  - current `v0.14` tour despite the historical filename
+  - fields, derivatives, residuals, nested reports, KdV, weak reports, invariant diagnostics, and workflow summaries
 - `01_raw_vs_translation_canonical_discovery.ipynb`
   - raw versus translation-canonical Heat discovery inputs
   - visualizes batch-alignment effects and connects them to coverage diagnostics
@@ -51,7 +51,7 @@ The ordering is progressive, but each notebook has a distinct theme.
 - `05_closure_algebra_diagnostics.ipynb`
   - algebraic closure and span diagnostics on small hand-built polynomial families
 - `06_orbit_coverage_diagnostics.ipynb`
-  - dedicated `v0.13` feature notebook for public orbit/coverage diagnostics under `pdelie.invariants`
+  - dedicated invariant-diagnostics notebook for public orbit/coverage diagnostics and read-only workflow summaries
 
 ## Running From VS Code
 

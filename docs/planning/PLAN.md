@@ -1,18 +1,18 @@
-# PDELie - Execution Plan (V0.13)
+# PDELie - Execution Plan (V0.14)
 
 ## Current Release Status
 
-**V0.13 is complete as public orbit and coverage diagnostics**
+**V0.14 is complete as invariant workflow summaries and read-only translation orbit reports**
 
-This file is the completed execution record for the `v0.13` release series.
+This file is the completed execution record for the `v0.14` release series.
 
 Committed release theme:
 
-`canonical periodic 1D FieldBatch + uniform translation action -> grid-point coverage diagnostics + transform-consistency diagnostics -> compact example/release gate`
+`FieldBatch + uniform x-translation shifts + optional windows + residual/fit/verification outputs -> read-only orbit report + combined invariant workflow summary`
 
 The important release boundary is:
 
-> diagnostics support invariant/finite-transform workflows but do not construct augmented datasets.
+> v0.14 adds read-only runtime reports, not augmented datasets, transformed FieldBatch collections, orbit datasets, or time-translation support.
 
 This file should not redefine package contracts.
 Contracts and stable behavior belong in:
@@ -21,27 +21,28 @@ Contracts and stable behavior belong in:
 - `docs/specs/CONTRACTS_AND_DEFAULTS.md`
 - `docs/specs/API_STABILITY.md`
 - `docs/planning/ROADMAP.md`
-- `docs/planning/V0_13_SCOPE.md`
+- `docs/planning/V0_14_SCOPE.md`
 
-`API_STABILITY.md` was updated when the two public `pdelie.invariants` diagnostics landed.
+`API_STABILITY.md` was updated when the two public `v0.14` reporting/invariant helpers landed.
 
 ---
 
-## V0.12 Closeout
+## V0.13 Closeout
 
 `v0.12` is complete as diagnostics and supportability hardening.
 
+`v0.13` is complete as public orbit and coverage diagnostics.
+
 Completed outcome:
 
-- public `pdelie.reporting.summarize_generator_fit_diagnostics(...)`
-- richer translation-fit diagnostics without changing fitting behavior
-- internal KS diagnostic sweep closeout with no stable KS promotion
-- internal orbit/coverage feasibility evidence
-- API/public-surface audit
-- compact `v0_12-release-gate`
+- public `pdelie.invariants.compute_periodic_window_coverage(...)`
+- public `pdelie.invariants.diagnose_uniform_translation_consistency(...)`
+- JSON-only orbit/coverage diagnostics example
+- no public augmentation utilities or orbit-view builders
+- compact `v0_13-release-gate`
 
-`v0.13` begins from that feasibility evidence and promotes only the reusable orbit/coverage diagnostics.
-It does not promote augmentation policy or KS runtime APIs.
+`v0.14` begins from that diagnostic evidence and promotes only read-only workflow summaries and orbit reports.
+It does not promote augmentation policy, transformed datasets, time translation, or KS runtime APIs.
 
 ---
 
@@ -51,20 +52,22 @@ It does not promote augmentation policy or KS runtime APIs.
 
 ### Goal
 
-Freeze `v0.13` as a public diagnostics promotion release under `pdelie.invariants`.
+Freeze `v0.14` as invariant workflow summaries plus read-only uniform translation orbit reports.
 
 ### Completed Outcome
 
-- added `docs/planning/V0_13_SCOPE.md`
-- reset `PLAN.md` as the active `v0.13` execution record
-- updated `ROADMAP.md` to record `v0.13` as the current completed diagnostics release
-- recorded that the release adds diagnostics only:
+- added `docs/planning/V0_14_SCOPE.md`
+- reset `PLAN.md` as the active `v0.14` execution record
+- updated `ROADMAP.md` to record `v0.14` as the current completed supportability release
+- recorded explicit non-goals:
   - no augmented datasets
-  - no orbit-view builders
+  - no transformed `FieldBatch` collections
+  - no orbit dataset builders
+  - no time-translation API
   - no KS promotion
   - no new PDE
   - no broad adapters
-  - no private-paper experiment policy
+  - no root export expansion
 
 ---
 
@@ -74,120 +77,104 @@ Freeze `v0.13` as a public diagnostics promotion release under `pdelie.invariant
 
 ### Goal
 
-Freeze the exact public semantics before implementation.
+Freeze report schemas and semantics before implementation.
 
 ### Completed Outcome
 
-For `compute_periodic_window_coverage(...)`, M1 froze:
-
-- endpoint-excluded uniform periodic 1D grid convention
-- inferred domain length as `len(x) * dx`
-- endpoint-duplicated grid rejection
-- grid-point coverage, not continuous interval measure
-- `coverage_fraction = covered_grid_points / num_grid_points`
-- half-open windows `[start, start + width)`
-- modulo reduction for coordinates, starts, and shifts
-- deterministic boundary tolerance `1e-12 * domain_length`
-- duplicate shifts and repeated windows are allowed and counted
-- repeated windows increase coverage counts but not covered point count
-- max uncovered run is reported in grid points and physical length
-- positive shift convention:
-  - `coverage_convention = "preimage_of_fixed_window_under_translation"`
-  - `shift_convention = "field_shift_then_fixed_window"`
-  - point `x0` is covered when `(x0 + shift) mod domain_length` lies inside the fixed window
-
-For `diagnose_uniform_translation_consistency(...)`, M1 froze:
+For `summarize_uniform_translation_orbit(...)`, M1 froze:
 
 - canonical scalar 1D uniform periodic `FieldBatch` scope
-- use of `InvariantApplier` and uniform translation
-- report-only behavior with no returned transformed `FieldBatch` objects
+- read-only report output
+- no returned transformed `FieldBatch` objects
 - no input mutation
-- shift equal to domain length is identity-equivalent within tolerance
-- dims, shape, coords, metadata, var names, and mask structure/content preservation checks
-- preprocess-log equality is not required
-- appended provenance checks for `operation == "invariant_apply"` and `construction_method == "uniform_translation"`
-- inverse and period-wrap relative L2 error definitions
-- residual RMS absolute/relative delta policy
-- residual stability pass rule:
-  - `absolute_delta <= 1e-8 or relative_delta <= 1e-6`
-- evaluator failures are fatal typed validation errors when a residual evaluator is supplied
+- raw shift order and duplicate shifts are preserved
+- optional `source_field_id` is JSON-compatible provenance metadata only
+- optional windows reuse `v0.13` periodic-window coverage semantics
+- optional residual evaluator reuses `v0.13` translation-consistency semantics
+- per-shift transform spec and provenance summaries are reported
+
+For `summarize_invariant_workflow(...)`, M1 froze:
+
+- JSON-compatible runtime summary output
+- nested coverage, consistency, orbit, generator, fit, and verification summaries
+- canonical `GeneratorFamily` and `VerificationReport` inputs are summarized through existing reporting helpers
+- existing `v0.10` and `v0.12` reporting schemas remain unchanged
+
+Time translation remains deferred.
 
 ---
 
-## Milestone 2 - Periodic Coverage Diagnostic
+## Milestone 2 - Combined Invariant Workflow Summary
 
 **Status:** COMPLETE
 
 ### Goal
 
-Promote periodic-window coverage diagnostics from `v0.12` feasibility into runtime.
+Add the combined workflow report helper under `pdelie.reporting`.
 
 ### Completed Outcome
 
 - added public submodule-only helper:
-  - `pdelie.invariants.compute_periodic_window_coverage(...)`
-- returned JSON-compatible dicts with:
-  - `summary_schema_version = "0.1"`
-  - `summary_type = "periodic_window_coverage"`
-  - domain length, inferred domain length, `dx`, grid point count
-  - raw/normalized windows and shifts
-  - coverage counts
-  - covered point count and coverage fraction
-  - min/max/mean coverage count
-  - max uncovered run in grid points and physical length
-- implemented typed validation for invalid grids, endpoint duplication, invalid windows, invalid shifts, and invalid domain lengths
+  - `pdelie.reporting.summarize_invariant_workflow(...)`
+- supports:
+  - `periodic_window_coverage` reports
+  - `uniform_translation_consistency` reports
+  - `uniform_translation_orbit` reports
+  - `GeneratorFamily` objects or `generator_family` summaries
+  - `VerificationReport` objects or `verification_report` summaries
+  - `GeneratorFamily` objects or `generator_fit_diagnostics` summaries for fit diagnostics
+  - optional extra metrics
+- returns `summary_type = "invariant_workflow"`
+- creates no canonical object and mutates no inputs
 - documented the API in `docs/specs/API_STABILITY.md`
-- kept computation report-only:
-  - no plotting
-  - no augmentation
-  - no `FieldBatch` mutation
-  - no root export
 
 ---
 
-## Milestone 3 - Translation Consistency Diagnostic
+## Milestone 3 - Uniform Translation Orbit Report
 
 **Status:** COMPLETE
 
 ### Goal
 
-Promote uniform-translation consistency diagnostics from `v0.12` feasibility into runtime.
+Add the read-only uniform translation orbit report under `pdelie.invariants`.
 
 ### Completed Outcome
 
 - added public submodule-only helper:
-  - `pdelie.invariants.diagnose_uniform_translation_consistency(...)`
-- validated canonical scalar 1D periodic `FieldBatch` inputs
-- used existing `InvariantApplier` and `uniform_translation`
-- returned JSON-compatible report dicts only
-- returned no transformed `FieldBatch` objects
-- did not mutate input fields
-- supported optional residual evaluator behavior:
-  - omitted residual evaluator leaves residual metrics as `None`
-  - supplied residual evaluator failures remain fatal typed validation errors
-- recorded structure flags, inverse/period-wrap errors, residual stability metrics, and appended provenance fields
-- validated stable Heat and KdV fixtures
+  - `pdelie.invariants.summarize_uniform_translation_orbit(...)`
+- returns `summary_type = "uniform_translation_orbit"`
+- includes:
+  - optional `source_field_id`
+  - field shape and equation metadata
+  - raw and normalized shifts
+  - one transform spec and provenance summary per shift
+  - optional coverage diagnostics
+  - translation consistency diagnostics
+  - orbit-level pass flags
+- returns no transformed `FieldBatch` objects
+- constructs no augmented dataset or orbit dataset
 - documented the API in `docs/specs/API_STABILITY.md`
-- kept KS out of the public diagnostics path
 
 ---
 
-## Milestone 4 - Example and Reporting Alignment
+## Milestone 4 - Useful End-to-end Example
 
 **Status:** COMPLETE
 
 ### Goal
 
-Add a compact runtime smoke example for the new diagnostics.
+Add a compact JSON-only example that combines the new report surfaces.
 
 ### Completed Outcome
 
-- added `python -m pdelie.examples.orbit_coverage_diagnostics`
-- added `pdelie.examples.run_orbit_coverage_diagnostics_example(...)`
-- example output is JSON-only on stdout
-- example demonstrates:
-  - half-coverage and full-coverage periodic-window cases
-  - uniform translation consistency on stable Heat and KdV fixtures
+- added `python -m pdelie.examples.invariant_workflow_summary`
+- added `pdelie.examples.run_invariant_workflow_summary_example(...)`
+- example combines:
+  - Heat orbit/coverage/consistency diagnostics
+  - KdV orbit/coverage/consistency diagnostics
+  - generator fit diagnostics
+  - verification summaries
+  - combined invariant workflow summaries
 - example output remains a runtime smoke summary, not a canonical artifact schema
 - root `pdelie` remains unchanged
 
@@ -199,19 +186,20 @@ Add a compact runtime smoke example for the new diagnostics.
 
 ### Goal
 
-Verify public surface and documentation match the frozen `v0.13` scope.
+Verify public surface and documentation match the frozen `v0.14` scope.
 
 ### Completed Outcome
 
-- confirmed `pdelie.invariants.compute_periodic_window_coverage(...)` is submodule-only
-- confirmed `pdelie.invariants.diagnose_uniform_translation_consistency(...)` is submodule-only
+- confirmed `pdelie.reporting.summarize_invariant_workflow(...)` is submodule-only
+- confirmed `pdelie.invariants.summarize_uniform_translation_orbit(...)` is submodule-only
 - confirmed root `pdelie` exports remain unchanged
 - confirmed no public augmentation utilities landed
-- confirmed no public orbit-view builders landed
+- confirmed no orbit dataset builder landed
+- confirmed no time-translation API landed
 - confirmed public KS generator/residual/example APIs remain absent
 - confirmed weak KS remains absent
 - confirmed broad adapters remain absent
-- confirmed `API_STABILITY.md` documents the new diagnostics and does not document augmentation or KS APIs
+- confirmed `API_STABILITY.md` documents the new helpers and does not document augmentation or time-translation APIs
 
 ---
 
@@ -225,30 +213,30 @@ Close the release with compact gate coverage, metadata, docs, and direct Git-tag
 
 ### Completed Outcome
 
-- added compact `tests/test_v0_13_release_gate.py`
-- updated CI so the current explicit release gate is `v0_13-release-gate`
+- added compact `tests/test_v0_14_release_gate.py`
+- updated CI so the current explicit release gate is `v0_14-release-gate`
 - retained full editable tests and package smoke
-- added compact package-smoke coverage for the new invariant diagnostics
-- bumped package metadata to `0.13.0`
-- updated README and changelog for `v0.13`
-- added `docs/releases/V0_13_RELEASE_READINESS.md`
-- updated publishing docs to keep `v0.13.0` Git-tag-only
-- moved `v0.13` into completed release context in `ROADMAP.md`
+- added compact package-smoke coverage for the new workflow/orbit reports
+- bumped package metadata to `0.14.0`
+- updated README and changelog for `v0.14`
+- added `docs/releases/V0_14_RELEASE_READINESS.md`
+- updated publishing docs to keep `v0.14.0` Git-tag-only
+- moved `v0.14` into completed release context in `ROADMAP.md`
 - kept PyPI/TestPyPI deferred until `v1.0` or later
 
 ### Direct Tag Path
 
-Before tagging `v0.13.0`:
+Before tagging `v0.14.0`:
 
 - run full local tests
 - build sdist and wheel
 - run clean wheel smoke
-- run Heat, KdV, and orbit/coverage example modules
+- run Heat, KdV, orbit/coverage, and invariant-workflow example modules
 - confirm CI checks pass:
-  - `v0_13-release-gate`
+  - `v0_14-release-gate`
   - `editable-tests`
   - `package-smoke`
-- tag the merged main commit as `v0.13.0`
+- tag the merged main commit as `v0.14.0`
 - do not publish to TestPyPI
 - do not publish to PyPI
 
@@ -256,25 +244,26 @@ Before tagging `v0.13.0`:
 
 ## Explicit Non-goals Preserved
 
-`v0.13` did not add:
+`v0.14` did not add:
 
-- a new PDE
-- stable KS generator/residual/example APIs
+- new PDE support
+- stable KS runtime support
 - weak KS
-- public augmentation utilities
-- public orbit-view builders
-- broad dataset adapters
-- multidimensional or nonuniform grids
+- broad adapters
+- PDEBench or The Well support
+- multidimensional, multivariable, or nonuniform-grid expansion
 - operator-facing APIs
-- private-paper experiment policy
-- manuscript-specific thresholds, tables, figures, or labels
+- public augmentation utilities
+- orbit dataset builders
+- transformed `FieldBatch` collections from reporting helpers
+- train-augmentation policy
+- time-translation APIs
 - root runtime exports
 
 ---
 
-## Status
+## Status Checklist
 
-- `v0.12`: COMPLETE as diagnostics/supportability hardening
 - Milestone 0: COMPLETE
 - Milestone 1: COMPLETE
 - Milestone 2: COMPLETE

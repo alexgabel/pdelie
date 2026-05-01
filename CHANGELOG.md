@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.14.0
+
+First final release for the frozen V0.14 invariant workflow summary and read-only translation orbit report slice.
+
+- adds `pdelie.reporting.summarize_invariant_workflow(...)` for JSON-compatible runtime summaries that combine coverage, consistency, orbit, generator, fit-diagnostic, verification, and extra-metric reports
+- adds `pdelie.invariants.summarize_uniform_translation_orbit(...)` for read-only uniform `x`-translation orbit reports over canonical scalar 1D periodic `FieldBatch` inputs
+- adds `python -m pdelie.examples.invariant_workflow_summary` and `pdelie.examples.run_invariant_workflow_summary_example(...)` as runtime smoke examples combining Heat, KdV, coverage, orbit, fit, and verification summaries
+- documents the new helpers in `API_STABILITY.md` as submodule-only runtime APIs with no root exports
+- tightens public-surface guards so augmentation, orbit datasets, time translation, KS APIs, weak KS, broad adapters, and root runtime exports remain absent
+- updates CI to the compact current `v0_14-release-gate` while preserving full editable tests and package smoke
+- preserves the prior Heat/Burgers strong paths, `v0.8` weak residual report APIs, `v0.9` normalized periodic KdV strong path, `v0.10` reporting helpers, `v0.11` order-4 derivatives, `v0.12` fit diagnostics, and `v0.13` orbit/coverage diagnostics
+
+Explicitly deferred for this final release:
+
+- augmented datasets or orbit dataset builders
+- transformed `FieldBatch` collections from reporting helpers
+- time-translation APIs or `axis="time"` support
+- new PDE support
+- stable KS data generator, residual evaluator, vertical-slice example, imported parity, weak API, or root KS exports
+- broad dataset adapters such as PDEBench or The Well
+- multidimensional, multivariable, nonuniform-grid, operator, or broad adapter expansion
+- private-paper experiment policy, tables, figures, thresholds, or branch logic
+- PyPI and TestPyPI publication; package-index publishing is deferred to `v1.0` or later
+
 ## 0.13.0
 
 First final release for the frozen V0.13 public orbit and coverage diagnostics slice.

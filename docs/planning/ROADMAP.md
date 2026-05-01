@@ -453,6 +453,72 @@ The authoritative `v0.12` scope freeze belongs in:
 
 ## Current Completed Release
 
+### `v0.14` - Invariant workflow summaries and read-only orbit reports
+**Status:** Completed
+
+`v0.14` is the completed invariant workflow summary and orbit report release after the `v0.13` public orbit/coverage diagnostics release.
+
+Its purpose is:
+
+> combine coverage, consistency, fit, and verification diagnostics into reusable workflow summaries while keeping orbit handling read-only and report-only.
+
+Completed release definition:
+
+`FieldBatch + uniform x-translation shifts + optional windows + residual/fit/verification outputs -> read-only orbit report + combined invariant workflow summary`
+
+Completed scope:
+
+- `pdelie.reporting.summarize_invariant_workflow(...)`
+- `pdelie.invariants.summarize_uniform_translation_orbit(...)`
+- optional `source_field_id` provenance metadata
+- nested coverage, consistency, orbit, generator, fit-diagnostic, and verification summaries
+- Heat and KdV invariant workflow example
+- API/public-surface audit
+- compact current `v0_14-release-gate` readiness
+
+Release interpretation:
+
+- helpers return read-only runtime reports, not augmented datasets
+- no transformed `FieldBatch` collections are returned
+- no orbit dataset builder or train-augmentation policy is promoted
+- time-translation diagnostics remain deferred
+- `v0.14.0` is a Git-tag-only release; PyPI and TestPyPI publication are deferred to `v1.0` or later
+
+Explicit non-goals:
+
+- no new PDE
+- no stable KS generator or residual evaluator
+- no weak KS API
+- no broad dataset adapters
+- no PDEBench or The Well support
+- no multidimensional, multivariable, or nonuniform-grid expansion
+- no operator-facing symmetry work
+- no public augmentation utilities
+- no orbit dataset builders
+- no time-translation APIs
+- no root export expansion
+
+The authoritative `v0.14` scope freeze belongs in:
+
+- `V0_14_SCOPE.md`
+
+### Release Gate for `v0.14`
+
+`v0.14` is complete only if:
+
+- invariant workflow and orbit report helpers are documented and covered by tests
+- new APIs are importable from their submodules only
+- root `pdelie` remains unchanged
+- representative Heat and KdV invariant workflow reports are JSON-compatible
+- the invariant workflow example emits JSON only
+- no public augmentation, orbit dataset, time-translation, KS, weak KS, broad adapter, or operator API lands
+- CI uses one compact current release gate plus full editable tests and package smoke
+- package/readiness docs preserve the `v1.0` package-index publishing deferral
+
+---
+
+## Recent Completed Release
+
 ### `v0.13` - Public orbit and coverage diagnostics
 **Status:** Completed
 
@@ -644,18 +710,111 @@ The authoritative `v0.7` scope freeze belongs in:
 
 ## Medium-Term Horizon
 
-### `v0.14+` - Later PDE, augmentation, and dataset coverage
+### `v0.15` - Materialized uniform translation orbit batches
 **Status:** Planned
 
-Later PDE, augmentation, and dataset coverage remains planned after the `v0.13` public orbit/coverage diagnostics release.
+`v0.15` is the planned next major direction after the `v0.14` invariant workflow summary release, but it is not yet the active committed release until a `v0.15` M0 scope freeze opens.
 
-Candidate directions:
+Planned theme:
 
-- public orbit-view or train-augmentation utilities only after an explicit API freeze
-- wave equation only after second-time-derivative semantics are frozen
-- reaction-diffusion systems after multivariable semantics are explicitly scoped
-- PDEBench / The Well adapters after generic ingestion and provenance policies are proven
-- multidimensional structured grids only after the 1D path is stable and supportable
+> promote the first conservative user-facing data utility for materializing finite uniform translation orbits from canonical `FieldBatch` inputs.
+
+Candidate API direction:
+
+- `pdelie.invariants.build_uniform_translation_orbit_batch(...)`
+
+Scope to freeze before implementation:
+
+- augmentation appends along the batch dimension
+- duplicate shifts are preserved
+- source indices and shift indices are recorded as provenance/report metadata
+- masks are transformed and concatenated consistently with existing `InvariantApplier` behavior
+- preprocess logs append one orbit-materialization entry
+- metadata records group/action parameters
+- no train/test policy is applied
+- no split management or heldout-leakage detection is attempted
+- return shape is explicit, preferably `(FieldBatch, report)` or a named structured pair rather than a silent `FieldBatch`-only result
+
+Interpretation:
+
+- this would be the first truly user-facing data utility beyond diagnostics
+- it remains paper-agnostic
+- it does not add sparse-discovery branch policy or train/heldout management
+- it does not add time translation, a new PDE, or root exports
+
+The detailed strategy note belongs in:
+
+- `V0_15_PLUS_STRATEGY.md`
+
+### `v0.16` - External symmetry-candidate interop
+**Status:** Planned
+
+`v0.16` is planned as detector interop and validation, not sparse-discovery reporting and not detector training.
+
+Candidate API direction:
+
+- `pdelie.symmetry.validate_generator_candidate(...)`
+
+External methods may provide:
+
+- an existing `GeneratorFamily`
+- a finite-transform specification
+- a callable transform descriptor
+- a JSON-compatible symmetry-candidate report
+
+PDELie should validate those candidates using finite-transform consistency, residual preservation, span or closure diagnostics, provenance checks, and optional fit/verification summaries.
+
+Interpretation:
+
+- learned symmetry methods can slot in by exporting candidates
+- PDELie remains a validation/reporting substrate
+- PDELie does not train neural symmetry detectors
+- operator-facing APIs remain deferred unless separately frozen
+
+### `v0.17` - Formula-backed and non-polynomial generators
+**Status:** Planned
+
+`v0.17` is planned as the first careful step beyond the current polynomial/structured generator support.
+
+Recommended phasing:
+
+- formula-backed metadata first:
+  - affine generators
+  - trigonometric generators
+  - rational or simple analytic forms
+  - externally supplied symbolic references
+- callable or external generators second, treated as less stable unless paired with diagnostics
+- learned-generator interop third, as accepted outputs only
+
+Key freeze decision:
+
+- either introduce a new formula-backed generator record such as `FormulaGeneratorFamily`
+- or keep the first slice as runtime metadata until compatibility with existing `GeneratorFamily` semantics is proven
+
+The conservative default is formula-backed runtime records first, with no change to existing polynomial `GeneratorFamily` semantics until explicitly accepted.
+
+### `v0.18+` - Scoped PDE expansion
+**Status:** Planned
+
+`v0.18+` is the earliest planned point for another stable PDE expansion.
+
+Preferred stable direction:
+
+- advection-diffusion or reaction-diffusion, because these are more likely to fit the current scalar structured-data contracts cleanly
+
+Alternative scoped direction:
+
+- KS residual-only, but only if the public claim explicitly excludes direct residual-based fitting recovery
+
+Deferred until separately frozen:
+
+- broad PDE zoo expansion
+- PDEBench or The Well adapters
+- multidimensional grids
+- nonuniform grids
+- operator-facing APIs
+- weak KS
+- learned-generator training
 
 Each of these requires its own scope freeze before implementation.
 
@@ -702,9 +861,11 @@ This is not part of the near-term non-operator Paper 1 path and should not be mi
 - `V0_11_SCOPE.md` once frozen
 - `V0_12_SCOPE.md` once frozen
 - `V0_13_SCOPE.md` once frozen
+- `V0_14_SCOPE.md` once frozen
 - `PLAN.md` for current execution only
 
 ### Non-authoritative for scheduling
+- `V0_15_PLUS_STRATEGY.md`
 - `../strategy/INTEROPERABILITY_AND_BENCHMARKING.md`
 - `LLM_CONTEXT.md`
 
@@ -739,6 +900,10 @@ It should **not** be edited every time a new idea appears.
 - `v0.11` = order-4 spectral derivatives and Kuramoto-Sivashinsky feasibility no-go/defer closeout
 - `v0.12` = diagnostics and supportability hardening for fitting, verification, reporting, and orbit/coverage diagnostics
 - `v0.13` = public orbit/coverage diagnostics under `pdelie.invariants`, without augmentation
-- `v0.14+` = augmentation, wave semantics, external benchmark adapters, and broader PDE coverage only after scope freezes
+- `v0.14` = invariant workflow summaries and read-only uniform translation orbit reports, without augmentation
+- `v0.15` = materialized uniform translation orbit batches after a dedicated scope freeze
+- `v0.16` = external symmetry-candidate interop and validation, not detector training
+- `v0.17` = formula-backed and non-polynomial generator support after schema semantics are frozen
+- `v0.18+` = scoped PDE expansion, with reaction/advection-diffusion preferred unless KS residual-only is deliberately scoped
 - `v1.0` = stable public engine
 - later / experimental = operator-facing symmetry discovery

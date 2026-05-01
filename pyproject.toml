@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pdelie"
-version = "0.13.0"
-description = "V0.13 public orbit and coverage diagnostics for invariant and finite-transform workflows over the Heat/Burgers/weak-report/KdV engine"
+version = "0.14.0"
+description = "V0.14 invariant workflow summaries and read-only uniform translation orbit reports over the Heat/Burgers/weak-report/KdV engine"
 requires-python = ">=3.11"
 dependencies = [
   "numpy>=1.24,<2",

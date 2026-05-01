@@ -9,6 +9,7 @@ import numpy as np
 import pdelie
 from pdelie.examples import (
     run_heat_vertical_slice_example,
+    run_invariant_workflow_summary_example,
     run_kdv_vertical_slice_example,
     run_orbit_coverage_diagnostics_example,
 )
@@ -161,3 +162,38 @@ def test_orbit_coverage_diagnostics_module_prints_json_only() -> None:
     assert parsed["summary_type"] == "orbit_coverage_diagnostics_example"
     np.testing.assert_allclose(parsed["coverage_cases"][0]["coverage_fraction"], 0.5)
     np.testing.assert_allclose(parsed["coverage_cases"][1]["coverage_fraction"], 1.0)
+
+
+def test_invariant_workflow_summary_example_runs_end_to_end() -> None:
+    result = run_invariant_workflow_summary_example()
+
+    assert json.loads(json.dumps(result)) == result
+    assert result["summary_schema_version"] == "0.1"
+    assert result["summary_type"] == "invariant_workflow_summary_example"
+    assert result["extra_metrics"]["example_name"] == "invariant_workflow_summary"
+    assert len(result["workflows"]) == 2
+    cases = {workflow["extra_metrics"]["case_name"]: workflow for workflow in result["workflows"]}
+    assert set(cases) == {"heat", "kdv"}
+    for workflow in cases.values():
+        assert workflow["summary_type"] == "invariant_workflow"
+        assert workflow["orbit"]["summary_type"] == "uniform_translation_orbit"
+        assert workflow["orbit"]["orbit_passed"] is True
+        assert workflow["coverage"]["summary_type"] == "periodic_window_coverage"
+        assert workflow["consistency"]["summary_type"] == "uniform_translation_consistency"
+        assert workflow["generator"]["summary_type"] == "generator_family"
+        assert workflow["fit_diagnostics"]["summary_type"] == "generator_fit_diagnostics"
+        assert workflow["verification"]["summary_type"] == "verification_report"
+        assert workflow["verification"]["classification"] != "failed"
+    assert cases["heat"]["verification"]["classification"] == "exact"
+    assert cases["kdv"]["fit_diagnostics"]["reference_fallback_used"] is False
+    assert not hasattr(pdelie, "run_invariant_workflow_summary_example")
+
+
+def test_invariant_workflow_summary_module_prints_json_only() -> None:
+    parsed = _run_module_json("pdelie.examples.invariant_workflow_summary")
+
+    assert parsed["summary_type"] == "invariant_workflow_summary_example"
+    assert len(parsed["workflows"]) == 2
+    for workflow in parsed["workflows"]:
+        assert workflow["summary_type"] == "invariant_workflow"
+        assert workflow["orbit"]["orbit_passed"] is True
