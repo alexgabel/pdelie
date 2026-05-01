@@ -12,8 +12,10 @@ _ROOT_RUNTIME_NAMES = {
     "build_translation_canonical_discovery_inputs",
     "coerce_generator_family",
     "compare_generator_spans",
+    "compute_periodic_window_coverage",
     "compute_spectral_fd_derivatives",
     "diagnose_generator_family_closure",
+    "diagnose_uniform_translation_consistency",
     "evaluate_discovery_recovery",
     "evaluate_weak_burgers_residual",
     "evaluate_weak_heat_residual",
@@ -34,6 +36,7 @@ _ROOT_RUNTIME_NAMES = {
     "render_generator_family",
     "run_heat_vertical_slice_example",
     "run_kdv_vertical_slice_example",
+    "run_orbit_coverage_diagnostics_example",
     "split_batch_train_heldout",
     "subsample_time",
     "subsample_x",
@@ -110,6 +113,10 @@ _V0_11_DERIVATIVE_APIS = {
 _V0_12_REPORTING_APIS = {
     "pdelie.reporting.summarize_generator_fit_diagnostics",
 }
+_V0_13_INVARIANT_APIS = {
+    "pdelie.invariants.compute_periodic_window_coverage",
+    "pdelie.invariants.diagnose_uniform_translation_consistency",
+}
 
 
 def _api_stability_text() -> str:
@@ -129,17 +136,19 @@ def test_api_stability_doc_covers_current_stable_runtime_surface() -> None:
         | _V0_9_KDV_APIS
         | _V0_11_DERIVATIVE_APIS
         | _V0_12_REPORTING_APIS
+        | _V0_13_INVARIANT_APIS
     ):
         assert api_name in text
 
     assert "does not add a stable public Kuramoto-Sivashinsky data generator or residual evaluator" in text
     assert "these APIs have no root `pdelie` exports" in text
     assert "not canonical objects, artifact schemas, manuscript-table generators, or figure/rendering APIs" in text
+    assert "do not construct augmented datasets, orbit views, training branches" in text
     assert "weak-form derivatives and weak-form methods beyond the frozen `v0.8` weak residual report slice" in text
     assert "operator symmetry" in text
 
 
-def test_api_stability_doc_does_not_promote_deferred_v0_12_surfaces() -> None:
+def test_api_stability_doc_does_not_promote_deferred_v0_13_surfaces() -> None:
     text = _api_stability_text()
 
     for api_name in sorted(_DEFERRED_API_STABILITY_NAMES):
@@ -149,7 +158,8 @@ def test_api_stability_doc_does_not_promote_deferred_v0_12_surfaces() -> None:
     assert "The Well" not in text
     assert "multidimensional grids" not in text
     assert "nonuniform grids" not in text
-    assert "public orbit/coverage" not in text
+    assert "augment_translation_orbit" not in text
+    assert "build_translation_orbit_views" not in text
 
 
 def test_root_package_still_exposes_only_stable_canonical_surface() -> None:
@@ -178,8 +188,16 @@ def test_required_runtime_submodule_apis_remain_importable() -> None:
             "summarize_recovery_grid",
             "to_pysindy_trajectories",
         },
-        "pdelie.examples": {"run_heat_vertical_slice_example", "run_kdv_vertical_slice_example"},
-        "pdelie.invariants": {"InvariantApplier"},
+        "pdelie.examples": {
+            "run_heat_vertical_slice_example",
+            "run_kdv_vertical_slice_example",
+            "run_orbit_coverage_diagnostics_example",
+        },
+        "pdelie.invariants": {
+            "InvariantApplier",
+            "compute_periodic_window_coverage",
+            "diagnose_uniform_translation_consistency",
+        },
         "pdelie.portability": {
             "coerce_generator_family",
             "export_generator_family_manifest",
@@ -228,6 +246,7 @@ def test_deferred_and_private_names_are_not_public_submodule_exports() -> None:
         importlib.import_module("pdelie.data"),
         importlib.import_module("pdelie.derivatives"),
         importlib.import_module("pdelie.discovery"),
+        importlib.import_module("pdelie.invariants"),
         importlib.import_module("pdelie.reporting"),
         importlib.import_module("pdelie.residuals"),
         importlib.import_module("pdelie.symmetry"),
@@ -238,27 +257,31 @@ def test_deferred_and_private_names_are_not_public_submodule_exports() -> None:
             assert not hasattr(module, name), f"{module.__name__}.{name}"
 
 
-def test_v0_12_planning_docs_record_m4_internal_and_m5_audit_scope() -> None:
+def test_v0_13_planning_docs_record_public_diagnostics_and_no_augmentation_scope() -> None:
     plan = _repo_text("docs/planning/PLAN.md")
-    scope = _repo_text("docs/planning/V0_12_SCOPE.md")
+    scope = _repo_text("docs/planning/V0_13_SCOPE.md")
     roadmap = _repo_text("docs/planning/ROADMAP.md")
 
     assert "**Status:** COMPLETE" in plan
-    assert "Milestone 4 - Orbit / Coverage Diagnostic Feasibility" in plan
-    assert "these diagnostics are not promoted as public APIs in M4" in plan
-    assert "no API stability entry for the internal feasibility helper" in plan
+    assert "Milestone 2 - Periodic Coverage Diagnostic" in plan
+    assert "pdelie.invariants.compute_periodic_window_coverage" in plan
+    assert "Milestone 3 - Translation Consistency Diagnostic" in plan
+    assert "pdelie.invariants.diagnose_uniform_translation_consistency" in plan
+    assert "diagnostics support invariant/finite-transform workflows but do not construct augmented datasets" in plan
     assert "## Milestone 5 - API / Public-surface Audit" in plan
-    assert "left `docs/specs/API_STABILITY.md` unchanged because no mismatch was found" in plan
+    assert "no public augmentation utilities landed" in plan
     assert "## Milestone 6 - Release Gate and Readiness" in plan
-    assert "updated CI so the current explicit release gate is `v0_12-release-gate`" in plan
+    assert "updated CI so the current explicit release gate is `v0_13-release-gate`" in plan
     assert "- Milestone 6: COMPLETE" in plan
 
-    assert "M4 did not implement private-paper policy, train-augmentation recipes" in scope
-    assert "public orbit/coverage helpers" in scope
+    assert "diagnostics support invariant/finite-transform workflows but do not construct augmented datasets" in scope
+    assert "stable public augmentation utilities" in scope
+    assert "pdelie.invariants.compute_periodic_window_coverage" in scope
+    assert "pdelie.invariants.diagnose_uniform_translation_consistency" in scope
     assert "- Milestone 4: COMPLETE" in scope
     assert "- Milestone 5: COMPLETE" in scope
     assert "- Milestone 6: COMPLETE" in scope
 
-    assert "`v0.12` is the completed diagnostics/supportability release" in roadmap
-    assert "without adding new numerical scope" in roadmap
+    assert "`v0.13` is the completed public orbit/coverage diagnostics release" in roadmap
+    assert "do not construct augmented datasets" in roadmap
     assert "- no new PDE" in roadmap

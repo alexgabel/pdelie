@@ -1,39 +1,57 @@
 # Notebooks
 
-This directory contains exploratory notebooks for the shipped `v0.6` runtime surface.
+This directory contains tutorial notebooks for the shipped `v0.13` runtime surface.
 
 These notebooks are:
 
-- tutorials and evaluation aids
+- progressive teaching material
 - non-normative
 - not part of the package stability contract
 - intended to be run from the repo root after an editable install
 
-Recommended environment for the discovery notebooks:
+Recommended environment:
 
 ```bash
 python -m pip install -e .[test]
 ```
 
-That gives you the current downstream dependencies used by the PySINDy-related notebooks.
+That installs the optional PySINDy, xarray, and Matplotlib dependencies used across the tutorial set.
+If you only want the core library, install `python -m pip install -e .` and skip PySINDy-specific notebooks.
 
-If you want to open the notebooks in JupyterLab or classic Jupyter, install notebook tooling separately in your environment.
-The library itself does not treat Jupyter as a required runtime dependency.
+Jupyter itself is not a runtime dependency of `pdelie`; install notebook tooling separately in your environment.
+
+## Curriculum Shape
+
+The notebooks are intentionally orthogonal:
+
+1. end-to-end tour
+2. discovery-input canonicalization
+3. robustness diagnostics
+4. portability
+5. fitted-vs-known generators
+6. algebra diagnostics
+7. orbit/coverage diagnostics
+
+The ordering is progressive, but each notebook has a distinct theme.
 
 ## Notebook Index
 
 - `00_how_to_use_pdelie_v0_6.ipynb`
-  - quick tour of the shipped `v0.6` surface
+  - current `v0.13` tour despite the historical filename
+  - fields, derivatives, residuals, nested reports, KdV, weak reports, and invariant diagnostics
 - `01_raw_vs_translation_canonical_discovery.ipynb`
-  - compares raw and translation-canonical discovery fits on Heat data
+  - raw versus translation-canonical Heat discovery inputs
+  - visualizes batch-alignment effects and connects them to coverage diagnostics
 - `02_robustness_sweeps.ipynb`
-  - explores noise/subsampling robustness and grouped recovery summaries
+  - noise/subsampling robustness with strong residuals, weak reports, fit diagnostics, and recovery summaries
 - `03_portability_round_trips.ipynb`
-  - checks manifest export/import/coercion round-trips for `GeneratorFamily`
+  - generator-family manifest export/import/coercion and post-round-trip diagnostics
 - `04_discovered_vs_known_translation_generators.ipynb`
-  - compares discovered and known generators on Heat and Burgers
+  - compares fitted Heat/Burgers/KdV translation generators against the known translation span
 - `05_closure_algebra_diagnostics.ipynb`
-  - probes closure diagnostics on small hand-built polynomial families
+  - algebraic closure and span diagnostics on small hand-built polynomial families
+- `06_orbit_coverage_diagnostics.ipynb`
+  - dedicated `v0.13` feature notebook for public orbit/coverage diagnostics under `pdelie.invariants`
 
 ## Running From VS Code
 
@@ -45,5 +63,7 @@ The library itself does not treat Jupyter as a required runtime dependency.
 ## Notes
 
 - discovery notebooks intentionally work with backend-native PySINDy outputs
-- when a notebook uses `evaluate_discovery_recovery(...)`, it explains the local basis being compared
-- these notebooks are a good baseline for `v0.7` development because they exercise the shipped `v0.6` surfaces without adding new scope
+- reporting helpers produce runtime summaries, not canonical artifact schemas
+- orbit/coverage diagnostics do not construct augmented datasets
+- KS remains internal feasibility/no-go evidence; no notebook promotes a public KS runtime API
+- these notebooks should stay paper-agnostic and reusable for tutorials

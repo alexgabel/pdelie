@@ -45,7 +45,11 @@ def test_runtime_package_api_is_importable() -> None:
         summarize_recovery_grid,
         to_pysindy_trajectories,
     )
-    from pdelie.invariants import InvariantApplier
+    from pdelie.invariants import (
+        InvariantApplier,
+        compute_periodic_window_coverage,
+        diagnose_uniform_translation_consistency,
+    )
     from pdelie.portability import (
         coerce_generator_family,
         export_generator_family_manifest,
@@ -82,6 +86,8 @@ def test_runtime_package_api_is_importable() -> None:
     assert subsample_time is not None
     assert subsample_x is not None
     assert InvariantApplier is not None
+    assert compute_periodic_window_coverage is not None
+    assert diagnose_uniform_translation_consistency is not None
     assert KdVResidualEvaluator is not None
     assert evaluate_weak_burgers_residual is not None
     assert evaluate_weak_heat_residual is not None
@@ -116,8 +122,10 @@ def test_root_package_does_not_export_runtime_invariant_applier() -> None:
     assert not hasattr(pdelie, "build_translation_canonical_discovery_inputs")
     assert not hasattr(pdelie, "build_translation_orbit_views")
     assert not hasattr(pdelie, "augment_translation_orbit")
+    assert not hasattr(pdelie, "compute_periodic_window_coverage")
     assert not hasattr(pdelie, "compute_weak_derivatives")
     assert not hasattr(pdelie, "compute_coverage_diagnostics")
+    assert not hasattr(pdelie, "diagnose_uniform_translation_consistency")
     assert not hasattr(pdelie, "evaluate_weak_burgers_residual")
     assert not hasattr(pdelie, "evaluate_weak_heat_residual")
     assert not hasattr(pdelie, "evaluate_weak_ks_residual")
@@ -152,6 +160,7 @@ def test_root_package_does_not_export_runtime_invariant_applier() -> None:
     assert not hasattr(pdelie, "WeakKSResidualEvaluator")
     assert not hasattr(pdelie, "OperatorSymmetry")
     assert not hasattr(pdelie, "run_kdv_vertical_slice_example")
+    assert not hasattr(pdelie, "run_orbit_coverage_diagnostics_example")
     assert not hasattr(pdelie, "sample_kdv_mode_coefficients")
     assert not hasattr(pdelie, "compare_generator_spans")
     assert not hasattr(pdelie, "diagnose_generator_family_closure")
@@ -168,6 +177,10 @@ def test_invariants_package_runtime_api_matches_frozen_milestone_surface() -> No
     invariants_module = importlib.import_module("pdelie.invariants")
 
     assert hasattr(invariants_module, "InvariantApplier")
+    assert hasattr(invariants_module, "compute_periodic_window_coverage")
+    assert hasattr(invariants_module, "diagnose_uniform_translation_consistency")
+    assert not hasattr(invariants_module, "augment_translation_orbit")
+    assert not hasattr(invariants_module, "build_translation_orbit_views")
     assert not hasattr(invariants_module, "InvariantMapSpec")
 
 
@@ -234,6 +247,7 @@ def test_examples_package_runtime_api_matches_current_frozen_surface() -> None:
 
     assert hasattr(examples_module, "run_heat_vertical_slice_example")
     assert hasattr(examples_module, "run_kdv_vertical_slice_example")
+    assert hasattr(examples_module, "run_orbit_coverage_diagnostics_example")
     assert not hasattr(examples_module, "run_ks_vertical_slice_example")
     assert not hasattr(examples_module, "run_orbit_coverage_feasibility")
 

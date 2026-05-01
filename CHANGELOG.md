@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.13.0
+
+First final release for the frozen V0.13 public orbit and coverage diagnostics slice.
+
+- adds `pdelie.invariants.compute_periodic_window_coverage(...)` for JSON-compatible grid-point periodic-window coverage diagnostics under the frozen field-shift-then-fixed-window convention
+- adds `pdelie.invariants.diagnose_uniform_translation_consistency(...)` for JSON-compatible uniform-translation consistency diagnostics over canonical scalar 1D periodic `FieldBatch` inputs
+- adds `python -m pdelie.examples.orbit_coverage_diagnostics` and `pdelie.examples.run_orbit_coverage_diagnostics_example(...)` as runtime smoke examples for the diagnostics
+- documents the diagnostics in `API_STABILITY.md` as submodule-only runtime APIs with no root exports
+- tightens public-surface guards so augmentation, orbit-view builders, KS APIs, weak KS, broad adapters, and root runtime exports remain absent
+- updates CI to the compact current `v0_13-release-gate` while preserving full editable tests and package smoke
+- preserves the prior Heat/Burgers strong paths, `v0.8` weak residual report APIs, `v0.9` normalized periodic KdV strong path, `v0.10` reporting helpers, `v0.11` order-4 derivatives, and `v0.12` fit diagnostics
+
+Explicitly deferred for this final release:
+
+- new PDE support
+- stable KS data generator, residual evaluator, vertical-slice example, imported parity, weak API, or root KS exports
+- public augmentation utilities
+- public orbit-view builders
+- broad dataset adapters such as PDEBench or The Well
+- multidimensional, multivariable, nonuniform-grid, operator, or broad adapter expansion
+- private-paper experiment policy, tables, figures, thresholds, or branch logic
+- PyPI and TestPyPI publication; package-index publishing is deferred to `v1.0` or later
+
 ## 0.12.0
 
 First final release for the frozen V0.12 diagnostics and supportability hardening slice.

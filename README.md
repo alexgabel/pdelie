@@ -2,7 +2,7 @@
 
 Numerical discovery and verification of Lie symmetries for PDE data.
 
-The current repository implements the frozen V0.12 diagnostics and supportability hardening slice for the existing Heat/Burgers/weak-report/KdV engine:
+The current repository implements the frozen V0.13 public orbit and coverage diagnostics slice for the existing Heat/Burgers/weak-report/KdV engine:
 
 - synthetic 1D heat equation
 - synthetic 1D Burgers equation
@@ -15,7 +15,7 @@ The current repository implements the frozen V0.12 diagnostics and supportabilit
 - `spectral_fd` derivatives through `u_xxxx`
 - normalized KdV strong residuals under `pdelie.residuals.KdVResidualEvaluator`
 - internal Kuramoto-Sivashinsky diagnostic sweep evidence with stable runtime promotion deferred
-- internal orbit/coverage diagnostic feasibility over stable Heat and KdV fixtures
+- public orbit/coverage diagnostics under `pdelie.invariants`
 - `FieldBatch -> DerivativeBatch -> ResidualBatch -> GeneratorFamily -> InvariantMapSpec -> VerificationReport`
 - one stable derivative backend: `spectral_fd`
 - family-shaped `GeneratorFamily` with explicit `basis_spec`
@@ -30,7 +30,7 @@ The current repository implements the frozen V0.12 diagnostics and supportabilit
 - one runtime-only thin PySINDy discovery adapter under `pdelie.discovery`
 - one runtime-only translation-canonical discovery-input helper under `pdelie.discovery`
 - one runtime-only robustness helper layer under `pdelie.data`
-- one compact current `v0_12-release-gate` CI job plus full editable tests and package smoke
+- one compact current `v0_13-release-gate` CI job plus full editable tests and package smoke
 
 ## Setup
 
@@ -79,7 +79,7 @@ python -m pytest
 
 ## Tutorial Notebooks
 
-The repository includes exploratory notebooks under `notebooks/` for the shipped symmetry/discovery runtime surface retained through `v0.12`:
+The repository includes exploratory notebooks under `notebooks/` for the shipped symmetry/discovery runtime surface retained through `v0.13`:
 
 - `00_how_to_use_pdelie_v0_6.ipynb`
 - `01_raw_vs_translation_canonical_discovery.ipynb`
@@ -98,6 +98,7 @@ Run the packaged example modules from the repo root:
 ```bash
 python -m pdelie.examples.heat_vertical_slice
 python -m pdelie.examples.kdv_vertical_slice
+python -m pdelie.examples.orbit_coverage_diagnostics
 ```
 
 Those commands are validated in CI after editable install.
@@ -119,14 +120,28 @@ The KdV example demonstrates the frozen normalized periodic short-horizon KdV st
 4. evaluate the normalized KdV residual
 5. fit and verify the polynomial spatial-translation baseline
 
+The orbit/coverage diagnostics example demonstrates:
+
+1. grid-point coverage for periodic half-open windows under uniform shifts
+2. the frozen field-shift-then-fixed-window convention
+3. uniform-translation consistency checks on stable Heat and KdV fixtures
+4. residual RMS stability checks under the existing residual evaluators
+
 You can also call the examples programmatically.
 They return nested `pdelie.reporting.summarize_vertical_slice(...)` runtime summaries, not canonical artifact schemas:
 
 ```python
-from pdelie.examples import run_heat_vertical_slice_example, run_kdv_vertical_slice_example
+from pdelie.examples import (
+    run_heat_vertical_slice_example,
+    run_kdv_vertical_slice_example,
+    run_orbit_coverage_diagnostics_example,
+)
 
 result = run_kdv_vertical_slice_example()
 print(result["verification"]["classification"])
+
+coverage = run_orbit_coverage_diagnostics_example()
+print(coverage["coverage_cases"][0]["coverage_fraction"])
 ```
 
 ## Current Scope
@@ -150,9 +165,9 @@ Included in the current stable core:
 - consolidated current release-gate CI visibility while retaining historical gate tests in the full test suite
 - KdV is stable only for the normalized periodic short-horizon strong path; weak KdV remains explicitly deferred
 - KS remains internal feasibility/no-go evidence from `v0.11` plus internal diagnostic sweep evidence in `v0.12`; no stable KS runtime API is promoted
-- orbit/coverage work in `v0.12` is internal diagnostic feasibility only; no public orbit/coverage or augmentation API is promoted
+- orbit/coverage diagnostics in `v0.13` are public under `pdelie.invariants`; they report coverage and consistency but do not construct augmented datasets
 
-Runtime-level public APIs in the frozen V0.12 slice:
+Runtime-level public APIs in the frozen V0.13 slice:
 
 - `pdelie.data.from_numpy` for strict runtime conversion of explicit NumPy/array-like 1D uniform rectilinear trajectory data into canonical `FieldBatch`
 - `pdelie.data.from_xarray` for strict runtime conversion of explicit `xarray.DataArray` 1D uniform rectilinear trajectory data into canonical `FieldBatch` when the optional `xarray` dependency is installed
@@ -169,6 +184,9 @@ Runtime-level public APIs in the frozen V0.12 slice:
 - `pdelie.reporting.summarize_verification_report` for JSON-compatible summaries of finite-transform verification sweeps
 - `pdelie.reporting.summarize_vertical_slice` for nested derivative/residual/generator/verification runtime summaries
 - `pdelie.invariants.InvariantApplier` for single-generator periodic `x` uniform translation only
+- `pdelie.invariants.compute_periodic_window_coverage` for JSON-compatible grid-point coverage diagnostics over endpoint-excluded periodic 1D grids, half-open windows, and uniform translation shifts
+- `pdelie.invariants.diagnose_uniform_translation_consistency` for JSON-compatible diagnostics of uniform-translation structure, inverse/period-wrap consistency, provenance, and optional residual stability
+- `pdelie.examples.run_orbit_coverage_diagnostics_example` for a runtime smoke example of the public orbit/coverage diagnostics, not a canonical report schema
 - `pdelie.discovery.to_pysindy_trajectories` for the narrow backend-specific PySINDy bridge
 - `pdelie.discovery.evaluate_discovery_recovery` for runtime-only support/coefficient recovery metrics over caller-supplied canonical term strings
 - `pdelie.discovery.fit_pysindy_discovery` for a runtime-only backend-native PySINDy fit adapter
@@ -185,13 +203,15 @@ Runtime-level public APIs in the frozen V0.12 slice:
 
 The degraded weak-path release wins in `v0.8` are frozen as representative contract-stability signals. They are fallback-backed release checks, not a general weak-superiority claim.
 
-The KdV support retained through `v0.10` is normalized, periodic, scalar, 1D, and short-horizon. Accepted generator parameters outside the release-guaranteed regime are user-risk and are not general KdV stability guarantees.
+The KdV support retained through `v0.13` is normalized, periodic, scalar, 1D, and short-horizon. Accepted generator parameters outside the release-guaranteed regime are user-risk and are not general KdV stability guarantees.
 
 The `v0.10` reporting helpers are supportability APIs. They produce JSON-compatible runtime summaries, not canonical objects, manuscript tables, or artifact schemas.
 
 The `v0.11` KS feasibility track does not promote stable KS runtime support. Internal feasibility evidence passes residual, mass, and canonical held-out verification checks, but translation fitting is reference-fallback-backed rather than direct SVD in-tolerance recovery.
 
 The `v0.12` diagnostics work hardens supportability without changing numerical scope. The public addition is the submodule-only `summarize_generator_fit_diagnostics(...)` helper. The internal KS diagnostic sweep and orbit/coverage feasibility helpers remain test-only evidence, not public runtime APIs.
+
+The `v0.13` diagnostics work promotes only the reusable orbit/coverage reporting layer under `pdelie.invariants`. These diagnostics support invariant and finite-transform workflows but do not construct augmented datasets, orbit views, train branches, or manuscript artifacts.
 
 Explicitly deferred:
 - stable multi-generator PDE fitting
@@ -207,5 +227,5 @@ Explicitly deferred:
 - custom KdV initial conditions or configurable KdV coefficients
 - general KdV support outside the frozen normalized periodic short-horizon regime
 - stable KS data generator, residual evaluator, vertical-slice example, imported parity, weak KS API, or root KS export
-- public orbit/coverage helpers or augmentation utilities
+- public orbit-view builders or augmentation utilities
 - broad adapters and interoperability work

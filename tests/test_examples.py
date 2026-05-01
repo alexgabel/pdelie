@@ -7,7 +7,11 @@ import sys
 import numpy as np
 
 import pdelie
-from pdelie.examples import run_heat_vertical_slice_example, run_kdv_vertical_slice_example
+from pdelie.examples import (
+    run_heat_vertical_slice_example,
+    run_kdv_vertical_slice_example,
+    run_orbit_coverage_diagnostics_example,
+)
 
 
 def _assert_vertical_slice_summary(result: dict[str, object]) -> None:
@@ -128,3 +132,32 @@ def test_kdv_vertical_slice_module_prints_json_only() -> None:
 
     _assert_vertical_slice_summary(parsed)
     assert parsed["verification"]["classification"] != "failed"
+
+
+def test_orbit_coverage_diagnostics_example_runs_end_to_end() -> None:
+    result = run_orbit_coverage_diagnostics_example()
+
+    assert json.loads(json.dumps(result)) == result
+    assert result["summary_schema_version"] == "0.1"
+    assert result["summary_type"] == "orbit_coverage_diagnostics_example"
+    assert result["extra_metrics"]["example_name"] == "orbit_coverage_diagnostics"
+    assert len(result["coverage_cases"]) == 2
+    assert len(result["transform_consistency_cases"]) == 2
+    assert result["coverage_cases"][0]["summary_type"] == "periodic_window_coverage"
+    np.testing.assert_allclose(result["coverage_cases"][0]["coverage_fraction"], 0.5)
+    np.testing.assert_allclose(result["coverage_cases"][1]["coverage_fraction"], 1.0)
+    for summary in result["transform_consistency_cases"]:
+        assert summary["summary_type"] == "uniform_translation_consistency"
+        for report in summary["shift_reports"]:
+            assert report["inverse_passed"] is True
+            assert report["period_wrap_passed"] is True
+            assert report["residual_stability_passed"] is True
+    assert not hasattr(pdelie, "run_orbit_coverage_diagnostics_example")
+
+
+def test_orbit_coverage_diagnostics_module_prints_json_only() -> None:
+    parsed = _run_module_json("pdelie.examples.orbit_coverage_diagnostics")
+
+    assert parsed["summary_type"] == "orbit_coverage_diagnostics_example"
+    np.testing.assert_allclose(parsed["coverage_cases"][0]["coverage_fraction"], 0.5)
+    np.testing.assert_allclose(parsed["coverage_cases"][1]["coverage_fraction"], 1.0)
