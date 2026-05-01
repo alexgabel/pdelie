@@ -2,7 +2,7 @@
 
 Numerical discovery and verification of Lie symmetries for PDE data.
 
-The current repository implements the frozen V0.15 materialized uniform translation orbit batch slice for the existing Heat/Burgers/weak-report/KdV engine:
+The current repository implements the frozen V0.16 external symmetry-candidate validation slice for the existing Heat/Burgers/weak-report/KdV engine:
 
 - synthetic 1D heat equation
 - synthetic 1D Burgers equation
@@ -19,6 +19,7 @@ The current repository implements the frozen V0.15 materialized uniform translat
 - invariant workflow summaries under `pdelie.reporting.summarize_invariant_workflow`
 - read-only uniform translation orbit reports under `pdelie.invariants.summarize_uniform_translation_orbit`
 - materialized uniform translation orbit batches under `pdelie.invariants.build_uniform_translation_orbit_batch`
+- empirical external symmetry-candidate validation reports under `pdelie.symmetry.validate_symmetry_candidate`
 - `FieldBatch -> DerivativeBatch -> ResidualBatch -> GeneratorFamily -> InvariantMapSpec -> VerificationReport`
 - one stable derivative backend: `spectral_fd`
 - family-shaped `GeneratorFamily` with explicit `basis_spec`
@@ -33,7 +34,7 @@ The current repository implements the frozen V0.15 materialized uniform translat
 - one runtime-only thin PySINDy discovery adapter under `pdelie.discovery`
 - one runtime-only translation-canonical discovery-input helper under `pdelie.discovery`
 - one runtime-only robustness helper layer under `pdelie.data`
-- one compact current `v0_15-release-gate` CI job plus full editable tests and package smoke
+- one compact current `v0_16-release-gate` CI job plus full editable tests and package smoke
 
 ## Setup
 
@@ -82,7 +83,7 @@ python -m pytest
 
 ## Tutorial Notebooks
 
-The repository includes exploratory notebooks under `notebooks/` for the shipped symmetry/discovery runtime surface retained through `v0.15`:
+The repository includes exploratory notebooks under `notebooks/` for the shipped symmetry/discovery runtime surface retained through `v0.16`:
 
 - `00_how_to_use_pdelie_v0_6.ipynb`
 - `01_raw_vs_translation_canonical_discovery.ipynb`
@@ -105,6 +106,7 @@ python -m pdelie.examples.kdv_vertical_slice
 python -m pdelie.examples.orbit_coverage_diagnostics
 python -m pdelie.examples.invariant_workflow_summary
 python -m pdelie.examples.translation_orbit_batch
+python -m pdelie.examples.symmetry_candidate_validation
 ```
 
 Those commands are validated in CI after editable install.
@@ -147,6 +149,13 @@ The translation orbit batch example demonstrates:
 3. source/shift provenance in a JSON-compatible report
 4. residual sanity on the materialized `FieldBatch` outputs
 
+The symmetry candidate validation example demonstrates:
+
+1. externally supplied `GeneratorFamily` and `InvariantMapSpec` payload validation
+2. Heat and KdV configured empirical validation reports
+3. a failed candidate for contrast
+4. the v0.16 interpretation that `validated` means configured empirical validation, not a mathematical proof
+
 You can also call the examples programmatically.
 They return JSON-compatible runtime summaries, not canonical artifact schemas.
 The Heat and KdV examples return nested `vertical_slice` summaries; the invariant examples return diagnostic/workflow summaries:
@@ -157,6 +166,7 @@ from pdelie.examples import (
     run_invariant_workflow_summary_example,
     run_kdv_vertical_slice_example,
     run_orbit_coverage_diagnostics_example,
+    run_symmetry_candidate_validation_example,
     run_translation_orbit_batch_example,
 )
 
@@ -171,6 +181,9 @@ print(workflow["workflows"][0]["summary_type"])
 
 orbit_batch = run_translation_orbit_batch_example()
 print(orbit_batch["cases"][0]["orbit_report"]["output_batch_size"])
+
+candidate_validation = run_symmetry_candidate_validation_example()
+print(candidate_validation["cases"][0]["report"]["conclusion"])
 ```
 
 ## Current Scope
@@ -197,8 +210,9 @@ Included in the current stable core:
 - orbit/coverage diagnostics from `v0.13` are public under `pdelie.invariants`; they report coverage and consistency but do not construct augmented datasets
 - invariant workflow summaries and uniform translation orbit reports in `v0.14` are read-only runtime reports; they do not construct augmented datasets, orbit datasets, or transformed `FieldBatch` collections
 - materialized uniform translation orbit batches in `v0.15` are conservative data utilities; they append along batch and record provenance, but do not manage train/test splits or leakage policy
+- external symmetry-candidate validation in `v0.16` accepts `GeneratorFamily` and `InvariantMapSpec` objects or strict payload mappings and returns empirical configured validation reports; it does not train detectors or accept callables
 
-Runtime-level public APIs in the frozen V0.15 slice:
+Runtime-level public APIs in the frozen V0.16 slice:
 
 - `pdelie.data.from_numpy` for strict runtime conversion of explicit NumPy/array-like 1D uniform rectilinear trajectory data into canonical `FieldBatch`
 - `pdelie.data.from_xarray` for strict runtime conversion of explicit `xarray.DataArray` 1D uniform rectilinear trajectory data into canonical `FieldBatch` when the optional `xarray` dependency is installed
@@ -224,6 +238,8 @@ Runtime-level public APIs in the frozen V0.15 slice:
 - `pdelie.examples.run_orbit_coverage_diagnostics_example` for a runtime smoke example of the public orbit/coverage diagnostics, not a canonical report schema
 - `pdelie.examples.run_invariant_workflow_summary_example` for a runtime smoke example combining Heat, KdV, coverage, orbit, fit, and verification summaries
 - `pdelie.examples.run_translation_orbit_batch_example` for a runtime smoke example of materialized orbit batches, not a canonical report schema
+- `pdelie.symmetry.validate_symmetry_candidate` for empirical configured validation reports over externally supplied `GeneratorFamily` and `InvariantMapSpec` candidates
+- `pdelie.examples.run_symmetry_candidate_validation_example` for a runtime smoke example of external symmetry-candidate validation, not a canonical report schema
 - `pdelie.discovery.to_pysindy_trajectories` for the narrow backend-specific PySINDy bridge
 - `pdelie.discovery.evaluate_discovery_recovery` for runtime-only support/coefficient recovery metrics over caller-supplied canonical term strings
 - `pdelie.discovery.fit_pysindy_discovery` for a runtime-only backend-native PySINDy fit adapter
@@ -253,6 +269,10 @@ The `v0.13` diagnostics work promotes only the reusable orbit/coverage reporting
 The `v0.14` workflow work adds read-only orbit reports and combined invariant workflow summaries. These helpers combine existing reports and canonical objects into JSON-compatible runtime summaries; they do not construct augmented datasets, orbit datasets, transformed `FieldBatch` collections, or time-translation APIs.
 
 The `v0.15` data-utility work adds materialized uniform translation orbit batches. This is the first conservative user-facing data utility beyond diagnostics: it returns a `FieldBatch` plus provenance report, preserves duplicate shifts, and records source/shift indices when requested. It still does not manage train/test splits, leakage policy, or downstream experiment design.
+
+The `v0.15` orbit-batch helper constructs orbit-expanded data. It does not decide train/heldout policy or leakage safety. Serious workflows should keep source and shift indices enabled so materialized samples remain auditable.
+
+The `v0.16` candidate-validation work adds detector interop through strict payload validation and empirical reports. `validated` means the configured checks passed under the supplied field, residual evaluator, epsilons, and optional reference; it is not a mathematical proof. Callable descriptors, learned detector training, formula-backed generators, KS promotion, and operator-facing APIs remain deferred.
 
 Explicitly deferred:
 - stable multi-generator PDE fitting

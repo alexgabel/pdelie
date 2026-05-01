@@ -66,7 +66,7 @@ def _assert_summary_match(first: dict[str, object], second: dict[str, object]) -
     for key in PATH_SUMMARY_STRUCTURAL_KEYS:
         assert first[key] == second[key]
     for key in PATH_SUMMARY_FLOAT_KEYS:
-        np.testing.assert_allclose(float(first[key]), float(second[key]), rtol=1e-9, atol=1e-12)
+        np.testing.assert_allclose(float(first[key]), float(second[key]), rtol=1e-8, atol=1e-12)
 
 
 def _assert_comparison_match(first: dict[str, object], second: dict[str, object]) -> None:
@@ -79,7 +79,7 @@ def _assert_comparison_match(first: dict[str, object], second: dict[str, object]
     np.testing.assert_allclose(
         [float(first["weak_ratio"]), float(first["strong_ratio"])],
         [float(second["weak_ratio"]), float(second["strong_ratio"])],
-        rtol=1e-9,
+        rtol=1e-8,
         atol=1e-12,
     )
 

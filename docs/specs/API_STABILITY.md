@@ -180,6 +180,16 @@ Runtime public API for the frozen `v0.15` Milestone 2 slice:
 - time-translation, public KS runtime APIs, weak KS, broad adapters, and operator-facing APIs remain deferred
 - these APIs have no root `pdelie` exports
 
+Runtime public API for the frozen `v0.16` Milestone 2/M3 slice:
+
+- `pdelie.symmetry.validate_symmetry_candidate` for empirical configured validation reports over externally supplied symmetry candidates
+- accepted candidate inputs are `GeneratorFamily`, canonical `GeneratorFamily` payload mappings, `InvariantMapSpec`, and canonical `InvariantMapSpec` payload mappings
+- reports distinguish `candidate_kind = "generator_family"` from `candidate_kind = "invariant_map_spec"`
+- `validated` means all configured empirical checks passed for the supplied field, residual evaluator, epsilons, and optional reference; it is not a mathematical proof of symmetry
+- callable descriptors, learned detector training, formula-backed generator families, public KS runtime APIs, weak KS, broad adapters, split policy, and operator-facing APIs remain deferred
+- this API returns a JSON-compatible runtime report, not a canonical object, detector, fitting algorithm, manuscript artifact, or training framework
+- this API has no root `pdelie` export
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 

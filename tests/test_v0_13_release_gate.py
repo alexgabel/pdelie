@@ -21,7 +21,7 @@ def _repo_text(path: str) -> str:
 def test_v0_13_release_gate_metadata_docs_and_ci_are_aligned() -> None:
     pyproject = tomllib.loads(_repo_text("pyproject.toml"))
     workflow = _repo_text(".github/workflows/ci.yml")
-    readiness = _repo_text("docs/releases/V0_15_RELEASE_READINESS.md")
+    readiness = _repo_text("docs/releases/V0_16_RELEASE_READINESS.md")
     readme = _repo_text("README.md")
     changelog = _repo_text("CHANGELOG.md")
     publishing = _repo_text("docs/releases/PUBLISHING.md")
@@ -30,20 +30,20 @@ def test_v0_13_release_gate_metadata_docs_and_ci_are_aligned() -> None:
     roadmap = _repo_text("docs/planning/ROADMAP.md")
     release_gate_jobs = re.findall(r"^  (v0_\d+-release-gate):", workflow, flags=re.MULTILINE)
 
-    assert pyproject["project"]["version"] == "0.15.0"
-    assert release_gate_jobs == ["v0_15-release-gate"]
-    assert "python -m pytest tests/test_v0_15_release_gate.py" in workflow
+    assert pyproject["project"]["version"] == "0.16.0"
+    assert release_gate_jobs == ["v0_16-release-gate"]
+    assert "python -m pytest tests/test_v0_16_release_gate.py" in workflow
     assert "v0_13-release-gate" not in workflow
 
     assert "## 0.13.0" in changelog
-    assert "V0.15" in readme
+    assert "V0.16" in readme
     assert "compute_periodic_window_coverage" in readme
     assert "diagnose_uniform_translation_consistency" in readme
-    assert "package version: `0.15.0`" in readiness
-    assert "git tag: `v0.15.0`" in readiness
-    assert "Do not run TestPyPI or PyPI publishing for `v0.15`" in readiness
-    assert "including `v0.15.0`" in publishing
-    assert "V0.15 is complete" in plan
+    assert "package version: `0.16.0`" in readiness
+    assert "git tag: `v0.16.0`" in readiness
+    assert "Do not run TestPyPI or PyPI publishing for `v0.16`" in readiness
+    assert "including `v0.16.0`" in publishing
+    assert "V0.16 is complete" in plan
     assert "Milestone 6: COMPLETE" in scope
     assert "`v0.13` - Public orbit and coverage diagnostics" in roadmap
     assert "**Status:** Completed" in roadmap

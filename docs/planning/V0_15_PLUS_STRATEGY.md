@@ -78,43 +78,46 @@ This would be useful beyond PDELie itself: users could feed the materialized orb
 
 ## V0.16 - External Symmetry-candidate Interop
 
-Planned theme:
+Completed theme:
 
 > validate external symmetry candidates without training the detectors that produced them.
 
-Candidate API direction:
+Implemented API direction:
 
 ```python
-pdelie.symmetry.validate_generator_candidate(
+pdelie.symmetry.validate_symmetry_candidate(
     field,
     candidate,
     *,
     residual_evaluator,
+    reference_generator=None,
     finite_transform_epsilons=None,
+    source_candidate_id=None,
 ) -> dict[str, Any]
 ```
 
-External methods may provide:
+External methods may provide in `v0.16`:
 
 - an existing `GeneratorFamily`
-- a finite-transform specification
-- a callable transform descriptor
-- a JSON-compatible symmetry-candidate report
+- a canonical `GeneratorFamily` payload mapping
+- an existing `InvariantMapSpec`
+- a canonical `InvariantMapSpec` payload mapping
 
-PDELie should validate candidates using:
+PDELie validates candidates using:
 
-- finite-transform consistency
-- residual preservation
+- finite-transform verification where applicable
+- residual preservation for supported invariant-map specs
 - span or closure diagnostics when applicable
 - provenance checks
-- optional fit and verification summaries
+- verification summaries
 
 Design boundary:
 
 - this is detector interop, not sparse-discovery reporting
 - this is validation/reporting, not neural-generator training
 - learned-generator methods may slot in by exporting candidates, but PDELie does not train those models
-- callable descriptors should remain less stable than JSON-compatible candidate records unless accompanied by diagnostic reports
+- callable descriptors remain deferred
+- formula-backed/non-polynomial generators remain deferred to `v0.17`
 
 This keeps PDELie compatible with learned-generator or Lie-algebra-aware methods without becoming a neural symmetry-discovery framework.
 

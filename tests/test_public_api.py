@@ -73,6 +73,7 @@ def test_runtime_package_api_is_importable() -> None:
         diagnose_generator_family_closure,
         render_generator_family,
         to_sympy_component_expressions,
+        validate_symmetry_candidate,
     )
     from pdelie.viz import (
         plot_closure_diagnostics,
@@ -117,6 +118,7 @@ def test_runtime_package_api_is_importable() -> None:
     assert diagnose_generator_family_closure is not None
     assert render_generator_family is not None
     assert to_sympy_component_expressions is not None
+    assert validate_symmetry_candidate is not None
     assert plot_generator_coefficients is not None
     assert plot_generator_symbolic_summary is not None
     assert plot_verification_curve is not None
@@ -179,12 +181,14 @@ def test_root_package_does_not_export_runtime_invariant_applier() -> None:
     assert not hasattr(pdelie, "run_invariant_workflow_summary_example")
     assert not hasattr(pdelie, "run_kdv_vertical_slice_example")
     assert not hasattr(pdelie, "run_orbit_coverage_diagnostics_example")
+    assert not hasattr(pdelie, "run_symmetry_candidate_validation_example")
     assert not hasattr(pdelie, "run_translation_orbit_batch_example")
     assert not hasattr(pdelie, "sample_kdv_mode_coefficients")
     assert not hasattr(pdelie, "compare_generator_spans")
     assert not hasattr(pdelie, "diagnose_generator_family_closure")
     assert not hasattr(pdelie, "render_generator_family")
     assert not hasattr(pdelie, "to_sympy_component_expressions")
+    assert not hasattr(pdelie, "validate_symmetry_candidate")
     assert not hasattr(pdelie, "plot_generator_coefficients")
     assert not hasattr(pdelie, "plot_generator_symbolic_summary")
     assert not hasattr(pdelie, "plot_verification_curve")
@@ -277,6 +281,7 @@ def test_examples_package_runtime_api_matches_current_frozen_surface() -> None:
     assert hasattr(examples_module, "run_invariant_workflow_summary_example")
     assert hasattr(examples_module, "run_kdv_vertical_slice_example")
     assert hasattr(examples_module, "run_orbit_coverage_diagnostics_example")
+    assert hasattr(examples_module, "run_symmetry_candidate_validation_example")
     assert hasattr(examples_module, "run_translation_orbit_batch_example")
     assert not hasattr(examples_module, "run_ks_vertical_slice_example")
     assert not hasattr(examples_module, "run_orbit_coverage_feasibility")
@@ -306,10 +311,13 @@ def test_symmetry_package_runtime_api_matches_frozen_m4_surface() -> None:
     symmetry_module = importlib.import_module("pdelie.symmetry")
 
     assert hasattr(symmetry_module, "fit_translation_generator")
+    assert hasattr(symmetry_module, "validate_symmetry_candidate")
     assert hasattr(symmetry_module, "diagnose_generator_family_closure")
     assert hasattr(symmetry_module, "compare_generator_spans")
     assert hasattr(symmetry_module, "render_generator_family")
     assert hasattr(symmetry_module, "to_sympy_component_expressions")
+    assert not hasattr(symmetry_module, "CallableGeneratorFamily")
+    assert not hasattr(symmetry_module, "FormulaGeneratorFamily")
     assert not hasattr(symmetry_module, "OperatorSymmetry")
     assert not hasattr(symmetry_module, "build_translation_orbit_views")
 

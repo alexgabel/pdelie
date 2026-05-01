@@ -12,6 +12,7 @@ from pdelie.examples import (
     run_invariant_workflow_summary_example,
     run_kdv_vertical_slice_example,
     run_orbit_coverage_diagnostics_example,
+    run_symmetry_candidate_validation_example,
     run_translation_orbit_batch_example,
 )
 
@@ -231,3 +232,35 @@ def test_translation_orbit_batch_module_prints_json_only() -> None:
     assert len(parsed["cases"]) == 2
     for case in parsed["cases"]:
         assert case["orbit_report"]["summary_type"] == "uniform_translation_orbit_batch"
+
+
+def test_symmetry_candidate_validation_example_runs_end_to_end() -> None:
+    result = run_symmetry_candidate_validation_example()
+
+    assert json.loads(json.dumps(result)) == result
+    assert result["summary_schema_version"] == "0.1"
+    assert result["summary_type"] == "symmetry_candidate_validation_example"
+    assert result["extra_metrics"]["example_name"] == "symmetry_candidate_validation"
+    assert result["extra_metrics"]["candidate_kinds"] == ["generator_family", "invariant_map_spec"]
+    assert result["extra_metrics"]["interpretation"] == "configured_empirical_validation_not_mathematical_proof"
+    assert len(result["cases"]) == 4
+    cases = {case["case_name"]: case for case in result["cases"]}
+    assert set(cases) == {
+        "failed_wrong_span_generator",
+        "heat_generator_family",
+        "heat_invariant_map_spec_payload",
+        "kdv_generator_family",
+    }
+    assert cases["failed_wrong_span_generator"]["report"]["conclusion"] == "failed"
+    for name in ("heat_generator_family", "heat_invariant_map_spec_payload", "kdv_generator_family"):
+        assert cases[name]["report"]["summary_type"] == "symmetry_candidate_validation"
+        assert cases[name]["report"]["conclusion"] == "validated"
+    assert not hasattr(pdelie, "run_symmetry_candidate_validation_example")
+
+
+def test_symmetry_candidate_validation_module_prints_json_only() -> None:
+    parsed = _run_module_json("pdelie.examples.symmetry_candidate_validation")
+
+    assert parsed["summary_type"] == "symmetry_candidate_validation_example"
+    assert len(parsed["cases"]) == 4
+    assert "failed" in parsed["extra_metrics"]["conclusions"]

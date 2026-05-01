@@ -40,6 +40,7 @@ _ROOT_RUNTIME_NAMES = {
     "run_kdv_vertical_slice_example",
     "run_orbit_coverage_diagnostics_example",
     "run_invariant_workflow_summary_example",
+    "run_symmetry_candidate_validation_example",
     "run_translation_orbit_batch_example",
     "split_batch_train_heldout",
     "subsample_time",
@@ -55,8 +56,11 @@ _ROOT_RUNTIME_NAMES = {
     "summarize_uniform_translation_orbit",
     "to_pysindy_trajectories",
     "to_sympy_component_expressions",
+    "validate_symmetry_candidate",
 }
 _DEFERRED_OR_PRIVATE_NAMES = {
+    "CallableGeneratorFamily",
+    "FormulaGeneratorFamily",
     "OperatorSymmetry",
     "KSResidualEvaluator",
     "KuramotoSivashinskyResidualEvaluator",
@@ -101,6 +105,9 @@ _DEFERRED_API_STABILITY_NAMES = {
     "pdelie.residuals.WeakKSResidualEvaluator",
     "pdelie.residuals.evaluate_weak_ks_residual",
     "pdelie.symmetry.OperatorSymmetry",
+    "pdelie.symmetry.CallableGeneratorFamily",
+    "pdelie.symmetry.FormulaGeneratorFamily",
+    "pdelie.symmetry.validate_generator_candidate",
 }
 _V0_10_REPORTING_APIS = {
     "pdelie.reporting.summarize_residual_batch",
@@ -136,6 +143,9 @@ _V0_15_ORBIT_BATCH_APIS = {
     "pdelie.invariants.build_uniform_translation_orbit_batch",
     "pdelie.invariants.OrbitBatchResult",
 }
+_V0_16_SYMMETRY_VALIDATION_APIS = {
+    "pdelie.symmetry.validate_symmetry_candidate",
+}
 
 
 def _api_stability_text() -> str:
@@ -158,6 +168,7 @@ def test_api_stability_doc_covers_current_stable_runtime_surface() -> None:
         | _V0_13_INVARIANT_APIS
         | _V0_14_INVARIANT_WORKFLOW_APIS
         | _V0_15_ORBIT_BATCH_APIS
+        | _V0_16_SYMMETRY_VALIDATION_APIS
     ):
         assert api_name in text
 
@@ -184,6 +195,9 @@ def test_api_stability_doc_does_not_promote_deferred_v0_13_surfaces() -> None:
     assert "build_translation_orbit_views" not in text
     assert "build_translation_orbit_dataset" not in text
     assert "diagnose_time_translation_consistency" not in text
+    assert "validate_generator_candidate" not in text
+    assert "CallableGeneratorFamily" not in text
+    assert "FormulaGeneratorFamily" not in text
 
 
 def test_root_package_still_exposes_only_stable_canonical_surface() -> None:
@@ -217,6 +231,7 @@ def test_required_runtime_submodule_apis_remain_importable() -> None:
             "run_invariant_workflow_summary_example",
             "run_kdv_vertical_slice_example",
             "run_orbit_coverage_diagnostics_example",
+            "run_symmetry_candidate_validation_example",
             "run_translation_orbit_batch_example",
         },
         "pdelie.invariants": {
@@ -255,6 +270,7 @@ def test_required_runtime_submodule_apis_remain_importable() -> None:
             "fit_translation_generator",
             "render_generator_family",
             "to_sympy_component_expressions",
+            "validate_symmetry_candidate",
         },
         "pdelie.viz": {
             "plot_closure_diagnostics",
@@ -287,32 +303,32 @@ def test_deferred_and_private_names_are_not_public_submodule_exports() -> None:
             assert not hasattr(module, name), f"{module.__name__}.{name}"
 
 
-def test_v0_15_planning_docs_record_orbit_batch_and_no_split_policy_scope() -> None:
+def test_v0_16_planning_docs_record_candidate_validation_and_non_goals() -> None:
     plan = _repo_text("docs/planning/PLAN.md")
-    scope = _repo_text("docs/planning/V0_15_SCOPE.md")
+    scope = _repo_text("docs/planning/V0_16_SCOPE.md")
     roadmap = _repo_text("docs/planning/ROADMAP.md")
 
     assert "**Status:** COMPLETE" in plan
-    assert "Milestone 2 - Orbit Batch Implementation" in plan
-    assert "pdelie.invariants.build_uniform_translation_orbit_batch" in plan
-    assert "pdelie.invariants.OrbitBatchResult" in plan
-    assert "Milestone 3 - Compatibility And Diagnostics" in plan
-    assert "shift-major" in plan
-    assert "no split-management or leakage-detection helper landed" in plan
+    assert "Milestone 2 - GeneratorFamily Candidate Validation" in plan
+    assert "Milestone 3 - InvariantMapSpec Candidate Validation" in plan
+    assert "pdelie.symmetry.validate_symmetry_candidate" in plan
+    assert "not a mathematical proof" in plan
+    assert "callable descriptor API" in plan
     assert "## Milestone 5 - API / Public-surface Audit" in plan
     assert "## Milestone 6 - Release Gate and Readiness" in plan
-    assert "updated CI so the current explicit release gate is `v0_15-release-gate`" in plan
+    assert "updated CI so the current explicit release gate is `v0_16-release-gate`" in plan
     assert "- Milestone 6: COMPLETE" in plan
 
-    assert "materialized uniform translation orbit batches" in scope
-    assert "no train/test policy" in scope
-    assert "no time-translation APIs" in scope
-    assert "pdelie.invariants.build_uniform_translation_orbit_batch" in scope
-    assert "pdelie.invariants.OrbitBatchResult" in scope
+    assert "external symmetry-candidate validation" in scope
+    assert "pdelie.symmetry.validate_symmetry_candidate" in scope
+    assert "candidate_kind = \"generator_family\"" in scope
+    assert "candidate_kind = \"invariant_map_spec\"" in scope
+    assert "callable transform descriptors" in scope
+    assert "neural symmetry-detector training" in scope
     assert "- Milestone 4: COMPLETE" in scope
     assert "- Milestone 5: COMPLETE" in scope
     assert "- Milestone 6: COMPLETE" in scope
 
-    assert "`v0.15` is the completed materialized translation orbit batch release" in roadmap
-    assert "no train/test policy, split management, or heldout-leakage detection is promoted" in roadmap
+    assert "`v0.16` is the completed external symmetry-candidate validation release" in roadmap
+    assert "`validated` means configured empirical validation" in roadmap
     assert "- no new PDE" in roadmap
