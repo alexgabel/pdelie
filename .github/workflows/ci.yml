@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  v0_14-release-gate:
+  v0_15-release-gate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -32,8 +32,8 @@ jobs:
           retry 3 python -m pip install -e .[test]
       - name: Check dependencies
         run: python -m pip check
-      - name: Run V0.14 release gate
-        run: python -m pytest tests/test_v0_14_release_gate.py
+      - name: Run V0.15 release gate
+        run: python -m pytest tests/test_v0_15_release_gate.py
   editable-tests:
     runs-on: ubuntu-latest
     steps:
@@ -69,6 +69,7 @@ jobs:
           python -m pdelie.examples.kdv_vertical_slice
           python -m pdelie.examples.orbit_coverage_diagnostics
           python -m pdelie.examples.invariant_workflow_summary
+          python -m pdelie.examples.translation_orbit_batch
   package-smoke:
     runs-on: ubuntu-latest
     steps:
@@ -124,6 +125,8 @@ jobs:
 
           from pdelie import FieldBatch, DerivativeBatch, ResidualBatch, ResidualEvaluator, GeneratorFamily, VerificationReport
           from pdelie.invariants import (
+              OrbitBatchResult,
+              build_uniform_translation_orbit_batch,
               compute_periodic_window_coverage,
               diagnose_uniform_translation_consistency,
               summarize_uniform_translation_orbit,
@@ -144,6 +147,8 @@ jobs:
           assert ResidualEvaluator is not None
           assert GeneratorFamily is not None
           assert VerificationReport is not None
+          assert OrbitBatchResult is not None
+          assert build_uniform_translation_orbit_batch is not None
           assert compute_periodic_window_coverage is not None
           assert diagnose_uniform_translation_consistency is not None
           assert summarize_uniform_translation_orbit is not None
@@ -160,6 +165,8 @@ jobs:
           assert not hasattr(pdelie, "diagnose_uniform_translation_consistency")
           assert not hasattr(pdelie, "summarize_uniform_translation_orbit")
           assert not hasattr(pdelie, "summarize_invariant_workflow")
+          assert not hasattr(pdelie, "build_uniform_translation_orbit_batch")
+          assert not hasattr(pdelie, "OrbitBatchResult")
           print("stable-import-ok")
           PY
       - name: Invariant diagnostics smoke
@@ -171,6 +178,7 @@ jobs:
 
           from pdelie.data import generate_heat_1d_field_batch
           from pdelie.invariants import (
+              build_uniform_translation_orbit_batch,
               compute_periodic_window_coverage,
               diagnose_uniform_translation_consistency,
               summarize_uniform_translation_orbit,
@@ -191,6 +199,17 @@ jobs:
           assert coverage["coverage_fraction"] == 0.5
 
           field = generate_heat_1d_field_batch(batch_size=1, num_times=5, num_points=16, seed=13013)
+          orbit_batch = build_uniform_translation_orbit_batch(
+              field,
+              shifts=[0.0, domain_length],
+              source_field_id="package-smoke-heat",
+          )
+          json.dumps(orbit_batch.report)
+          assert orbit_batch.report["summary_type"] == "uniform_translation_orbit_batch"
+          assert orbit_batch.field.values.shape[0] == 2
+          assert orbit_batch.report["source_batch_indices"] == [0, 0]
+          assert orbit_batch.report["shift_indices"] == [0, 1]
+
           consistency = diagnose_uniform_translation_consistency(
               field,
               shifts=[0.0, domain_length],
@@ -221,6 +240,8 @@ jobs:
           assert not hasattr(pdelie, "diagnose_uniform_translation_consistency")
           assert not hasattr(pdelie, "summarize_uniform_translation_orbit")
           assert not hasattr(pdelie, "summarize_invariant_workflow")
+          assert not hasattr(pdelie, "build_uniform_translation_orbit_batch")
+          assert not hasattr(pdelie, "OrbitBatchResult")
           assert not hasattr(pdelie, "augment_translation_orbit")
           assert not hasattr(pdelie, "build_translation_orbit_dataset")
           print("invariant-diagnostics-smoke-ok")

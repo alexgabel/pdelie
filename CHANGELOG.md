@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.15.0
+
+First final release for the frozen V0.15 materialized uniform translation orbit batch slice.
+
+- adds `pdelie.invariants.build_uniform_translation_orbit_batch(...)` for materializing finite uniform `x`-translation orbit batches from canonical scalar 1D periodic `FieldBatch` inputs
+- adds `pdelie.invariants.OrbitBatchResult` as a runtime-only structured result containing the materialized `FieldBatch` and a JSON-compatible provenance report
+- preserves raw shift order and duplicate shifts, appends along the batch dimension in shift-major order, and records optional source/shift indices
+- records aggregate orbit-materialization metadata and one aggregate preprocess-log entry on the output field
+- adds `python -m pdelie.examples.translation_orbit_batch` and `pdelie.examples.run_translation_orbit_batch_example(...)` as runtime smoke examples for Heat and KdV orbit batches
+- documents the new helper in `API_STABILITY.md` as a submodule-only runtime API with no root exports
+- tightens public-surface guards so train/test policy, split management, time translation, KS APIs, weak KS, broad adapters, and root runtime exports remain absent
+- updates CI to the compact current `v0_15-release-gate` while preserving full editable tests and package smoke
+- preserves the prior Heat/Burgers strong paths, `v0.8` weak residual report APIs, `v0.9` normalized periodic KdV strong path, `v0.10` reporting helpers, `v0.11` order-4 derivatives, `v0.12` fit diagnostics, `v0.13` orbit/coverage diagnostics, and `v0.14` invariant workflow summaries
+
+Explicitly deferred for this final release:
+
+- train/test policy, split management, or heldout-leakage detection
+- sparse-discovery branch policy or private-paper augmentation recipes
+- time-translation APIs or `axis="time"` support
+- new PDE support
+- stable KS data generator, residual evaluator, vertical-slice example, imported parity, weak API, or root KS exports
+- broad dataset adapters such as PDEBench or The Well
+- multidimensional, multivariable, nonuniform-grid, operator, or broad adapter expansion
+- PyPI and TestPyPI publication; package-index publishing is deferred to `v1.0` or later
+
 ## 0.14.0
 
 First final release for the frozen V0.14 invariant workflow summary and read-only translation orbit report slice.

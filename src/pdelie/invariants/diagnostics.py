@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from dataclasses import dataclass
 import json
 from collections.abc import Mapping, Sequence
 from typing import Any
@@ -22,6 +23,14 @@ _SUMMARY_SCHEMA_VERSION = "0.1"
 _RELATIVE_L2_EPS = 1e-12
 _RESIDUAL_ABSOLUTE_TOLERANCE = 1e-8
 _RESIDUAL_RELATIVE_TOLERANCE = 1e-6
+
+
+@dataclass(slots=True)
+class OrbitBatchResult:
+    """Runtime-only result for materialized uniform translation orbit batches."""
+
+    field: FieldBatch
+    report: dict[str, Any]
 
 
 def _json_safe(value: Any) -> Any:
@@ -62,6 +71,12 @@ def _finite_sequence(value: Any, *, name: str) -> list[float]:
     if not normalized:
         raise SchemaValidationError(f"{name} must be non-empty.")
     return normalized
+
+
+def _require_bool(value: Any, *, name: str) -> bool:
+    if not isinstance(value, bool):
+        raise SchemaValidationError(f"{name} must be a boolean.")
+    return value
 
 
 def _normalize_periodic_grid(
@@ -459,3 +474,120 @@ def summarize_uniform_translation_orbit(
         },
         name="uniform_translation_orbit summary",
     )
+
+
+def build_uniform_translation_orbit_batch(
+    field: FieldBatch,
+    *,
+    shifts: Any,
+    keep_source_index: bool = True,
+    keep_shift_index: bool = True,
+    source_field_id: Any | None = None,
+    copy: bool = True,
+) -> OrbitBatchResult:
+    dx, domain_length = _validate_consistency_field(field)
+    raw_shifts = _finite_sequence(shifts, name="shifts")
+    keep_source_index = _require_bool(keep_source_index, name="keep_source_index")
+    keep_shift_index = _require_bool(keep_shift_index, name="keep_shift_index")
+    copy = _require_bool(copy, name="copy")
+    normalized_source_field_id = _json_compatible_value(source_field_id, name="source_field_id")
+    normalized_shifts = [float(shift % domain_length) for shift in raw_shifts]
+
+    source_batch_size = int(field.values.shape[field.dims.index("batch")])
+    applier = InvariantApplier()
+    transformed_fields = [applier.apply(field, _translation_spec(raw_shift)) for raw_shift in raw_shifts]
+    values = np.concatenate([transformed.values for transformed in transformed_fields], axis=0)
+    if field.mask is None:
+        mask = None
+    else:
+        masks = [transformed.mask for transformed in transformed_fields]
+        if any(mask_item is None for mask_item in masks):
+            raise ScopeValidationError("InvariantApplier returned inconsistent mask state.")
+        mask = np.concatenate([np.asarray(mask_item, dtype=bool) for mask_item in masks], axis=0)
+
+    source_indices = np.tile(np.arange(source_batch_size, dtype=int), len(raw_shifts)).tolist()
+    shift_indices = np.repeat(np.arange(len(raw_shifts), dtype=int), source_batch_size).tolist()
+    output_batch_size = int(values.shape[0])
+    transform_specs = [_translation_spec(raw_shift).to_dict() for raw_shift in raw_shifts]
+    batch_records: list[dict[str, Any]] = []
+    for output_batch_index, (source_batch_index, shift_index) in enumerate(
+        zip(source_indices, shift_indices, strict=True)
+    ):
+        record: dict[str, Any] = {
+            "output_batch_index": output_batch_index,
+            "shift": raw_shifts[shift_index],
+            "normalized_shift": normalized_shifts[shift_index],
+        }
+        if keep_source_index:
+            record["source_batch_index"] = source_batch_index
+        if keep_shift_index:
+            record["shift_index"] = shift_index
+        batch_records.append(record)
+
+    materialization_metadata = {
+        "operation": "materialize_uniform_translation_orbit_batch",
+        "construction_method": "uniform_translation",
+        "transform_axis": "x",
+        "ordering": "shift_major",
+        "raw_shifts": raw_shifts,
+        "normalized_shifts": normalized_shifts,
+        "shift_count": len(raw_shifts),
+        "source_batch_size": source_batch_size,
+        "output_batch_size": output_batch_size,
+        "duplicate_shifts_preserved": True,
+        "source_field_id": normalized_source_field_id,
+        "keep_source_index": keep_source_index,
+        "keep_shift_index": keep_shift_index,
+        "copy": copy,
+    }
+    metadata = deepcopy(field.metadata)
+    metadata["orbit_materialization"] = deepcopy(materialization_metadata)
+    preprocess_entry = {
+        **deepcopy(materialization_metadata),
+        "transform_specs": transform_specs,
+    }
+    coords = {
+        name: coord.copy() if copy else coord
+        for name, coord in field.coords.items()
+    }
+
+    orbit_field = FieldBatch(
+        values=values.copy() if copy else values,
+        dims=field.dims,
+        coords=coords,
+        var_names=list(field.var_names),
+        metadata=metadata,
+        preprocess_log=[*field.preprocess_log, preprocess_entry],
+        mask=None if mask is None else (mask.copy() if copy else mask),
+    )
+
+    report = _validate_json_compatible(
+        {
+            "summary_schema_version": _SUMMARY_SCHEMA_VERSION,
+            "summary_type": "uniform_translation_orbit_batch",
+            "source_field_id": normalized_source_field_id,
+            "field_dims": field.dims,
+            "source_field_shape": list(field.values.shape),
+            "output_field_shape": list(orbit_field.values.shape),
+            "source_batch_size": source_batch_size,
+            "shift_count": len(raw_shifts),
+            "output_batch_size": output_batch_size,
+            "ordering": "shift_major",
+            "transform_axis": "x",
+            "construction_method": "uniform_translation",
+            "domain_length": domain_length,
+            "dx": dx,
+            "raw_shifts": raw_shifts,
+            "normalized_shifts": normalized_shifts,
+            "duplicate_shifts_preserved": True,
+            "source_batch_indices": source_indices if keep_source_index else None,
+            "shift_indices": shift_indices if keep_shift_index else None,
+            "batch_records": batch_records,
+            "metadata_key": "orbit_materialization",
+            "preprocess_operation": "materialize_uniform_translation_orbit_batch",
+            "preprocess_log_length_delta": len(orbit_field.preprocess_log) - len(field.preprocess_log),
+            "transform_specs": transform_specs,
+        },
+        name="uniform_translation_orbit_batch report",
+    )
+    return OrbitBatchResult(field=orbit_field, report=report)

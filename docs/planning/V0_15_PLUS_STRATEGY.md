@@ -1,6 +1,6 @@
 # V0.15+ Strategy
 
-This document records the planned post-`v0.14` direction.
+This document records the staged post-`v0.14` direction.
 It is a strategy note, not an active scope freeze and not an API contract.
 
 The active execution record remains `PLAN.md`.
@@ -10,7 +10,7 @@ Stable contracts remain in `docs/specs/API_STABILITY.md` only after APIs land.
 
 After `v0.14`, the highest-ROI path is to move from read-only invariant diagnostics toward conservative user-facing data utilities, then external symmetry-candidate validation, then non-polynomial generator support, then carefully scoped PDE expansion.
 
-Planned sequence:
+Staged sequence:
 
 - `v0.15`: materialized uniform translation orbit batches
 - `v0.16`: external symmetry-candidate interop and validation
@@ -24,11 +24,11 @@ It should not become a neural symmetry-detector training framework.
 
 ## V0.15 - Materialized Uniform Translation Orbit Batches
 
-Planned theme:
+Completed theme:
 
 > promote the first conservative user-facing data utility for materializing finite uniform translation orbits from canonical `FieldBatch` inputs.
 
-Candidate API direction:
+Implemented API direction:
 
 ```python
 pdelie.invariants.build_uniform_translation_orbit_batch(
@@ -41,10 +41,10 @@ pdelie.invariants.build_uniform_translation_orbit_batch(
 )
 ```
 
-`build_uniform_translation_orbit_batch(...)` is the preferred candidate name because it says the helper returns a batch-oriented data product.
-The exact name and return type must still be frozen in `v0.15` M1.
+`build_uniform_translation_orbit_batch(...)` is the selected public name because it says the helper returns a batch-oriented data product.
+The completed scope freeze belongs in `V0_15_SCOPE.md`.
 
-Semantics to freeze before implementation:
+Completed semantics:
 
 - augmentation appends along the batch dimension
 - output ordering is deterministic and preserves duplicate shifts
@@ -57,9 +57,9 @@ Semantics to freeze before implementation:
 - no split management or heldout-leakage detection is attempted
 - source IDs may be recorded, but the helper does not manage experimental partitions
 
-Return-shape policy to freeze:
+Return-shape policy:
 
-- prefer an explicit structured return such as `(FieldBatch, report)` or a named structured pair
+- use `OrbitBatchResult(field, report)` as an explicit structured return
 - avoid a silent `FieldBatch`-only return because users need source/shift provenance
 - avoid returning transformed fields inside a JSON report
 
