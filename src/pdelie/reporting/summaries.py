@@ -35,15 +35,6 @@ _WEAK_REPORT_KEYS = frozenset(
     }
 )
 
-_INVARIANT_REPORT_SUMMARY_TYPES = frozenset(
-    {
-        "periodic_window_coverage",
-        "uniform_translation_consistency",
-        "uniform_translation_orbit",
-    }
-)
-
-
 def _json_safe(value: Any) -> Any:
     if isinstance(value, np.ndarray):
         return value.tolist()
