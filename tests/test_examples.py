@@ -207,7 +207,7 @@ def test_translation_orbit_batch_example_runs_end_to_end() -> None:
     assert result["summary_schema_version"] == "0.1"
     assert result["summary_type"] == "translation_orbit_batch_example"
     assert result["extra_metrics"]["example_name"] == "translation_orbit_batch"
-    assert result["extra_metrics"]["duplicate_shift_preserved"] is True
+    assert result["extra_metrics"]["duplicate_shifts_preserved"] is True
     assert result["extra_metrics"]["ordering"] == "shift_major"
     assert len(result["cases"]) == 2
     cases = {case["case_name"]: case for case in result["cases"]}

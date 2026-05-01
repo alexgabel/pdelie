@@ -66,7 +66,7 @@ def run_translation_orbit_batch_example() -> dict[str, object]:
         "extra_metrics": {
             "example_name": "translation_orbit_batch",
             "shifts": list(_SHIFTS),
-            "duplicate_shift_preserved": True,
+            "duplicate_shifts_preserved": True,
             "ordering": "shift_major",
         },
     }

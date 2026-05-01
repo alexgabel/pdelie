@@ -173,5 +173,5 @@ def test_build_uniform_translation_orbit_batch_rejects_unsupported_fields() -> N
         preprocess_log=field.preprocess_log,
     )
 
-    with pytest.raises(ScopeValidationError, match="periodic"):
+    with pytest.raises(ScopeValidationError, match="build_uniform_translation_orbit_batch.*periodic"):
         build_uniform_translation_orbit_batch(nonperiodic, shifts=[0.0])
