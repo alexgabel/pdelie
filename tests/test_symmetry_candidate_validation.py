@@ -28,6 +28,16 @@ def _translation_generator(coefficients: list[float] | None = None) -> Generator
     )
 
 
+def _legacy_translation_generator_payload() -> dict[str, object]:
+    return {
+        "schema_version": "0.1",
+        "parameterization": "polynomial_translation_affine",
+        "coefficients": [1.0, 0.0, 0.0, 0.0],
+        "normalization": "l2_unit",
+        "diagnostics": {},
+    }
+
+
 def _translation_spec(shift: float = DOMAIN_LENGTH / 8.0) -> InvariantMapSpec:
     return InvariantMapSpec(
         generator_metadata=_translation_generator().to_dict(),
@@ -121,6 +131,30 @@ def test_validate_symmetry_candidate_accepts_generator_family_payload() -> None:
     assert report["candidate_kind"] == "generator_family"
     assert report["conclusion"] == "validated"
     assert report["candidate_summary"]["parameterization"] == "polynomial_translation_affine"
+
+
+def test_validate_symmetry_candidate_rejects_legacy_generator_family_payloads() -> None:
+    field = generate_heat_1d_field_batch(batch_size=3, num_times=9, num_points=32, seed=1612)
+    legacy_payload = _legacy_translation_generator_payload()
+
+    # The canonical object loader keeps the narrow legacy compatibility path,
+    # but the v0.16 external validator only accepts current canonical payloads.
+    assert GeneratorFamily.from_dict(legacy_payload).schema_version == GeneratorFamily.SCHEMA_VERSION
+
+    with pytest.raises(SchemaValidationError, match="canonical GeneratorFamily schema_version"):
+        validate_symmetry_candidate(
+            field,
+            legacy_payload,
+            residual_evaluator=HeatResidualEvaluator(),
+        )
+
+    with pytest.raises(SchemaValidationError, match="canonical GeneratorFamily schema_version"):
+        validate_symmetry_candidate(
+            field,
+            _translation_generator(),
+            residual_evaluator=HeatResidualEvaluator(),
+            reference_generator=legacy_payload,
+        )
 
 
 def test_validate_symmetry_candidate_reports_failed_wrong_span_generator() -> None:

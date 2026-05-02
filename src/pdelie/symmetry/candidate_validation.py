@@ -92,6 +92,22 @@ def _is_invariant_map_payload(payload: Mapping[str, Any]) -> bool:
     )
 
 
+def _coerce_generator_payload(payload: Mapping[str, Any], *, name: str) -> GeneratorFamily:
+    try:
+        schema_version = str(payload["schema_version"])
+    except KeyError as exc:
+        raise SchemaValidationError(f"{name} is malformed.") from exc
+    if schema_version != GeneratorFamily.SCHEMA_VERSION:
+        raise SchemaValidationError(
+            f"{name} must use canonical GeneratorFamily schema_version "
+            f"{GeneratorFamily.SCHEMA_VERSION!r}."
+        )
+    try:
+        return GeneratorFamily.from_dict(payload)
+    except KeyError as exc:
+        raise SchemaValidationError(f"{name} is malformed.") from exc
+
+
 def _coerce_candidate(candidate: Any) -> tuple[str, GeneratorFamily | InvariantMapSpec]:
     if isinstance(candidate, GeneratorFamily):
         candidate.validate()
@@ -107,10 +123,7 @@ def _coerce_candidate(candidate: Any) -> tuple[str, GeneratorFamily | InvariantM
         if generator_payload and invariant_payload:
             raise SchemaValidationError("Symmetry candidate payload is ambiguous between GeneratorFamily and InvariantMapSpec.")
         if generator_payload:
-            try:
-                return "generator_family", GeneratorFamily.from_dict(candidate)
-            except KeyError as exc:
-                raise SchemaValidationError("GeneratorFamily candidate payload is malformed.") from exc
+            return "generator_family", _coerce_generator_payload(candidate, name="GeneratorFamily candidate payload")
         if invariant_payload:
             try:
                 return "invariant_map_spec", InvariantMapSpec.from_dict(candidate)
@@ -127,10 +140,7 @@ def _coerce_reference_generator(reference_generator: Any | None) -> GeneratorFam
         reference_generator.validate()
         return reference_generator
     if isinstance(reference_generator, Mapping):
-        try:
-            return GeneratorFamily.from_dict(reference_generator)
-        except KeyError as exc:
-            raise SchemaValidationError("reference_generator payload is malformed.") from exc
+        return _coerce_generator_payload(reference_generator, name="reference_generator payload")
     raise SchemaValidationError("reference_generator must be a GeneratorFamily, GeneratorFamily payload, or None.")
 
 
