@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.16.0
+
+First final release for the frozen V0.16 external symmetry-candidate validation slice.
+
+- adds `pdelie.symmetry.validate_symmetry_candidate(...)` for JSON-compatible empirical validation reports over externally supplied symmetry candidates
+- accepts `GeneratorFamily`, canonical `GeneratorFamily` payload mappings, `InvariantMapSpec`, and canonical `InvariantMapSpec` payload mappings
+- distinguishes `candidate_kind == "generator_family"` from `candidate_kind == "invariant_map_spec"` in every report
+- defines `validated` as configured empirical validation under the supplied field, residual evaluator, epsilons, and optional reference, not a mathematical proof of symmetry
+- reuses existing finite-transform verification, span comparison, closure diagnostics, invariant application, and reporting helpers without changing their behavior
+- adds `python -m pdelie.examples.symmetry_candidate_validation` and `pdelie.examples.run_symmetry_candidate_validation_example(...)` as runtime smoke examples
+- documents the new helper in `API_STABILITY.md` as a submodule-only runtime API with no root export
+- preserves the prior Heat/Burgers strong paths, `v0.8` weak residual report APIs, `v0.9` normalized periodic KdV strong path, `v0.10` reporting helpers, `v0.11` order-4 derivatives, `v0.12` fit diagnostics, `v0.13` orbit/coverage diagnostics, `v0.14` invariant workflow summaries, and `v0.15` orbit batch materialization
+
+Explicitly deferred for this final release:
+
+- callable transform descriptors and arbitrary external executable candidates
+- neural symmetry-detector training or learned-generator classes
+- formula-backed or non-polynomial generator families
+- train/test policy, split management, or heldout-leakage detection
+- time-translation APIs or `axis="time"` support
+- new PDE support
+- stable KS data generator, residual evaluator, vertical-slice example, imported parity, weak API, or root KS exports
+- broad dataset adapters such as PDEBench or The Well
+- multidimensional, multivariable, nonuniform-grid, operator, or broad adapter expansion
+- PyPI and TestPyPI publication; package-index publishing is deferred to `v1.0` or later
+
 ## 0.15.0
 
 First final release for the frozen V0.15 materialized uniform translation orbit batch slice.

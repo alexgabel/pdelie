@@ -453,6 +453,78 @@ The authoritative `v0.12` scope freeze belongs in:
 
 ## Current Completed Release
 
+### `v0.16` - External symmetry-candidate validation
+**Status:** Completed
+
+`v0.16` is the completed external symmetry-candidate validation release after the `v0.15` materialized orbit batch release.
+
+Its purpose is:
+
+> allow external detector methods to export symmetry candidates and use PDELie as an empirical validation/reporting substrate.
+
+Completed release definition:
+
+`canonical scalar 1D periodic FieldBatch + external candidate payload + residual evaluator -> empirical configured validation report`
+
+Completed scope:
+
+- `pdelie.symmetry.validate_symmetry_candidate(...)`
+- accepted `GeneratorFamily` objects and canonical payload mappings
+- accepted `InvariantMapSpec` objects and canonical payload mappings
+- strict payload disambiguation and typed validation errors
+- finite-transform verification for single-row translation-compatible generator candidates
+- optional reference-generator span comparison
+- closure diagnostics for multi-generator families
+- residual and inverse consistency diagnostics for global uniform-translation invariant-map candidates
+- Heat, KdV, and failed-candidate example coverage
+- API/public-surface audit
+- compact current `v0_16-release-gate` readiness
+
+Release interpretation:
+
+- `validated` means configured empirical validation under supplied inputs, not a mathematical proof
+- this is detector interop and validation, not detector training
+- callable descriptors and formula-backed/non-polynomial generators remain deferred
+- `v0.16.0` is a Git-tag-only release; PyPI and TestPyPI publication are deferred to `v1.0` or later
+
+Explicit non-goals:
+
+- no callable descriptors
+- no neural symmetry-detector training
+- no formula-backed generator families
+- no train/test policy
+- no split management
+- no new PDE
+- no stable KS generator or residual evaluator
+- no weak KS API
+- no broad dataset adapters
+- no PDEBench or The Well support
+- no multidimensional, multivariable, or nonuniform-grid expansion
+- no operator-facing symmetry work
+- no root export expansion
+
+The authoritative `v0.16` scope freeze belongs in:
+
+- `V0_16_SCOPE.md`
+
+### Release Gate for `v0.16`
+
+`v0.16` is complete only if:
+
+- candidate validation is documented and covered by tests
+- the new API is importable from `pdelie.symmetry` only
+- root `pdelie` remains unchanged
+- generator-family and invariant-map payload candidates validate
+- failed candidates return failed reports rather than exceptions
+- callable descriptors and formula-backed generators remain absent
+- no public train/test policy, time-translation, KS, weak KS, broad adapter, or operator API lands
+- CI uses one compact current release gate plus full editable tests and package smoke
+- package/readiness docs preserve the `v1.0` package-index publishing deferral
+
+---
+
+## Recent Completed Release
+
 ### `v0.15` - Materialized uniform translation orbit batches
 **Status:** Completed
 
@@ -785,31 +857,6 @@ The authoritative `v0.7` scope freeze belongs in:
 
 ## Medium-Term Horizon
 
-### `v0.16` - External symmetry-candidate interop
-**Status:** Planned
-
-`v0.16` is planned as detector interop and validation, not sparse-discovery reporting and not detector training.
-
-Candidate API direction:
-
-- `pdelie.symmetry.validate_generator_candidate(...)`
-
-External methods may provide:
-
-- an existing `GeneratorFamily`
-- a finite-transform specification
-- a callable transform descriptor
-- a JSON-compatible symmetry-candidate report
-
-PDELie should validate those candidates using finite-transform consistency, residual preservation, span or closure diagnostics, provenance checks, and optional fit/verification summaries.
-
-Interpretation:
-
-- learned symmetry methods can slot in by exporting candidates
-- PDELie remains a validation/reporting substrate
-- PDELie does not train neural symmetry detectors
-- operator-facing APIs remain deferred unless separately frozen
-
 ### `v0.17` - Formula-backed and non-polynomial generators
 **Status:** Planned
 
@@ -902,6 +949,7 @@ This is not part of the near-term non-operator Paper 1 path and should not be mi
 - `V0_13_SCOPE.md` once frozen
 - `V0_14_SCOPE.md` once frozen
 - `V0_15_SCOPE.md` once frozen
+- `V0_16_SCOPE.md` once frozen
 - `PLAN.md` for current execution only
 
 ### Non-authoritative for scheduling

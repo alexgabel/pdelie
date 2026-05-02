@@ -1,46 +1,42 @@
-# PDELie - Execution Plan (V0.15)
+# PDELie - Execution Plan (V0.16)
 
 ## Current Release Status
 
-**V0.15 is complete as materialized uniform translation orbit batches**
+**V0.16 is complete as external symmetry-candidate validation**
 
-This file is the completed execution record for the `v0.15` release series.
+This file is the completed execution record for the `v0.16` release series.
 
 Committed release theme:
 
-`canonical scalar 1D periodic FieldBatch + finite uniform x-shifts -> materialized orbit FieldBatch + JSON-compatible provenance report`
+`canonical scalar 1D periodic FieldBatch + external candidate payload + residual evaluator -> empirical configured validation report`
 
-The important release boundary is:
+Important release boundary:
 
-> v0.15 adds one conservative data utility for materializing uniform translation orbit batches. It does not add train/test policy, split management, time translation, new PDEs, KS promotion, weak KS, broad adapters, operator APIs, or root exports.
+> v0.16 adds one submodule-only validation/reporting helper for externally supplied `GeneratorFamily` and `InvariantMapSpec` candidates. It does not train detectors, accept callables, add formula-backed generators, add new PDEs, promote KS, add weak KS, broaden adapters, add operator APIs, or add root exports.
 
-This file should not redefine package contracts.
 Contracts and stable behavior belong in:
 
 - `docs/specs/SPEC.md`
 - `docs/specs/CONTRACTS_AND_DEFAULTS.md`
 - `docs/specs/API_STABILITY.md`
 - `docs/planning/ROADMAP.md`
-- `docs/planning/V0_15_SCOPE.md`
+- `docs/planning/V0_16_SCOPE.md`
 
-`API_STABILITY.md` was updated when the public `v0.15` orbit-batch helper landed.
+`API_STABILITY.md` was updated when the public `v0.16` helper landed.
 
 ---
 
-## V0.14 Closeout
+## V0.15 Closeout
 
-`v0.14` is complete as invariant workflow summaries and read-only uniform translation orbit reports.
+`v0.15` is complete as materialized uniform translation orbit batches.
 
-Completed outcome:
+Carried-forward guardrails:
 
-- public `pdelie.reporting.summarize_invariant_workflow(...)`
-- public `pdelie.invariants.summarize_uniform_translation_orbit(...)`
-- JSON-only invariant workflow summary example
-- no augmented datasets or transformed `FieldBatch` collections from reporting helpers
-- compact `v0_14-release-gate`
+- orbit batches construct orbit-expanded data
+- orbit batches do not decide train/heldout policy or leakage safety
+- serious workflows should keep source and shift indices enabled for auditability
 
-`v0.15` begins from that read-only diagnostic/reporting surface and promotes only a narrow, provenance-rich materialization helper.
-It does not promote train/test policy, split management, time translation, or KS runtime APIs.
+`v0.16` builds on the provenance/reporting direction without adding split policy or augmentation recipes.
 
 ---
 
@@ -50,21 +46,22 @@ It does not promote train/test policy, split management, time translation, or KS
 
 ### Goal
 
-Freeze `v0.15` as materialized uniform translation orbit batches.
+Freeze `v0.16` as external symmetry-candidate validation.
 
 ### Completed Outcome
 
-- added `docs/planning/V0_15_SCOPE.md`
-- reset `PLAN.md` as the active `v0.15` execution record
-- updated `ROADMAP.md` to record `v0.15` as the current completed data-utility release
+- added `docs/planning/V0_16_SCOPE.md`
+- reset `PLAN.md` as the active `v0.16` execution record
+- updated `ROADMAP.md` to record `v0.16` as the current completed interoperability release
+- kept `API_STABILITY.md` unchanged until implementation landed
 - recorded explicit non-goals:
-  - no train/test policy
-  - no split management
-  - no heldout-leakage detection
-  - no time-translation API
+  - no callable descriptors
+  - no neural detector training
+  - no formula-backed generator families
   - no KS promotion
   - no new PDE
   - no broad adapters
+  - no operator APIs
   - no root export expansion
 
 ---
@@ -75,75 +72,94 @@ Freeze `v0.15` as materialized uniform translation orbit batches.
 
 ### Goal
 
-Freeze materialization semantics before implementation.
+Freeze the public helper semantics before implementation.
 
 ### Completed Outcome
 
 M1 froze:
 
-- public submodule-only API name:
-  - `pdelie.invariants.build_uniform_translation_orbit_batch(...)`
-- runtime-only structured return:
-  - `pdelie.invariants.OrbitBatchResult`
-- `OrbitBatchResult` is not a canonical object and has no schema migration policy
-- canonical scalar 1D uniform periodic `FieldBatch` scope
-- non-empty finite shift sequence
-- shift-major output ordering
-- duplicate-shift preservation
-- output batch size equals `source_batch_size * len(shifts)`
-- optional `source_field_id` as JSON-compatible provenance metadata only
-- optional source and shift index recording
-- mask concatenation along batch
-- one aggregate `materialize_uniform_translation_orbit_batch` preprocess entry
-- `orbit_materialization` metadata on the output field
-- `copy=False` may avoid extra coordinate or mask copies where safe, but inputs are never mutated
+- public submodule-only helper:
+  - `pdelie.symmetry.validate_symmetry_candidate(...)`
+- accepted candidate kinds:
+  - `GeneratorFamily`
+  - canonical `GeneratorFamily` payload mapping
+  - `InvariantMapSpec`
+  - canonical `InvariantMapSpec` payload mapping
+- strict payload policy:
+  - ambiguous mappings raise `SchemaValidationError`
+  - callable descriptors are rejected
+- report schema:
+  - `summary_schema_version = "0.1"`
+  - `summary_type = "symmetry_candidate_validation"`
+  - `candidate_kind`
+  - `source_candidate_id`
+  - configured validation checks
+  - check reports
+  - thresholds
+  - conclusion
+- conclusion labels:
+  - `validated`
+  - `partially_validated`
+  - `failed`
+- interpretation:
+  - `validated` means empirical configured validation, not a mathematical proof
+- thresholds:
+  - generator verification requires `classification != "failed"`
+  - invariant-map residual stability uses `absolute_delta <= 1e-8 or relative_delta <= 1e-6`
+  - inverse consistency uses relative L2 `<= 1e-8`
+  - span and closure diagnostics use `1e-8` thresholds
 
 ---
 
-## Milestone 2 - Orbit Batch Implementation
+## Milestone 2 - GeneratorFamily Candidate Validation
 
 **Status:** COMPLETE
 
 ### Goal
 
-Add the materialized uniform translation orbit batch helper under `pdelie.invariants`.
+Implement validation for `GeneratorFamily` objects and strict payload mappings.
 
 ### Completed Outcome
 
-- added public submodule-only helper:
-  - `pdelie.invariants.build_uniform_translation_orbit_batch(...)`
-- added runtime-only structured return:
-  - `pdelie.invariants.OrbitBatchResult`
-- implementation reuses existing `InvariantApplier`
-- output `FieldBatch` appends along batch in shift-major order
-- report records:
-  - source/output shapes
-  - raw and normalized shifts
-  - source/shift indices when requested
-  - batch records
-  - transform specs
-  - metadata/preprocess provenance
-- documented the API in `docs/specs/API_STABILITY.md`
+- implemented `pdelie.symmetry.validate_symmetry_candidate(...)`
+- accepted canonical `GeneratorFamily` objects and payload mappings
+- reused existing:
+  - `verify_translation_generator(...)`
+  - `compare_generator_spans(...)`
+  - `diagnose_generator_family_closure(...)`
+  - reporting summaries
+- single-row translation-compatible candidates run finite-transform verification
+- wrong-span candidates return `conclusion = "failed"` rather than raising
+- multi-generator families run closure diagnostics and do not force single-translation verification
+- optional `reference_generator` enables span comparison
+- documented the new API in `docs/specs/API_STABILITY.md`
 
 ---
 
-## Milestone 3 - Compatibility And Diagnostics
+## Milestone 3 - InvariantMapSpec Candidate Validation
 
 **Status:** COMPLETE
 
 ### Goal
 
-Verify materialized orbit batches remain compatible with existing stable numerical paths.
+Extend the same helper to validate `InvariantMapSpec` objects and strict payload mappings.
 
 ### Completed Outcome
 
-- verified materialized Heat orbit batches validate as `FieldBatch` objects
-- verified materialized KdV orbit batches validate as `FieldBatch` objects
-- verified derivatives run on representative materialized Heat and KdV batches
-- verified Heat and KdV residual diagnostics remain finite
-- verified duplicate shifts remain traceable through provenance
-- verified input fields are not mutated
-- verified masks are concatenated consistently with transformed fields
+- accepted canonical `InvariantMapSpec` objects and payload mappings
+- supported only global `uniform_translation` specs over canonical scalar 1D periodic fields
+- reused existing `InvariantApplier`
+- reported:
+  - residual RMS before and after transform
+  - absolute and relative residual RMS deltas
+  - inverse consistency when `inverse_available` is true
+  - preprocess/provenance fields
+- rejected unsupported maps with typed validation errors:
+  - non-global specs
+  - approximate specs
+  - non-translation specs
+  - missing or nonfinite shifts
+  - unsupported axes
 
 ---
 
@@ -153,20 +169,18 @@ Verify materialized orbit batches remain compatible with existing stable numeric
 
 ### Goal
 
-Add a compact JSON-only example for materialized orbit batches.
+Add a compact JSON-only example for external symmetry-candidate validation.
 
 ### Completed Outcome
 
-- added `python -m pdelie.examples.translation_orbit_batch`
-- added `pdelie.examples.run_translation_orbit_batch_example(...)`
+- added `python -m pdelie.examples.symmetry_candidate_validation`
+- added `pdelie.examples.run_symmetry_candidate_validation_example(...)`
 - example demonstrates:
-  - Heat orbit batch materialization
-  - KdV orbit batch materialization
-  - source/output shape growth
-  - duplicate-shift preservation
-  - source/shift provenance
-  - residual sanity on the materialized batches
-- example output remains a runtime smoke summary, not a canonical artifact schema
+  - valid Heat `GeneratorFamily` candidate
+  - valid KdV `GeneratorFamily` candidate
+  - valid uniform-translation `InvariantMapSpec` payload candidate
+  - failed wrong-span generator candidate
+- example output remains runtime smoke/reporting, not a canonical artifact schema
 - root `pdelie` remains unchanged
 
 ---
@@ -177,20 +191,19 @@ Add a compact JSON-only example for materialized orbit batches.
 
 ### Goal
 
-Verify public surface and documentation match the frozen `v0.15` scope.
+Verify public surface and documentation match the frozen `v0.16` scope.
 
 ### Completed Outcome
 
-- confirmed `pdelie.invariants.build_uniform_translation_orbit_batch(...)` is submodule-only
-- confirmed `pdelie.invariants.OrbitBatchResult` is submodule-only
+- confirmed `pdelie.symmetry.validate_symmetry_candidate(...)` is submodule-only
 - confirmed root `pdelie` exports remain unchanged
-- confirmed no train/test policy landed
-- confirmed no split-management or leakage-detection helper landed
-- confirmed no time-translation API landed
-- confirmed public KS generator/residual/example APIs remain absent
+- confirmed `API_STABILITY.md` documents only the v0.16 validation helper
+- confirmed no callable descriptor API landed
+- confirmed no formula-backed generator object landed
+- confirmed no neural detector API landed
+- confirmed no public KS generator/residual/example APIs landed
 - confirmed weak KS remains absent
-- confirmed broad adapters remain absent
-- confirmed `API_STABILITY.md` documents the new helper and does not document deferred surfaces
+- confirmed broad adapters, split policy, operator APIs, and root runtime exports remain absent
 
 ---
 
@@ -204,30 +217,30 @@ Close the release with compact gate coverage, metadata, docs, and direct Git-tag
 
 ### Completed Outcome
 
-- added compact `tests/test_v0_15_release_gate.py`
-- updated CI so the current explicit release gate is `v0_15-release-gate`
+- added compact `tests/test_v0_16_release_gate.py`
+- updated CI so the current explicit release gate is `v0_16-release-gate`
 - retained full editable tests and package smoke
-- added compact package-smoke coverage for the new orbit-batch helper
-- bumped package metadata to `0.15.0`
-- updated README and changelog for `v0.15`
-- added `docs/releases/V0_15_RELEASE_READINESS.md`
-- updated publishing docs to keep `v0.15.0` Git-tag-only
-- moved `v0.15` into completed release context in `ROADMAP.md`
+- added compact package-smoke coverage for symmetry-candidate validation
+- bumped package metadata to `0.16.0`
+- updated README and changelog for `v0.16`
+- added `docs/releases/V0_16_RELEASE_READINESS.md`
+- updated publishing docs to keep `v0.16.0` Git-tag-only
+- moved `v0.16` into completed release context in `ROADMAP.md`
 - kept PyPI/TestPyPI deferred until `v1.0` or later
 
 ### Direct Tag Path
 
-Before tagging `v0.15.0`:
+Before tagging `v0.16.0`:
 
 - run full local tests
 - build sdist and wheel
 - run clean wheel smoke
-- run Heat, KdV, orbit/coverage, invariant-workflow, and translation-orbit-batch example modules
+- run Heat, KdV, orbit/coverage, invariant-workflow, translation-orbit-batch, and symmetry-candidate-validation example modules
 - confirm CI checks pass:
-  - `v0_15-release-gate`
+  - `v0_16-release-gate`
   - `editable-tests`
   - `package-smoke`
-- tag the merged main commit as `v0.15.0`
+- tag the merged main commit as `v0.16.0`
 - do not publish to TestPyPI
 - do not publish to PyPI
 
@@ -235,8 +248,13 @@ Before tagging `v0.15.0`:
 
 ## Explicit Non-goals Preserved
 
-`v0.15` did not add:
+`v0.16` did not add:
 
+- callable transform descriptors
+- arbitrary external executable candidate objects
+- neural symmetry-detector training
+- learned-generator classes
+- formula-backed or non-polynomial generator families
 - train/test policy
 - split management
 - heldout-leakage detection

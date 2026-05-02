@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  v0_15-release-gate:
+  v0_16-release-gate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -32,8 +32,8 @@ jobs:
           retry 3 python -m pip install -e .[test]
       - name: Check dependencies
         run: python -m pip check
-      - name: Run V0.15 release gate
-        run: python -m pytest tests/test_v0_15_release_gate.py
+      - name: Run V0.16 release gate
+        run: python -m pytest tests/test_v0_16_release_gate.py
   editable-tests:
     runs-on: ubuntu-latest
     steps:
@@ -70,6 +70,7 @@ jobs:
           python -m pdelie.examples.orbit_coverage_diagnostics
           python -m pdelie.examples.invariant_workflow_summary
           python -m pdelie.examples.translation_orbit_batch
+          python -m pdelie.examples.symmetry_candidate_validation
   package-smoke:
     runs-on: ubuntu-latest
     steps:
@@ -140,6 +141,7 @@ jobs:
               summarize_vertical_slice,
               summarize_weak_residual_report,
           )
+          from pdelie.symmetry import validate_symmetry_candidate
 
           assert FieldBatch is not None
           assert DerivativeBatch is not None
@@ -159,6 +161,7 @@ jobs:
           assert summarize_verification_report is not None
           assert summarize_vertical_slice is not None
           assert summarize_weak_residual_report is not None
+          assert validate_symmetry_candidate is not None
           assert not hasattr(pdelie, "summarize_generator_fit_diagnostics")
           assert not hasattr(pdelie, "summarize_vertical_slice")
           assert not hasattr(pdelie, "compute_periodic_window_coverage")
@@ -167,7 +170,73 @@ jobs:
           assert not hasattr(pdelie, "summarize_invariant_workflow")
           assert not hasattr(pdelie, "build_uniform_translation_orbit_batch")
           assert not hasattr(pdelie, "OrbitBatchResult")
+          assert not hasattr(pdelie, "validate_symmetry_candidate")
           print("stable-import-ok")
+          PY
+      - name: Symmetry candidate validation smoke
+        run: |
+          /tmp/pdelie-rc-venv/bin/python - <<'PY'
+          import json
+          import numpy as np
+          import pdelie
+
+          from pdelie import GeneratorFamily, InvariantMapSpec
+          from pdelie.contracts import _translation_generator_basis_spec
+          from pdelie.data import generate_heat_1d_field_batch
+          from pdelie.residuals import HeatResidualEvaluator
+          from pdelie.symmetry import validate_symmetry_candidate
+
+          generator = GeneratorFamily(
+              parameterization="polynomial_translation_affine",
+              coefficients=np.asarray([[1.0, 0.0, 0.0, 0.0]], dtype=float),
+              basis_spec=_translation_generator_basis_spec(),
+              normalization="l2_unit",
+              diagnostics={},
+          )
+          field = generate_heat_1d_field_batch(batch_size=3, num_times=7, num_points=16, seed=16016)
+          generator_report = validate_symmetry_candidate(
+              field,
+              generator.to_dict(),
+              residual_evaluator=HeatResidualEvaluator(),
+              source_candidate_id="wheel-generator",
+          )
+          spec = InvariantMapSpec(
+              generator_metadata=generator.to_dict(),
+              construction_method="uniform_translation",
+              parameters={"axis": "x", "shift": 0.1},
+              domain_validity="global",
+              inverse_available=True,
+              diagnostics={},
+          )
+          spec_report = validate_symmetry_candidate(
+              field,
+              spec.to_dict(),
+              residual_evaluator=HeatResidualEvaluator(),
+              source_candidate_id="wheel-spec",
+          )
+          failed_report = validate_symmetry_candidate(
+              field,
+              GeneratorFamily(
+                  parameterization="polynomial_translation_affine",
+                  coefficients=np.asarray([[0.0, 0.0, 1.0, 0.0]], dtype=float),
+                  basis_spec=_translation_generator_basis_spec(),
+                  normalization="l2_unit",
+                  diagnostics={},
+              ),
+              residual_evaluator=HeatResidualEvaluator(),
+          )
+          json.dumps(generator_report)
+          json.dumps(spec_report)
+          json.dumps(failed_report)
+          assert generator_report["candidate_kind"] == "generator_family"
+          assert generator_report["conclusion"] == "validated"
+          assert spec_report["candidate_kind"] == "invariant_map_spec"
+          assert spec_report["conclusion"] == "validated"
+          assert failed_report["conclusion"] == "failed"
+          assert not hasattr(pdelie, "validate_symmetry_candidate")
+          assert not hasattr(pdelie, "FormulaGeneratorFamily")
+          assert not hasattr(pdelie, "CallableGeneratorFamily")
+          print("symmetry-candidate-validation-smoke-ok")
           PY
       - name: Invariant diagnostics smoke
         run: |
