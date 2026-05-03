@@ -6,11 +6,20 @@ import json
 import numpy as np
 import pytest
 
-from pdelie.contracts import GeneratorFamily, ResidualBatch, _translation_generator_basis_spec
-from pdelie.data import generate_burgers_1d_field_batch, generate_heat_1d_field_batch
+from pdelie.contracts import FieldBatch, GeneratorFamily, ResidualBatch, _translation_generator_basis_spec
+from pdelie.data import (
+    from_numpy,
+    from_xarray,
+    generate_advection_diffusion_1d_field_batch,
+    generate_burgers_1d_field_batch,
+    generate_heat_1d_field_batch,
+    generate_kdv_1d_field_batch,
+    generate_reaction_diffusion_1d_field_batch,
+)
 from pdelie.derivatives import compute_spectral_fd_derivatives
 from pdelie.errors import SchemaValidationError, ScopeValidationError
 from pdelie.reporting import (
+    summarize_field_batch_readiness,
     summarize_formula_generator_family,
     summarize_generator_confidence,
     summarize_generator_fit_diagnostics,
@@ -23,8 +32,11 @@ from pdelie.reporting import (
 )
 from pdelie.symmetry import FormulaGeneratorFamily
 from pdelie.residuals import (
+    AdvectionDiffusionResidualEvaluator,
     BurgersResidualEvaluator,
     HeatResidualEvaluator,
+    KdVResidualEvaluator,
+    ReactionDiffusionResidualEvaluator,
     evaluate_weak_burgers_residual,
     evaluate_weak_heat_residual,
 )
@@ -88,6 +100,43 @@ _GENERATOR_CONFIDENCE_SUMMARY_KEYS = _SUMMARY_PREFIX_KEYS | {
     "missing_evidence",
     "extra_metrics",
 }
+_FIELD_BATCH_READINESS_SUMMARY_KEYS = _SUMMARY_PREFIX_KEYS | {
+    "readiness_label",
+    "component_statuses",
+    "field",
+    "value_diagnostics",
+    "mask_diagnostics",
+    "coordinate_diagnostics",
+    "metadata_diagnostics",
+    "metadata_suggestions",
+    "residual_preflight",
+    "stable_scope",
+}
+
+
+def _metadata(*, equation: str | None = None, x_boundary: str = "periodic") -> dict[str, object]:
+    parameter_tags: dict[str, object] = {"nu": 0.1}
+    if equation is not None:
+        parameter_tags["equation"] = equation
+    return {
+        "boundary_conditions": {"x": x_boundary},
+        "coordinate_system": "cartesian",
+        "grid_regularity": "uniform",
+        "grid_type": "rectilinear",
+        "parameter_tags": parameter_tags,
+    }
+
+
+def _copy_field(field: FieldBatch) -> FieldBatch:
+    return FieldBatch(
+        values=field.values.copy(),
+        dims=field.dims,
+        coords={name: coord.copy() for name, coord in field.coords.items()},
+        var_names=list(field.var_names),
+        metadata=copy.deepcopy(field.metadata),
+        preprocess_log=copy.deepcopy(field.preprocess_log),
+        mask=None if field.mask is None else field.mask.copy(),
+    )
 
 
 @pytest.fixture(scope="module")
@@ -120,6 +169,200 @@ def _candidate_validation_summary(conclusion: str) -> dict[str, object]:
         "conclusion": conclusion,
         "check_reports": {},
     }
+
+
+def test_summarize_field_batch_readiness_reports_ready_generated_stable_fields() -> None:
+    cases = [
+        (generate_heat_1d_field_batch(batch_size=1, num_times=9, num_points=16, seed=2100), HeatResidualEvaluator(), None),
+        (
+            generate_burgers_1d_field_batch(batch_size=1, num_times=9, num_points=16, seed=2101),
+            BurgersResidualEvaluator(),
+            None,
+        ),
+        (
+            generate_kdv_1d_field_batch(batch_size=1, num_times=9, num_points=16, seed=2102),
+            KdVResidualEvaluator(),
+            "kdv_normalized",
+        ),
+        (
+            generate_reaction_diffusion_1d_field_batch(
+                batch_size=1,
+                num_times=9,
+                num_points=16,
+                num_modes=4,
+                seed=2103,
+            ),
+            ReactionDiffusionResidualEvaluator(),
+            "reaction_diffusion_fisher_kpp",
+        ),
+        (
+            generate_advection_diffusion_1d_field_batch(
+                batch_size=1,
+                num_times=9,
+                num_points=16,
+                num_modes=4,
+                seed=2104,
+            ),
+            AdvectionDiffusionResidualEvaluator(),
+            "advection_diffusion_constant_coefficient",
+        ),
+    ]
+
+    for field, evaluator, equation in cases:
+        summary = summarize_field_batch_readiness(
+            field,
+            residual_evaluator=evaluator,
+            expected_equation=equation,
+        )
+
+        assert set(summary) == _FIELD_BATCH_READINESS_SUMMARY_KEYS
+        assert summary["summary_schema_version"] == "0.1"
+        assert summary["summary_type"] == "field_batch_readiness"
+        assert summary["readiness_label"] == "ready"
+        assert summary["component_statuses"]["field"]["status"] == "passed"
+        assert summary["component_statuses"]["values"]["status"] == "passed"
+        assert summary["component_statuses"]["mask"]["status"] == "passed"
+        assert summary["component_statuses"]["time_coordinate"]["status"] == "passed"
+        assert summary["component_statuses"]["x_coordinate"]["status"] == "passed"
+        assert summary["component_statuses"]["metadata"]["status"] == "passed"
+        assert summary["component_statuses"]["residual_preflight"]["status"] == "passed"
+        assert summary["residual_preflight"]["residual"]["summary_type"] == "residual_batch"
+        assert summary["coordinate_diagnostics"]["x"]["inferred_domain_length"] > 0.0
+        _assert_json_serializable(summary)
+
+
+def test_summarize_field_batch_readiness_accepts_numpy_and_xarray_paths() -> None:
+    source = generate_heat_1d_field_batch(batch_size=2, num_times=9, num_points=16, seed=2110)
+    imported_numpy = from_numpy(
+        source.values,
+        dims=source.dims,
+        coords=source.coords,
+        var_name="u",
+        metadata=_metadata(),
+    )
+    numpy_summary = summarize_field_batch_readiness(imported_numpy)
+
+    assert numpy_summary["readiness_label"] == "ready"
+    assert numpy_summary["component_statuses"]["residual_preflight"]["status"] == "not_configured"
+
+    xr = pytest.importorskip("xarray", reason="xarray is required for xarray readiness coverage")
+    data_array = xr.DataArray(
+        source.values,
+        dims=source.dims,
+        coords={"time": source.coords["time"], "x": source.coords["x"]},
+        name="u",
+    )
+    imported_xarray = from_xarray(data_array, metadata=_metadata())
+    xarray_summary = summarize_field_batch_readiness(imported_xarray)
+
+    assert xarray_summary["readiness_label"] == "ready"
+    assert xarray_summary["field"]["shape"] == list(source.values.shape)
+    _assert_json_serializable(numpy_summary)
+    _assert_json_serializable(xarray_summary)
+
+
+def test_summarize_field_batch_readiness_reports_attention_and_not_ready_cases() -> None:
+    field = generate_heat_1d_field_batch(batch_size=1, num_times=9, num_points=16, seed=2120)
+
+    masked = _copy_field(field)
+    masked.mask = np.zeros_like(masked.values, dtype=bool)
+    masked_summary = summarize_field_batch_readiness(masked)
+    assert masked_summary["readiness_label"] == "needs_attention"
+    assert masked_summary["component_statuses"]["mask"]["status"] == "warning"
+
+    metadata_incomplete = _copy_field(field)
+    metadata_incomplete.metadata = dict(metadata_incomplete.metadata)
+    metadata_incomplete.metadata.pop("parameter_tags", None)
+    metadata_summary = summarize_field_batch_readiness(metadata_incomplete)
+    assert metadata_summary["readiness_label"] == "not_ready"
+    assert metadata_summary["component_statuses"]["metadata"]["status"] == "failed"
+    assert "parameter_tags" in metadata_summary["metadata_diagnostics"]["missing_keys"]
+
+    nonfinite = _copy_field(field)
+    nonfinite.values[0, 0, 0, 0] = np.nan
+    nonfinite_summary = summarize_field_batch_readiness(nonfinite)
+    assert nonfinite_summary["readiness_label"] == "not_ready"
+    assert nonfinite_summary["component_statuses"]["values"]["status"] == "failed"
+
+    multivariable = _copy_field(field)
+    multivariable.values = np.concatenate([multivariable.values, multivariable.values], axis=-1)
+    multivariable.var_names = ["u", "v"]
+    multivariable_summary = summarize_field_batch_readiness(multivariable)
+    assert multivariable_summary["readiness_label"] == "not_ready"
+    assert multivariable_summary["component_statuses"]["field"]["status"] == "failed"
+
+    nonperiodic = _copy_field(field)
+    nonperiodic.metadata = copy.deepcopy(nonperiodic.metadata)
+    nonperiodic.metadata["boundary_conditions"] = {"x": "dirichlet"}
+    nonperiodic_summary = summarize_field_batch_readiness(nonperiodic)
+    assert nonperiodic_summary["readiness_label"] == "not_ready"
+    assert nonperiodic_summary["component_statuses"]["metadata"]["status"] == "failed"
+
+
+def test_summarize_field_batch_readiness_reports_coordinate_failures() -> None:
+    field = generate_heat_1d_field_batch(batch_size=1, num_times=9, num_points=16, seed=2130)
+
+    nonuniform = _copy_field(field)
+    nonuniform.coords["x"] = nonuniform.coords["x"].copy()
+    nonuniform.coords["x"][3] += 0.01
+    nonuniform_summary = summarize_field_batch_readiness(nonuniform)
+    assert nonuniform_summary["readiness_label"] == "not_ready"
+    assert nonuniform_summary["component_statuses"]["x_coordinate"]["status"] == "failed"
+
+    endpoint_field = from_numpy(
+        np.zeros((1, 5, 16, 1), dtype=float),
+        dims=("batch", "time", "x", "var"),
+        coords={
+            "time": np.linspace(0.0, 0.2, 5),
+            "x": np.linspace(0.0, 2.0 * np.pi, 16, endpoint=True),
+        },
+        var_name="u",
+        metadata={
+            **_metadata(),
+            "parameter_tags": {"nu": 0.1, "domain_length": 2.0 * np.pi},
+        },
+    )
+    endpoint_summary = summarize_field_batch_readiness(endpoint_field)
+    assert endpoint_summary["readiness_label"] == "not_ready"
+    assert endpoint_summary["coordinate_diagnostics"]["x"]["endpoint_duplicated_detected"] is True
+    assert endpoint_summary["component_statuses"]["x_coordinate"]["status"] == "failed"
+
+
+def test_summarize_field_batch_readiness_expected_equation_and_preflight() -> None:
+    field = generate_heat_1d_field_batch(batch_size=1, num_times=9, num_points=16, seed=2140)
+
+    mismatch = summarize_field_batch_readiness(
+        field,
+        residual_evaluator=KdVResidualEvaluator(),
+        expected_equation="kdv_normalized",
+    )
+    assert mismatch["readiness_label"] == "not_ready"
+    assert mismatch["component_statuses"]["expected_equation"]["status"] == "failed"
+    assert mismatch["component_statuses"]["residual_preflight"]["status"] == "failed"
+    assert mismatch["residual_preflight"]["error"]["error_type"] in {"ScopeValidationError", "SchemaValidationError"}
+
+    with pytest.raises(SchemaValidationError, match="FieldBatch"):
+        summarize_field_batch_readiness(object())  # type: ignore[arg-type]
+    with pytest.raises(SchemaValidationError, match="ResidualEvaluator"):
+        summarize_field_batch_readiness(field, residual_evaluator=object())  # type: ignore[arg-type]
+    with pytest.raises(SchemaValidationError, match="expected_equation"):
+        summarize_field_batch_readiness(field, expected_equation="")  # type: ignore[arg-type]
+
+
+def test_summarize_field_batch_readiness_does_not_mutate_input() -> None:
+    field = generate_heat_1d_field_batch(batch_size=1, num_times=9, num_points=16, seed=2150)
+    before_values = field.values.copy()
+    before_coords = {name: coord.copy() for name, coord in field.coords.items()}
+    before_metadata = copy.deepcopy(field.metadata)
+    before_preprocess = copy.deepcopy(field.preprocess_log)
+
+    summarize_field_batch_readiness(field, residual_evaluator=HeatResidualEvaluator())
+
+    np.testing.assert_array_equal(field.values, before_values)
+    for name, coord in before_coords.items():
+        np.testing.assert_array_equal(field.coords[name], coord)
+    assert field.metadata == before_metadata
+    assert field.preprocess_log == before_preprocess
 
 
 def test_summarize_residual_batch_returns_frozen_json_summary(heat_artifacts: dict[str, object]) -> None:

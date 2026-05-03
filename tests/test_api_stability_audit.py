@@ -45,6 +45,7 @@ _ROOT_RUNTIME_NAMES = {
     "run_advection_diffusion_vertical_slice_example",
     "run_formula_generator_validation_example",
     "run_generator_confidence_report_example",
+    "run_external_data_readiness_example",
     "run_kdv_vertical_slice_example",
     "run_orbit_coverage_diagnostics_example",
     "run_reaction_diffusion_vertical_slice_example",
@@ -55,6 +56,7 @@ _ROOT_RUNTIME_NAMES = {
     "subsample_time",
     "subsample_x",
     "summarize_generator_fit_diagnostics",
+    "summarize_field_batch_readiness",
     "summarize_formula_generator_family",
     "summarize_generator_confidence",
     "summarize_generator_family",
@@ -90,7 +92,10 @@ _DEFERRED_OR_PRIVATE_NAMES = {
     "evaluate_weak_ks_residual",
     "evaluate_weak_reaction_diffusion_residual",
     "from_pdebench",
+    "from_xarray_dataset",
     "from_the_well",
+    "load_dataset",
+    "load_field_batch",
     "generate_ks_1d_field_batch",
     "generate_ks_feasibility_field_batch",
     "generate_reaction_advection_diffusion_1d_field_batch",
@@ -101,6 +106,7 @@ _DEFERRED_OR_PRIVATE_NAMES = {
     "sample_kdv_mode_coefficients",
     "split_orbit_train_heldout",
     "summarize_generator_confidence_score",
+    "summarize_field_batch_readiness_score",
     "summarize_orbit_coverage",
     "summarize_orbit_coverage_feasibility",
     "train_test_translation_orbit_split",
@@ -111,13 +117,17 @@ _DEFERRED_API_STABILITY_NAMES = {
     "pdelie.data.build_translation_orbit_views",
     "pdelie.data.compute_coverage_diagnostics",
     "pdelie.data.from_pdebench",
+    "pdelie.data.from_xarray_dataset",
     "pdelie.data.from_the_well",
+    "pdelie.data.load_dataset",
+    "pdelie.data.load_field_batch",
     "pdelie.data.generate_ks_1d_field_batch",
     "pdelie.data.generate_reaction_advection_diffusion_1d_field_batch",
     "pdelie.data.generate_variable_coefficient_advection_diffusion_1d_field_batch",
     "pdelie.data.load_pdebench",
     "pdelie.data.load_the_well",
     "pdelie.reporting.summarize_generator_confidence_score",
+    "pdelie.reporting.summarize_field_batch_readiness_score",
     "pdelie.reporting.summarize_orbit_coverage",
     "pdelie.reporting.summarize_orbit_coverage_feasibility",
     "pdelie.residuals.KSResidualEvaluator",
@@ -191,6 +201,12 @@ _V0_20_CONFIDENCE_REPORTING_APIS = {
     "summary_type = \"generator_confidence\"",
     "confidence_label",
 }
+_V0_21_FIELD_READINESS_APIS = {
+    "pdelie.reporting.summarize_field_batch_readiness",
+    "summary_type = \"field_batch_readiness\"",
+    "readiness_label",
+    "pdelie.examples.run_external_data_readiness_example",
+}
 
 
 def _api_stability_text() -> str:
@@ -218,6 +234,7 @@ def test_api_stability_doc_covers_current_stable_runtime_surface() -> None:
         | _V0_18_REACTION_DIFFUSION_APIS
         | _V0_19_ADVECTION_DIFFUSION_APIS
         | _V0_20_CONFIDENCE_REPORTING_APIS
+        | _V0_21_FIELD_READINESS_APIS
     ):
         assert api_name in text
 
@@ -279,6 +296,7 @@ def test_required_runtime_submodule_apis_remain_importable() -> None:
         "pdelie.examples": {
             "run_formula_generator_validation_example",
             "run_generator_confidence_report_example",
+            "run_external_data_readiness_example",
             "run_advection_diffusion_vertical_slice_example",
             "run_heat_vertical_slice_example",
             "run_invariant_workflow_summary_example",
@@ -303,6 +321,7 @@ def test_required_runtime_submodule_apis_remain_importable() -> None:
         },
         "pdelie.reporting": {
             "summarize_formula_generator_family",
+            "summarize_field_batch_readiness",
             "summarize_generator_confidence",
             "summarize_generator_fit_diagnostics",
             "summarize_generator_family",
@@ -362,34 +381,35 @@ def test_deferred_and_private_names_are_not_public_submodule_exports() -> None:
             assert not hasattr(module, name), f"{module.__name__}.{name}"
 
 
-def test_v0_20_planning_docs_record_confidence_reporting_and_non_goals() -> None:
+def test_v0_21_planning_docs_record_external_data_readiness_and_non_goals() -> None:
     plan = _repo_text("docs/planning/PLAN.md")
-    scope = _repo_text("docs/planning/V0_20_SCOPE.md")
+    scope = _repo_text("docs/planning/V0_21_SCOPE.md")
     roadmap = _repo_text("docs/planning/ROADMAP.md")
 
     assert "**Status:** COMPLETE" in plan
-    assert "Milestone 2 - Reporting Helper" in plan
-    assert "Milestone 3 - Examples And Notebook Alignment" in plan
-    assert "pdelie.reporting.summarize_generator_confidence" in plan
-    assert "pdelie.examples.run_generator_confidence_report_example" in plan
-    assert "no scalar score ships in `v0.20`" in plan
-    assert "insufficient_evidence" in plan
+    assert "Milestone 2 - Readiness Helper" in plan
+    assert "Milestone 3 - External Data Path Coverage" in plan
+    assert "pdelie.reporting.summarize_field_batch_readiness" in plan
+    assert "pdelie.examples.run_external_data_readiness_example" in plan
+    assert "no file loaders" in plan
+    assert "no Dataset support" in plan
     assert "## Milestone 5 - API / Public-surface Audit" in plan
     assert "## Milestone 6 - Release Gate And Readiness" in plan
-    assert "updated CI so the current explicit release gate is `v0_20-release-gate`" in plan
+    assert "updated CI so the current explicit release gate is `v0_21-release-gate`" in plan
     assert "- Milestone 6: COMPLETE" in plan
 
-    assert "Unified Generator Confidence Reports" in scope
-    assert "pdelie.reporting.summarize_generator_confidence" in scope
-    assert "pdelie.examples.run_generator_confidence_report_example" in scope
-    assert "strong" in scope
-    assert "qualified" in scope
-    assert "scalar confidence score" in scope
+    assert "External Data Readiness Reports" in scope
+    assert "pdelie.reporting.summarize_field_batch_readiness" in scope
+    assert "pdelie.examples.run_external_data_readiness_example" in scope
+    assert "ready" in scope
+    assert "needs_attention" in scope
+    assert "not_ready" in scope
+    assert "file loaders" in scope
     assert "train/test split policy" in scope
     assert "- Milestone 4: COMPLETE" in scope
     assert "- Milestone 5: COMPLETE" in scope
     assert "- Milestone 6: COMPLETE" in scope
 
-    assert "`v0.20` is the completed reporting/supportability release" in roadmap
-    assert "unified generator confidence reports" in roadmap
-    assert "- no scalar confidence score" in roadmap
+    assert "`v0.21` is the completed external-data readiness reporting release" in roadmap
+    assert "external data readiness reports" in roadmap
+    assert "- no file loaders" in roadmap

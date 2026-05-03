@@ -453,6 +453,78 @@ The authoritative `v0.12` scope freeze belongs in:
 
 ## Current Completed Release
 
+### `v0.21` - External data readiness reports
+**Status:** Completed
+
+`v0.21` is the completed external-data readiness reporting release after the `v0.20` unified confidence-reporting release.
+
+Its purpose is:
+
+> make bring-your-own scalar 1D periodic data safer to inspect before residual, confidence, and downstream workflows.
+
+Completed release definition:
+
+`user-owned data -> canonical FieldBatch -> readiness report -> optional residual-evaluator preflight -> confidence/downstream workflows`
+
+Completed scope:
+
+- `pdelie.reporting.summarize_field_batch_readiness(...)`
+- `pdelie.examples.run_external_data_readiness_example(...)`
+- frozen report type: `field_batch_readiness`
+- categorical readiness labels: `ready`, `needs_attention`, `not_ready`
+- component statuses: `passed`, `warning`, `failed`, `not_configured`, `unavailable`
+- field shape/dim, finite-value, mask, coordinate, metadata, expected-equation, and residual-preflight diagnostics
+- conservative metadata suggestions without mutation
+- compact current `v0_21-release-gate` readiness
+
+Release interpretation:
+
+- this is a runtime reporting helper, not a canonical object
+- readiness is empirical compatibility with current stable contracts, not proof of scientific validity
+- `v0.21.0` is a Git-tag-only release; PyPI and TestPyPI publication are deferred to `v1.0` or later
+
+Explicit non-goals:
+
+- no file loaders
+- no `xarray.Dataset` support
+- no PDEBench or The Well adapters
+- no broad dataset adapter framework
+- no multidimensional or nonuniform-grid stable support
+- no resampling APIs
+- no metadata mutation or PDE identity inference
+- no train/test split or heldout-leakage policy
+- no downstream discovery contracts
+- no new PDEs
+- no KS runtime promotion
+- no weak-form expansion
+- no time-translation APIs
+- no neural or callable generator API
+- no operator-facing symmetry work
+- no root export expansion
+
+The authoritative `v0.21` scope freeze belongs in:
+
+- `V0_21_SCOPE.md`
+
+### Release Gate for `v0.21`
+
+`v0.21` is complete only if:
+
+- readiness reports are documented and covered by tests
+- generated stable PDE fields report ready
+- NumPy and xarray DataArray ingestion paths have readiness coverage
+- malformed or out-of-scope field states report needs-attention or not-ready labels
+- residual preflight captures typed validation failures without hiding unexpected exceptions
+- new APIs are importable from their submodules only
+- root `pdelie` remains unchanged
+- no file loader, Dataset adapter, broad adapter, resampling API, new PDE, KS runtime API, weak-form expansion, split/leakage policy, time-translation, neural/callable, or operator API lands
+- CI uses one compact current release gate plus full editable tests and package smoke
+- package/readiness docs preserve the `v1.0` package-index publishing deferral
+
+---
+
+## Recent Completed Release
+
 ### `v0.20` - Unified generator confidence reports
 **Status:** Completed
 
@@ -474,7 +546,7 @@ Completed scope:
 - categorical confidence labels: `strong`, `qualified`, `failed`, `insufficient_evidence`
 - component statuses: `passed`, `warning`, `failed`, `not_configured`, `unavailable`
 - threshold keys for residual, verification, and coverage checks
-- compact current `v0_20-release-gate` readiness
+- compact `v0_20-release-gate` readiness at release closeout
 
 Release interpretation:
 
@@ -512,7 +584,7 @@ The authoritative `v0.20` scope freeze belongs in:
 - direct-SVD, fallback, partial-validation, failed-candidate, residual-threshold-failure, and insufficient-evidence cases are covered
 - the confidence example emits JSON only
 - no new PDE, KS runtime API, weak-form expansion, broad adapter, scalar score, train/test policy, time-translation, neural/callable, split-policy, or operator API lands
-- CI uses one compact current release gate plus full editable tests and package smoke
+- CI used one compact release gate plus full editable tests and package smoke at release closeout
 - package/readiness docs preserve the `v1.0` package-index publishing deferral
 
 ---
@@ -1139,29 +1211,6 @@ Only `Committed` items define the next release target.
 
 The principle is still one stable axis at a time: do not combine PDE expansion, data-adapter expansion, weak-form expansion, multi-generator machinery, and downstream policy in one release.
 
-### `v0.21` - External data readiness reports
-**Status:** Planned
-
-Purpose:
-
-> make “bring your own scalar 1D periodic data” safer before adding broad adapters.
-
-Candidate scope:
-
-- `FieldBatch` audit reports
-- coordinate and grid diagnostics
-- metadata completeness and consistency diagnostics
-- finite-value, mask, and scalar-var diagnostics
-- residual-evaluator compatibility preflight reports
-- conservative metadata inference for safe, explicit cases only
-
-Deferred:
-
-- `xarray.Dataset` support
-- file-based dataset loaders
-- PDEBench / The Well adapters
-- multidimensional or nonuniform-grid ingestion
-
 ### `v0.22` - Downstream discovery contracts
 **Status:** Planned
 
@@ -1455,7 +1504,7 @@ It should **not** be edited every time a new idea appears.
 - `v0.18` = stable scalar 1D periodic Fisher-KPP reaction-diffusion strong path
 - `v0.19` = stable scalar 1D periodic constant-coefficient advection-diffusion strong path
 - `v0.20` = unified generator confidence reports
-- `v0.21` = planned external data readiness reports
+- `v0.21` = external data readiness reports
 - `v0.22` = planned downstream discovery contracts and provenance reports
 - `v0.23` = planned split/leakage provenance diagnostics, not split management
 - `v0.24` = planned weak-form supportability reset

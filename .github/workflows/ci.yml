@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  v0_20-release-gate:
+  v0_21-release-gate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -32,8 +32,8 @@ jobs:
           retry 3 python -m pip install -e .[test]
       - name: Check dependencies
         run: python -m pip check
-      - name: Run V0.20 release gate
-        run: python -m pytest tests/test_v0_20_release_gate.py
+      - name: Run V0.21 release gate
+        run: python -m pytest tests/test_v0_21_release_gate.py
   editable-tests:
     runs-on: ubuntu-latest
     steps:
@@ -75,6 +75,7 @@ jobs:
           python -m pdelie.examples.symmetry_candidate_validation
           python -m pdelie.examples.formula_generator_validation
           python -m pdelie.examples.generator_confidence_report
+          python -m pdelie.examples.external_data_readiness
   package-smoke:
     runs-on: ubuntu-latest
     steps:
@@ -135,6 +136,7 @@ jobs:
           )
           from pdelie.examples import (
               run_advection_diffusion_vertical_slice_example,
+              run_external_data_readiness_example,
               run_reaction_diffusion_vertical_slice_example,
           )
           from pdelie.invariants import (
@@ -145,6 +147,7 @@ jobs:
               summarize_uniform_translation_orbit,
           )
           from pdelie.reporting import (
+              summarize_field_batch_readiness,
               summarize_formula_generator_family,
               summarize_generator_confidence,
               summarize_generator_fit_diagnostics,
@@ -169,6 +172,7 @@ jobs:
           assert compute_periodic_window_coverage is not None
           assert diagnose_uniform_translation_consistency is not None
           assert summarize_uniform_translation_orbit is not None
+          assert summarize_field_batch_readiness is not None
           assert summarize_generator_fit_diagnostics is not None
           assert summarize_generator_confidence is not None
           assert summarize_formula_generator_family is not None
@@ -183,9 +187,11 @@ jobs:
           assert generate_advection_diffusion_1d_field_batch is not None
           assert AdvectionDiffusionResidualEvaluator is not None
           assert run_advection_diffusion_vertical_slice_example is not None
+          assert run_external_data_readiness_example is not None
           assert generate_reaction_diffusion_1d_field_batch is not None
           assert ReactionDiffusionResidualEvaluator is not None
           assert run_reaction_diffusion_vertical_slice_example is not None
+          assert not hasattr(pdelie, "summarize_field_batch_readiness")
           assert not hasattr(pdelie, "summarize_generator_fit_diagnostics")
           assert not hasattr(pdelie, "summarize_vertical_slice")
           assert not hasattr(pdelie, "compute_periodic_window_coverage")
@@ -200,6 +206,7 @@ jobs:
           assert not hasattr(pdelie, "generate_advection_diffusion_1d_field_batch")
           assert not hasattr(pdelie, "AdvectionDiffusionResidualEvaluator")
           assert not hasattr(pdelie, "run_advection_diffusion_vertical_slice_example")
+          assert not hasattr(pdelie, "run_external_data_readiness_example")
           assert not hasattr(pdelie, "generate_reaction_diffusion_1d_field_batch")
           assert not hasattr(pdelie, "ReactionDiffusionResidualEvaluator")
           assert not hasattr(pdelie, "run_reaction_diffusion_vertical_slice_example")
@@ -387,6 +394,37 @@ jobs:
           assert not hasattr(pdelie, "augment_translation_orbit")
           assert not hasattr(pdelie, "build_translation_orbit_dataset")
           print("invariant-diagnostics-smoke-ok")
+          PY
+      - name: Field readiness smoke
+        run: |
+          /tmp/pdelie-rc-venv/bin/python - <<'PY'
+          import json
+          import pdelie
+
+          from pdelie.data import generate_heat_1d_field_batch
+          from pdelie.examples import run_external_data_readiness_example
+          from pdelie.reporting import summarize_field_batch_readiness
+          from pdelie.residuals import HeatResidualEvaluator
+
+          field = generate_heat_1d_field_batch(batch_size=1, num_times=7, num_points=16, seed=21021)
+          readiness = summarize_field_batch_readiness(
+              field,
+              residual_evaluator=HeatResidualEvaluator(),
+              expected_equation="heat_1d",
+          )
+          example = run_external_data_readiness_example()
+          json.dumps(readiness)
+          json.dumps(example)
+          assert readiness["summary_type"] == "field_batch_readiness"
+          assert readiness["readiness_label"] == "ready"
+          assert readiness["residual_preflight"]["residual"]["summary_type"] == "residual_batch"
+          assert example["summary_type"] == "external_data_readiness_example"
+          assert "not_ready" in example["extra_metrics"]["readiness_labels"]
+          assert not hasattr(pdelie, "summarize_field_batch_readiness")
+          assert not hasattr(pdelie, "run_external_data_readiness_example")
+          assert not hasattr(pdelie, "from_xarray_dataset")
+          assert not hasattr(pdelie, "load_field_batch")
+          print("field-readiness-smoke-ok")
           PY
       - name: Generator fit diagnostics smoke
         run: |
