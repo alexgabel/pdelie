@@ -410,7 +410,6 @@ jobs:
           readiness = summarize_field_batch_readiness(
               field,
               residual_evaluator=HeatResidualEvaluator(),
-              expected_equation="heat_1d",
           )
           example = run_external_data_readiness_example()
           json.dumps(readiness)

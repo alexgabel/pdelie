@@ -126,6 +126,8 @@ def test_v0_21_release_gate_example_outputs_readiness_cases() -> None:
     assert cases["from_numpy_heat_ready"]["readiness_label"] == "ready"
     assert cases["metadata_incomplete"]["readiness_label"] == "not_ready"
     assert cases["residual_evaluator_mismatch"]["readiness_label"] == "not_ready"
+    assert cases["residual_evaluator_mismatch"]["component_statuses"]["expected_equation"]["status"] == "passed"
+    assert cases["residual_evaluator_mismatch"]["component_statuses"]["residual_preflight"]["status"] == "failed"
 
 
 def test_v0_21_release_gate_no_deferred_surface_leaked() -> None:

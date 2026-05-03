@@ -43,7 +43,7 @@ def run_external_data_readiness_example() -> dict[str, object]:
         dims=source.dims,
         coords=source.coords,
         var_name="u",
-        metadata=_metadata(),
+        metadata=_metadata(equation="heat_1d"),
         preprocess_log=[{"operation": "example_external_array"}],
     )
 
@@ -54,7 +54,7 @@ def run_external_data_readiness_example() -> dict[str, object]:
     mismatch_ready = summarize_field_batch_readiness(
         imported,
         residual_evaluator=KdVResidualEvaluator(),
-        expected_equation="kdv_normalized",
+        expected_equation="heat_1d",
     )
     ready = summarize_field_batch_readiness(
         imported,

@@ -28,7 +28,7 @@ def test_v0_20_release_gate_metadata_docs_and_ci_are_aligned() -> None:
     changelog = _repo_text("CHANGELOG.md")
     publishing = _repo_text("docs/releases/PUBLISHING.md")
     plan = _repo_text("docs/planning/PLAN.md")
-    scope = _repo_text("docs/planning/V0_21_SCOPE.md")
+    scope = _repo_text("docs/planning/V0_20_SCOPE.md")
     roadmap = _repo_text("docs/planning/ROADMAP.md")
     release_gate_jobs = re.findall(r"^  (v0_\d+-release-gate):", workflow, flags=re.MULTILINE)
 

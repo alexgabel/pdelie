@@ -444,6 +444,7 @@ def test_external_data_readiness_example_runs_end_to_end() -> None:
     assert cases["from_numpy_heat_ready"]["summary_type"] == "field_batch_readiness"
     assert cases["from_numpy_heat_ready"]["readiness_label"] == "ready"
     assert cases["metadata_incomplete"]["component_statuses"]["metadata"]["status"] == "failed"
+    assert cases["residual_evaluator_mismatch"]["component_statuses"]["expected_equation"]["status"] == "passed"
     assert cases["residual_evaluator_mismatch"]["component_statuses"]["residual_preflight"]["status"] == "failed"
     assert not hasattr(pdelie, "run_external_data_readiness_example")
 
