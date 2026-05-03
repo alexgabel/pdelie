@@ -410,8 +410,6 @@ def _confidence_pass_boolean_status(
 
 
 def _confidence_label(component_statuses: Mapping[str, Mapping[str, Any]], *, evidence_present: bool) -> str:
-    if not evidence_present:
-        return "insufficient_evidence"
     present_statuses = [
         str(status["status"])
         for status in component_statuses.values()
@@ -419,6 +417,8 @@ def _confidence_label(component_statuses: Mapping[str, Mapping[str, Any]], *, ev
     ]
     if any(status == "failed" for status in present_statuses):
         return "failed"
+    if not evidence_present:
+        return "insufficient_evidence"
     if any(status in {"warning", "not_configured"} for status in present_statuses):
         return "qualified"
     return "strong"

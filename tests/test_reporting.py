@@ -641,6 +641,58 @@ def test_summarize_generator_confidence_reports_failed_residual_threshold(
     _assert_json_serializable(summary)
 
 
+def test_summarize_generator_confidence_reports_failed_non_generator_components(
+    heat_artifacts: dict[str, object],
+) -> None:
+    residual_only = summarize_generator_confidence(
+        residual=heat_artifacts["residual"],
+        thresholds={"residual_max_abs": 1e-12},
+    )
+    coverage_only = summarize_generator_confidence(
+        coverage={"summary_type": "periodic_window_coverage", "coverage_fraction": 0.25},
+        thresholds={"coverage_fraction_min": 0.5},
+    )
+    consistency_only = summarize_generator_confidence(
+        consistency={
+            "summary_type": "uniform_translation_consistency",
+            "shift_reports": [{"inverse_passed": False}],
+        },
+    )
+
+    assert residual_only["confidence_label"] == "failed"
+    assert residual_only["component_statuses"]["residual"]["status"] == "failed"
+    assert coverage_only["confidence_label"] == "failed"
+    assert coverage_only["component_statuses"]["coverage"]["status"] == "failed"
+    assert consistency_only["confidence_label"] == "failed"
+    assert consistency_only["component_statuses"]["consistency"]["status"] == "failed"
+
+
+def test_summarize_generator_confidence_requires_generator_evidence_for_non_failed_label(
+    heat_artifacts: dict[str, object],
+) -> None:
+    residual_only = summarize_generator_confidence(
+        residual=heat_artifacts["residual"],
+        thresholds={"residual_max_abs": 1.0, "residual_rms": 1.0},
+    )
+    coverage_only = summarize_generator_confidence(
+        coverage={"summary_type": "periodic_window_coverage", "coverage_fraction": 0.75},
+        thresholds={"coverage_fraction_min": 0.5},
+    )
+    consistency_only = summarize_generator_confidence(
+        consistency={
+            "summary_type": "uniform_translation_consistency",
+            "shift_reports": [{"inverse_passed": True}],
+        },
+    )
+
+    assert residual_only["confidence_label"] == "insufficient_evidence"
+    assert residual_only["component_statuses"]["residual"]["status"] == "passed"
+    assert coverage_only["confidence_label"] == "insufficient_evidence"
+    assert coverage_only["component_statuses"]["coverage"]["status"] == "passed"
+    assert consistency_only["confidence_label"] == "insufficient_evidence"
+    assert consistency_only["component_statuses"]["consistency"]["status"] == "passed"
+
+
 def test_summarize_generator_confidence_reports_insufficient_evidence() -> None:
     summary = summarize_generator_confidence()
 
