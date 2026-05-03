@@ -11,6 +11,7 @@ from pdelie.data import generate_burgers_1d_field_batch, generate_heat_1d_field_
 from pdelie.derivatives import compute_spectral_fd_derivatives
 from pdelie.errors import SchemaValidationError, ScopeValidationError
 from pdelie.reporting import (
+    summarize_formula_generator_family,
     summarize_generator_fit_diagnostics,
     summarize_generator_family,
     summarize_invariant_workflow,
@@ -19,6 +20,7 @@ from pdelie.reporting import (
     summarize_vertical_slice,
     summarize_weak_residual_report,
 )
+from pdelie.symmetry import FormulaGeneratorFamily
 from pdelie.residuals import (
     BurgersResidualEvaluator,
     HeatResidualEvaluator,
@@ -54,6 +56,21 @@ _FIT_DIAGNOSTIC_SUMMARY_KEYS = _SUMMARY_PREFIX_KEYS | {
     "reference_fallback_used",
     "fallback_reason",
     "evidence_label",
+}
+_FORMULA_GENERATOR_SUMMARY_KEYS = _SUMMARY_PREFIX_KEYS | {
+    "parameterization",
+    "schema_version",
+    "variables",
+    "component_names",
+    "generator_count",
+    "generator_names",
+    "formula_kinds",
+    "component_nodes",
+    "finite_transform_available",
+    "finite_transform_construction_method",
+    "symbolic_references",
+    "reciprocal_denominator_floor",
+    "diagnostics",
 }
 
 
@@ -158,6 +175,44 @@ def test_summarize_generator_family_reports_translation_fit_fields(heat_artifact
     assert summary["fit_mode"] == generator.diagnostics["fit_mode"]
     assert summary["reference_fallback_used"] == generator.diagnostics["reference_fallback_used"]
     assert summary["fallback_reason"] == generator.diagnostics["fallback_reason"]
+    _assert_json_serializable(summary)
+
+
+def test_summarize_formula_generator_family_reports_safe_formula_metadata() -> None:
+    formula = FormulaGeneratorFamily(
+        formula_generators=[
+            {
+                "name": "formula_fixture",
+                "components": {
+                    "tau": {"node": "const", "value": 0.0},
+                    "xi": {
+                        "node": "sin",
+                        "arg": {"node": "var", "name": "x"},
+                    },
+                    "phi": {
+                        "node": "symbolic_reference",
+                        "label": "external_phi",
+                        "metadata": {"source": "unit-test"},
+                    },
+                },
+            }
+        ],
+        diagnostics={"status": "fixture"},
+    )
+
+    summary = summarize_formula_generator_family(formula)
+
+    assert set(summary) == _FORMULA_GENERATOR_SUMMARY_KEYS
+    assert summary["summary_schema_version"] == "0.1"
+    assert summary["summary_type"] == "formula_generator_family"
+    assert summary["parameterization"] == "formula_generator_family"
+    assert summary["generator_count"] == 1
+    assert summary["generator_names"] == ["formula_fixture"]
+    assert summary["formula_kinds"]["sin"] == 1
+    assert summary["formula_kinds"]["symbolic_reference"] == 1
+    assert summary["finite_transform_available"] is False
+    assert summary["symbolic_references"][0]["label"] == "external_phi"
+    assert summary["diagnostics"] == {"status": "fixture"}
     _assert_json_serializable(summary)
 
 

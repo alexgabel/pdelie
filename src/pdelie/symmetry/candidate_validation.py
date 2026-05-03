@@ -11,6 +11,10 @@ from pdelie.errors import PDELieValidationError, SchemaValidationError, ScopeVal
 from pdelie.invariants import InvariantApplier
 from pdelie.residuals.base import ResidualEvaluator
 from pdelie.symmetry.closure import diagnose_generator_family_closure
+from pdelie.symmetry.formula import (
+    FormulaGeneratorFamily,
+    _diagnose_formula_generator_family_on_field,
+)
 from pdelie.symmetry.parameterization.polynomial_translation import (
     _coerce_translation_coefficients,
 )
@@ -25,6 +29,7 @@ _INVERSE_RELATIVE_L2_TOLERANCE = 1e-8
 _SPAN_TOLERANCE = 1e-8
 _CLOSURE_TOLERANCE = 1e-8
 _RELATIVE_L2_EPS = 1e-12
+_FORMULA_RECIPROCAL_DENOMINATOR_FLOOR = FormulaGeneratorFamily.RECIPROCAL_DENOMINATOR_FLOOR
 
 
 def _json_safe(value: Any) -> Any:
@@ -42,7 +47,7 @@ def _json_safe(value: Any) -> Any:
 def _validate_json_compatible(value: Any, *, name: str) -> Any:
     normalized = _json_safe(value)
     try:
-        json.dumps(normalized)
+        json.dumps(normalized, allow_nan=False)
     except (TypeError, ValueError) as exc:
         raise SchemaValidationError(f"{name} must be JSON-compatible.") from exc
     return normalized
@@ -76,6 +81,10 @@ def _validate_epsilon_values(values: Any | None) -> np.ndarray:
 
 
 def _is_generator_payload(payload: Mapping[str, Any]) -> bool:
+    if any(key in payload for key in ("coefficients", "basis_spec", "normalization")):
+        return True
+    if payload.get("parameterization") == FormulaGeneratorFamily.PARAMETERIZATION:
+        return False
     return any(key in payload for key in ("parameterization", "coefficients", "basis_spec", "normalization"))
 
 
@@ -90,6 +99,17 @@ def _is_invariant_map_payload(payload: Mapping[str, Any]) -> bool:
             "inverse_available",
         )
     )
+
+
+def _is_formula_payload(payload: Mapping[str, Any]) -> bool:
+    return any(
+        key in payload
+        for key in (
+            "formula_generators",
+            "component_names",
+            "finite_transform_spec",
+        )
+    ) or payload.get("parameterization") == FormulaGeneratorFamily.PARAMETERIZATION
 
 
 def _coerce_generator_payload(payload: Mapping[str, Any], *, name: str) -> GeneratorFamily:
@@ -108,20 +128,34 @@ def _coerce_generator_payload(payload: Mapping[str, Any], *, name: str) -> Gener
         raise SchemaValidationError(f"{name} is malformed.") from exc
 
 
-def _coerce_candidate(candidate: Any) -> tuple[str, GeneratorFamily | InvariantMapSpec]:
+def _coerce_formula_payload(payload: Mapping[str, Any], *, name: str) -> FormulaGeneratorFamily:
+    try:
+        return FormulaGeneratorFamily.from_dict(payload)
+    except KeyError as exc:
+        raise SchemaValidationError(f"{name} is malformed.") from exc
+
+
+def _coerce_candidate(candidate: Any) -> tuple[str, GeneratorFamily | InvariantMapSpec | FormulaGeneratorFamily]:
     if isinstance(candidate, GeneratorFamily):
         candidate.validate()
         return "generator_family", candidate
     if isinstance(candidate, InvariantMapSpec):
         candidate.validate()
         return "invariant_map_spec", candidate
+    if isinstance(candidate, FormulaGeneratorFamily):
+        candidate.validate()
+        return "formula_generator_family", candidate
     if callable(candidate):
-        raise SchemaValidationError("Callable symmetry candidate descriptors are not supported in v0.16.")
+        raise SchemaValidationError("Callable symmetry candidate descriptors are not supported.")
     if isinstance(candidate, Mapping):
         generator_payload = _is_generator_payload(candidate)
         invariant_payload = _is_invariant_map_payload(candidate)
-        if generator_payload and invariant_payload:
-            raise SchemaValidationError("Symmetry candidate payload is ambiguous between GeneratorFamily and InvariantMapSpec.")
+        formula_payload = _is_formula_payload(candidate)
+        if sum(bool(flag) for flag in (generator_payload, invariant_payload, formula_payload)) > 1:
+            raise SchemaValidationError(
+                "Symmetry candidate payload is ambiguous between GeneratorFamily, "
+                "InvariantMapSpec, and FormulaGeneratorFamily."
+            )
         if generator_payload:
             return "generator_family", _coerce_generator_payload(candidate, name="GeneratorFamily candidate payload")
         if invariant_payload:
@@ -129,8 +163,18 @@ def _coerce_candidate(candidate: Any) -> tuple[str, GeneratorFamily | InvariantM
                 return "invariant_map_spec", InvariantMapSpec.from_dict(candidate)
             except KeyError as exc:
                 raise SchemaValidationError("InvariantMapSpec candidate payload is malformed.") from exc
-        raise SchemaValidationError("Symmetry candidate payload is not a recognized GeneratorFamily or InvariantMapSpec mapping.")
-    raise SchemaValidationError("candidate must be a GeneratorFamily, InvariantMapSpec, or strict payload mapping.")
+        if formula_payload:
+            return "formula_generator_family", _coerce_formula_payload(
+                candidate,
+                name="FormulaGeneratorFamily candidate payload",
+            )
+        raise SchemaValidationError(
+            "Symmetry candidate payload is not a recognized GeneratorFamily, "
+            "InvariantMapSpec, or FormulaGeneratorFamily mapping."
+        )
+    raise SchemaValidationError(
+        "candidate must be a GeneratorFamily, InvariantMapSpec, FormulaGeneratorFamily, or strict payload mapping."
+    )
 
 
 def _coerce_reference_generator(reference_generator: Any | None) -> GeneratorFamily | None:
@@ -361,6 +405,57 @@ def _validate_invariant_map_candidate(
     return spec.to_dict(), checks
 
 
+def _validate_formula_candidate(
+    field: FieldBatch,
+    formula: FormulaGeneratorFamily,
+    *,
+    residual_evaluator: ResidualEvaluator,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    from pdelie.reporting import summarize_formula_generator_family
+
+    checks: dict[str, dict[str, Any]] = {
+        "schema": {"required": True, "status": "passed", "report": {"object": "FormulaGeneratorFamily"}}
+    }
+
+    evaluation_report = _diagnose_formula_generator_family_on_field(formula, field)
+    if evaluation_report["failed_component_count"] > 0:
+        evaluation_status = "failed"
+        evaluation_required = True
+    elif evaluation_report["evaluated_component_count"] > 0:
+        evaluation_status = "passed"
+        evaluation_required = True
+    else:
+        evaluation_status = "unavailable"
+        evaluation_required = False
+    checks["formula_evaluation_diagnostics"] = {
+        "required": evaluation_required,
+        "status": evaluation_status,
+        "threshold": {
+            "finite_values": True,
+            "reciprocal_denominator_floor": _FORMULA_RECIPROCAL_DENOMINATOR_FLOOR,
+        },
+        "report": evaluation_report,
+    }
+
+    if formula.finite_transform_spec is None:
+        checks["finite_transform_spec_validation"] = {
+            "required": False,
+            "status": "unavailable",
+            "reason": "finite_transform_spec_not_provided",
+        }
+    else:
+        spec = InvariantMapSpec.from_dict(formula.finite_transform_spec)
+        _, finite_transform_checks = _validate_invariant_map_candidate(
+            field,
+            spec,
+            residual_evaluator=residual_evaluator,
+        )
+        for name, check in finite_transform_checks.items():
+            checks[f"finite_transform_{name}"] = check
+
+    return summarize_formula_generator_family(formula), checks
+
+
 def validate_symmetry_candidate(
     field: FieldBatch,
     candidate: Any,
@@ -389,11 +484,20 @@ def validate_symmetry_candidate(
             reference_generator=normalized_reference,
             finite_transform_epsilons=epsilons,
         )
-    else:
+    elif candidate_kind == "invariant_map_spec":
         assert isinstance(normalized_candidate, InvariantMapSpec)
         if normalized_reference is not None:
             raise SchemaValidationError("reference_generator is only supported for GeneratorFamily candidates.")
         candidate_summary, checks = _validate_invariant_map_candidate(
+            field,
+            normalized_candidate,
+            residual_evaluator=residual_evaluator,
+        )
+    else:
+        assert isinstance(normalized_candidate, FormulaGeneratorFamily)
+        if normalized_reference is not None:
+            raise SchemaValidationError("reference_generator is only supported for GeneratorFamily candidates.")
+        candidate_summary, checks = _validate_formula_candidate(
             field,
             normalized_candidate,
             residual_evaluator=residual_evaluator,
@@ -417,6 +521,7 @@ def validate_symmetry_candidate(
                 "span_principal_angle": _SPAN_TOLERANCE,
                 "span_projection_residual": _SPAN_TOLERANCE,
                 "closure": _CLOSURE_TOLERANCE,
+                "formula_reciprocal_denominator_floor": _FORMULA_RECIPROCAL_DENOMINATOR_FLOOR,
             },
             "candidate_summary": candidate_summary,
             "configured_validation_checks": list(checks.keys()),

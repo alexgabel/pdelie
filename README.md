@@ -2,7 +2,7 @@
 
 Numerical discovery and verification of Lie symmetries for PDE data.
 
-The current repository implements the frozen V0.16 external symmetry-candidate validation slice for the existing Heat/Burgers/weak-report/KdV engine:
+The current repository implements the frozen V0.17 formula-backed generator interoperability slice for the existing Heat/Burgers/weak-report/KdV engine:
 
 - synthetic 1D heat equation
 - synthetic 1D Burgers equation
@@ -20,6 +20,9 @@ The current repository implements the frozen V0.16 external symmetry-candidate v
 - read-only uniform translation orbit reports under `pdelie.invariants.summarize_uniform_translation_orbit`
 - materialized uniform translation orbit batches under `pdelie.invariants.build_uniform_translation_orbit_batch`
 - empirical external symmetry-candidate validation reports under `pdelie.symmetry.validate_symmetry_candidate`
+- runtime-only formula-backed generator records under `pdelie.symmetry.FormulaGeneratorFamily`
+- formula generator summaries under `pdelie.reporting.summarize_formula_generator_family`
+- formula-backed candidate validation through `candidate_kind = "formula_generator_family"`
 - `FieldBatch -> DerivativeBatch -> ResidualBatch -> GeneratorFamily -> InvariantMapSpec -> VerificationReport`
 - one stable derivative backend: `spectral_fd`
 - family-shaped `GeneratorFamily` with explicit `basis_spec`
@@ -34,7 +37,7 @@ The current repository implements the frozen V0.16 external symmetry-candidate v
 - one runtime-only thin PySINDy discovery adapter under `pdelie.discovery`
 - one runtime-only translation-canonical discovery-input helper under `pdelie.discovery`
 - one runtime-only robustness helper layer under `pdelie.data`
-- one compact current `v0_16-release-gate` CI job plus full editable tests and package smoke
+- one compact current `v0_17-release-gate` CI job plus full editable tests and package smoke
 
 ## Setup
 
@@ -83,7 +86,7 @@ python -m pytest
 
 ## Tutorial Notebooks
 
-The repository includes exploratory notebooks under `notebooks/` for the shipped symmetry/discovery runtime surface retained through `v0.16`:
+The repository includes exploratory notebooks under `notebooks/` for the shipped symmetry/discovery runtime surface retained through `v0.17`:
 
 - `00_how_to_use_pdelie_v0_6.ipynb`
 - `01_raw_vs_translation_canonical_discovery.ipynb`
@@ -107,6 +110,7 @@ python -m pdelie.examples.orbit_coverage_diagnostics
 python -m pdelie.examples.invariant_workflow_summary
 python -m pdelie.examples.translation_orbit_batch
 python -m pdelie.examples.symmetry_candidate_validation
+python -m pdelie.examples.formula_generator_validation
 ```
 
 Those commands are validated in CI after editable install.
@@ -156,6 +160,13 @@ The symmetry candidate validation example demonstrates:
 3. a failed candidate for contrast
 4. the v0.16 interpretation that `validated` means configured empirical validation, not a mathematical proof
 
+The formula generator validation example demonstrates:
+
+1. affine, trigonometric, and rational formula-backed candidates
+2. safe JSON AST formula metadata, not executable formula strings
+3. a formula candidate with a supported uniform-translation finite-transform spec
+4. a failed denominator-floor case for contrast
+
 You can also call the examples programmatically.
 They return JSON-compatible runtime summaries, not canonical artifact schemas.
 The Heat and KdV examples return nested `vertical_slice` summaries; the invariant examples return diagnostic/workflow summaries:
@@ -163,6 +174,7 @@ The Heat and KdV examples return nested `vertical_slice` summaries; the invarian
 ```python
 from pdelie.examples import (
     run_heat_vertical_slice_example,
+    run_formula_generator_validation_example,
     run_invariant_workflow_summary_example,
     run_kdv_vertical_slice_example,
     run_orbit_coverage_diagnostics_example,
@@ -184,6 +196,9 @@ print(orbit_batch["cases"][0]["orbit_report"]["output_batch_size"])
 
 candidate_validation = run_symmetry_candidate_validation_example()
 print(candidate_validation["cases"][0]["report"]["conclusion"])
+
+formula_validation = run_formula_generator_validation_example()
+print(formula_validation["cases"][0]["report"]["candidate_kind"])
 ```
 
 ## Current Scope
@@ -211,8 +226,9 @@ Included in the current stable core:
 - invariant workflow summaries and uniform translation orbit reports in `v0.14` are read-only runtime reports; they do not construct augmented datasets, orbit datasets, or transformed `FieldBatch` collections
 - materialized uniform translation orbit batches in `v0.15` are conservative data utilities; they append along batch and record provenance, but do not manage train/test splits or leakage policy
 - external symmetry-candidate validation in `v0.16` accepts `GeneratorFamily` and `InvariantMapSpec` objects or strict payload mappings and returns empirical configured validation reports; it does not train detectors or accept callables
+- formula-backed generator support in `v0.17` adds safe runtime formula records, reporting, and empirical validation; it does not parse executable strings, accept callables, train learned generators, or change canonical polynomial `GeneratorFamily`
 
-Runtime-level public APIs in the frozen V0.16 slice:
+Runtime-level public APIs in the frozen V0.17 slice:
 
 - `pdelie.data.from_numpy` for strict runtime conversion of explicit NumPy/array-like 1D uniform rectilinear trajectory data into canonical `FieldBatch`
 - `pdelie.data.from_xarray` for strict runtime conversion of explicit `xarray.DataArray` 1D uniform rectilinear trajectory data into canonical `FieldBatch` when the optional `xarray` dependency is installed
@@ -240,6 +256,9 @@ Runtime-level public APIs in the frozen V0.16 slice:
 - `pdelie.examples.run_translation_orbit_batch_example` for a runtime smoke example of materialized orbit batches, not a canonical report schema
 - `pdelie.symmetry.validate_symmetry_candidate` for empirical configured validation reports over externally supplied `GeneratorFamily` and `InvariantMapSpec` candidates
 - `pdelie.examples.run_symmetry_candidate_validation_example` for a runtime smoke example of external symmetry-candidate validation, not a canonical report schema
+- `pdelie.symmetry.FormulaGeneratorFamily` for runtime-only formula-backed scalar 1D Lie-point generator records
+- `pdelie.reporting.summarize_formula_generator_family` for JSON-compatible runtime summaries of formula-backed generator records
+- `pdelie.examples.run_formula_generator_validation_example` for a runtime smoke example of formula-backed candidate validation, not a canonical report schema
 - `pdelie.discovery.to_pysindy_trajectories` for the narrow backend-specific PySINDy bridge
 - `pdelie.discovery.evaluate_discovery_recovery` for runtime-only support/coefficient recovery metrics over caller-supplied canonical term strings
 - `pdelie.discovery.fit_pysindy_discovery` for a runtime-only backend-native PySINDy fit adapter
@@ -256,7 +275,7 @@ Runtime-level public APIs in the frozen V0.16 slice:
 
 The degraded weak-path release wins in `v0.8` are frozen as representative contract-stability signals. They are fallback-backed release checks, not a general weak-superiority claim.
 
-The KdV support retained through `v0.15` is normalized, periodic, scalar, 1D, and short-horizon. Accepted generator parameters outside the release-guaranteed regime are user-risk and are not general KdV stability guarantees.
+The KdV support retained through `v0.17` is normalized, periodic, scalar, 1D, and short-horizon. Accepted generator parameters outside the release-guaranteed regime are user-risk and are not general KdV stability guarantees.
 
 The `v0.10` reporting helpers are supportability APIs. They produce JSON-compatible runtime summaries, not canonical objects, manuscript tables, or artifact schemas.
 

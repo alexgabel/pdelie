@@ -11,7 +11,7 @@ from pdelie.contracts import _translation_generator_basis_spec
 from pdelie.data import generate_heat_1d_field_batch, generate_kdv_1d_field_batch
 from pdelie.errors import SchemaValidationError, ScopeValidationError
 from pdelie.residuals import HeatResidualEvaluator, KdVResidualEvaluator
-from pdelie.symmetry import validate_symmetry_candidate
+from pdelie.symmetry import FormulaGeneratorFamily, validate_symmetry_candidate
 
 
 DOMAIN_LENGTH = 2.0 * np.pi
@@ -46,6 +46,26 @@ def _translation_spec(shift: float = DOMAIN_LENGTH / 8.0) -> InvariantMapSpec:
         domain_validity="global",
         inverse_available=True,
         diagnostics={},
+    )
+
+
+def _zero() -> dict[str, object]:
+    return {"node": "const", "value": 0.0}
+
+
+def _one() -> dict[str, object]:
+    return {"node": "const", "value": 1.0}
+
+
+def _formula_translation(*, finite_transform: bool = False) -> FormulaGeneratorFamily:
+    return FormulaGeneratorFamily(
+        formula_generators=[
+            {
+                "name": "formula_translation",
+                "components": {"tau": _zero(), "xi": _one(), "phi": _zero()},
+            }
+        ],
+        finite_transform_spec=_translation_spec().to_dict() if finite_transform else None,
     )
 
 
@@ -212,6 +232,88 @@ def test_validate_symmetry_candidate_accepts_kdv_invariant_map_spec() -> None:
     assert report["check_reports"]["residual_stability"]["status"] == "passed"
 
 
+def test_validate_symmetry_candidate_accepts_formula_generator_family_object_and_payload() -> None:
+    field = generate_heat_1d_field_batch(batch_size=3, num_times=9, num_points=32, seed=1613)
+    formula = _formula_translation()
+
+    object_report = validate_symmetry_candidate(field, formula, residual_evaluator=HeatResidualEvaluator())
+    payload_report = validate_symmetry_candidate(field, formula.to_dict(), residual_evaluator=HeatResidualEvaluator())
+
+    for report in (object_report, payload_report):
+        assert json.loads(json.dumps(report)) == report
+        assert report["candidate_kind"] == "formula_generator_family"
+        assert report["conclusion"] == "partially_validated"
+        assert report["candidate_summary"]["summary_type"] == "formula_generator_family"
+        assert report["check_reports"]["schema"]["status"] == "passed"
+        assert report["check_reports"]["formula_evaluation_diagnostics"]["status"] == "passed"
+        assert report["check_reports"]["finite_transform_spec_validation"]["status"] == "unavailable"
+        assert report["check_reports"]["formula_evaluation_diagnostics"]["report"]["evaluated_component_count"] == 3
+
+
+def test_validate_symmetry_candidate_validates_formula_finite_transform_spec() -> None:
+    field = generate_heat_1d_field_batch(batch_size=3, num_times=9, num_points=32, seed=1614)
+    formula = _formula_translation(finite_transform=True)
+
+    report = validate_symmetry_candidate(
+        field,
+        formula,
+        residual_evaluator=HeatResidualEvaluator(),
+        source_candidate_id={"source": "formula-fixture"},
+    )
+
+    assert report["candidate_kind"] == "formula_generator_family"
+    assert report["source_candidate_id"] == {"source": "formula-fixture"}
+    assert report["conclusion"] == "validated"
+    assert report["check_reports"]["formula_evaluation_diagnostics"]["status"] == "passed"
+    assert report["check_reports"]["finite_transform_residual_stability"]["status"] == "passed"
+    assert report["check_reports"]["finite_transform_inverse_consistency"]["status"] == "passed"
+
+
+def test_validate_symmetry_candidate_reports_failed_formula_evaluation_without_exception() -> None:
+    field = generate_heat_1d_field_batch(batch_size=3, num_times=9, num_points=32, seed=1615)
+    formula = FormulaGeneratorFamily(
+        formula_generators=[
+            {
+                "name": "bad_rational",
+                "components": {
+                    "tau": _zero(),
+                    "xi": {"node": "reciprocal", "arg": _zero()},
+                    "phi": _zero(),
+                },
+            }
+        ]
+    )
+
+    report = validate_symmetry_candidate(field, formula, residual_evaluator=HeatResidualEvaluator())
+
+    assert report["candidate_kind"] == "formula_generator_family"
+    assert report["conclusion"] == "failed"
+    assert report["check_reports"]["formula_evaluation_diagnostics"]["status"] == "failed"
+    component_reports = report["check_reports"]["formula_evaluation_diagnostics"]["report"]["component_reports"]
+    assert any(item.get("reason") == "reciprocal_denominator_floor_violation" for item in component_reports)
+
+
+def test_validate_symmetry_candidate_reports_symbolic_formula_as_partial_without_fake_evaluation() -> None:
+    field = generate_heat_1d_field_batch(batch_size=3, num_times=9, num_points=32, seed=1616)
+    symbolic = {"node": "symbolic_reference", "label": "external_symbol", "metadata": {"kind": "fixture"}}
+    formula = FormulaGeneratorFamily(
+        formula_generators=[
+            {
+                "name": "symbolic_only",
+                "components": {"tau": symbolic, "xi": symbolic, "phi": symbolic},
+            }
+        ]
+    )
+
+    report = validate_symmetry_candidate(field, formula, residual_evaluator=HeatResidualEvaluator())
+
+    assert report["candidate_kind"] == "formula_generator_family"
+    assert report["conclusion"] == "partially_validated"
+    assert report["check_reports"]["formula_evaluation_diagnostics"]["status"] == "unavailable"
+    assert report["check_reports"]["formula_evaluation_diagnostics"]["report"]["evaluated_component_count"] == 0
+    assert report["candidate_summary"]["symbolic_references"]
+
+
 @pytest.mark.parametrize(
     ("spec_kwargs", "error_type", "match"),
     [
@@ -248,6 +350,11 @@ def test_validate_symmetry_candidate_rejects_callable_and_ambiguous_payloads() -
     with pytest.raises(SchemaValidationError, match="ambiguous"):
         validate_symmetry_candidate(field, payload, residual_evaluator=HeatResidualEvaluator())
 
+    formula_payload = _formula_translation().to_dict()
+    formula_payload["coefficients"] = [[1.0, 0.0, 0.0, 0.0]]
+    with pytest.raises(SchemaValidationError, match="ambiguous"):
+        validate_symmetry_candidate(field, formula_payload, residual_evaluator=HeatResidualEvaluator())
+
 
 def test_validate_symmetry_candidate_rejects_malformed_payloads_with_typed_errors() -> None:
     field = generate_heat_1d_field_batch(batch_size=3, num_times=9, num_points=32, seed=1610)
@@ -266,6 +373,13 @@ def test_validate_symmetry_candidate_rejects_malformed_payloads_with_typed_error
             residual_evaluator=HeatResidualEvaluator(),
         )
 
+    with pytest.raises(SchemaValidationError, match="FormulaGeneratorFamily payload is malformed"):
+        validate_symmetry_candidate(
+            field,
+            {"parameterization": "formula_generator_family"},
+            residual_evaluator=HeatResidualEvaluator(),
+        )
+
     with pytest.raises(SchemaValidationError, match="reference_generator payload is malformed"):
         validate_symmetry_candidate(
             field,
@@ -273,6 +387,18 @@ def test_validate_symmetry_candidate_rejects_malformed_payloads_with_typed_error
             residual_evaluator=HeatResidualEvaluator(),
             reference_generator={"parameterization": "polynomial_translation_affine"},
         )
+
+
+@pytest.mark.parametrize("field_name", ["variables", "component_names", "formula_generators", "diagnostics"])
+def test_validate_symmetry_candidate_rejects_malformed_formula_payload_container_fields(
+    field_name: str,
+) -> None:
+    field = generate_heat_1d_field_batch(batch_size=3, num_times=9, num_points=32, seed=1612)
+    payload = _formula_translation().to_dict()
+    payload[field_name] = None
+
+    with pytest.raises(SchemaValidationError, match="FormulaGeneratorFamily payload"):
+        validate_symmetry_candidate(field, payload, residual_evaluator=HeatResidualEvaluator())
 
 
 def test_validate_symmetry_candidate_rejects_bad_evaluator_epsilons_reference_and_scope() -> None:

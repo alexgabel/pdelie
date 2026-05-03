@@ -8,13 +8,13 @@ Stable contracts remain in `docs/specs/API_STABILITY.md` only after APIs land.
 
 ## Summary
 
-After `v0.14`, the highest-ROI path is to move from read-only invariant diagnostics toward conservative user-facing data utilities, then external symmetry-candidate validation, then non-polynomial generator support, then carefully scoped PDE expansion.
+After `v0.14`, the highest-ROI path has been to move from read-only invariant diagnostics toward conservative user-facing data utilities, then external symmetry-candidate validation, then formula-backed generator support, then carefully scoped PDE expansion.
 
 Staged sequence:
 
 - `v0.15`: materialized uniform translation orbit batches
 - `v0.16`: external symmetry-candidate interop and validation
-- `v0.17`: formula-backed and non-polynomial generator families
+- `v0.17`: formula-backed generator families
 - `v0.18+`: scoped PDE expansion
 
 PDELie should remain a reusable library and validation/reporting substrate.
@@ -116,45 +116,54 @@ Design boundary:
 - this is detector interop, not sparse-discovery reporting
 - this is validation/reporting, not neural-generator training
 - learned-generator methods may slot in by exporting candidates, but PDELie does not train those models
-- callable descriptors remain deferred
-- formula-backed/non-polynomial generators remain deferred to `v0.17`
+- callable descriptors and learned-generator APIs remain deferred beyond `v0.17`
 
 This keeps PDELie compatible with learned-generator or Lie-algebra-aware methods without becoming a neural symmetry-discovery framework.
 
 ---
 
-## V0.17 - Formula-backed And Non-polynomial Generators
+## V0.17 - Formula-backed Generator Families
 
-Planned theme:
+Completed theme:
 
 > support richer generator descriptions without jumping directly to neural generator classes.
 
-Phase 1 should focus on formula-backed generator records for:
+Implemented API direction:
+
+```python
+pdelie.symmetry.FormulaGeneratorFamily
+pdelie.reporting.summarize_formula_generator_family(...)
+pdelie.symmetry.validate_symmetry_candidate(..., candidate=FormulaGeneratorFamily(...), ...)
+```
+
+The completed first phase focuses on formula-backed runtime records for:
 
 - affine generators
 - trigonometric generators
 - rational or simple analytic forms
 - externally supplied symbolic references
 
-Required semantics to freeze:
+Completed semantics:
 
-- JSON-serializable formula metadata
-- evaluation policy on canonical fields
-- finite-transform availability, or explicit `infinitesimal_only` status
-- validation diagnostics
-- compatibility with existing reporting helpers
+- JSON-compatible formula metadata and strict payload round trips
+- safe JSON AST expressions rather than executable strings
+- finite formula-evaluation diagnostics on canonical scalar 1D periodic fields
+- optional finite-transform validation through attached `InvariantMapSpec` payloads
+- symbolic references as metadata-only expressions
+- compatibility with existing symmetry-candidate validation reports
 
-Phase 2 may allow callable or external generators, but those should be treated as less stable unless paired with diagnostic reports.
+Callable or external executable generators remain deferred and should be treated as less stable unless paired with diagnostic reports.
 
-Phase 3 may allow learned-generator interop through accepted outputs only.
+Later learned-generator interop should still work through accepted outputs only.
 PDELie should validate such outputs; it should not train learned generators.
 
-Key design decision for `v0.17`:
+Selected design for `v0.17`:
 
-- decide whether formula-backed generators require a new canonical object such as `FormulaGeneratorFamily`
-- or whether a runtime metadata record is enough for the first stable slice
+- `FormulaGeneratorFamily` is a runtime-only structured record
+- it is not a canonical object
+- it does not change existing polynomial `GeneratorFamily` semantics
 
-The conservative default is a runtime formula-backed record first, with no change to existing polynomial `GeneratorFamily` semantics until the compatibility story is proven.
+The completed scope freeze belongs in `V0_17_SCOPE.md`.
 
 ---
 

@@ -60,6 +60,7 @@ def test_runtime_package_api_is_importable() -> None:
     )
     from pdelie.residuals import KdVResidualEvaluator, evaluate_weak_burgers_residual, evaluate_weak_heat_residual
     from pdelie.reporting import (
+        summarize_formula_generator_family,
         summarize_generator_fit_diagnostics,
         summarize_generator_family,
         summarize_invariant_workflow,
@@ -69,6 +70,7 @@ def test_runtime_package_api_is_importable() -> None:
         summarize_weak_residual_report,
     )
     from pdelie.symmetry import (
+        FormulaGeneratorFamily,
         compare_generator_spans,
         diagnose_generator_family_closure,
         render_generator_family,
@@ -100,6 +102,7 @@ def test_runtime_package_api_is_importable() -> None:
     assert evaluate_weak_burgers_residual is not None
     assert evaluate_weak_heat_residual is not None
     assert summarize_generator_fit_diagnostics is not None
+    assert summarize_formula_generator_family is not None
     assert summarize_generator_family is not None
     assert summarize_invariant_workflow is not None
     assert summarize_residual_batch is not None
@@ -115,6 +118,7 @@ def test_runtime_package_api_is_importable() -> None:
     assert export_generator_family_manifest is not None
     assert import_generator_family_manifest is not None
     assert compare_generator_spans is not None
+    assert FormulaGeneratorFamily is not None
     assert diagnose_generator_family_closure is not None
     assert render_generator_family is not None
     assert to_sympy_component_expressions is not None
@@ -150,11 +154,13 @@ def test_root_package_does_not_export_runtime_invariant_applier() -> None:
     assert not hasattr(pdelie, "from_numpy")
     assert not hasattr(pdelie, "from_the_well")
     assert not hasattr(pdelie, "from_xarray")
+    assert not hasattr(pdelie, "FormulaGeneratorFamily")
     assert not hasattr(pdelie, "split_batch_train_heldout")
     assert not hasattr(pdelie, "subsample_time")
     assert not hasattr(pdelie, "subsample_x")
     assert not hasattr(pdelie, "summarize_recovery_grid")
     assert not hasattr(pdelie, "summarize_generator_fit_diagnostics")
+    assert not hasattr(pdelie, "summarize_formula_generator_family")
     assert not hasattr(pdelie, "summarize_generator_family")
     assert not hasattr(pdelie, "summarize_invariant_workflow")
     assert not hasattr(pdelie, "summarize_orbit_coverage")
@@ -179,6 +185,7 @@ def test_root_package_does_not_export_runtime_invariant_applier() -> None:
     assert not hasattr(pdelie, "WeakKSResidualEvaluator")
     assert not hasattr(pdelie, "OperatorSymmetry")
     assert not hasattr(pdelie, "run_invariant_workflow_summary_example")
+    assert not hasattr(pdelie, "run_formula_generator_validation_example")
     assert not hasattr(pdelie, "run_kdv_vertical_slice_example")
     assert not hasattr(pdelie, "run_orbit_coverage_diagnostics_example")
     assert not hasattr(pdelie, "run_symmetry_candidate_validation_example")
@@ -263,6 +270,7 @@ def test_residuals_package_runtime_api_matches_current_frozen_surface() -> None:
 def test_reporting_package_runtime_api_matches_frozen_m2_surface() -> None:
     reporting_module = importlib.import_module("pdelie.reporting")
 
+    assert hasattr(reporting_module, "summarize_formula_generator_family")
     assert hasattr(reporting_module, "summarize_generator_fit_diagnostics")
     assert hasattr(reporting_module, "summarize_generator_family")
     assert hasattr(reporting_module, "summarize_invariant_workflow")
@@ -278,6 +286,7 @@ def test_examples_package_runtime_api_matches_current_frozen_surface() -> None:
     examples_module = importlib.import_module("pdelie.examples")
 
     assert hasattr(examples_module, "run_heat_vertical_slice_example")
+    assert hasattr(examples_module, "run_formula_generator_validation_example")
     assert hasattr(examples_module, "run_invariant_workflow_summary_example")
     assert hasattr(examples_module, "run_kdv_vertical_slice_example")
     assert hasattr(examples_module, "run_orbit_coverage_diagnostics_example")
@@ -310,6 +319,7 @@ def test_portability_package_runtime_api_matches_frozen_m2_surface() -> None:
 def test_symmetry_package_runtime_api_matches_frozen_m4_surface() -> None:
     symmetry_module = importlib.import_module("pdelie.symmetry")
 
+    assert hasattr(symmetry_module, "FormulaGeneratorFamily")
     assert hasattr(symmetry_module, "fit_translation_generator")
     assert hasattr(symmetry_module, "validate_symmetry_candidate")
     assert hasattr(symmetry_module, "diagnose_generator_family_closure")
@@ -317,7 +327,6 @@ def test_symmetry_package_runtime_api_matches_frozen_m4_surface() -> None:
     assert hasattr(symmetry_module, "render_generator_family")
     assert hasattr(symmetry_module, "to_sympy_component_expressions")
     assert not hasattr(symmetry_module, "CallableGeneratorFamily")
-    assert not hasattr(symmetry_module, "FormulaGeneratorFamily")
     assert not hasattr(symmetry_module, "OperatorSymmetry")
     assert not hasattr(symmetry_module, "build_translation_orbit_views")
 

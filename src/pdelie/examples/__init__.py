@@ -1,11 +1,18 @@
 __all__ = [
     "run_heat_vertical_slice_example",
+    "run_formula_generator_validation_example",
     "run_invariant_workflow_summary_example",
     "run_kdv_vertical_slice_example",
     "run_orbit_coverage_diagnostics_example",
     "run_symmetry_candidate_validation_example",
     "run_translation_orbit_batch_example",
 ]
+
+
+def run_formula_generator_validation_example() -> dict[str, object]:
+    from pdelie.examples.formula_generator_validation import run_formula_generator_validation_example as _impl
+
+    return _impl()
 
 
 def run_heat_vertical_slice_example() -> dict[str, object]:

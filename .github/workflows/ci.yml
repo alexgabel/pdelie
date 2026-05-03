@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  v0_16-release-gate:
+  v0_17-release-gate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -32,8 +32,8 @@ jobs:
           retry 3 python -m pip install -e .[test]
       - name: Check dependencies
         run: python -m pip check
-      - name: Run V0.16 release gate
-        run: python -m pytest tests/test_v0_16_release_gate.py
+      - name: Run V0.17 release gate
+        run: python -m pytest tests/test_v0_17_release_gate.py
   editable-tests:
     runs-on: ubuntu-latest
     steps:
@@ -71,6 +71,7 @@ jobs:
           python -m pdelie.examples.invariant_workflow_summary
           python -m pdelie.examples.translation_orbit_batch
           python -m pdelie.examples.symmetry_candidate_validation
+          python -m pdelie.examples.formula_generator_validation
   package-smoke:
     runs-on: ubuntu-latest
     steps:
@@ -133,6 +134,7 @@ jobs:
               summarize_uniform_translation_orbit,
           )
           from pdelie.reporting import (
+              summarize_formula_generator_family,
               summarize_generator_fit_diagnostics,
               summarize_generator_family,
               summarize_invariant_workflow,
@@ -141,7 +143,7 @@ jobs:
               summarize_vertical_slice,
               summarize_weak_residual_report,
           )
-          from pdelie.symmetry import validate_symmetry_candidate
+          from pdelie.symmetry import FormulaGeneratorFamily, validate_symmetry_candidate
 
           assert FieldBatch is not None
           assert DerivativeBatch is not None
@@ -155,6 +157,7 @@ jobs:
           assert diagnose_uniform_translation_consistency is not None
           assert summarize_uniform_translation_orbit is not None
           assert summarize_generator_fit_diagnostics is not None
+          assert summarize_formula_generator_family is not None
           assert summarize_generator_family is not None
           assert summarize_invariant_workflow is not None
           assert summarize_residual_batch is not None
@@ -162,6 +165,7 @@ jobs:
           assert summarize_vertical_slice is not None
           assert summarize_weak_residual_report is not None
           assert validate_symmetry_candidate is not None
+          assert FormulaGeneratorFamily is not None
           assert not hasattr(pdelie, "summarize_generator_fit_diagnostics")
           assert not hasattr(pdelie, "summarize_vertical_slice")
           assert not hasattr(pdelie, "compute_periodic_window_coverage")
@@ -171,7 +175,50 @@ jobs:
           assert not hasattr(pdelie, "build_uniform_translation_orbit_batch")
           assert not hasattr(pdelie, "OrbitBatchResult")
           assert not hasattr(pdelie, "validate_symmetry_candidate")
+          assert not hasattr(pdelie, "FormulaGeneratorFamily")
+          assert not hasattr(pdelie, "summarize_formula_generator_family")
           print("stable-import-ok")
+          PY
+      - name: Formula generator smoke
+        run: |
+          /tmp/pdelie-rc-venv/bin/python - <<'PY'
+          import json
+
+          import pdelie
+          from pdelie.data import generate_heat_1d_field_batch
+          from pdelie.reporting import summarize_formula_generator_family
+          from pdelie.residuals import HeatResidualEvaluator
+          from pdelie.symmetry import FormulaGeneratorFamily, validate_symmetry_candidate
+
+          formula = FormulaGeneratorFamily(
+              formula_generators=[
+                  {
+                      "name": "wheel_formula_translation",
+                      "components": {
+                          "tau": {"node": "const", "value": 0.0},
+                          "xi": {"node": "const", "value": 1.0},
+                          "phi": {"node": "const", "value": 0.0},
+                      },
+                  }
+              ]
+          )
+          summary = summarize_formula_generator_family(formula)
+          field = generate_heat_1d_field_batch(batch_size=2, num_times=7, num_points=16, seed=17017)
+          report = validate_symmetry_candidate(
+              field,
+              formula.to_dict(),
+              residual_evaluator=HeatResidualEvaluator(),
+              source_candidate_id="wheel-formula",
+          )
+          json.dumps(summary)
+          json.dumps(report)
+          assert summary["summary_type"] == "formula_generator_family"
+          assert report["candidate_kind"] == "formula_generator_family"
+          assert report["conclusion"] == "partially_validated"
+          assert not hasattr(pdelie, "FormulaGeneratorFamily")
+          assert not hasattr(pdelie, "summarize_formula_generator_family")
+          assert not hasattr(pdelie, "CallableGeneratorFamily")
+          print("formula-generator-smoke-ok")
           PY
       - name: Symmetry candidate validation smoke
         run: |
