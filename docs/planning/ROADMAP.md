@@ -453,6 +453,73 @@ The authoritative `v0.12` scope freeze belongs in:
 
 ## Current Completed Release
 
+### `v0.18` - Stable Fisher-KPP reaction-diffusion strong path
+**Status:** Completed
+
+`v0.18` is the completed narrow PDE-expansion release after the `v0.17` formula-backed generator interoperability release.
+
+Its purpose is:
+
+> add one stable scalar 1D periodic reaction-diffusion strong path without broadening grids, adapters, or generator scope.
+
+Completed release definition:
+
+`canonical scalar 1D periodic FieldBatch -> spectral_fd derivatives -> Fisher-KPP residual -> translation fit/verification -> vertical-slice summary/example`
+
+Completed scope:
+
+- `pdelie.data.generate_reaction_diffusion_1d_field_batch(...)`
+- `pdelie.residuals.ReactionDiffusionResidualEvaluator`
+- `pdelie.examples.run_reaction_diffusion_vertical_slice_example(...)`
+- frozen Fisher-KPP equation tag: `reaction_diffusion_fisher_kpp`
+- residual `u_t - nu*u_xx - rho*u*(1-u)`
+- default parameters `nu = 0.05`, `rho = 1.0`
+- deterministic pseudo-spectral periodic RK4 synthetic rollout
+- direct-SVD translation fit evidence in the frozen vertical slice
+- compact current `v0_18-release-gate` readiness
+
+Release interpretation:
+
+- this is a scoped synthetic strong-form Fisher-KPP path, not a broad reaction-diffusion framework
+- mass/mean drift is diagnostic-only because Fisher-KPP reaction terms are not mass conserving
+- the stable claim is backed by direct SVD translation evidence, not reference fallback
+- `v0.18.0` is a Git-tag-only release; PyPI and TestPyPI publication are deferred to `v1.0` or later
+
+Explicit non-goals:
+
+- no advection-diffusion
+- no KS runtime promotion
+- no weak reaction-diffusion
+- no public custom initial-condition API
+- no broad dataset adapters
+- no PDEBench or The Well support
+- no multidimensional, multivariable, or nonuniform-grid expansion
+- no neural or callable generator API
+- no operator-facing symmetry work
+- no train/test policy or split management
+- no root export expansion
+
+The authoritative `v0.18` scope freeze belongs in:
+
+- `V0_18_SCOPE.md`
+
+### Release Gate for `v0.18`
+
+`v0.18` is complete only if:
+
+- reaction-diffusion generator and residual APIs are documented and covered by tests
+- new APIs are importable from their submodules only
+- root `pdelie` remains unchanged
+- the reaction-diffusion vertical slice has direct SVD evidence in tolerance
+- the reaction-diffusion example emits JSON only using the nested vertical-slice summary shape
+- no public advection-diffusion, KS, weak reaction-diffusion, broad adapter, custom-IC, nonuniform/multidimensional, neural/callable, split-policy, or operator API lands
+- CI uses one compact current release gate plus full editable tests and package smoke
+- package/readiness docs preserve the `v1.0` package-index publishing deferral
+
+---
+
+## Recent Completed Release
+
 ### `v0.17` - Formula-backed generator families
 **Status:** Completed
 
@@ -526,7 +593,7 @@ The authoritative `v0.17` scope freeze belongs in:
 
 ---
 
-## Recent Completed Release
+## Earlier Completed Release
 
 ### `v0.16` - External symmetry-candidate validation
 **Status:** Completed
@@ -1045,6 +1112,7 @@ It should **not** be edited every time a new idea appears.
 - `v0.15` = materialized uniform translation orbit batches under `pdelie.invariants`
 - `v0.16` = external symmetry-candidate interop and validation, not detector training
 - `v0.17` = formula-backed generator records and validation, without callables or learned-generator training
-- `v0.18+` = scoped PDE expansion, with reaction/advection-diffusion preferred unless KS residual-only is deliberately scoped
+- `v0.18` = stable scalar 1D periodic Fisher-KPP reaction-diffusion strong path
+- `v0.19+` = future scoped PDE expansion only after an explicit scope freeze
 - `v1.0` = stable public engine
 - later / experimental = operator-facing symmetry discovery

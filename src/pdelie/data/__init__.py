@@ -6,6 +6,7 @@ from pdelie.data.heat_1d import (
 )
 from pdelie.data.kdv_1d import generate_kdv_1d_field_batch
 from pdelie.data.numpy_adapter import from_numpy
+from pdelie.data.reaction_diffusion_1d import generate_reaction_diffusion_1d_field_batch
 from pdelie.data.robustness import (
     add_gaussian_noise,
     split_batch_train_heldout,
@@ -20,6 +21,7 @@ __all__ = [
     "from_xarray",
     "generate_burgers_1d_field_batch",
     "generate_kdv_1d_field_batch",
+    "generate_reaction_diffusion_1d_field_batch",
     "evaluate_heat_fourier_series",
     "generate_heat_1d_field_batch",
     "sample_heat_mode_coefficients",

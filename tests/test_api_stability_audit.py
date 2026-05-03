@@ -30,6 +30,7 @@ _ROOT_RUNTIME_NAMES = {
     "generate_burgers_1d_field_batch",
     "generate_heat_1d_field_batch",
     "generate_kdv_1d_field_batch",
+    "generate_reaction_diffusion_1d_field_batch",
     "import_generator_family_manifest",
     "plot_closure_diagnostics",
     "plot_generator_coefficients",
@@ -41,6 +42,7 @@ _ROOT_RUNTIME_NAMES = {
     "run_formula_generator_validation_example",
     "run_kdv_vertical_slice_example",
     "run_orbit_coverage_diagnostics_example",
+    "run_reaction_diffusion_vertical_slice_example",
     "run_invariant_workflow_summary_example",
     "run_symmetry_candidate_validation_example",
     "run_translation_orbit_batch_example",
@@ -70,6 +72,7 @@ _DEFERRED_OR_PRIVATE_NAMES = {
     "WeakBurgersResidualEvaluator",
     "WeakHeatResidualEvaluator",
     "WeakKdVResidualEvaluator",
+    "WeakReactionDiffusionResidualEvaluator",
     "augment_translation_orbit",
     "build_translation_orbit_dataset",
     "build_translation_orbit_views",
@@ -77,10 +80,12 @@ _DEFERRED_OR_PRIVATE_NAMES = {
     "compute_weak_derivatives",
     "evaluate_weak_kdv_residual",
     "evaluate_weak_ks_residual",
+    "evaluate_weak_reaction_diffusion_residual",
     "from_pdebench",
     "from_the_well",
     "generate_ks_1d_field_batch",
     "generate_ks_feasibility_field_batch",
+    "generate_advection_diffusion_1d_field_batch",
     "load_pdebench",
     "load_the_well",
     "materialize_uniform_translation_orbit",
@@ -98,6 +103,7 @@ _DEFERRED_API_STABILITY_NAMES = {
     "pdelie.data.from_pdebench",
     "pdelie.data.from_the_well",
     "pdelie.data.generate_ks_1d_field_batch",
+    "pdelie.data.generate_advection_diffusion_1d_field_batch",
     "pdelie.data.load_pdebench",
     "pdelie.data.load_the_well",
     "pdelie.reporting.summarize_orbit_coverage",
@@ -105,7 +111,9 @@ _DEFERRED_API_STABILITY_NAMES = {
     "pdelie.residuals.KSResidualEvaluator",
     "pdelie.residuals.KuramotoSivashinskyResidualEvaluator",
     "pdelie.residuals.WeakKSResidualEvaluator",
+    "pdelie.residuals.WeakReactionDiffusionResidualEvaluator",
     "pdelie.residuals.evaluate_weak_ks_residual",
+    "pdelie.residuals.evaluate_weak_reaction_diffusion_residual",
     "pdelie.symmetry.OperatorSymmetry",
     "pdelie.symmetry.CallableGeneratorFamily",
     "pdelie.symmetry.validate_generator_candidate",
@@ -152,6 +160,12 @@ _V0_17_FORMULA_GENERATOR_APIS = {
     "pdelie.reporting.summarize_formula_generator_family",
     "candidate_kind = \"formula_generator_family\"",
 }
+_V0_18_REACTION_DIFFUSION_APIS = {
+    "pdelie.data.generate_reaction_diffusion_1d_field_batch",
+    "pdelie.residuals.ReactionDiffusionResidualEvaluator",
+    "pdelie.examples.run_reaction_diffusion_vertical_slice_example",
+    "reaction_diffusion_fisher_kpp",
+}
 
 
 def _api_stability_text() -> str:
@@ -176,6 +190,7 @@ def test_api_stability_doc_covers_current_stable_runtime_surface() -> None:
         | _V0_15_ORBIT_BATCH_APIS
         | _V0_16_SYMMETRY_VALIDATION_APIS
         | _V0_17_FORMULA_GENERATOR_APIS
+        | _V0_18_REACTION_DIFFUSION_APIS
     ):
         assert api_name in text
 
@@ -220,6 +235,7 @@ def test_required_runtime_submodule_apis_remain_importable() -> None:
             "generate_burgers_1d_field_batch",
             "generate_heat_1d_field_batch",
             "generate_kdv_1d_field_batch",
+            "generate_reaction_diffusion_1d_field_batch",
             "split_batch_train_heldout",
             "subsample_time",
             "subsample_x",
@@ -238,6 +254,7 @@ def test_required_runtime_submodule_apis_remain_importable() -> None:
             "run_invariant_workflow_summary_example",
             "run_kdv_vertical_slice_example",
             "run_orbit_coverage_diagnostics_example",
+            "run_reaction_diffusion_vertical_slice_example",
             "run_symmetry_candidate_validation_example",
             "run_translation_orbit_batch_example",
         },
@@ -268,6 +285,7 @@ def test_required_runtime_submodule_apis_remain_importable() -> None:
             "BurgersResidualEvaluator",
             "HeatResidualEvaluator",
             "KdVResidualEvaluator",
+            "ReactionDiffusionResidualEvaluator",
             "ResidualEvaluator",
             "evaluate_weak_burgers_residual",
             "evaluate_weak_heat_residual",
@@ -312,35 +330,35 @@ def test_deferred_and_private_names_are_not_public_submodule_exports() -> None:
             assert not hasattr(module, name), f"{module.__name__}.{name}"
 
 
-def test_v0_17_planning_docs_record_formula_generators_and_non_goals() -> None:
+def test_v0_18_planning_docs_record_reaction_diffusion_and_non_goals() -> None:
     plan = _repo_text("docs/planning/PLAN.md")
-    scope = _repo_text("docs/planning/V0_17_SCOPE.md")
+    scope = _repo_text("docs/planning/V0_18_SCOPE.md")
     roadmap = _repo_text("docs/planning/ROADMAP.md")
 
     assert "**Status:** COMPLETE" in plan
-    assert "Milestone 2 - Formula Record and Reporting Implementation" in plan
-    assert "Milestone 3 - Formula Candidate Validation" in plan
-    assert "pdelie.symmetry.FormulaGeneratorFamily" in plan
-    assert "pdelie.reporting.summarize_formula_generator_family" in plan
-    assert "candidate_kind = \"formula_generator_family\"" in plan
-    assert "not a mathematical proof" in plan
-    assert "callable generator API" in plan
+    assert "Milestone 2 - Synthetic Data Generator" in plan
+    assert "Milestone 3 - Residual Evaluator" in plan
+    assert "pdelie.data.generate_reaction_diffusion_1d_field_batch" in plan
+    assert "pdelie.residuals.ReactionDiffusionResidualEvaluator" in plan
+    assert "reaction_diffusion_fisher_kpp" in plan
+    assert "direct_svd_in_tolerance" in plan
+    assert "No fallback-backed reaction-diffusion claim landed" in plan
     assert "## Milestone 5 - API / Public-surface Audit" in plan
-    assert "## Milestone 6 - Release Gate and Readiness" in plan
-    assert "updated CI so the current explicit release gate is `v0_17-release-gate`" in plan
+    assert "## Milestone 6 - Release Gate And Readiness" in plan
+    assert "updated CI so the current explicit release gate is `v0_18-release-gate`" in plan
     assert "- Milestone 6: COMPLETE" in plan
 
-    assert "formula-backed generator interoperability" in scope
-    assert "pdelie.symmetry.FormulaGeneratorFamily" in scope
-    assert "pdelie.reporting.summarize_formula_generator_family" in scope
-    assert "pdelie.symmetry.validate_symmetry_candidate" in scope
-    assert "candidate_kind = \"formula_generator_family\"" in scope
-    assert "callable generator APIs" in scope
-    assert "neural generator training" in scope
+    assert "Stable Fisher-KPP Reaction-Diffusion Strong Path" in scope
+    assert "pdelie.data.generate_reaction_diffusion_1d_field_batch" in scope
+    assert "pdelie.residuals.ReactionDiffusionResidualEvaluator" in scope
+    assert "pdelie.examples.run_reaction_diffusion_vertical_slice_example" in scope
+    assert "direct_svd_in_tolerance" in scope
+    assert "weak reaction-diffusion" in scope
+    assert "neural or callable generator APIs" in scope
     assert "- Milestone 4: COMPLETE" in scope
     assert "- Milestone 5: COMPLETE" in scope
     assert "- Milestone 6: COMPLETE" in scope
 
-    assert "`v0.17` is the completed formula-backed generator interoperability release" in roadmap
-    assert "`validated` means configured empirical validation" in roadmap
-    assert "- no new PDE" in roadmap
+    assert "`v0.18` is the completed narrow PDE-expansion release" in roadmap
+    assert "stable scalar 1D periodic Fisher-KPP reaction-diffusion strong path" in roadmap
+    assert "- no advection-diffusion" in roadmap

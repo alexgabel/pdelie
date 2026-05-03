@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  v0_17-release-gate:
+  v0_18-release-gate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -32,8 +32,8 @@ jobs:
           retry 3 python -m pip install -e .[test]
       - name: Check dependencies
         run: python -m pip check
-      - name: Run V0.17 release gate
-        run: python -m pytest tests/test_v0_17_release_gate.py
+      - name: Run V0.18 release gate
+        run: python -m pytest tests/test_v0_18_release_gate.py
   editable-tests:
     runs-on: ubuntu-latest
     steps:
@@ -67,6 +67,7 @@ jobs:
         run: |
           python -m pdelie.examples.heat_vertical_slice
           python -m pdelie.examples.kdv_vertical_slice
+          python -m pdelie.examples.reaction_diffusion_vertical_slice
           python -m pdelie.examples.orbit_coverage_diagnostics
           python -m pdelie.examples.invariant_workflow_summary
           python -m pdelie.examples.translation_orbit_batch
@@ -126,6 +127,8 @@ jobs:
           import pdelie
 
           from pdelie import FieldBatch, DerivativeBatch, ResidualBatch, ResidualEvaluator, GeneratorFamily, VerificationReport
+          from pdelie.data import generate_reaction_diffusion_1d_field_batch
+          from pdelie.examples import run_reaction_diffusion_vertical_slice_example
           from pdelie.invariants import (
               OrbitBatchResult,
               build_uniform_translation_orbit_batch,
@@ -144,6 +147,7 @@ jobs:
               summarize_weak_residual_report,
           )
           from pdelie.symmetry import FormulaGeneratorFamily, validate_symmetry_candidate
+          from pdelie.residuals import ReactionDiffusionResidualEvaluator
 
           assert FieldBatch is not None
           assert DerivativeBatch is not None
@@ -166,6 +170,9 @@ jobs:
           assert summarize_weak_residual_report is not None
           assert validate_symmetry_candidate is not None
           assert FormulaGeneratorFamily is not None
+          assert generate_reaction_diffusion_1d_field_batch is not None
+          assert ReactionDiffusionResidualEvaluator is not None
+          assert run_reaction_diffusion_vertical_slice_example is not None
           assert not hasattr(pdelie, "summarize_generator_fit_diagnostics")
           assert not hasattr(pdelie, "summarize_vertical_slice")
           assert not hasattr(pdelie, "compute_periodic_window_coverage")
@@ -177,6 +184,9 @@ jobs:
           assert not hasattr(pdelie, "validate_symmetry_candidate")
           assert not hasattr(pdelie, "FormulaGeneratorFamily")
           assert not hasattr(pdelie, "summarize_formula_generator_family")
+          assert not hasattr(pdelie, "generate_reaction_diffusion_1d_field_batch")
+          assert not hasattr(pdelie, "ReactionDiffusionResidualEvaluator")
+          assert not hasattr(pdelie, "run_reaction_diffusion_vertical_slice_example")
           print("stable-import-ok")
           PY
       - name: Formula generator smoke
@@ -455,6 +465,33 @@ jobs:
           assert np.isfinite(float(residual.diagnostics["max_abs_residual"]))
           assert np.isfinite(float(residual.diagnostics["rms_residual"]))
           print("kdv-smoke-ok")
+          PY
+      - name: Reaction-diffusion strong path smoke
+        run: |
+          /tmp/pdelie-rc-venv/bin/python - <<'PY'
+          import json
+          import numpy as np
+          import pdelie
+
+          from pdelie.data import generate_reaction_diffusion_1d_field_batch
+          from pdelie.derivatives import compute_spectral_fd_derivatives
+          from pdelie.examples import run_reaction_diffusion_vertical_slice_example
+          from pdelie.residuals import ReactionDiffusionResidualEvaluator
+
+          assert not hasattr(pdelie, "generate_reaction_diffusion_1d_field_batch")
+          assert not hasattr(pdelie, "ReactionDiffusionResidualEvaluator")
+          field = generate_reaction_diffusion_1d_field_batch(batch_size=2, num_times=17, num_points=32, num_modes=4, seed=18018)
+          assert field.metadata["parameter_tags"]["equation"] == "reaction_diffusion_fisher_kpp"
+          derivatives = compute_spectral_fd_derivatives(field)
+          residual = ReactionDiffusionResidualEvaluator().evaluate(field, derivatives)
+          assert np.isfinite(float(residual.diagnostics["max_abs_residual"]))
+          assert np.isfinite(float(residual.diagnostics["rms_residual"]))
+          summary = run_reaction_diffusion_vertical_slice_example()
+          json.dumps(summary)
+          assert summary["summary_type"] == "vertical_slice"
+          assert summary["extra_metrics"]["equation"] == "reaction_diffusion_fisher_kpp"
+          assert summary["generator"]["reference_fallback_used"] is False
+          print("reaction-diffusion-smoke-ok")
           PY
       - name: Order-4 derivative smoke
         run: |

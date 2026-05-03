@@ -2,11 +2,12 @@
 
 Numerical discovery and verification of Lie symmetries for PDE data.
 
-The current repository implements the frozen V0.17 formula-backed generator interoperability slice for the existing Heat/Burgers/weak-report/KdV engine:
+The current repository implements the frozen V0.18 Fisher-KPP reaction-diffusion strong-path slice for the existing Heat/Burgers/weak-report/KdV engine:
 
 - synthetic 1D heat equation
 - synthetic 1D Burgers equation
 - synthetic normalized periodic short-horizon KdV
+- synthetic scalar 1D periodic Fisher-KPP reaction-diffusion tagged as `reaction_diffusion_fisher_kpp`
 - strict external structured ingestion into canonical `FieldBatch`
 - deterministic window-indexed weak residual reports under `pdelie.residuals`
 - JSON-compatible runtime supportability summaries under `pdelie.reporting`
@@ -14,6 +15,7 @@ The current repository implements the frozen V0.17 formula-backed generator inte
 - uniform periodic grid
 - `spectral_fd` derivatives through `u_xxxx`
 - normalized KdV strong residuals under `pdelie.residuals.KdVResidualEvaluator`
+- Fisher-KPP reaction-diffusion strong residuals under `pdelie.residuals.ReactionDiffusionResidualEvaluator`
 - internal Kuramoto-Sivashinsky diagnostic sweep evidence with stable runtime promotion deferred
 - public orbit/coverage diagnostics under `pdelie.invariants`
 - invariant workflow summaries under `pdelie.reporting.summarize_invariant_workflow`
@@ -23,6 +25,7 @@ The current repository implements the frozen V0.17 formula-backed generator inte
 - runtime-only formula-backed generator records under `pdelie.symmetry.FormulaGeneratorFamily`
 - formula generator summaries under `pdelie.reporting.summarize_formula_generator_family`
 - formula-backed candidate validation through `candidate_kind = "formula_generator_family"`
+- reaction-diffusion vertical-slice example under `pdelie.examples.run_reaction_diffusion_vertical_slice_example`
 - `FieldBatch -> DerivativeBatch -> ResidualBatch -> GeneratorFamily -> InvariantMapSpec -> VerificationReport`
 - one stable derivative backend: `spectral_fd`
 - family-shaped `GeneratorFamily` with explicit `basis_spec`
@@ -37,7 +40,7 @@ The current repository implements the frozen V0.17 formula-backed generator inte
 - one runtime-only thin PySINDy discovery adapter under `pdelie.discovery`
 - one runtime-only translation-canonical discovery-input helper under `pdelie.discovery`
 - one runtime-only robustness helper layer under `pdelie.data`
-- one compact current `v0_17-release-gate` CI job plus full editable tests and package smoke
+- one compact current `v0_18-release-gate` CI job plus full editable tests and package smoke
 
 ## Setup
 
@@ -86,7 +89,7 @@ python -m pytest
 
 ## Tutorial Notebooks
 
-The repository includes exploratory notebooks under `notebooks/` for the shipped symmetry/discovery runtime surface retained through `v0.17`:
+The repository includes exploratory notebooks under `notebooks/` for the shipped symmetry/discovery runtime surface retained through `v0.18`:
 
 - `00_pde_timeseries_to_generators.ipynb`
 - `01_raw_vs_translation_canonical_discovery.ipynb`
@@ -108,6 +111,7 @@ Run the packaged example modules from the repo root:
 ```bash
 python -m pdelie.examples.heat_vertical_slice
 python -m pdelie.examples.kdv_vertical_slice
+python -m pdelie.examples.reaction_diffusion_vertical_slice
 python -m pdelie.examples.orbit_coverage_diagnostics
 python -m pdelie.examples.invariant_workflow_summary
 python -m pdelie.examples.translation_orbit_batch
@@ -229,8 +233,9 @@ Included in the current stable core:
 - materialized uniform translation orbit batches in `v0.15` are conservative data utilities; they append along batch and record provenance, but do not manage train/test splits or leakage policy
 - external symmetry-candidate validation in `v0.16` accepts `GeneratorFamily` and `InvariantMapSpec` objects or strict payload mappings and returns empirical configured validation reports; it does not train detectors or accept callables
 - formula-backed generator support in `v0.17` adds safe runtime formula records, reporting, and empirical validation; it does not parse executable strings, accept callables, train learned generators, or change canonical polynomial `GeneratorFamily`
+- Fisher-KPP reaction-diffusion support in `v0.18` adds one scoped scalar 1D periodic strong path with direct SVD translation-fit evidence; it does not add advection-diffusion, KS promotion, weak reaction-diffusion, custom initial-condition APIs, or broader grid support
 
-Runtime-level public APIs in the frozen V0.17 slice:
+Runtime-level public APIs in the frozen V0.18 slice:
 
 - `pdelie.data.from_numpy` for strict runtime conversion of explicit NumPy/array-like 1D uniform rectilinear trajectory data into canonical `FieldBatch`
 - `pdelie.data.from_xarray` for strict runtime conversion of explicit `xarray.DataArray` 1D uniform rectilinear trajectory data into canonical `FieldBatch` when the optional `xarray` dependency is installed
@@ -238,6 +243,9 @@ Runtime-level public APIs in the frozen V0.17 slice:
 - `pdelie.data.generate_kdv_1d_field_batch` for normalized periodic short-horizon synthetic KdV under the frozen v0.9 generator regime
 - `pdelie.residuals.KdVResidualEvaluator` for the normalized strong-form residual `u_t + 6*u*u_x + u_xxx = 0`
 - `pdelie.examples.run_kdv_vertical_slice_example` for a runtime smoke example, not a canonical report schema
+- `pdelie.data.generate_reaction_diffusion_1d_field_batch` for synthetic scalar 1D periodic Fisher-KPP reaction-diffusion under the frozen v0.18 generator regime
+- `pdelie.residuals.ReactionDiffusionResidualEvaluator` for the strong-form residual `u_t - nu*u_xx - rho*u*(1-u) = 0`
+- `pdelie.examples.run_reaction_diffusion_vertical_slice_example` for a runtime smoke example, not a canonical report schema
 - `pdelie.residuals.evaluate_weak_heat_residual` for deterministic window-indexed weak residual report dicts over canonical scalar 1D uniform periodic Heat `FieldBatch` data
 - `pdelie.residuals.evaluate_weak_burgers_residual` for deterministic window-indexed weak residual report dicts over canonical scalar 1D uniform periodic Burgers `FieldBatch` data
 - `pdelie.reporting.summarize_residual_batch` for JSON-compatible runtime summaries of `ResidualBatch` outputs
@@ -277,7 +285,7 @@ Runtime-level public APIs in the frozen V0.17 slice:
 
 The degraded weak-path release wins in `v0.8` are frozen as representative contract-stability signals. They are fallback-backed release checks, not a general weak-superiority claim.
 
-The KdV support retained through `v0.17` is normalized, periodic, scalar, 1D, and short-horizon. Accepted generator parameters outside the release-guaranteed regime are user-risk and are not general KdV stability guarantees.
+The KdV support retained through `v0.18` is normalized, periodic, scalar, 1D, and short-horizon. Accepted generator parameters outside the release-guaranteed regime are user-risk and are not general KdV stability guarantees.
 
 The `v0.10` reporting helpers are supportability APIs. They produce JSON-compatible runtime summaries, not canonical objects, manuscript tables, or artifact schemas.
 
@@ -295,6 +303,8 @@ The `v0.15` orbit-batch helper constructs orbit-expanded data. It does not decid
 
 The `v0.16` candidate-validation work adds detector interop through strict payload validation and empirical reports. `validated` means the configured checks passed under the supplied field, residual evaluator, epsilons, and optional reference; it is not a mathematical proof. Callable descriptors, learned detector training, formula-backed generators, KS promotion, and operator-facing APIs remain deferred.
 
+The `v0.18` reaction-diffusion work adds one stable Fisher-KPP strong path. The stable claim covers the frozen scalar 1D periodic synthetic regime with direct SVD translation-fit evidence. Mean and L2 drift are diagnostic-only because Fisher-KPP reaction terms are not conservation laws.
+
 Explicitly deferred:
 - stable multi-generator PDE fitting
 - multi-generator invariant machinery
@@ -308,6 +318,9 @@ Explicitly deferred:
 - weak KdV APIs
 - custom KdV initial conditions or configurable KdV coefficients
 - general KdV support outside the frozen normalized periodic short-horizon regime
+- advection-diffusion
+- weak reaction-diffusion
+- custom reaction-diffusion initial-condition APIs
 - stable KS data generator, residual evaluator, vertical-slice example, imported parity, weak KS API, or root KS export
 - public orbit-view builders beyond the frozen materialized uniform translation orbit batch helper
 - train/test split management, heldout-leakage detection, or downstream augmentation policy
