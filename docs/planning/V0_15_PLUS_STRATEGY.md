@@ -10,7 +10,7 @@ Stable contracts remain in `docs/specs/API_STABILITY.md` only after APIs land.
 
 After `v0.14`, the highest-ROI path has been to move from read-only invariant diagnostics toward conservative user-facing data utilities, then external symmetry-candidate validation, then formula-backed generator support, then carefully scoped PDE expansion.
 
-After `v0.18`, the next planned path is to add one safe transport PDE, consolidate confidence reporting, harden external-data readiness, and only then consider more difficult axes such as weak forms, broader KdV/KS, multi-generator fitting, broad adapters, multidimensional/nonuniform grids, and time-translation actions.
+After `v0.19`, the next planned path is to consolidate confidence reporting, harden external-data readiness, and only then consider more difficult axes such as weak forms, broader KdV/KS, multi-generator fitting, broad adapters, multidimensional/nonuniform grids, and time-translation actions.
 
 Staged sequence:
 
@@ -18,7 +18,7 @@ Staged sequence:
 - `v0.16`: external symmetry-candidate interop and validation
 - `v0.17`: formula-backed generator families
 - `v0.18`: stable Fisher-KPP reaction-diffusion strong path
-- `v0.19`: planned advection-diffusion strong path
+- `v0.19`: stable advection-diffusion strong path
 - `v0.20`: planned unified generator confidence reports
 - `v0.21`: planned external data readiness reports
 - `v0.22`: planned downstream discovery contracts
@@ -182,15 +182,15 @@ The completed scope freeze belongs in `V0_17_SCOPE.md`.
 
 ---
 
-## V0.18 Completed And V0.19 Planned Advection-Diffusion
+## V0.18 And V0.19 Completed PDE Expansion
 
 `v0.18` completed the first scoped PDE expansion by adding the stable scalar 1D periodic Fisher-KPP reaction-diffusion strong path.
 
-`v0.19` planned theme:
+`v0.19` completed the second scoped PDE expansion:
 
 > add one safe transport-plus-diffusion PDE under the same scalar 1D periodic order-2 derivative regime.
 
-Candidate stable path:
+Completed stable path:
 
 ```text
 canonical scalar 1D periodic FieldBatch
@@ -200,14 +200,14 @@ canonical scalar 1D periodic FieldBatch
 -> vertical-slice example
 ```
 
-Candidate equation:
+Frozen equation:
 
 ```text
 u_t + c*u_x = nu*u_xx
 residual = u_t + c*u_x - nu*u_xx
 ```
 
-Deferred from `v0.19`:
+Deferred after `v0.19`:
 
 - variable coefficients
 - reaction-advection-diffusion
@@ -217,7 +217,7 @@ Deferred from `v0.19`:
 - multidimensional grids
 - nonuniform grids
 
-Like `v0.18`, `v0.19` should stop if direct residual-based fitting evidence is not in tolerance.
+Like `v0.18`, `v0.19` shipped only because direct residual-based fitting evidence was in tolerance.
 
 ---
 

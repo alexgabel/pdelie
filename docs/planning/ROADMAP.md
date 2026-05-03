@@ -453,6 +453,75 @@ The authoritative `v0.12` scope freeze belongs in:
 
 ## Current Completed Release
 
+### `v0.19` - Stable advection-diffusion strong path
+**Status:** Completed
+
+`v0.19` is the completed narrow PDE-expansion release after the `v0.18` Fisher-KPP reaction-diffusion strong-path release.
+
+Its purpose is:
+
+> add one stable scalar 1D periodic constant-coefficient advection-diffusion strong path without broadening grids, adapters, weak-form scope, or generator scope.
+
+Completed release definition:
+
+`canonical scalar 1D periodic FieldBatch -> spectral_fd derivatives -> advection-diffusion residual -> translation fit/verification -> vertical-slice summary/example`
+
+Completed scope:
+
+- `pdelie.data.generate_advection_diffusion_1d_field_batch(...)`
+- `pdelie.residuals.AdvectionDiffusionResidualEvaluator`
+- `pdelie.examples.run_advection_diffusion_vertical_slice_example(...)`
+- frozen advection-diffusion equation tag: `advection_diffusion_constant_coefficient`
+- residual `u_t + c*u_x - nu*u_xx`
+- default parameters `c = 0.75`, `nu = 0.05`
+- exact periodic Fourier synthetic rollout
+- direct-SVD translation fit evidence in the frozen vertical slice
+- compact current `v0_19-release-gate` readiness
+
+Release interpretation:
+
+- this is a scoped synthetic strong-form constant-coefficient advection-diffusion path, not a broad transport-diffusion framework
+- the stable claim is backed by direct SVD translation evidence, not reference fallback
+- mean drift is diagnostic-only in the release report
+- `v0.19.0` is a Git-tag-only release; PyPI and TestPyPI publication are deferred to `v1.0` or later
+
+Explicit non-goals:
+
+- no variable-coefficient advection-diffusion
+- no reaction-advection-diffusion
+- no weak advection-diffusion
+- no public custom initial-condition API
+- no KS runtime promotion
+- no broad dataset adapters
+- no PDEBench or The Well support
+- no multidimensional, multivariable, or nonuniform-grid expansion
+- no time-translation APIs
+- no neural or callable generator API
+- no operator-facing symmetry work
+- no train/test policy or split management
+- no root export expansion
+
+The authoritative `v0.19` scope freeze belongs in:
+
+- `V0_19_SCOPE.md`
+
+### Release Gate for `v0.19`
+
+`v0.19` is complete only if:
+
+- advection-diffusion generator and residual APIs are documented and covered by tests
+- new APIs are importable from their submodules only
+- root `pdelie` remains unchanged
+- the advection-diffusion vertical slice has direct SVD evidence in tolerance
+- the advection-diffusion example emits JSON only using the nested vertical-slice summary shape
+- no public variable-coefficient advection-diffusion, weak advection-diffusion, KS, broad adapter, custom-IC, nonuniform/multidimensional, time-translation, neural/callable, split-policy, or operator API lands
+- CI uses one compact current release gate plus full editable tests and package smoke
+- package/readiness docs preserve the `v1.0` package-index publishing deferral
+
+---
+
+## Recent Completed Release
+
 ### `v0.18` - Stable Fisher-KPP reaction-diffusion strong path
 **Status:** Completed
 
@@ -1004,36 +1073,6 @@ Only `Committed` items define the next release target.
 
 The principle is still one stable axis at a time: do not combine PDE expansion, data-adapter expansion, weak-form expansion, multi-generator machinery, and downstream policy in one release.
 
-### `v0.19` - Stable advection-diffusion strong path
-**Status:** Planned
-
-Preferred next release target once scope is frozen.
-
-Candidate stable path:
-
-`canonical scalar 1D periodic FieldBatch -> spectral_fd u_t/u_x/u_xx -> constant-coefficient advection-diffusion residual -> translation fit/verification -> vertical-slice example`
-
-Candidate equation:
-
-```text
-u_t + c*u_x = nu*u_xx
-residual = u_t + c*u_x - nu*u_xx
-```
-
-Purpose:
-
-- add one transport-plus-diffusion PDE without leaving the scalar 1D periodic order-2 derivative regime
-- test phase-moving fields under the current direct-SVD fitting and verification stack
-
-Deferred from `v0.19`:
-
-- variable coefficients
-- reaction-advection-diffusion
-- weak advection-diffusion
-- nonperiodic boundaries
-- multidimensional or nonuniform grids
-- custom initial-condition public APIs
-
 ### `v0.20` - Unified generator confidence reports
 **Status:** Planned
 
@@ -1323,6 +1362,7 @@ This is not part of the near-term non-operator Paper 1 path and should not be mi
 - `V0_16_SCOPE.md` once frozen
 - `V0_17_SCOPE.md` once frozen
 - `V0_18_SCOPE.md` once frozen
+- `V0_19_SCOPE.md` once frozen
 - `PLAN.md` for current execution only
 
 ### Non-authoritative for scheduling
@@ -1366,7 +1406,7 @@ It should **not** be edited every time a new idea appears.
 - `v0.16` = external symmetry-candidate interop and validation, not detector training
 - `v0.17` = formula-backed generator records and validation, without callables or learned-generator training
 - `v0.18` = stable scalar 1D periodic Fisher-KPP reaction-diffusion strong path
-- `v0.19` = planned stable scalar 1D periodic advection-diffusion strong path
+- `v0.19` = stable scalar 1D periodic constant-coefficient advection-diffusion strong path
 - `v0.20` = planned unified generator confidence reports
 - `v0.21` = planned external data readiness reports
 - `v0.22` = planned downstream discovery contracts and provenance reports

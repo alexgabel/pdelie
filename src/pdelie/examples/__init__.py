@@ -1,4 +1,5 @@
 __all__ = [
+    "run_advection_diffusion_vertical_slice_example",
     "run_heat_vertical_slice_example",
     "run_formula_generator_validation_example",
     "run_invariant_workflow_summary_example",
@@ -8,6 +9,14 @@ __all__ = [
     "run_symmetry_candidate_validation_example",
     "run_translation_orbit_batch_example",
 ]
+
+
+def run_advection_diffusion_vertical_slice_example() -> dict[str, object]:
+    from pdelie.examples.advection_diffusion_vertical_slice import (
+        run_advection_diffusion_vertical_slice_example as _impl,
+    )
+
+    return _impl()
 
 
 def run_formula_generator_validation_example() -> dict[str, object]:

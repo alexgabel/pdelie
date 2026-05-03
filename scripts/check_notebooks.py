@@ -68,8 +68,8 @@ def main() -> None:
                 failures.append(f"{path}: missing '{phrase}'")
         if not any(phrase in text for phrase in REQUIRED_SCOPE_PHRASES):
             failures.append(f"{path}: missing 'Out of scope' or 'Limitations'")
-        if "V0.18" not in text and "v0.18" not in text:
-            failures.append(f"{path}: should mention current V0.18 surface")
+        if "V0.19" not in text and "v0.19" not in text:
+            failures.append(f"{path}: should mention current V0.19 surface")
         for marker in STALE_MARKERS:
             if marker in text:
                 failures.append(f"{path}: stale marker '{marker}'")

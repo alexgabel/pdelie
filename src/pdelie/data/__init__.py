@@ -1,3 +1,4 @@
+from pdelie.data.advection_diffusion_1d import generate_advection_diffusion_1d_field_batch
 from pdelie.data.burgers_1d import generate_burgers_1d_field_batch
 from pdelie.data.heat_1d import (
     evaluate_heat_fourier_series,
@@ -19,6 +20,7 @@ __all__ = [
     "add_gaussian_noise",
     "from_numpy",
     "from_xarray",
+    "generate_advection_diffusion_1d_field_batch",
     "generate_burgers_1d_field_batch",
     "generate_kdv_1d_field_batch",
     "generate_reaction_diffusion_1d_field_batch",

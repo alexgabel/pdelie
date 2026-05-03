@@ -215,6 +215,20 @@ Runtime public API for the frozen `v0.18` Milestone 2/M3/M4 slice:
 - the stable public claim covers the frozen scalar 1D periodic synthetic Fisher-KPP path with direct SVD translation-fit evidence; it does not add advection-diffusion, KS promotion, weak reaction-diffusion, custom initial-condition APIs, broad adapters, multidimensional or nonuniform support, split policy, neural/callable generators, or operator-facing APIs
 - these APIs have no root `pdelie` exports
 
+Runtime public API for the frozen `v0.19` Milestone 2/M3/M4 slice:
+
+- `pdelie.data.generate_advection_diffusion_1d_field_batch` for deterministic synthetic scalar 1D periodic constant-coefficient advection-diffusion fields under the frozen `v0.19` generator regime
+- stable generated fields use `field.metadata["parameter_tags"]["equation"] == "advection_diffusion_constant_coefficient"` and include the frozen `c` / `nu` parameter tags
+- this generator has no public custom initial-condition API in `v0.19`; it emits zero-mean smooth Fourier-mode initial perturbations inside the frozen synthetic regime
+- generated fields use exact periodic Fourier evolution for `u_t + c*u_x = nu*u_xx`
+- `pdelie.residuals.AdvectionDiffusionResidualEvaluator` for strong-form residuals `u_t + c*u_x - nu*u_xx = 0`
+- when derivatives are omitted, the evaluator computes the existing default `compute_spectral_fd_derivatives(field)` order-2 derivative path
+- when derivatives are supplied, they must validate against the field and include `u_t`, `u_x`, and `u_xx`
+- stable inputs must be canonical scalar 1D uniform periodic finite unmasked `FieldBatch` objects with the frozen advection-diffusion equation tag
+- `pdelie.examples.run_advection_diffusion_vertical_slice_example` for a compact JSON-only runtime smoke example that emits the existing nested `summarize_vertical_slice(...)` summary shape
+- the stable public claim covers the frozen scalar 1D periodic synthetic constant-coefficient advection-diffusion path with direct SVD translation-fit evidence; it does not add variable-coefficient advection-diffusion, reaction-advection-diffusion, weak advection-diffusion, custom initial-condition APIs, public KS runtime APIs, broad adapters, multidimensional or nonuniform support, time translation, split policy, neural/callable generators, or operator-facing APIs
+- these APIs have no root `pdelie` exports
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 
