@@ -29,8 +29,8 @@ def _json_safe(value: Any) -> Any:
 def _validate_json_compatible(value: Any, *, name: str) -> Any:
     safe_value = _json_safe(value)
     try:
-        json.dumps(safe_value)
-    except TypeError as exc:
+        json.dumps(safe_value, allow_nan=False)
+    except (TypeError, ValueError) as exc:
         raise SchemaValidationError(f"{name} must be JSON-compatible after reporting conversion.") from exc
     return safe_value
 

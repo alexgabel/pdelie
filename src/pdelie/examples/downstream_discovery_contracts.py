@@ -109,7 +109,7 @@ def run_downstream_discovery_contracts_example() -> dict[str, object]:
 
 
 def main() -> None:
-    print(json.dumps(run_downstream_discovery_contracts_example(), indent=2))
+    print(json.dumps(run_downstream_discovery_contracts_example(), indent=2, allow_nan=False))
 
 
 if __name__ == "__main__":

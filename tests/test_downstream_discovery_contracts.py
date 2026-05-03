@@ -81,6 +81,13 @@ def test_summarize_discovery_bridge_output_rejects_invalid_bridge_payloads() -> 
         summarize_discovery_bridge_output([np.ones((2, 1))], [0.0, 1.0], ["u", "u"])
     with pytest.raises(SchemaValidationError):
         summarize_discovery_bridge_output([np.array([[np.nan]])], [0.0], ["u"])
+    with pytest.raises(SchemaValidationError):
+        summarize_discovery_bridge_output(
+            [np.ones((2, 1))],
+            [0.0, 1.0],
+            ["u"],
+            provenance={"bad": float("nan")},
+        )
 
 
 def test_summarize_discovery_result_compacts_coefficients_and_recovery() -> None:
