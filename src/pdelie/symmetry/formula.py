@@ -332,8 +332,9 @@ class FormulaGeneratorFamily:
 
     @classmethod
     def from_dict(cls, payload: Mapping[str, Any]) -> "FormulaGeneratorFamily":
+        payload_mapping = dict(_mapping(payload, name="FormulaGeneratorFamily payload"))
         _reject_extra_keys(
-            payload,
+            payload_mapping,
             {
                 "schema_version",
                 "parameterization",
@@ -346,14 +347,31 @@ class FormulaGeneratorFamily:
             name="FormulaGeneratorFamily payload",
         )
         try:
+            schema_version = payload_mapping["schema_version"]
+            parameterization = payload_mapping["parameterization"]
+            variables = _sequence(payload_mapping["variables"], name="FormulaGeneratorFamily payload.variables")
+            component_names = _sequence(
+                payload_mapping["component_names"],
+                name="FormulaGeneratorFamily payload.component_names",
+            )
+            formula_generators = _sequence(
+                payload_mapping["formula_generators"],
+                name="FormulaGeneratorFamily payload.formula_generators",
+            )
+            diagnostics = dict(
+                _mapping(
+                    payload_mapping.get("diagnostics", {}),
+                    name="FormulaGeneratorFamily payload.diagnostics",
+                )
+            )
             return cls(
-                schema_version=str(payload["schema_version"]),
-                parameterization=str(payload["parameterization"]),
-                variables=tuple(payload["variables"]),
-                component_names=tuple(payload["component_names"]),
-                formula_generators=list(payload["formula_generators"]),
-                finite_transform_spec=payload.get("finite_transform_spec"),
-                diagnostics=dict(payload.get("diagnostics", {})),
+                schema_version=str(schema_version),
+                parameterization=str(parameterization),
+                variables=tuple(variables),
+                component_names=tuple(component_names),
+                formula_generators=list(formula_generators),
+                finite_transform_spec=payload_mapping.get("finite_transform_spec"),
+                diagnostics=diagnostics,
             )
         except KeyError as exc:
             raise SchemaValidationError("FormulaGeneratorFamily payload is malformed.") from exc

@@ -389,6 +389,18 @@ def test_validate_symmetry_candidate_rejects_malformed_payloads_with_typed_error
         )
 
 
+@pytest.mark.parametrize("field_name", ["variables", "component_names", "formula_generators", "diagnostics"])
+def test_validate_symmetry_candidate_rejects_malformed_formula_payload_container_fields(
+    field_name: str,
+) -> None:
+    field = generate_heat_1d_field_batch(batch_size=3, num_times=9, num_points=32, seed=1612)
+    payload = _formula_translation().to_dict()
+    payload[field_name] = None
+
+    with pytest.raises(SchemaValidationError, match="FormulaGeneratorFamily payload"):
+        validate_symmetry_candidate(field, payload, residual_evaluator=HeatResidualEvaluator())
+
+
 def test_validate_symmetry_candidate_rejects_bad_evaluator_epsilons_reference_and_scope() -> None:
     field = generate_heat_1d_field_batch(batch_size=3, num_times=9, num_points=32, seed=1611)
 

@@ -75,6 +75,26 @@ def test_formula_generator_family_round_trips_json_payload() -> None:
     assert restored.component_names == ("tau", "xi", "phi")
 
 
+@pytest.mark.parametrize(
+    ("field_name", "match"),
+    [
+        ("variables", "payload.variables"),
+        ("component_names", "payload.component_names"),
+        ("formula_generators", "payload.formula_generators"),
+        ("diagnostics", "payload.diagnostics"),
+    ],
+)
+def test_formula_generator_family_from_dict_rejects_malformed_container_fields(
+    field_name: str,
+    match: str,
+) -> None:
+    payload = _formula_generator().to_dict()
+    payload[field_name] = None
+
+    with pytest.raises(SchemaValidationError, match=match):
+        FormulaGeneratorFamily.from_dict(payload)
+
+
 def test_summarize_formula_generator_family_returns_json_summary_without_mutation() -> None:
     formula = FormulaGeneratorFamily(
         formula_generators=[
