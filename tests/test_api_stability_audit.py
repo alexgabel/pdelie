@@ -44,6 +44,7 @@ _ROOT_RUNTIME_NAMES = {
     "run_heat_vertical_slice_example",
     "run_advection_diffusion_vertical_slice_example",
     "run_formula_generator_validation_example",
+    "run_generator_confidence_report_example",
     "run_kdv_vertical_slice_example",
     "run_orbit_coverage_diagnostics_example",
     "run_reaction_diffusion_vertical_slice_example",
@@ -55,6 +56,7 @@ _ROOT_RUNTIME_NAMES = {
     "subsample_x",
     "summarize_generator_fit_diagnostics",
     "summarize_formula_generator_family",
+    "summarize_generator_confidence",
     "summarize_generator_family",
     "summarize_invariant_workflow",
     "summarize_recovery_grid",
@@ -98,6 +100,7 @@ _DEFERRED_OR_PRIVATE_NAMES = {
     "materialize_uniform_translation_orbit",
     "sample_kdv_mode_coefficients",
     "split_orbit_train_heldout",
+    "summarize_generator_confidence_score",
     "summarize_orbit_coverage",
     "summarize_orbit_coverage_feasibility",
     "train_test_translation_orbit_split",
@@ -114,6 +117,7 @@ _DEFERRED_API_STABILITY_NAMES = {
     "pdelie.data.generate_variable_coefficient_advection_diffusion_1d_field_batch",
     "pdelie.data.load_pdebench",
     "pdelie.data.load_the_well",
+    "pdelie.reporting.summarize_generator_confidence_score",
     "pdelie.reporting.summarize_orbit_coverage",
     "pdelie.reporting.summarize_orbit_coverage_feasibility",
     "pdelie.residuals.KSResidualEvaluator",
@@ -182,6 +186,11 @@ _V0_19_ADVECTION_DIFFUSION_APIS = {
     "pdelie.examples.run_advection_diffusion_vertical_slice_example",
     "advection_diffusion_constant_coefficient",
 }
+_V0_20_CONFIDENCE_REPORTING_APIS = {
+    "pdelie.reporting.summarize_generator_confidence",
+    "summary_type = \"generator_confidence\"",
+    "confidence_label",
+}
 
 
 def _api_stability_text() -> str:
@@ -208,6 +217,7 @@ def test_api_stability_doc_covers_current_stable_runtime_surface() -> None:
         | _V0_17_FORMULA_GENERATOR_APIS
         | _V0_18_REACTION_DIFFUSION_APIS
         | _V0_19_ADVECTION_DIFFUSION_APIS
+        | _V0_20_CONFIDENCE_REPORTING_APIS
     ):
         assert api_name in text
 
@@ -268,6 +278,7 @@ def test_required_runtime_submodule_apis_remain_importable() -> None:
         },
         "pdelie.examples": {
             "run_formula_generator_validation_example",
+            "run_generator_confidence_report_example",
             "run_advection_diffusion_vertical_slice_example",
             "run_heat_vertical_slice_example",
             "run_invariant_workflow_summary_example",
@@ -292,6 +303,7 @@ def test_required_runtime_submodule_apis_remain_importable() -> None:
         },
         "pdelie.reporting": {
             "summarize_formula_generator_family",
+            "summarize_generator_confidence",
             "summarize_generator_fit_diagnostics",
             "summarize_generator_family",
             "summarize_invariant_workflow",
@@ -350,35 +362,34 @@ def test_deferred_and_private_names_are_not_public_submodule_exports() -> None:
             assert not hasattr(module, name), f"{module.__name__}.{name}"
 
 
-def test_v0_19_planning_docs_record_advection_diffusion_and_non_goals() -> None:
+def test_v0_20_planning_docs_record_confidence_reporting_and_non_goals() -> None:
     plan = _repo_text("docs/planning/PLAN.md")
-    scope = _repo_text("docs/planning/V0_19_SCOPE.md")
+    scope = _repo_text("docs/planning/V0_20_SCOPE.md")
     roadmap = _repo_text("docs/planning/ROADMAP.md")
 
     assert "**Status:** COMPLETE" in plan
-    assert "Milestone 2 - Synthetic Data Generator" in plan
-    assert "Milestone 3 - Residual Evaluator" in plan
-    assert "pdelie.data.generate_advection_diffusion_1d_field_batch" in plan
-    assert "pdelie.residuals.AdvectionDiffusionResidualEvaluator" in plan
-    assert "advection_diffusion_constant_coefficient" in plan
-    assert "direct_svd_in_tolerance" in plan
-    assert "No fallback-backed advection-diffusion claim landed" in plan
+    assert "Milestone 2 - Reporting Helper" in plan
+    assert "Milestone 3 - Examples And Notebook Alignment" in plan
+    assert "pdelie.reporting.summarize_generator_confidence" in plan
+    assert "pdelie.examples.run_generator_confidence_report_example" in plan
+    assert "no scalar score ships in `v0.20`" in plan
+    assert "insufficient_evidence" in plan
     assert "## Milestone 5 - API / Public-surface Audit" in plan
     assert "## Milestone 6 - Release Gate And Readiness" in plan
-    assert "updated CI so the current explicit release gate is `v0_19-release-gate`" in plan
+    assert "updated CI so the current explicit release gate is `v0_20-release-gate`" in plan
     assert "- Milestone 6: COMPLETE" in plan
 
-    assert "Stable Advection-Diffusion Strong Path" in scope
-    assert "pdelie.data.generate_advection_diffusion_1d_field_batch" in scope
-    assert "pdelie.residuals.AdvectionDiffusionResidualEvaluator" in scope
-    assert "pdelie.examples.run_advection_diffusion_vertical_slice_example" in scope
-    assert "direct_svd_in_tolerance" in scope
-    assert "weak advection-diffusion" in scope
-    assert "neural or callable generator APIs" in scope
+    assert "Unified Generator Confidence Reports" in scope
+    assert "pdelie.reporting.summarize_generator_confidence" in scope
+    assert "pdelie.examples.run_generator_confidence_report_example" in scope
+    assert "strong" in scope
+    assert "qualified" in scope
+    assert "scalar confidence score" in scope
+    assert "train/test split policy" in scope
     assert "- Milestone 4: COMPLETE" in scope
     assert "- Milestone 5: COMPLETE" in scope
     assert "- Milestone 6: COMPLETE" in scope
 
-    assert "`v0.19` is the completed narrow PDE-expansion release" in roadmap
-    assert "stable scalar 1D periodic constant-coefficient advection-diffusion strong path" in roadmap
-    assert "- no variable-coefficient advection-diffusion" in roadmap
+    assert "`v0.20` is the completed reporting/supportability release" in roadmap
+    assert "unified generator confidence reports" in roadmap
+    assert "- no scalar confidence score" in roadmap

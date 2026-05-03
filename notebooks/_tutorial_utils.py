@@ -44,7 +44,12 @@ def confidence_card(
     consistency: Mapping[str, Any] | None = None,
     validation: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Collect the tutorial's recurring generator-confidence diagnostics."""
+    """Collect a compact display card from public runtime summaries.
+
+    The package-level confidence report API is
+    ``pdelie.reporting.summarize_generator_confidence``. This notebook helper
+    remains display glue for concise tables.
+    """
     card: dict[str, Any] = {"label": label}
 
     if residual is not None:

@@ -1,5 +1,6 @@
 from pdelie.reporting.summaries import (
     summarize_formula_generator_family,
+    summarize_generator_confidence,
     summarize_generator_fit_diagnostics,
     summarize_generator_family,
     summarize_invariant_workflow,
@@ -11,6 +12,7 @@ from pdelie.reporting.summaries import (
 
 __all__ = [
     "summarize_formula_generator_family",
+    "summarize_generator_confidence",
     "summarize_generator_fit_diagnostics",
     "summarize_generator_family",
     "summarize_invariant_workflow",

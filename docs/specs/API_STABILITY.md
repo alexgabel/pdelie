@@ -229,6 +229,19 @@ Runtime public API for the frozen `v0.19` Milestone 2/M3/M4 slice:
 - the stable public claim covers the frozen scalar 1D periodic synthetic constant-coefficient advection-diffusion path with direct SVD translation-fit evidence; it does not add variable-coefficient advection-diffusion, reaction-advection-diffusion, weak advection-diffusion, custom initial-condition APIs, public KS runtime APIs, broad adapters, multidimensional or nonuniform support, time translation, split policy, neural/callable generators, or operator-facing APIs
 - these APIs have no root `pdelie` exports
 
+Runtime public API for the frozen `v0.20` Milestone 2/M3 slice:
+
+- `pdelie.reporting.summarize_generator_confidence` for JSON-compatible runtime confidence reports that combine residual, generator, fit-diagnostic, verification, candidate-validation, coverage, consistency, orbit, threshold, and extra-metric evidence
+- reports use `summary_type = "generator_confidence"` and `summary_schema_version = "0.1"`
+- confidence reports expose categorical `confidence_label` values: `strong`, `qualified`, `failed`, and `insufficient_evidence`
+- component statuses are `passed`, `warning`, `failed`, `not_configured`, or `unavailable`
+- confidence is empirical configured evidence, not a mathematical proof, benchmark policy, train/test policy, or scalar confidence score
+- the helper accepts canonical `ResidualBatch`, `GeneratorFamily`, and `VerificationReport` objects where available, plus existing runtime summary mappings for the supported evidence sections
+- `pdelie.examples.run_generator_confidence_report_example` for a compact JSON-only runtime smoke example demonstrating one strong direct-SVD case and one qualified partial-validation case
+- this API does not return transformed `FieldBatch` collections, augmented datasets, canonical artifacts, manuscript tables, downstream success policies, scalar scores, train/test split decisions, or heldout-leakage decisions
+- this API does not add new PDEs, public KS runtime APIs, weak-form expansion, broad adapters, time translation, split policy, neural/callable generators, or operator-facing APIs
+- these APIs have no root `pdelie` exports
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 

@@ -10,7 +10,7 @@ Stable contracts remain in `docs/specs/API_STABILITY.md` only after APIs land.
 
 After `v0.14`, the highest-ROI path has been to move from read-only invariant diagnostics toward conservative user-facing data utilities, then external symmetry-candidate validation, then formula-backed generator support, then carefully scoped PDE expansion.
 
-After `v0.19`, the next planned path is to consolidate confidence reporting, harden external-data readiness, and only then consider more difficult axes such as weak forms, broader KdV/KS, multi-generator fitting, broad adapters, multidimensional/nonuniform grids, and time-translation actions.
+After `v0.20`, the next planned path is to harden external-data readiness, downstream discovery contracts, and split/leakage provenance before considering more difficult axes such as weak forms, broader KdV/KS, multi-generator fitting, broad adapters, multidimensional/nonuniform grids, and time-translation actions.
 
 Staged sequence:
 
@@ -19,7 +19,7 @@ Staged sequence:
 - `v0.17`: formula-backed generator families
 - `v0.18`: stable Fisher-KPP reaction-diffusion strong path
 - `v0.19`: stable advection-diffusion strong path
-- `v0.20`: planned unified generator confidence reports
+- `v0.20`: unified generator confidence reports
 - `v0.21`: planned external data readiness reports
 - `v0.22`: planned downstream discovery contracts
 - `v0.23`: planned split/leakage provenance diagnostics
@@ -223,11 +223,11 @@ Like `v0.18`, `v0.19` shipped only because direct residual-based fitting evidenc
 
 ## V0.20 - Unified Generator Confidence Reports
 
-Planned theme:
+Completed theme:
 
 > promote the notebook confidence-card pattern into a public supportability/reporting helper.
 
-Candidate scope:
+Implemented scope:
 
 - residual health summaries
 - fit conditioning and singular-value summaries
@@ -236,6 +236,7 @@ Candidate scope:
 - candidate-validation conclusions
 - orbit/coverage/consistency diagnostics
 - configured threshold interpretation
+- categorical confidence labels and component statuses
 
 Explicit boundaries:
 
@@ -243,6 +244,7 @@ Explicit boundaries:
 - no train/test policy
 - no downstream success policy
 - no mathematical-proof claim
+- no scalar confidence score
 
 ---
 

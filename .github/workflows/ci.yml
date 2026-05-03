@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  v0_19-release-gate:
+  v0_20-release-gate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -32,8 +32,8 @@ jobs:
           retry 3 python -m pip install -e .[test]
       - name: Check dependencies
         run: python -m pip check
-      - name: Run V0.19 release gate
-        run: python -m pytest tests/test_v0_19_release_gate.py
+      - name: Run V0.20 release gate
+        run: python -m pytest tests/test_v0_20_release_gate.py
   editable-tests:
     runs-on: ubuntu-latest
     steps:
@@ -74,6 +74,7 @@ jobs:
           python -m pdelie.examples.translation_orbit_batch
           python -m pdelie.examples.symmetry_candidate_validation
           python -m pdelie.examples.formula_generator_validation
+          python -m pdelie.examples.generator_confidence_report
   package-smoke:
     runs-on: ubuntu-latest
     steps:
@@ -145,6 +146,7 @@ jobs:
           )
           from pdelie.reporting import (
               summarize_formula_generator_family,
+              summarize_generator_confidence,
               summarize_generator_fit_diagnostics,
               summarize_generator_family,
               summarize_invariant_workflow,
@@ -168,6 +170,7 @@ jobs:
           assert diagnose_uniform_translation_consistency is not None
           assert summarize_uniform_translation_orbit is not None
           assert summarize_generator_fit_diagnostics is not None
+          assert summarize_generator_confidence is not None
           assert summarize_formula_generator_family is not None
           assert summarize_generator_family is not None
           assert summarize_invariant_workflow is not None

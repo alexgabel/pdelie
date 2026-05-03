@@ -2,7 +2,7 @@
 
 Numerical discovery and verification of Lie symmetries for PDE data.
 
-The current repository implements the frozen V0.19 advection-diffusion strong-path slice for the existing Heat/Burgers/weak-report/KdV/Fisher-KPP engine:
+The current repository implements the frozen V0.20 unified generator confidence reporting slice for the existing Heat/Burgers/weak-report/KdV/Fisher-KPP/advection-diffusion engine:
 
 - synthetic 1D heat equation
 - synthetic 1D Burgers equation
@@ -27,8 +27,10 @@ The current repository implements the frozen V0.19 advection-diffusion strong-pa
 - runtime-only formula-backed generator records under `pdelie.symmetry.FormulaGeneratorFamily`
 - formula generator summaries under `pdelie.reporting.summarize_formula_generator_family`
 - formula-backed candidate validation through `candidate_kind = "formula_generator_family"`
+- unified generator confidence reports under `pdelie.reporting.summarize_generator_confidence`
 - reaction-diffusion vertical-slice example under `pdelie.examples.run_reaction_diffusion_vertical_slice_example`
 - advection-diffusion vertical-slice example under `pdelie.examples.run_advection_diffusion_vertical_slice_example`
+- generator-confidence example under `pdelie.examples.run_generator_confidence_report_example`
 - `FieldBatch -> DerivativeBatch -> ResidualBatch -> GeneratorFamily -> InvariantMapSpec -> VerificationReport`
 - one stable derivative backend: `spectral_fd`
 - family-shaped `GeneratorFamily` with explicit `basis_spec`
@@ -43,7 +45,7 @@ The current repository implements the frozen V0.19 advection-diffusion strong-pa
 - one runtime-only thin PySINDy discovery adapter under `pdelie.discovery`
 - one runtime-only translation-canonical discovery-input helper under `pdelie.discovery`
 - one runtime-only robustness helper layer under `pdelie.data`
-- one compact current `v0_19-release-gate` CI job plus full editable tests and package smoke
+- one compact current `v0_20-release-gate` CI job plus full editable tests and package smoke
 
 ## Setup
 
@@ -92,7 +94,7 @@ python -m pytest
 
 ## Tutorial Notebooks
 
-The repository includes exploratory notebooks under `notebooks/` for the shipped symmetry/discovery runtime surface retained through `v0.19`:
+The repository includes exploratory notebooks under `notebooks/` for the shipped symmetry/discovery runtime surface retained through `v0.20`:
 
 - `00_pde_timeseries_to_generators.ipynb`
 - `01_raw_vs_translation_canonical_discovery.ipynb`
@@ -130,6 +132,7 @@ python -m pdelie.examples.invariant_workflow_summary
 python -m pdelie.examples.translation_orbit_batch
 python -m pdelie.examples.symmetry_candidate_validation
 python -m pdelie.examples.formula_generator_validation
+python -m pdelie.examples.generator_confidence_report
 ```
 
 Those commands are validated in CI after editable install.
@@ -186,6 +189,13 @@ The formula generator validation example demonstrates:
 3. a formula candidate with a supported uniform-translation finite-transform spec
 4. a failed denominator-floor case for contrast
 
+The generator confidence report example demonstrates:
+
+1. one `strong` direct-SVD Heat case with configured residual and verification thresholds
+2. one `qualified` formula-backed candidate with partial empirical validation
+3. categorical confidence labels and component statuses
+4. no scalar confidence score, train/test policy, or proof claim
+
 You can also call the examples programmatically.
 They return JSON-compatible runtime summaries, not canonical artifact schemas.
 The Heat and KdV examples return nested `vertical_slice` summaries; the invariant examples return diagnostic/workflow summaries:
@@ -194,6 +204,7 @@ The Heat and KdV examples return nested `vertical_slice` summaries; the invarian
 from pdelie.examples import (
     run_heat_vertical_slice_example,
     run_formula_generator_validation_example,
+    run_generator_confidence_report_example,
     run_invariant_workflow_summary_example,
     run_kdv_vertical_slice_example,
     run_orbit_coverage_diagnostics_example,
@@ -218,6 +229,9 @@ print(candidate_validation["cases"][0]["report"]["conclusion"])
 
 formula_validation = run_formula_generator_validation_example()
 print(formula_validation["cases"][0]["report"]["candidate_kind"])
+
+confidence = run_generator_confidence_report_example()
+print(confidence["cases"][0]["confidence"]["confidence_label"])
 ```
 
 ## Current Scope
@@ -248,8 +262,9 @@ Included in the current stable core:
 - formula-backed generator support in `v0.17` adds safe runtime formula records, reporting, and empirical validation; it does not parse executable strings, accept callables, train learned generators, or change canonical polynomial `GeneratorFamily`
 - Fisher-KPP reaction-diffusion support in `v0.18` adds one scoped scalar 1D periodic strong path with direct SVD translation-fit evidence; it does not add advection-diffusion, KS promotion, weak reaction-diffusion, custom initial-condition APIs, or broader grid support
 - advection-diffusion support in `v0.19` adds one scoped scalar 1D periodic constant-coefficient strong path with direct SVD translation-fit evidence; it does not add variable coefficients, weak advection-diffusion, reaction-advection-diffusion, custom initial-condition APIs, time translation, or broader grid support
+- confidence reporting in `v0.20` adds categorical generator-confidence reports; it does not add scalar scores, proof claims, benchmark success policy, train/test policy, or downstream leakage policy
 
-Runtime-level public APIs in the frozen V0.19 slice:
+Runtime-level public APIs in the frozen V0.20 slice:
 
 - `pdelie.data.from_numpy` for strict runtime conversion of explicit NumPy/array-like 1D uniform rectilinear trajectory data into canonical `FieldBatch`
 - `pdelie.data.from_xarray` for strict runtime conversion of explicit `xarray.DataArray` 1D uniform rectilinear trajectory data into canonical `FieldBatch` when the optional `xarray` dependency is installed
@@ -286,6 +301,8 @@ Runtime-level public APIs in the frozen V0.19 slice:
 - `pdelie.symmetry.FormulaGeneratorFamily` for runtime-only formula-backed scalar 1D Lie-point generator records
 - `pdelie.reporting.summarize_formula_generator_family` for JSON-compatible runtime summaries of formula-backed generator records
 - `pdelie.examples.run_formula_generator_validation_example` for a runtime smoke example of formula-backed candidate validation, not a canonical report schema
+- `pdelie.reporting.summarize_generator_confidence` for JSON-compatible categorical confidence reports over residual, fit, verification, candidate-validation, coverage, consistency, and orbit evidence
+- `pdelie.examples.run_generator_confidence_report_example` for a runtime smoke example of unified generator confidence reporting, not a canonical report schema
 - `pdelie.discovery.to_pysindy_trajectories` for the narrow backend-specific PySINDy bridge
 - `pdelie.discovery.evaluate_discovery_recovery` for runtime-only support/coefficient recovery metrics over caller-supplied canonical term strings
 - `pdelie.discovery.fit_pysindy_discovery` for a runtime-only backend-native PySINDy fit adapter
@@ -302,7 +319,7 @@ Runtime-level public APIs in the frozen V0.19 slice:
 
 The degraded weak-path release wins in `v0.8` are frozen as representative contract-stability signals. They are fallback-backed release checks, not a general weak-superiority claim.
 
-The KdV support retained through `v0.19` is normalized, periodic, scalar, 1D, and short-horizon. Accepted generator parameters outside the release-guaranteed regime are user-risk and are not general KdV stability guarantees.
+The KdV support retained through `v0.20` is normalized, periodic, scalar, 1D, and short-horizon. Accepted generator parameters outside the release-guaranteed regime are user-risk and are not general KdV stability guarantees.
 
 The `v0.10` reporting helpers are supportability APIs. They produce JSON-compatible runtime summaries, not canonical objects, manuscript tables, or artifact schemas.
 
@@ -325,6 +342,8 @@ The `v0.17` formula-generator work adds safe formula-backed runtime records and 
 The `v0.18` reaction-diffusion work adds one stable Fisher-KPP strong path. The stable claim covers the frozen scalar 1D periodic synthetic regime with direct SVD translation-fit evidence. Mean and L2 drift are diagnostic-only because Fisher-KPP reaction terms are not conservation laws.
 
 The `v0.19` advection-diffusion work adds one stable constant-coefficient strong path. The stable claim covers the frozen scalar 1D periodic synthetic regime with exact Fourier rollout and direct SVD translation-fit evidence. Variable coefficients, weak advection-diffusion, and custom initial-condition APIs remain deferred.
+
+The `v0.20` confidence-reporting work adds one categorical supportability helper. The stable claim covers JSON-compatible evidence composition only. It does not define a scalar confidence score, proof system, benchmark success policy, train/test policy, or leakage-safety policy.
 
 Explicitly deferred:
 - stable multi-generator PDE fitting

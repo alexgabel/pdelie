@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.20.0
+
+First final release for the frozen V0.20 unified generator confidence report slice.
+
+- adds `pdelie.reporting.summarize_generator_confidence(...)` for JSON-compatible categorical confidence reports over residual, generator, fit-diagnostic, verification, candidate-validation, coverage, consistency, orbit, threshold, and extra-metric evidence
+- adds `python -m pdelie.examples.generator_confidence_report` and `pdelie.examples.run_generator_confidence_report_example(...)` as JSON-only runtime smoke examples
+- freezes `summary_type == "generator_confidence"` with categorical labels `strong`, `qualified`, `failed`, and `insufficient_evidence`
+- freezes component statuses `passed`, `warning`, `failed`, `not_configured`, and `unavailable`
+- supports caller-configured thresholds for residual max/RMS, verification first/max error, and coverage fraction
+- demonstrates one strong direct-SVD Heat case and one qualified partial formula-candidate validation case
+- documents the new helper in `API_STABILITY.md` as a submodule-only runtime API with no root export
+- preserves existing Heat/Burgers strong paths, weak residual reports, normalized periodic KdV, Fisher-KPP reaction-diffusion, advection-diffusion, reporting helpers, invariant/orbit diagnostics, orbit batches, candidate validation, and formula-backed generator support
+
+Explicitly deferred for this final release:
+
+- scalar confidence scores
+- benchmark success policy
+- train/test split policy or heldout-leakage policy
+- transformed `FieldBatch` collections from reporting helpers
+- canonical confidence objects
+- new PDE support
+- KS runtime promotion
+- weak-form expansion
+- broad dataset adapters such as PDEBench or The Well
+- multidimensional, multivariable, or nonuniform-grid support
+- time-translation APIs
+- neural or callable generator APIs
+- operator-facing APIs
+- PyPI and TestPyPI publication; package-index publishing is deferred to `v1.0` or later
+
 ## 0.19.0
 
 First final release for the frozen V0.19 constant-coefficient advection-diffusion strong path.
