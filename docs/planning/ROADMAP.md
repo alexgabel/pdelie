@@ -453,6 +453,76 @@ The authoritative `v0.12` scope freeze belongs in:
 
 ## Current Completed Release
 
+### `v0.23` - Split/leakage provenance diagnostics
+**Status:** Completed
+
+`v0.23` is the completed split/leakage provenance diagnostics release after the `v0.22` downstream discovery contracts release.
+
+Its purpose is:
+
+> report provenance risks across user-supplied train/heldout partitions, especially after materialized uniform-translation orbit batches.
+
+Completed release definition:
+
+`user-supplied partition labels + FieldBatch/orbit-batch provenance -> JSON-compatible split provenance report -> leakage-risk diagnostics -> optional downstream workflow summary integration`
+
+Completed scope:
+
+- `pdelie.reporting.summarize_split_leakage_provenance(...)`
+- `pdelie.reporting.summarize_downstream_discovery_workflow(..., split_provenance=None)`
+- `pdelie.examples.run_split_leakage_provenance_example(...)`
+- frozen report type: `split_leakage_provenance`
+- frozen risk labels: `no_detected_overlap`, `traceable_overlap`, `missing_provenance`, and `inconclusive`
+- source overlap, source-and-shift overlap, identity-shift overlap, and partition-pair diagnostics
+- strict JSON-compatible optional source/sample metadata
+- compact current `v0_23-release-gate` readiness
+
+Release interpretation:
+
+- this is a runtime provenance diagnostics release, not a split-policy release
+- leakage means detectable provenance overlap under available metadata, not a proof of experimental invalidity
+- `v0.23.0` is a Git-tag-only release; PyPI and TestPyPI publication are deferred to `v1.0` or later
+
+Explicit non-goals:
+
+- no split management or leakage prevention
+- no automatic split creation
+- no downstream augmentation policy
+- no benchmark success criteria
+- no file loaders or `xarray.Dataset` support
+- no PDEBench or The Well adapters
+- no multidimensional or nonuniform-grid stable support
+- no new PDEs
+- no KS runtime promotion
+- no weak-form expansion
+- no time-translation APIs
+- no neural or callable generator API
+- no operator-facing symmetry work
+- no root export expansion
+
+The authoritative `v0.23` scope freeze belongs in:
+
+- `V0_23_SCOPE.md`
+
+### Release Gate for `v0.23`
+
+`v0.23` is complete only if:
+
+- partition labels are user supplied and validated as non-empty strings
+- partition/sample count mismatches raise typed validation errors
+- optional metadata is strict JSON-compatible
+- no-overlap, source-overlap, source-and-shift-overlap, identity-shift-overlap, missing-provenance, and partial-provenance cases are tested
+- downstream workflow summaries nest split provenance without adding split policy
+- new APIs are importable from their submodules only
+- root `pdelie` remains unchanged
+- no split manager, leakage-prevention helper, file loader, Dataset adapter, broad backend framework, new PDE, KS runtime API, weak-form expansion, time-translation, neural/callable, or operator API lands
+- CI uses one compact current release gate plus full editable tests and package smoke
+- package/readiness docs preserve the `v1.0` package-index publishing deferral
+
+---
+
+## Recent Completed Release
+
 ### `v0.22` - Downstream discovery contracts
 **Status:** Completed
 
@@ -477,7 +547,7 @@ Completed scope:
 - compact coefficient summaries without copying full coefficient matrices
 - optional feature-keyed recovery summaries via `evaluate_discovery_recovery(...)`
 - orbit-batch provenance traceability checks without split/leakage policy
-- compact current `v0_22-release-gate` readiness
+- compact `v0_22-release-gate` readiness
 
 Release interpretation:
 
@@ -1281,48 +1351,6 @@ Only `Committed` items define the next release target.
 
 The principle is still one stable axis at a time: do not combine PDE expansion, data-adapter expansion, weak-form expansion, multi-generator machinery, and downstream policy in one release.
 
-### `v0.22` - Downstream discovery contracts
-**Status:** Planned
-
-Purpose:
-
-> turn the narrow downstream discovery path into clearer, backend-neutral runtime contracts and reports.
-
-Candidate scope:
-
-- broad downstream discovery contracts for runtime reports
-- standardized recovery and provenance summaries
-- bridge-output summaries for backend-native arrays and labels
-- orbit-materialization provenance checks for downstream inputs
-- paper-agnostic downstream evaluation templates
-
-Deferred:
-
-- general discovery-backend framework
-- manuscript thresholds
-- backend lock-in beyond thin adapters
-- automatic experiment policy
-
-### `v0.23` - Split/leakage provenance diagnostics
-**Status:** Planned
-
-Purpose:
-
-> reduce misuse risk now that materialized orbit batches are public data utilities.
-
-Candidate scope:
-
-- diagnostics over user-supplied train/heldout partitions
-- source/shift provenance overlap reports
-- heldout-leakage risk reports for orbit-materialized data
-
-Explicit boundary:
-
-- no train/test split management
-- no automatic split generation
-- no downstream augmentation policy
-- no benchmark success criteria
-
 ### `v0.24` - Weak-form supportability reset
 **Status:** Planned
 
@@ -1529,6 +1557,10 @@ This is not part of the near-term non-operator Paper 1 path and should not be mi
 - `V0_17_SCOPE.md` once frozen
 - `V0_18_SCOPE.md` once frozen
 - `V0_19_SCOPE.md` once frozen
+- `V0_20_SCOPE.md` once frozen
+- `V0_21_SCOPE.md` once frozen
+- `V0_22_SCOPE.md` once frozen
+- `V0_23_SCOPE.md` once frozen
 - `PLAN.md` for current execution only
 
 ### Non-authoritative for scheduling
@@ -1576,7 +1608,7 @@ It should **not** be edited every time a new idea appears.
 - `v0.20` = unified generator confidence reports
 - `v0.21` = external data readiness reports
 - `v0.22` = downstream discovery contracts and provenance reports
-- `v0.23` = planned split/leakage provenance diagnostics, not split management
+- `v0.23` = split/leakage provenance diagnostics, not split management or leakage prevention
 - `v0.24` = planned weak-form supportability reset
 - `v0.25` = planned KdV scope decision
 - `v0.26` = planned KS revisit

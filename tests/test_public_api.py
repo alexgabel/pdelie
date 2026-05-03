@@ -78,6 +78,7 @@ def test_runtime_package_api_is_importable() -> None:
         summarize_generator_family,
         summarize_invariant_workflow,
         summarize_residual_batch,
+        summarize_split_leakage_provenance,
         summarize_verification_report,
         summarize_vertical_slice,
         summarize_weak_residual_report,
@@ -126,6 +127,7 @@ def test_runtime_package_api_is_importable() -> None:
     assert summarize_generator_family is not None
     assert summarize_invariant_workflow is not None
     assert summarize_residual_batch is not None
+    assert summarize_split_leakage_provenance is not None
     assert summarize_verification_report is not None
     assert summarize_vertical_slice is not None
     assert summarize_weak_residual_report is not None
@@ -192,9 +194,11 @@ def test_root_package_does_not_export_runtime_invariant_applier() -> None:
     assert not hasattr(pdelie, "summarize_formula_generator_family")
     assert not hasattr(pdelie, "summarize_generator_family")
     assert not hasattr(pdelie, "summarize_invariant_workflow")
+    assert not hasattr(pdelie, "summarize_leakage_prevention")
     assert not hasattr(pdelie, "summarize_orbit_coverage")
     assert not hasattr(pdelie, "summarize_orbit_coverage_feasibility")
     assert not hasattr(pdelie, "summarize_residual_batch")
+    assert not hasattr(pdelie, "summarize_split_leakage_provenance")
     assert not hasattr(pdelie, "summarize_verification_report")
     assert not hasattr(pdelie, "summarize_vertical_slice")
     assert not hasattr(pdelie, "summarize_weak_residual_report")
@@ -214,6 +218,7 @@ def test_root_package_does_not_export_runtime_invariant_applier() -> None:
     assert not hasattr(pdelie, "AdvectionDiffusionResidualEvaluator")
     assert not hasattr(pdelie, "materialize_uniform_translation_orbit")
     assert not hasattr(pdelie, "split_orbit_train_heldout")
+    assert not hasattr(pdelie, "split_leakage_enforcer")
     assert not hasattr(pdelie, "train_test_translation_orbit_split")
     assert not hasattr(pdelie, "WeakKSResidualEvaluator")
     assert not hasattr(pdelie, "WeakReactionDiffusionResidualEvaluator")
@@ -227,6 +232,7 @@ def test_root_package_does_not_export_runtime_invariant_applier() -> None:
     assert not hasattr(pdelie, "run_kdv_vertical_slice_example")
     assert not hasattr(pdelie, "run_orbit_coverage_diagnostics_example")
     assert not hasattr(pdelie, "run_reaction_diffusion_vertical_slice_example")
+    assert not hasattr(pdelie, "run_split_leakage_provenance_example")
     assert not hasattr(pdelie, "run_advection_diffusion_vertical_slice_example")
     assert not hasattr(pdelie, "run_symmetry_candidate_validation_example")
     assert not hasattr(pdelie, "run_translation_orbit_batch_example")
@@ -326,7 +332,9 @@ def test_reporting_package_runtime_api_matches_frozen_m2_surface() -> None:
     assert hasattr(reporting_module, "summarize_invariant_workflow")
     assert not hasattr(reporting_module, "summarize_orbit_coverage")
     assert not hasattr(reporting_module, "summarize_orbit_coverage_feasibility")
+    assert not hasattr(reporting_module, "summarize_leakage_prevention")
     assert hasattr(reporting_module, "summarize_residual_batch")
+    assert hasattr(reporting_module, "summarize_split_leakage_provenance")
     assert hasattr(reporting_module, "summarize_verification_report")
     assert hasattr(reporting_module, "summarize_vertical_slice")
     assert hasattr(reporting_module, "summarize_weak_residual_report")
@@ -345,6 +353,7 @@ def test_examples_package_runtime_api_matches_current_frozen_surface() -> None:
     assert hasattr(examples_module, "run_kdv_vertical_slice_example")
     assert hasattr(examples_module, "run_orbit_coverage_diagnostics_example")
     assert hasattr(examples_module, "run_reaction_diffusion_vertical_slice_example")
+    assert hasattr(examples_module, "run_split_leakage_provenance_example")
     assert hasattr(examples_module, "run_symmetry_candidate_validation_example")
     assert hasattr(examples_module, "run_translation_orbit_batch_example")
     assert not hasattr(examples_module, "run_ks_vertical_slice_example")

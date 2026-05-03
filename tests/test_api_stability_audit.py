@@ -47,6 +47,7 @@ _ROOT_RUNTIME_NAMES = {
     "run_generator_confidence_report_example",
     "run_downstream_discovery_contracts_example",
     "run_external_data_readiness_example",
+    "run_split_leakage_provenance_example",
     "run_kdv_vertical_slice_example",
     "run_orbit_coverage_diagnostics_example",
     "run_reaction_diffusion_vertical_slice_example",
@@ -61,6 +62,7 @@ _ROOT_RUNTIME_NAMES = {
     "summarize_formula_generator_family",
     "summarize_generator_confidence",
     "summarize_downstream_discovery_workflow",
+    "summarize_split_leakage_provenance",
     "summarize_discovery_bridge_output",
     "summarize_discovery_result",
     "summarize_generator_family",
@@ -109,8 +111,10 @@ _DEFERRED_OR_PRIVATE_NAMES = {
     "materialize_uniform_translation_orbit",
     "sample_kdv_mode_coefficients",
     "split_orbit_train_heldout",
+    "split_leakage_enforcer",
     "summarize_generator_confidence_score",
     "summarize_field_batch_readiness_score",
+    "summarize_leakage_prevention",
     "summarize_orbit_coverage",
     "summarize_orbit_coverage_feasibility",
     "train_test_translation_orbit_split",
@@ -132,6 +136,7 @@ _DEFERRED_API_STABILITY_NAMES = {
     "pdelie.data.load_the_well",
     "pdelie.reporting.summarize_generator_confidence_score",
     "pdelie.reporting.summarize_field_batch_readiness_score",
+    "pdelie.reporting.summarize_leakage_prevention",
     "pdelie.reporting.summarize_orbit_coverage",
     "pdelie.reporting.summarize_orbit_coverage_feasibility",
     "pdelie.residuals.KSResidualEvaluator",
@@ -220,6 +225,13 @@ _V0_22_DOWNSTREAM_CONTRACT_APIS = {
     "summary_type = \"discovery_result\"",
     "summary_type = \"downstream_discovery_workflow\"",
 }
+_V0_23_SPLIT_PROVENANCE_APIS = {
+    "pdelie.reporting.summarize_split_leakage_provenance",
+    "pdelie.examples.run_split_leakage_provenance_example",
+    "summary_type = \"split_leakage_provenance\"",
+    "risk_label",
+    "traceable_overlap",
+}
 
 
 def _api_stability_text() -> str:
@@ -249,6 +261,7 @@ def test_api_stability_doc_covers_current_stable_runtime_surface() -> None:
         | _V0_20_CONFIDENCE_REPORTING_APIS
         | _V0_21_FIELD_READINESS_APIS
         | _V0_22_DOWNSTREAM_CONTRACT_APIS
+        | _V0_23_SPLIT_PROVENANCE_APIS
     ):
         assert api_name in text
 
@@ -314,6 +327,7 @@ def test_required_runtime_submodule_apis_remain_importable() -> None:
             "run_generator_confidence_report_example",
             "run_downstream_discovery_contracts_example",
             "run_external_data_readiness_example",
+            "run_split_leakage_provenance_example",
             "run_advection_diffusion_vertical_slice_example",
             "run_heat_vertical_slice_example",
             "run_invariant_workflow_summary_example",
@@ -345,6 +359,7 @@ def test_required_runtime_submodule_apis_remain_importable() -> None:
             "summarize_generator_family",
             "summarize_invariant_workflow",
             "summarize_residual_batch",
+            "summarize_split_leakage_provenance",
             "summarize_verification_report",
             "summarize_vertical_slice",
             "summarize_weak_residual_report",
@@ -400,22 +415,8 @@ def test_deferred_and_private_names_are_not_public_submodule_exports() -> None:
 
 
 def test_v0_22_planning_docs_record_downstream_discovery_contracts_and_non_goals() -> None:
-    plan = _repo_text("docs/planning/PLAN.md")
     scope = _repo_text("docs/planning/V0_22_SCOPE.md")
     roadmap = _repo_text("docs/planning/ROADMAP.md")
-
-    assert "**Status:** COMPLETE" in plan
-    assert "Milestone 2 - Bridge Output Summary" in plan
-    assert "Milestone 3 - Discovery Result And Recovery Summary" in plan
-    assert "pdelie.discovery.summarize_discovery_bridge_output" in plan
-    assert "pdelie.discovery.summarize_discovery_result" in plan
-    assert "pdelie.reporting.summarize_downstream_discovery_workflow" in plan
-    assert "pdelie.examples.run_downstream_discovery_contracts_example" in plan
-    assert "split/leakage diagnostics are deferred" in plan
-    assert "## Milestone 5 - API / Public-surface Audit" in plan
-    assert "## Milestone 6 - Release Gate And Readiness" in plan
-    assert "updated CI so the current explicit release gate is `v0_22-release-gate`" in plan
-    assert "- Milestone 6: COMPLETE" in plan
 
     assert "Downstream Discovery Contracts" in scope
     assert "pdelie.discovery.summarize_discovery_bridge_output" in scope
@@ -433,3 +434,35 @@ def test_v0_22_planning_docs_record_downstream_discovery_contracts_and_non_goals
     assert "`v0.22` is the completed downstream discovery contracts release" in roadmap
     assert "downstream discovery contracts" in roadmap
     assert "- no split management or heldout-leakage detection" in roadmap
+
+
+def test_v0_23_planning_docs_record_split_provenance_and_non_goals() -> None:
+    plan = _repo_text("docs/planning/PLAN.md")
+    scope = _repo_text("docs/planning/V0_23_SCOPE.md")
+    roadmap = _repo_text("docs/planning/ROADMAP.md")
+
+    assert "**Status:** COMPLETE" in plan
+    assert "Milestone 2 - Split Provenance Helper" in plan
+    assert "Milestone 3 - Orbit-Batch Risk Coverage" in plan
+    assert "pdelie.reporting.summarize_split_leakage_provenance" in plan
+    assert "pdelie.examples.run_split_leakage_provenance_example" in plan
+    assert "no split creation" in plan
+    assert "## Milestone 5 - API / Public-surface Audit" in plan
+    assert "## Milestone 6 - Release Gate And Readiness" in plan
+    assert "updated CI so the current explicit release gate is `v0_23-release-gate`" in plan
+    assert "- Milestone 6: COMPLETE" in plan
+
+    assert "Split / Leakage Provenance Diagnostics" in scope
+    assert "pdelie.reporting.summarize_split_leakage_provenance" in scope
+    assert "pdelie.examples.run_split_leakage_provenance_example" in scope
+    assert "traceable_overlap" in scope
+    assert "missing_provenance" in scope
+    assert "no split creation" in scope
+    assert "no leakage prevention" in scope
+    assert "- Milestone 4: COMPLETE" in scope
+    assert "- Milestone 5: COMPLETE" in scope
+    assert "- Milestone 6: COMPLETE" in scope
+
+    assert "`v0.23` is the completed split/leakage provenance diagnostics release" in roadmap
+    assert "split/leakage provenance diagnostics" in roadmap
+    assert "- no split management or leakage prevention" in roadmap

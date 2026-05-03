@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pdelie"
-version = "0.22.0"
-description = "V0.22 downstream discovery contracts plus retained external data readiness, confidence reports, PDE strong paths, and symmetry diagnostics"
+version = "0.23.0"
+description = "V0.23 split/leakage provenance diagnostics plus retained downstream contracts, external data readiness, confidence reports, PDE strong paths, and symmetry diagnostics"
 requires-python = ">=3.11"
 dependencies = [
   "numpy>=1.24,<2",

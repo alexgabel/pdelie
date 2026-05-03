@@ -18,6 +18,7 @@ from pdelie.examples import (
     run_kdv_vertical_slice_example,
     run_orbit_coverage_diagnostics_example,
     run_reaction_diffusion_vertical_slice_example,
+    run_split_leakage_provenance_example,
     run_symmetry_candidate_validation_example,
     run_translation_orbit_batch_example,
 )
@@ -480,3 +481,27 @@ def test_downstream_discovery_contracts_module_prints_json_only() -> None:
 
     assert parsed["summary_type"] == "downstream_discovery_contracts_example"
     assert parsed["workflow"]["summary_type"] == "downstream_discovery_workflow"
+
+
+def test_split_leakage_provenance_example_runs_end_to_end() -> None:
+    result = run_split_leakage_provenance_example()
+
+    assert json.loads(json.dumps(result)) == result
+    assert result["summary_schema_version"] == "0.1"
+    assert result["summary_type"] == "split_leakage_provenance_example"
+    assert result["extra_metrics"]["example_name"] == "split_leakage_provenance"
+    assert result["extra_metrics"]["split_policy"] == "not_managed_by_pdelie"
+    assert result["clean_split"]["summary_type"] == "split_leakage_provenance"
+    assert result["clean_split"]["risk_label"] == "no_detected_overlap"
+    assert result["traceable_overlap"]["risk_label"] == "traceable_overlap"
+    assert result["missing_provenance"]["risk_label"] == "missing_provenance"
+    assert result["workflow"]["summary_type"] == "downstream_discovery_workflow"
+    assert result["workflow"]["split_provenance"]["summary_type"] == "split_leakage_provenance"
+    assert not hasattr(pdelie, "run_split_leakage_provenance_example")
+
+
+def test_split_leakage_provenance_module_prints_json_only() -> None:
+    parsed = _run_module_json("pdelie.examples.split_leakage_provenance")
+
+    assert parsed["summary_type"] == "split_leakage_provenance_example"
+    assert parsed["traceable_overlap"]["risk_label"] == "traceable_overlap"

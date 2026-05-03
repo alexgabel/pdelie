@@ -10,7 +10,7 @@ Stable contracts remain in `docs/specs/API_STABILITY.md` only after APIs land.
 
 After `v0.14`, the highest-ROI path has been to move from read-only invariant diagnostics toward conservative user-facing data utilities, then external symmetry-candidate validation, then formula-backed generator support, then carefully scoped PDE expansion.
 
-After `v0.22`, the next planned path is to harden split/leakage provenance diagnostics before considering more difficult axes such as weak forms, broader KdV/KS, multi-generator fitting, broad adapters, multidimensional/nonuniform grids, and time-translation actions.
+After `v0.23`, the next planned path is to consider a weak-form supportability reset before more difficult axes such as broader KdV/KS, multi-generator fitting, broad adapters, multidimensional/nonuniform grids, and time-translation actions.
 
 Staged sequence:
 
@@ -22,7 +22,7 @@ Staged sequence:
 - `v0.20`: unified generator confidence reports
 - `v0.21`: external data readiness reports
 - `v0.22`: downstream discovery contracts
-- `v0.23`: planned split/leakage provenance diagnostics
+- `v0.23`: split/leakage provenance diagnostics
 - `v0.24`: planned weak-form supportability reset
 - `v0.25`: planned KdV scope decision
 - `v0.26`: planned KS revisit
@@ -299,20 +299,22 @@ Deferred:
 
 ## V0.23 - Split/Leakage Provenance Diagnostics
 
-Planned theme:
+Completed theme:
 
 > reduce orbit-materialization misuse by reporting provenance risks across user-supplied partitions.
 
-Candidate scope:
+Completed scope:
 
-- train/heldout partition diagnostics
+- user-supplied partition diagnostics
 - source/shift overlap reports
-- heldout-leakage risk reports
+- identity-shift overlap reports
+- downstream workflow integration
 
 Explicit boundaries:
 
 - no train/test split management
 - no automatic split generation
+- no leakage prevention
 - no downstream augmentation policy
 - no benchmark success criteria
 

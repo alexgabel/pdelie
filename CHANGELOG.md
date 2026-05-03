@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.23.0
+
+First final release for the frozen V0.23 split/leakage provenance diagnostics slice.
+
+- adds `pdelie.reporting.summarize_split_leakage_provenance(...)` for JSON-compatible report-only diagnostics over user-supplied partitions and available source/shift provenance
+- extends `pdelie.reporting.summarize_downstream_discovery_workflow(...)` with optional `split_provenance`
+- adds `python -m pdelie.examples.split_leakage_provenance` and `pdelie.examples.run_split_leakage_provenance_example(...)` as JSON-only runtime smoke examples
+- freezes `summary_type == "split_leakage_provenance"` with risk labels `no_detected_overlap`, `traceable_overlap`, `missing_provenance`, and `inconclusive`
+- validates non-empty partition labels, sample counts, orbit-batch provenance reports, source IDs, sample metadata, and strict JSON compatibility
+- reports source overlap, same-source/same-shift overlap, identity-shift overlap, partition-pair diagnostics, component statuses, and risk reasons
+- accepts existing `OrbitBatchResult` objects and `uniform_translation_orbit_batch` report mappings without returning transformed `FieldBatch` objects
+- documents the new helper in `API_STABILITY.md` as a submodule-only runtime API with no root export
+- preserves existing Heat/Burgers strong paths, weak residual reports, normalized periodic KdV, Fisher-KPP reaction-diffusion, advection-diffusion, external data readiness, confidence reports, downstream discovery contracts, invariant/orbit diagnostics, orbit batches, candidate validation, and formula-backed generator support
+
+Explicitly deferred for this final release:
+
+- split creation or train/test split management
+- leakage prevention or benchmark policy
+- downstream success criteria
+- automatic augmentation policy
+- file loaders
+- `xarray.Dataset` support
+- PDEBench or The Well adapters
+- broad dataset adapter framework
+- multidimensional, multivariable, or nonuniform-grid support
+- new PDE support
+- KS runtime promotion
+- weak-form expansion
+- time-translation APIs
+- neural or callable generator APIs
+- operator-facing APIs
+- PyPI and TestPyPI publication; package-index publishing is deferred to `v1.0` or later
+
 ## 0.22.0
 
 First final release for the frozen V0.22 downstream discovery contracts slice.

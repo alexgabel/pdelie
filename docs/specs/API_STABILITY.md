@@ -271,6 +271,21 @@ Runtime public API for the frozen `v0.22` Milestone 2/M3/M4 slice:
 - this API does not add new PDEs, public KS runtime APIs, weak-form expansion, broad adapters, `xarray.Dataset` support, multidimensional or nonuniform stable support, time translation, neural/callable generators, or operator-facing APIs
 - these APIs have no root `pdelie` exports
 
+Runtime public API for the frozen `v0.23` Milestone 2/M4 slice:
+
+- `pdelie.reporting.summarize_split_leakage_provenance` for JSON-compatible runtime reports over user-supplied partition labels and available source/shift provenance
+- split provenance reports use `summary_type = "split_leakage_provenance"` and `summary_schema_version = "0.1"`
+- reports expose `risk_label` values: `no_detected_overlap`, `traceable_overlap`, `missing_provenance`, and `inconclusive`
+- accepted partition labels are user-supplied non-empty strings; PDELie does not create, optimize, or enforce train/heldout splits
+- when supplied, `OrbitBatchResult` or `uniform_translation_orbit_batch` reports are inspected through existing `source_batch_indices`, `shift_indices`, and shift metadata
+- optional `source_ids`, `sample_metadata`, `source_report_id`, and `extra_metrics` must remain strict JSON-compatible runtime metadata
+- diagnostics report source overlap, source-and-shift overlap, identity-shift overlap, partition-pair counts, component statuses, and risk reasons
+- `pdelie.reporting.summarize_downstream_discovery_workflow` now accepts optional `split_provenance` reports and nests them as downstream workflow evidence
+- `pdelie.examples.run_split_leakage_provenance_example` for a compact JSON-only runtime smoke example
+- these APIs are runtime provenance diagnostics, not split managers, leakage preventers, benchmark-policy engines, automatic augmentation policies, or manuscript success criteria
+- this API does not add file loaders, Dataset adapters, broad backend frameworks, new PDEs, public KS runtime APIs, weak-form expansion, multidimensional or nonuniform stable support, time translation, neural/callable generators, operator-facing APIs, or root exports
+- these APIs have no root `pdelie` exports
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 

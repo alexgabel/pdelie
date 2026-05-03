@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from itertools import combinations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
@@ -35,6 +36,14 @@ _FIT_EVIDENCE_LABELS = frozenset(
 _CONFIDENCE_LABELS = frozenset({"strong", "qualified", "failed", "insufficient_evidence"})
 _CONFIDENCE_COMPONENT_STATUSES = frozenset({"passed", "warning", "failed", "not_configured", "unavailable"})
 _READINESS_LABELS = frozenset({"ready", "needs_attention", "not_ready"})
+_SPLIT_LEAKAGE_RISK_LABELS = frozenset(
+    {
+        "no_detected_overlap",
+        "traceable_overlap",
+        "missing_provenance",
+        "inconclusive",
+    }
+)
 _CONFIDENCE_THRESHOLD_KEYS = frozenset(
     {
         "residual_max_abs",
@@ -75,6 +84,15 @@ def _validate_json_compatible(value: Any, *, name: str) -> Any:
         json.dumps(safe_value)
     except TypeError as exc:
         raise SchemaValidationError(f"{name} must be JSON-compatible after reporting conversion.") from exc
+    return safe_value
+
+
+def _validate_strict_json_compatible(value: Any, *, name: str) -> Any:
+    safe_value = _json_safe(value)
+    try:
+        json.dumps(safe_value, allow_nan=False)
+    except (TypeError, ValueError) as exc:
+        raise SchemaValidationError(f"{name} must be strict JSON-compatible after reporting conversion.") from exc
     return safe_value
 
 
@@ -242,6 +260,12 @@ def _discovery_result_summary_or_none(value: Any, *, name: str) -> dict[str, Any
     if value is None:
         return None
     return _runtime_report(value, name=name, expected_summary_types={"discovery_result"})
+
+
+def _split_provenance_summary_or_none(value: Any, *, name: str) -> dict[str, Any] | None:
+    if value is None:
+        return None
+    return _runtime_report(value, name=name, expected_summary_types={"split_leakage_provenance"})
 
 
 def _thresholds_or_empty(value: Mapping[str, Any] | None) -> dict[str, float]:
@@ -1313,6 +1337,397 @@ def _workflow_label(component_statuses: Mapping[str, Mapping[str, Any]]) -> str:
     return "ready"
 
 
+def _normalize_partitions(partitions: Any) -> list[str]:
+    if isinstance(partitions, (str, bytes)) or not isinstance(partitions, Sequence):
+        raise SchemaValidationError("partitions must be a non-empty sequence of non-empty strings.")
+    normalized = list(partitions)
+    if not normalized:
+        raise SchemaValidationError("partitions must be non-empty.")
+    result: list[str] = []
+    for index, label in enumerate(normalized):
+        if not isinstance(label, str) or not label.strip():
+            raise SchemaValidationError(f"partitions[{index}] must be a non-empty string.")
+        result.append(label)
+    return result
+
+
+def _normalize_optional_sequence(value: Any, *, name: str, expected_length: int | None = None) -> list[Any] | None:
+    if value is None:
+        return None
+    if isinstance(value, (str, bytes)) or not isinstance(value, Sequence):
+        raise SchemaValidationError(f"{name} must be a sequence.")
+    normalized = list(value)
+    if expected_length is not None and len(normalized) != expected_length:
+        raise SchemaValidationError(f"{name} length must match the audited sample count.")
+    return _validate_strict_json_compatible(normalized, name=name)
+
+
+def _normalize_index_sequence(
+    value: Any,
+    *,
+    name: str,
+    expected_length: int,
+) -> list[int] | None:
+    if value is None:
+        return None
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes)):
+        raise SchemaValidationError(f"{name} must be a sequence of non-negative integers.")
+    normalized: list[int] = []
+    for index, item in enumerate(value):
+        if isinstance(item, bool):
+            raise SchemaValidationError(f"{name}[{index}] must be a non-negative integer.")
+        try:
+            integer = int(item)
+        except (TypeError, ValueError) as exc:
+            raise SchemaValidationError(f"{name}[{index}] must be a non-negative integer.") from exc
+        if integer < 0 or integer != item:
+            raise SchemaValidationError(f"{name}[{index}] must be a non-negative integer.")
+        normalized.append(integer)
+    if len(normalized) != expected_length:
+        raise SchemaValidationError(f"{name} length must match the audited sample count.")
+    return normalized
+
+
+def _partition_counts(partitions: Sequence[str]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for label in partitions:
+        counts[label] = counts.get(label, 0) + 1
+    return counts
+
+
+def _source_keys_from_provenance(
+    *,
+    sample_count: int,
+    source_indices: Sequence[int] | None,
+    source_ids: Sequence[Any] | None,
+    source_batch_size: int | None,
+) -> list[Any] | None:
+    if source_indices is not None:
+        if source_ids is not None:
+            required = source_batch_size
+            if required is None and source_indices:
+                required = max(source_indices) + 1
+            if required is not None and len(source_ids) != required:
+                raise SchemaValidationError(
+                    "source_ids length must match the source batch size when orbit source indices are present."
+                )
+            if any(index >= len(source_ids) for index in source_indices):
+                raise SchemaValidationError("orbit source indices must be within source_ids.")
+            return [source_ids[index] for index in source_indices]
+        return list(source_indices)
+    if source_ids is not None:
+        if len(source_ids) != sample_count:
+            raise SchemaValidationError(
+                "source_ids length must match partitions when no orbit source indices are present."
+            )
+        return list(source_ids)
+    return None
+
+
+def _shift_keys_from_provenance(
+    *,
+    shift_indices: Sequence[int] | None,
+    raw_shifts: Sequence[Any] | None,
+    normalized_shifts: Sequence[Any] | None,
+) -> tuple[list[Any] | None, list[bool] | None]:
+    if shift_indices is None:
+        return None, None
+    shift_keys: list[Any] = list(shift_indices)
+    identity_flags: list[bool] | None = None
+    if normalized_shifts is not None:
+        normalized = _finite_list_or_none(normalized_shifts, name="orbit_batch.normalized_shifts")
+        assert normalized is not None
+        identity_lookup: dict[int, bool] = {}
+        tolerance = 1e-12
+        for index, value in enumerate(normalized):
+            identity_lookup[index] = bool(abs(float(value)) <= tolerance)
+        if any(index >= len(normalized) for index in shift_indices):
+            raise SchemaValidationError("orbit shift indices must be within normalized_shifts.")
+        identity_flags = [identity_lookup.get(index, False) for index in shift_indices]
+    elif raw_shifts is not None:
+        normalized = _finite_list_or_none(raw_shifts, name="orbit_batch.raw_shifts")
+        assert normalized is not None
+        identity_lookup = {index: bool(abs(float(value)) <= 1e-12) for index, value in enumerate(normalized)}
+        if any(index >= len(normalized) for index in shift_indices):
+            raise SchemaValidationError("orbit shift indices must be within raw_shifts.")
+        identity_flags = [identity_lookup.get(index, False) for index in shift_indices]
+    return shift_keys, identity_flags
+
+
+def _cross_partition_keys(
+    *,
+    keys: Sequence[Any],
+    partitions: Sequence[str],
+) -> tuple[bool, dict[str, set[str]], dict[str, int]]:
+    by_key: dict[str, set[str]] = {}
+    for key, partition in zip(keys, partitions, strict=True):
+        key_string = json.dumps(_json_safe(key), sort_keys=True, allow_nan=False)
+        by_key.setdefault(key_string, set()).add(partition)
+
+    pair_counts: dict[str, int] = {}
+    for partition_set in by_key.values():
+        if len(partition_set) <= 1:
+            continue
+        for left, right in combinations(sorted(partition_set), 2):
+            pair_key = f"{left}|{right}"
+            pair_counts[pair_key] = pair_counts.get(pair_key, 0) + 1
+    return any(len(partition_set) > 1 for partition_set in by_key.values()), by_key, pair_counts
+
+
+def _partition_pair_diagnostics(
+    *,
+    partitions: Sequence[str],
+    source_pair_counts: Mapping[str, int],
+    shifted_pair_counts: Mapping[str, int],
+    identity_pair_counts: Mapping[str, int],
+) -> dict[str, dict[str, int]]:
+    labels = sorted(set(partitions))
+    diagnostics: dict[str, dict[str, int]] = {}
+    for left, right in combinations(labels, 2):
+        pair_key = f"{left}|{right}"
+        diagnostics[pair_key] = {
+            "source_overlap_count": int(source_pair_counts.get(pair_key, 0)),
+            "shifted_source_overlap_count": int(shifted_pair_counts.get(pair_key, 0)),
+            "identity_shift_overlap_count": int(identity_pair_counts.get(pair_key, 0)),
+        }
+    return diagnostics
+
+
+def _split_risk_label(
+    *,
+    source_keys_present: bool,
+    shift_keys_present: bool,
+    source_overlap: bool,
+    shifted_overlap: bool,
+    identity_overlap: bool,
+) -> tuple[str, list[str]]:
+    if source_overlap or shifted_overlap or identity_overlap:
+        reasons = []
+        if source_overlap:
+            reasons.append("source_overlap_across_partitions")
+        if shifted_overlap:
+            reasons.append("source_and_shift_overlap_across_partitions")
+        if identity_overlap:
+            reasons.append("identity_shift_overlap_across_partitions")
+        return "traceable_overlap", reasons
+    if source_keys_present:
+        reasons = ["source_provenance_available_no_cross_partition_overlap"]
+        if not shift_keys_present:
+            reasons.append("shift_provenance_missing_but_source_overlap_absent")
+        return "no_detected_overlap", reasons
+    if shift_keys_present:
+        return "inconclusive", ["shift_provenance_available_without_source_provenance"]
+    return "missing_provenance", ["source_and_shift_provenance_missing"]
+
+
+def _split_component_statuses(
+    *,
+    risk_label: str,
+    source_traceable: bool,
+    shift_traceable: bool,
+    sample_metadata_present: bool,
+) -> dict[str, dict[str, Any]]:
+    if risk_label == "traceable_overlap":
+        overlap_status = _component_status("warning", reason="traceable_cross_partition_overlap")
+    elif risk_label == "no_detected_overlap":
+        overlap_status = _component_status("passed", reason="no_cross_partition_overlap_detected")
+    elif risk_label == "missing_provenance":
+        overlap_status = _component_status("warning", reason="provenance_missing")
+    else:
+        overlap_status = _component_status("warning", reason="provenance_inconclusive")
+    return {
+        "partitions": _component_status("passed", reason="partitions_valid"),
+        "source_provenance": _component_status(
+            "passed" if source_traceable else "warning",
+            reason="source_provenance_traceable" if source_traceable else "source_provenance_missing",
+        ),
+        "shift_provenance": _component_status(
+            "passed" if shift_traceable else "warning",
+            reason="shift_provenance_traceable" if shift_traceable else "shift_provenance_missing",
+        ),
+        "sample_metadata": _component_status(
+            "passed" if sample_metadata_present else "not_configured",
+            reason="sample_metadata_recorded" if sample_metadata_present else "sample_metadata_not_provided",
+        ),
+        "overlap_risk": overlap_status,
+    }
+
+
+def summarize_split_leakage_provenance(
+    *,
+    partitions: Sequence[str],
+    orbit_batch: OrbitBatchResult | Mapping[str, Any] | None = None,
+    source_ids: Sequence[Any] | None = None,
+    sample_metadata: Sequence[Mapping[str, Any]] | None = None,
+    source_report_id: Any | None = None,
+    extra_metrics: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Report detectable provenance overlap across user-supplied partitions.
+
+    This helper does not create splits, enforce leakage policy, or judge benchmark validity.
+    """
+
+    normalized_partitions = _normalize_partitions(partitions)
+    sample_count = len(normalized_partitions)
+    orbit_batch_summary = _orbit_batch_summary_or_none(orbit_batch, name="orbit_batch")
+    if orbit_batch_summary is not None:
+        orbit_batch_summary = _validate_strict_json_compatible(orbit_batch_summary, name="orbit_batch")
+    if orbit_batch_summary is not None:
+        orbit_sample_count = orbit_batch_summary.get("output_batch_size")
+        if not isinstance(orbit_sample_count, int):
+            raise SchemaValidationError("orbit_batch.output_batch_size must be an integer.")
+        if orbit_sample_count != sample_count:
+            raise SchemaValidationError("partitions length must match orbit_batch.output_batch_size.")
+
+    normalized_source_ids = _normalize_optional_sequence(source_ids, name="source_ids")
+    normalized_sample_metadata = _normalize_optional_sequence(
+        sample_metadata,
+        name="sample_metadata",
+        expected_length=sample_count,
+    )
+    normalized_source_report_id = _validate_strict_json_compatible(source_report_id, name="source_report_id")
+    normalized_extra_metrics = (
+        {}
+        if extra_metrics is None
+        else _validate_strict_json_compatible(_require_mapping(extra_metrics, name="extra_metrics"), name="extra_metrics")
+    )
+
+    source_indices = None
+    shift_indices = None
+    source_batch_size = None
+    raw_shifts = None
+    normalized_shifts = None
+    if orbit_batch_summary is not None:
+        source_indices = _normalize_index_sequence(
+            orbit_batch_summary.get("source_batch_indices"),
+            name="orbit_batch.source_batch_indices",
+            expected_length=sample_count,
+        )
+        shift_indices = _normalize_index_sequence(
+            orbit_batch_summary.get("shift_indices"),
+            name="orbit_batch.shift_indices",
+            expected_length=sample_count,
+        )
+        source_batch_size = orbit_batch_summary.get("source_batch_size")
+        if source_batch_size is not None and (not isinstance(source_batch_size, int) or source_batch_size < 0):
+            raise SchemaValidationError("orbit_batch.source_batch_size must be a non-negative integer when present.")
+        raw_shifts = orbit_batch_summary.get("raw_shifts")
+        normalized_shifts = orbit_batch_summary.get("normalized_shifts")
+
+    source_keys = _source_keys_from_provenance(
+        sample_count=sample_count,
+        source_indices=source_indices,
+        source_ids=normalized_source_ids,
+        source_batch_size=source_batch_size,
+    )
+    shift_keys, identity_flags = _shift_keys_from_provenance(
+        shift_indices=shift_indices,
+        raw_shifts=raw_shifts,
+        normalized_shifts=normalized_shifts,
+    )
+
+    source_overlap = False
+    source_pair_counts: dict[str, int] = {}
+    if source_keys is not None:
+        source_overlap, _, source_pair_counts = _cross_partition_keys(keys=source_keys, partitions=normalized_partitions)
+
+    shifted_overlap = False
+    shifted_pair_counts: dict[str, int] = {}
+    if source_keys is not None and shift_keys is not None:
+        shifted_keys = list(zip(source_keys, shift_keys, strict=True))
+        shifted_overlap, _, shifted_pair_counts = _cross_partition_keys(
+            keys=shifted_keys,
+            partitions=normalized_partitions,
+        )
+
+    identity_overlap = False
+    identity_pair_counts: dict[str, int] = {}
+    if source_keys is not None and identity_flags is not None:
+        identity_keys = [
+            source_key
+            for source_key, identity in zip(source_keys, identity_flags, strict=True)
+            if identity
+        ]
+        identity_partitions = [
+            partition
+            for partition, identity in zip(normalized_partitions, identity_flags, strict=True)
+            if identity
+        ]
+        if identity_keys:
+            identity_overlap, _, identity_pair_counts = _cross_partition_keys(
+                keys=identity_keys,
+                partitions=identity_partitions,
+            )
+
+    source_traceable = source_keys is not None
+    shift_traceable = shift_keys is not None
+    risk_label, risk_reasons = _split_risk_label(
+        source_keys_present=source_traceable,
+        shift_keys_present=shift_traceable,
+        source_overlap=source_overlap,
+        shifted_overlap=shifted_overlap,
+        identity_overlap=identity_overlap,
+    )
+    if risk_label not in _SPLIT_LEAKAGE_RISK_LABELS:
+        raise AssertionError(f"unsupported split leakage risk label: {risk_label}")
+
+    component_statuses = _split_component_statuses(
+        risk_label=risk_label,
+        source_traceable=source_traceable,
+        shift_traceable=shift_traceable,
+        sample_metadata_present=normalized_sample_metadata is not None,
+    )
+
+    return _summary_payload(
+        "split_leakage_provenance",
+        partition_counts=_partition_counts(normalized_partitions),
+        sample_count=sample_count,
+        provenance_available=source_traceable or shift_traceable,
+        source_index_traceable=source_indices is not None,
+        source_id_traceable=source_keys is not None and source_indices is None,
+        shift_index_traceable=shift_indices is not None,
+        duplicate_source_across_partitions=source_overlap,
+        duplicate_shifted_source_across_partitions=shifted_overlap,
+        identity_shift_cross_partition_overlap=identity_overlap,
+        partition_pair_diagnostics=_partition_pair_diagnostics(
+            partitions=normalized_partitions,
+            source_pair_counts=source_pair_counts,
+            shifted_pair_counts=shifted_pair_counts,
+            identity_pair_counts=identity_pair_counts,
+        ),
+        risk_label=risk_label,
+        risk_reasons=risk_reasons,
+        component_statuses=component_statuses,
+        source_report_id=normalized_source_report_id,
+        source_ids=normalized_source_ids,
+        sample_metadata=normalized_sample_metadata,
+        orbit_batch=orbit_batch_summary,
+        returns_field_batch=False,
+        policy={
+            "partitions_are_user_supplied": True,
+            "creates_splits": False,
+            "prevents_leakage": False,
+            "defines_benchmark_success": False,
+        },
+        extra_metrics=normalized_extra_metrics,
+    )
+
+
+def _workflow_split_provenance_status(report: Mapping[str, Any] | None) -> dict[str, Any]:
+    if report is None:
+        return _component_status("unavailable", reason="split_provenance_not_provided")
+    label = report.get("risk_label")
+    if label == "no_detected_overlap":
+        return _component_status("passed", reason="split_provenance_no_detected_overlap")
+    if label == "traceable_overlap":
+        return _component_status("warning", reason="split_provenance_traceable_overlap")
+    if label == "missing_provenance":
+        return _component_status("warning", reason="split_provenance_missing_provenance")
+    if label == "inconclusive":
+        return _component_status("warning", reason="split_provenance_inconclusive")
+    return _component_status("warning", reason="split_provenance_unknown")
+
+
 def summarize_downstream_discovery_workflow(
     *,
     field_readiness: Mapping[str, Any] | None = None,
@@ -1320,6 +1735,7 @@ def summarize_downstream_discovery_workflow(
     orbit_batch: OrbitBatchResult | Mapping[str, Any] | None = None,
     discovery_inputs: Mapping[str, Any] | None = None,
     discovery_result: Mapping[str, Any] | None = None,
+    split_provenance: Mapping[str, Any] | None = None,
     extra_metrics: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Combine downstream discovery runtime reports without imposing split or leakage policy."""
@@ -1350,6 +1766,7 @@ def summarize_downstream_discovery_workflow(
     orbit_batch_summary = _orbit_batch_summary_or_none(orbit_batch, name="orbit_batch")
     discovery_inputs_summary = _discovery_bridge_summary_or_none(discovery_inputs, name="discovery_inputs")
     discovery_result_summary = _discovery_result_summary_or_none(discovery_result, name="discovery_result")
+    split_provenance_summary = _split_provenance_summary_or_none(split_provenance, name="split_provenance")
     orbit_provenance_status, orbit_provenance = _workflow_orbit_provenance_status(orbit_batch_summary)
 
     component_statuses = {
@@ -1358,6 +1775,7 @@ def summarize_downstream_discovery_workflow(
         "orbit_provenance": orbit_provenance_status,
         "discovery_inputs": _workflow_discovery_inputs_status(discovery_inputs_summary),
         "discovery_result": _workflow_discovery_result_status(discovery_result_summary),
+        "split_provenance": _workflow_split_provenance_status(split_provenance_summary),
     }
     missing_evidence = [
         component
@@ -1375,6 +1793,7 @@ def summarize_downstream_discovery_workflow(
         orbit_provenance=orbit_provenance,
         discovery_inputs=discovery_inputs_summary,
         discovery_result=discovery_result_summary,
+        split_provenance=split_provenance_summary,
         missing_evidence=missing_evidence,
         extra_metrics=normalized_extra_metrics,
     )
