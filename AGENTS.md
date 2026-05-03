@@ -12,16 +12,12 @@ Read these before coding:
 
 ## Stable scope
 V0.x stable scope only:
-- uniform rectilinear grids
 - synthetic PDE data
 - Lie point symmetries
-- polynomial generators
 
 ## Do not implement unless explicitly asked
 - neural generators
-- weak-form advanced methods
 - operator symmetry
-- broad dataset adapters
 - paper-specific experiment logic
 
 ## Workflow
