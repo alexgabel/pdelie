@@ -72,6 +72,9 @@ def _assert_nested_summary_matches(first: object, second: object) -> None:
         for first_item, second_item in zip(first, second, strict=True):
             _assert_nested_summary_matches(first_item, second_item)
         return
+    if isinstance(first, bool) or isinstance(second, bool):
+        assert first == second
+        return
     if isinstance(first, (int, float)) and isinstance(second, (int, float)):
         np.testing.assert_allclose(float(first), float(second))
         return

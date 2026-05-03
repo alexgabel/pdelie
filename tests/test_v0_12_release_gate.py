@@ -44,34 +44,37 @@ def _diagnostic_generator() -> GeneratorFamily:
     )
 
 
-def test_v0_12_release_gate_metadata_docs_and_ci_are_aligned() -> None:
-    pyproject = tomllib.loads(_repo_text("pyproject.toml"))
-    workflow = _repo_text(".github/workflows/ci.yml")
+def test_v0_12_release_record_remains_intact() -> None:
     readiness = _repo_text("docs/releases/V0_12_RELEASE_READINESS.md")
-    readme = _repo_text("README.md")
     changelog = _repo_text("CHANGELOG.md")
-    publishing = _repo_text("docs/releases/PUBLISHING.md")
-    plan = _repo_text("docs/planning/PLAN.md")
     scope = _repo_text("docs/planning/V0_12_SCOPE.md")
     roadmap = _repo_text("docs/planning/ROADMAP.md")
+
+    assert "## 0.12.0" in changelog
+    assert "package version: `0.12.0`" in readiness
+    assert "git tag: `v0.12.0`" in readiness
+    assert "Do not run TestPyPI or PyPI publishing for `v0.12`" in readiness
+    assert "Milestone 6: COMPLETE" in scope
+    assert "`v0.12` - Diagnostics and supportability hardening" in roadmap
+    assert "**Status:** Completed" in roadmap
+
+
+def test_v0_12_release_gate_current_ci_visibility_is_v0_18_only() -> None:
+    pyproject = tomllib.loads(_repo_text("pyproject.toml"))
+    workflow = _repo_text(".github/workflows/ci.yml")
+    readme = _repo_text("README.md")
+    publishing = _repo_text("docs/releases/PUBLISHING.md")
+    plan = _repo_text("docs/planning/PLAN.md")
     release_gate_jobs = re.findall(r"^  (v0_\d+-release-gate):", workflow, flags=re.MULTILINE)
 
     assert pyproject["project"]["version"] == "0.18.0"
     assert release_gate_jobs == ["v0_18-release-gate"]
     assert "python -m pytest tests/test_v0_18_release_gate.py" in workflow
     assert "v0_12-release-gate" not in workflow
-
-    assert "## 0.12.0" in changelog
     assert "V0.18" in readme
     assert "summarize_generator_fit_diagnostics" in readme
-    assert "package version: `0.12.0`" in readiness
-    assert "git tag: `v0.12.0`" in readiness
-    assert "Do not run TestPyPI or PyPI publishing for `v0.12`" in readiness
     assert "including `v0.18.0`" in publishing
     assert "V0.18 is complete" in plan
-    assert "Milestone 6: COMPLETE" in scope
-    assert "`v0.12` - Diagnostics and supportability hardening" in roadmap
-    assert "**Status:** Completed" in roadmap
 
 
 def test_v0_12_release_gate_fit_diagnostic_helper_is_documented_and_submodule_only() -> None:
