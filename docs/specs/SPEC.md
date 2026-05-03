@@ -16,13 +16,18 @@ It is a **library**, not a project repo.
 
 - uniform rectilinear grids
 - Lie point symmetries
-- polynomial generator parameterizations
-- synthetic + small benchmark PDEs, currently including Heat, Burgers, normalized short-horizon KdV, and frozen scalar 1D Fisher-KPP reaction-diffusion strong paths
+- canonical polynomial `GeneratorFamily` parameterizations
+- runtime-only formula-backed generator records and empirical candidate-validation reports
+- frozen invariant, reporting, uniform-translation orbit, and materialized-orbit utilities
+- synthetic + small benchmark PDEs, currently including Heat, Burgers, normalized short-horizon KdV, frozen scalar 1D Fisher-KPP reaction-diffusion, and frozen scalar 1D constant-coefficient advection-diffusion strong paths
 
 ## Experimental
 
 - neural generators
+- Python-callable generators and executable formula strings
 - weak-form derivatives and weak-form extensions beyond the frozen `v0.8` weak residual report slice
+- broad dataset adapters, file-based dataset loaders, and Dataset-level ingestion
+- multidimensional, multivariable, and nonuniform-grid stable expansion
 - operator-level symmetry discovery
 - multi-generator invariant charts
 

@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.19.0
+
+First final release for the frozen V0.19 constant-coefficient advection-diffusion strong path.
+
+- adds `pdelie.data.generate_advection_diffusion_1d_field_batch(...)` for deterministic synthetic scalar 1D periodic constant-coefficient advection-diffusion fields
+- adds `pdelie.residuals.AdvectionDiffusionResidualEvaluator` for the strong residual `u_t + c*u_x - nu*u_xx = 0`
+- adds `python -m pdelie.examples.advection_diffusion_vertical_slice` and `pdelie.examples.run_advection_diffusion_vertical_slice_example(...)` as JSON-only runtime smoke examples
+- freezes the equation tag `advection_diffusion_constant_coefficient` with `c` and `nu` metadata
+- uses exact periodic Fourier evolution for the synthetic rollout
+- verifies the frozen vertical slice with direct SVD translation evidence, no reference fallback, residual max around `5.51e-5`, residual RMS around `8.44e-6`, and exact held-out verification
+- documents the new APIs in `API_STABILITY.md` as submodule-only runtime APIs with no root exports
+- preserves prior Heat/Burgers strong paths, weak residual reports, normalized periodic KdV, Fisher-KPP reaction-diffusion, reporting helpers, invariant/orbit diagnostics, orbit batches, candidate validation, and formula-backed generator support
+
+Explicitly deferred for this final release:
+
+- variable-coefficient advection-diffusion
+- reaction-advection-diffusion
+- weak advection-diffusion
+- public custom advection-diffusion initial-condition APIs
+- KS runtime promotion
+- broad dataset adapters such as PDEBench or The Well
+- multidimensional, multivariable, or nonuniform-grid support
+- time-translation APIs
+- neural or callable generator APIs
+- operator-facing APIs
+- train/test policy, split management, or heldout-leakage detection
+- PyPI and TestPyPI publication; package-index publishing is deferred to `v1.0` or later
+
 ## 0.18.0
 
 First final release for the frozen V0.18 Fisher-KPP reaction-diffusion strong path.

@@ -8,6 +8,7 @@ import numpy as np
 
 import pdelie
 from pdelie.examples import (
+    run_advection_diffusion_vertical_slice_example,
     run_formula_generator_validation_example,
     run_heat_vertical_slice_example,
     run_invariant_workflow_summary_example,
@@ -176,6 +177,36 @@ def test_reaction_diffusion_vertical_slice_example_is_deterministic() -> None:
     _assert_repeated_summary_matches(first, second)
 
 
+def test_advection_diffusion_vertical_slice_example_runs_end_to_end_and_is_json_serializable() -> None:
+    result = run_advection_diffusion_vertical_slice_example()
+    _assert_vertical_slice_summary(result)
+
+    assert result["extra_metrics"]["example_name"] == "advection_diffusion_vertical_slice"
+    assert result["extra_metrics"]["equation"] == "advection_diffusion_constant_coefficient"
+    assert result["extra_metrics"]["generator_seed"] == 19018
+    assert result["extra_metrics"]["split_seed"] == 19019
+    assert result["extra_metrics"]["train_size"] == 2
+    assert result["residual"]["max_abs_residual"] < 5e-4
+    assert result["residual"]["rms_residual"] < 5e-5
+    assert np.isfinite(float(result["extra_metrics"]["mean_drift_diagnostic"]))
+    assert np.isfinite(float(result["extra_metrics"]["relative_l2_drift_diagnostic"]))
+    assert result["generator"]["parameterization"] == "polynomial_translation_affine"
+    assert result["generator"]["fit_mode"] == "svd"
+    assert result["generator"]["reference_fallback_used"] is False
+    assert result["generator"]["diagnostics"]["evidence_label"] == "direct_svd_in_tolerance"
+    assert result["generator"]["translation_span_distance"] <= 5e-2
+    assert result["verification"]["classification"] != "failed"
+    assert result["verification"]["first_error"] < 5e-4
+    assert not hasattr(pdelie, "run_advection_diffusion_vertical_slice_example")
+
+
+def test_advection_diffusion_vertical_slice_example_is_deterministic() -> None:
+    first = run_advection_diffusion_vertical_slice_example()
+    second = run_advection_diffusion_vertical_slice_example()
+
+    _assert_repeated_summary_matches(first, second)
+
+
 def test_heat_vertical_slice_module_prints_json_only() -> None:
     parsed = _run_module_json("pdelie.examples.heat_vertical_slice")
 
@@ -192,6 +223,13 @@ def test_kdv_vertical_slice_module_prints_json_only() -> None:
 
 def test_reaction_diffusion_vertical_slice_module_prints_json_only() -> None:
     parsed = _run_module_json("pdelie.examples.reaction_diffusion_vertical_slice")
+
+    _assert_vertical_slice_summary(parsed)
+    assert parsed["verification"]["classification"] != "failed"
+
+
+def test_advection_diffusion_vertical_slice_module_prints_json_only() -> None:
+    parsed = _run_module_json("pdelie.examples.advection_diffusion_vertical_slice")
 
     _assert_vertical_slice_summary(parsed)
     assert parsed["verification"]["classification"] != "failed"

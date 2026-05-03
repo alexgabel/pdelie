@@ -1,6 +1,6 @@
 # PDELie Tutorial Notebooks
 
-This directory is the recommended entry point for new PDELie users on the shipped `v0.18` surface.
+This directory is the recommended entry point for new PDELie users on the shipped `v0.19` surface.
 
 Tutorial promise:
 
@@ -27,7 +27,7 @@ These notebooks are tutorials, not API contracts. Example outputs are runtime su
 
 - Converting supported arrays into canonical `FieldBatch` objects.
 - Computing `spectral_fd` derivatives on uniform periodic 1D grids.
-- Evaluating strong residuals for the stable Heat, Burgers, KdV, and Fisher-KPP paths.
+- Evaluating strong residuals for the stable Heat, Burgers, KdV, Fisher-KPP, and advection-diffusion paths.
 - Fitting and validating polynomial translation generators in the stable slice.
 - Producing JSON-compatible residual, fit, verification, invariant, orbit, candidate, and formula summaries.
 - Auditing finite uniform x-translation workflows with coverage, consistency, and provenance reports.
@@ -42,9 +42,9 @@ These notebooks are tutorials, not API contracts. Example outputs are runtime su
 - Not a train/test split manager or leakage detector.
 - Not an operator-learning framework.
 - Not a paper-specific experiment pipeline.
-- Not a general nonuniform or multidimensional PDE framework in `v0.18`.
+- Not a general nonuniform or multidimensional PDE framework in `v0.19`.
 
-KS remains internal feasibility/no-go evidence. `v0.19` advection-diffusion is only a roadmap direction and is not implemented here.
+KS remains internal feasibility/no-go evidence. `v0.19` advection-diffusion is implemented only as a frozen scalar 1D periodic constant-coefficient strong path.
 
 ## Installation
 
@@ -83,7 +83,7 @@ Jupyter itself is not a core runtime dependency. Install notebook tooling in you
 
 | Notebook | Main concept | Required extras | Est. runtime | Stable APIs used | Out-of-scope warnings |
 | --- | --- | --- | --- | --- | --- |
-| `00_pde_timeseries_to_generators.ipynb` | Heat and Fisher-KPP quickstart: field, derivatives, residual, fit, verify, confidence card | `.[viz]` or `.[test]` for plots | 1-2 min | `FieldBatch`, `compute_spectral_fd_derivatives`, Heat/Fisher-KPP residuals, `summarize_vertical_slice` | no proof, no KS, no weak form |
+| `00_pde_timeseries_to_generators.ipynb` | Heat, Fisher-KPP, and advection-diffusion quickstart: field, derivatives, residual, fit, verify, confidence card | `.[viz]` or `.[test]` for plots | 1-2 min | `FieldBatch`, `compute_spectral_fd_derivatives`, Heat/Fisher-KPP/advection-diffusion residuals, `summarize_vertical_slice` | no proof, no KS, no weak form |
 | `01_raw_vs_translation_canonical_discovery.ipynb` | Raw vs translation-canonical discovery inputs plus orbit-batch contrast | `.[downstream]` or `.[test]` | ~1 min | discovery bridge, coverage diagnostics, orbit batch builder | not a benchmark, no split/leakage policy |
 | `02_robustness_sweeps.ipynb` | Noise/subsampling/fit-epsilon diagnostics | `.[viz]` or `.[test]` | 1-2 min | robustness helpers, fit diagnostics, verification summaries | no robustness guarantee |
 | `03_portability_round_trips.ipynb` | Generator manifest export/import and empirical revalidation | core | <1 min | portability helpers, `validate_symmetry_candidate` | serialization is not scientific validity |

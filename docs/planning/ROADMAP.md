@@ -453,6 +453,75 @@ The authoritative `v0.12` scope freeze belongs in:
 
 ## Current Completed Release
 
+### `v0.19` - Stable advection-diffusion strong path
+**Status:** Completed
+
+`v0.19` is the completed narrow PDE-expansion release after the `v0.18` Fisher-KPP reaction-diffusion strong-path release.
+
+Its purpose is:
+
+> add one stable scalar 1D periodic constant-coefficient advection-diffusion strong path without broadening grids, adapters, weak-form scope, or generator scope.
+
+Completed release definition:
+
+`canonical scalar 1D periodic FieldBatch -> spectral_fd derivatives -> advection-diffusion residual -> translation fit/verification -> vertical-slice summary/example`
+
+Completed scope:
+
+- `pdelie.data.generate_advection_diffusion_1d_field_batch(...)`
+- `pdelie.residuals.AdvectionDiffusionResidualEvaluator`
+- `pdelie.examples.run_advection_diffusion_vertical_slice_example(...)`
+- frozen advection-diffusion equation tag: `advection_diffusion_constant_coefficient`
+- residual `u_t + c*u_x - nu*u_xx`
+- default parameters `c = 0.75`, `nu = 0.05`
+- exact periodic Fourier synthetic rollout
+- direct-SVD translation fit evidence in the frozen vertical slice
+- compact current `v0_19-release-gate` readiness
+
+Release interpretation:
+
+- this is a scoped synthetic strong-form constant-coefficient advection-diffusion path, not a broad transport-diffusion framework
+- the stable claim is backed by direct SVD translation evidence, not reference fallback
+- mean drift is diagnostic-only in the release report
+- `v0.19.0` is a Git-tag-only release; PyPI and TestPyPI publication are deferred to `v1.0` or later
+
+Explicit non-goals:
+
+- no variable-coefficient advection-diffusion
+- no reaction-advection-diffusion
+- no weak advection-diffusion
+- no public custom initial-condition API
+- no KS runtime promotion
+- no broad dataset adapters
+- no PDEBench or The Well support
+- no multidimensional, multivariable, or nonuniform-grid expansion
+- no time-translation APIs
+- no neural or callable generator API
+- no operator-facing symmetry work
+- no train/test policy or split management
+- no root export expansion
+
+The authoritative `v0.19` scope freeze belongs in:
+
+- `V0_19_SCOPE.md`
+
+### Release Gate for `v0.19`
+
+`v0.19` is complete only if:
+
+- advection-diffusion generator and residual APIs are documented and covered by tests
+- new APIs are importable from their submodules only
+- root `pdelie` remains unchanged
+- the advection-diffusion vertical slice has direct SVD evidence in tolerance
+- the advection-diffusion example emits JSON only using the nested vertical-slice summary shape
+- no public variable-coefficient advection-diffusion, weak advection-diffusion, KS, broad adapter, custom-IC, nonuniform/multidimensional, time-translation, neural/callable, split-policy, or operator API lands
+- CI uses one compact current release gate plus full editable tests and package smoke
+- package/readiness docs preserve the `v1.0` package-index publishing deferral
+
+---
+
+## Recent Completed Release
+
 ### `v0.18` - Stable Fisher-KPP reaction-diffusion strong path
 **Status:** Completed
 
@@ -997,32 +1066,253 @@ The authoritative `v0.7` scope freeze belongs in:
 
 ---
 
-## Medium-Term Horizon
+## Medium-Term Planned Pre-`v1.0` Outline
 
-### `v0.18+` - Scoped PDE expansion
+The following sequence is planned, not committed execution.
+Only `Committed` items define the next release target.
+
+The principle is still one stable axis at a time: do not combine PDE expansion, data-adapter expansion, weak-form expansion, multi-generator machinery, and downstream policy in one release.
+
+### `v0.20` - Unified generator confidence reports
 **Status:** Planned
 
-`v0.18+` is the earliest planned point for another stable PDE expansion.
+Purpose:
 
-Preferred stable direction:
+> promote the notebook confidence-card teaching pattern into a public runtime reporting helper.
 
-- advection-diffusion or reaction-diffusion, because these are more likely to fit the current scalar structured-data contracts cleanly
+Candidate scope:
 
-Alternative scoped direction:
+- combine residual health, fit conditioning, span evidence, verification, candidate validation, orbit/coverage diagnostics, and configured thresholds
+- produce JSON-compatible runtime summaries
+- make evidence labels and missing-evidence states explicit
 
-- KS residual-only, but only if the public claim explicitly excludes direct residual-based fitting recovery
+Explicit boundary:
 
-Deferred until separately frozen:
+- reporting helpers remain report-only
+- no transformed `FieldBatch` collections are returned from reporting helpers
+- no train/test policy or downstream success policy is encoded
 
-- broad PDE zoo expansion
-- PDEBench or The Well adapters
-- multidimensional grids
-- nonuniform grids
-- operator-facing APIs
-- weak KS
-- learned-generator training
+### `v0.21` - External data readiness reports
+**Status:** Planned
 
-Each of these requires its own scope freeze before implementation.
+Purpose:
+
+> make “bring your own scalar 1D periodic data” safer before adding broad adapters.
+
+Candidate scope:
+
+- `FieldBatch` audit reports
+- coordinate and grid diagnostics
+- metadata completeness and consistency diagnostics
+- finite-value, mask, and scalar-var diagnostics
+- residual-evaluator compatibility preflight reports
+- conservative metadata inference for safe, explicit cases only
+
+Deferred:
+
+- `xarray.Dataset` support
+- file-based dataset loaders
+- PDEBench / The Well adapters
+- multidimensional or nonuniform-grid ingestion
+
+### `v0.22` - Downstream discovery contracts
+**Status:** Planned
+
+Purpose:
+
+> turn the narrow downstream discovery path into clearer, backend-neutral runtime contracts and reports.
+
+Candidate scope:
+
+- broad downstream discovery contracts for runtime reports
+- standardized recovery and provenance summaries
+- bridge-output summaries for backend-native arrays and labels
+- orbit-materialization provenance checks for downstream inputs
+- paper-agnostic downstream evaluation templates
+
+Deferred:
+
+- general discovery-backend framework
+- manuscript thresholds
+- backend lock-in beyond thin adapters
+- automatic experiment policy
+
+### `v0.23` - Split/leakage provenance diagnostics
+**Status:** Planned
+
+Purpose:
+
+> reduce misuse risk now that materialized orbit batches are public data utilities.
+
+Candidate scope:
+
+- diagnostics over user-supplied train/heldout partitions
+- source/shift provenance overlap reports
+- heldout-leakage risk reports for orbit-materialized data
+
+Explicit boundary:
+
+- no train/test split management
+- no automatic split generation
+- no downstream augmentation policy
+- no benchmark success criteria
+
+### `v0.24` - Weak-form supportability reset
+**Status:** Planned
+
+Purpose:
+
+> decide whether weak derivatives and broader weak-form methods can be promoted beyond the frozen `v0.8` weak residual report slice.
+
+Candidate scope:
+
+- weak derivative backend feasibility
+- broader weak-form residual method contracts
+- weak reaction-diffusion feasibility
+- noisy/coarse-data supportability diagnostics
+
+Deferred unless separately proven:
+
+- weak KdV APIs
+- weak KS APIs
+- broad noisy-data superiority claims
+
+### `v0.25` - KdV scope decision
+**Status:** Planned
+
+Purpose:
+
+> decide whether KdV should expand beyond the frozen normalized periodic short-horizon regime.
+
+Candidate scope:
+
+- custom KdV initial-condition feasibility
+- configurable KdV coefficient feasibility
+- general KdV support decision
+- weak KdV decision
+
+Acceptable outcome:
+
+- keep KdV frozen and document why if the broader regime is not supportable.
+
+### `v0.26` - KS revisit
+**Status:** Planned
+
+Purpose:
+
+> revisit the `v0.11`/`v0.12` KS no-go with better confidence diagnostics.
+
+Candidate decisions:
+
+- stable KS residual-only public path
+- stable full KS strong path
+- continued no-go/defer
+
+Explicitly evaluated:
+
+- stable KS data generator
+- stable KS residual evaluator
+- KS vertical-slice example
+- KS imported parity
+- weak KS API
+- root KS export
+
+Default stance:
+
+- no root KS export
+- no weak KS
+- no public full KS path unless direct residual-based fitting evidence improves
+
+### `v0.27` - Multi-generator feasibility
+**Status:** Planned
+
+Purpose:
+
+> test whether the current single-generator-centered runtime can support stable multi-generator workflows.
+
+Candidate scope:
+
+- stable multi-generator PDE fitting feasibility
+- multi-generator invariant machinery feasibility
+- closure/span/verification interactions for fitted families
+
+High-risk boundary:
+
+- this may alter core assumptions and should not be mixed with a PDE or adapter release.
+
+### `v0.28` - Data ecosystem feasibility
+**Status:** Planned
+
+Purpose:
+
+> decide whether external data ecosystem support can be widened without weakening canonical contracts.
+
+Candidate scope:
+
+- `xarray.Dataset` support
+- file-based dataset loaders
+- narrow adapter feasibility
+- metadata inference expansion
+
+Deferred unless scope is frozen:
+
+- PDEBench / The Well as stable APIs
+- broad adapter framework
+- implicit alias-based loaders
+
+### `v0.29` - Grid-domain feasibility
+**Status:** Planned
+
+Purpose:
+
+> evaluate multidimensional and nonuniform-grid ingestion as a contract change, not a small adapter patch.
+
+Candidate scope:
+
+- multidimensional ingestion feasibility
+- nonuniform-grid ingestion feasibility
+- resampling/reporting decisions
+- derivative/residual compatibility diagnostics for unsupported grids
+
+Default stance:
+
+- unsupported until a dedicated scope freeze proves the contracts.
+
+### `v0.30` - Orbit/action scope decision
+**Status:** Planned
+
+Purpose:
+
+> decide whether invariant actions should expand beyond frozen uniform spatial translation materialization.
+
+Candidate scope:
+
+- public orbit-view builders beyond the materialized uniform translation orbit batch helper
+- transformed `FieldBatch` collection policy for data APIs
+- time-translation APIs
+- `axis="time"` support
+
+Boundary:
+
+- reporting helpers remain report-only
+- transformed collections belong in explicit data/invariant APIs, not reporting APIs
+
+### `v0.31` - `v1.0` readiness hardening
+**Status:** Planned
+
+Purpose:
+
+> freeze the public engine before `v1.0`.
+
+Candidate scope:
+
+- public/private API audit
+- root export policy audit
+- deprecation policy
+- package publishing plan
+- docs and notebook consistency audit
+- release-gate consolidation
+- support matrix for stable PDEs, grids, residuals, candidate types, and downstream paths
 
 ### `v1.0` - Stable public engine
 **Status:** Deferred
@@ -1070,6 +1360,9 @@ This is not part of the near-term non-operator Paper 1 path and should not be mi
 - `V0_14_SCOPE.md` once frozen
 - `V0_15_SCOPE.md` once frozen
 - `V0_16_SCOPE.md` once frozen
+- `V0_17_SCOPE.md` once frozen
+- `V0_18_SCOPE.md` once frozen
+- `V0_19_SCOPE.md` once frozen
 - `PLAN.md` for current execution only
 
 ### Non-authoritative for scheduling
@@ -1113,6 +1406,18 @@ It should **not** be edited every time a new idea appears.
 - `v0.16` = external symmetry-candidate interop and validation, not detector training
 - `v0.17` = formula-backed generator records and validation, without callables or learned-generator training
 - `v0.18` = stable scalar 1D periodic Fisher-KPP reaction-diffusion strong path
-- `v0.19+` = future scoped PDE expansion only after an explicit scope freeze
+- `v0.19` = stable scalar 1D periodic constant-coefficient advection-diffusion strong path
+- `v0.20` = planned unified generator confidence reports
+- `v0.21` = planned external data readiness reports
+- `v0.22` = planned downstream discovery contracts and provenance reports
+- `v0.23` = planned split/leakage provenance diagnostics, not split management
+- `v0.24` = planned weak-form supportability reset
+- `v0.25` = planned KdV scope decision
+- `v0.26` = planned KS revisit
+- `v0.27` = planned multi-generator feasibility
+- `v0.28` = planned data ecosystem feasibility
+- `v0.29` = planned grid-domain feasibility
+- `v0.30` = planned orbit/action scope decision
+- `v0.31` = planned `v1.0` readiness hardening
 - `v1.0` = stable public engine
 - later / experimental = operator-facing symmetry discovery

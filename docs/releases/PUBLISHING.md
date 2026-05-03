@@ -16,14 +16,14 @@ These files must be aligned before any release candidate or final release is pub
 
 ## V0.x Package-Index Deferral
 
-For the current `v0.x` series, including `v0.18.0`, release completion means:
+For the current `v0.x` series, including `v0.19.0`, release completion means:
 
 - metadata, docs, tests, build, and wheel-smoke checks pass
 - the release PR is merged
 - the merged commit is tagged in Git as the final version
 
-`v0.18.0` is intentionally a Git-tag-only release.
-Do not run TestPyPI or PyPI publishing for `v0.18`.
+`v0.19.0` is intentionally a Git-tag-only release.
+Do not run TestPyPI or PyPI publishing for `v0.19`.
 
 Package-index publishing through TestPyPI or PyPI is deferred until `v1.0` or later.
 The publishing model below remains the intended future package-index workflow once publication is re-enabled.

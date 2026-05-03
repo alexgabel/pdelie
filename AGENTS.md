@@ -15,14 +15,20 @@ V0.x stable scope only:
 - uniform rectilinear grids
 - synthetic PDE data
 - Lie point symmetries
-- polynomial generators
+- canonical polynomial `GeneratorFamily` objects
+- runtime-only formula-backed generator records
+- frozen invariant/reporting/orbit utilities
 
 ## Do not implement unless explicitly asked
 - neural generators
-- weak-form advanced methods
+- Python-callable or executable-string generator APIs
+- weak-form advanced methods beyond frozen weak-report slices
 - operator symmetry
-- broad dataset adapters
+- multidimensional or nonuniform-grid expansion
 - paper-specific experiment logic
+- broad dataset adapters or file-based dataset loaders
+- public KS runtime APIs
+- train/test policy or heldout-leakage management
 
 ## Workflow
 For nontrivial tasks:
