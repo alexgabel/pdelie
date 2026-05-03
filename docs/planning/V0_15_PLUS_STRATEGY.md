@@ -167,15 +167,17 @@ The completed scope freeze belongs in `V0_17_SCOPE.md`.
 
 ---
 
-## V0.18+ - Scoped PDE Expansion
+## V0.18 Completed And V0.19+ Scoped PDE Expansion
 
-Planned theme:
+`v0.18` completed the first scoped PDE expansion by adding the stable scalar 1D periodic Fisher-KPP reaction-diffusion strong path.
+
+Future planned theme:
 
 > add another stable numerical axis only after the invariant/data-utility surface remains supportable.
 
 Preferred stable expansion:
 
-- advection-diffusion or reaction-diffusion, because they are likely to fit the current scalar/structured-data contracts with less ambiguity than KS promotion
+- advection-diffusion or another tightly scoped reaction-diffusion variant, because they are likely to fit the current scalar/structured-data contracts with less ambiguity than KS promotion
 
 Alternative scoped expansion:
 

@@ -45,7 +45,7 @@ def _translation_spec(generator: GeneratorFamily) -> InvariantMapSpec:
 def test_v0_16_release_gate_metadata_docs_and_ci_are_aligned() -> None:
     pyproject = tomllib.loads(_repo_text("pyproject.toml"))
     workflow = _repo_text(".github/workflows/ci.yml")
-    readiness = _repo_text("docs/releases/V0_17_RELEASE_READINESS.md")
+    readiness = _repo_text("docs/releases/V0_18_RELEASE_READINESS.md")
     readme = _repo_text("README.md")
     changelog = _repo_text("CHANGELOG.md")
     publishing = _repo_text("docs/releases/PUBLISHING.md")
@@ -54,18 +54,18 @@ def test_v0_16_release_gate_metadata_docs_and_ci_are_aligned() -> None:
     roadmap = _repo_text("docs/planning/ROADMAP.md")
     release_gate_jobs = re.findall(r"^  (v0_\d+-release-gate):", workflow, flags=re.MULTILINE)
 
-    assert pyproject["project"]["version"] == "0.17.0"
-    assert release_gate_jobs == ["v0_17-release-gate"]
-    assert "python -m pytest tests/test_v0_17_release_gate.py" in workflow
+    assert pyproject["project"]["version"] == "0.18.0"
+    assert release_gate_jobs == ["v0_18-release-gate"]
+    assert "python -m pytest tests/test_v0_18_release_gate.py" in workflow
     assert "v0_16-release-gate" not in workflow
 
     assert "## 0.16.0" in changelog
-    assert "V0.17" in readme
+    assert "V0.18" in readme
     assert "validate_symmetry_candidate" in readme
-    assert "package version: `0.17.0`" in readiness
-    assert "git tag: `v0.17.0`" in readiness
-    assert "Do not run TestPyPI or PyPI publishing for `v0.17`" in readiness
-    assert "including `v0.17.0`" in publishing
+    assert "package version: `0.18.0`" in readiness
+    assert "git tag: `v0.18.0`" in readiness
+    assert "Do not run TestPyPI or PyPI publishing for `v0.18`" in readiness
+    assert "including `v0.18.0`" in publishing
     assert "Milestone 6: COMPLETE" in plan
     assert "Milestone 6: COMPLETE" in scope
     assert "`v0.16` - External symmetry-candidate validation" in roadmap

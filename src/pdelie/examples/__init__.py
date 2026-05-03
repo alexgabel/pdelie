@@ -4,6 +4,7 @@ __all__ = [
     "run_invariant_workflow_summary_example",
     "run_kdv_vertical_slice_example",
     "run_orbit_coverage_diagnostics_example",
+    "run_reaction_diffusion_vertical_slice_example",
     "run_symmetry_candidate_validation_example",
     "run_translation_orbit_batch_example",
 ]
@@ -35,6 +36,14 @@ def run_kdv_vertical_slice_example() -> dict[str, object]:
 
 def run_orbit_coverage_diagnostics_example() -> dict[str, object]:
     from pdelie.examples.orbit_coverage_diagnostics import run_orbit_coverage_diagnostics_example as _impl
+
+    return _impl()
+
+
+def run_reaction_diffusion_vertical_slice_example() -> dict[str, object]:
+    from pdelie.examples.reaction_diffusion_vertical_slice import (
+        run_reaction_diffusion_vertical_slice_example as _impl,
+    )
 
     return _impl()
 

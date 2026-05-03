@@ -29,6 +29,7 @@ _EXPECTED_RESIDUALS_EXPORTS = {
     "BurgersResidualEvaluator",
     "HeatResidualEvaluator",
     "KdVResidualEvaluator",
+    "ReactionDiffusionResidualEvaluator",
     "ResidualEvaluator",
     "evaluate_weak_burgers_residual",
     "evaluate_weak_heat_residual",

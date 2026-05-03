@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pdelie"
-version = "0.17.0"
-description = "V0.17 formula-backed generator records and validation over the Heat/Burgers/weak-report/KdV engine"
+version = "0.18.0"
+description = "V0.18 Fisher-KPP reaction-diffusion strong path plus retained Heat/Burgers/weak-report/KdV and symmetry diagnostics"
 requires-python = ">=3.11"
 dependencies = [
   "numpy>=1.24,<2",

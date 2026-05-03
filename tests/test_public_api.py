@@ -34,6 +34,7 @@ def test_runtime_package_api_is_importable() -> None:
         from_numpy,
         from_xarray,
         generate_kdv_1d_field_batch,
+        generate_reaction_diffusion_1d_field_batch,
         split_batch_train_heldout,
         subsample_time,
         subsample_x,
@@ -58,7 +59,12 @@ def test_runtime_package_api_is_importable() -> None:
         export_generator_family_manifest,
         import_generator_family_manifest,
     )
-    from pdelie.residuals import KdVResidualEvaluator, evaluate_weak_burgers_residual, evaluate_weak_heat_residual
+    from pdelie.residuals import (
+        KdVResidualEvaluator,
+        ReactionDiffusionResidualEvaluator,
+        evaluate_weak_burgers_residual,
+        evaluate_weak_heat_residual,
+    )
     from pdelie.reporting import (
         summarize_formula_generator_family,
         summarize_generator_fit_diagnostics,
@@ -89,6 +95,7 @@ def test_runtime_package_api_is_importable() -> None:
     assert from_numpy is not None
     assert from_xarray is not None
     assert generate_kdv_1d_field_batch is not None
+    assert generate_reaction_diffusion_1d_field_batch is not None
     assert split_batch_train_heldout is not None
     assert subsample_time is not None
     assert subsample_x is not None
@@ -99,6 +106,7 @@ def test_runtime_package_api_is_importable() -> None:
     assert diagnose_uniform_translation_consistency is not None
     assert summarize_uniform_translation_orbit is not None
     assert KdVResidualEvaluator is not None
+    assert ReactionDiffusionResidualEvaluator is not None
     assert evaluate_weak_burgers_residual is not None
     assert evaluate_weak_heat_residual is not None
     assert summarize_generator_fit_diagnostics is not None
@@ -148,6 +156,7 @@ def test_root_package_does_not_export_runtime_invariant_applier() -> None:
     assert not hasattr(pdelie, "evaluate_weak_burgers_residual")
     assert not hasattr(pdelie, "evaluate_weak_heat_residual")
     assert not hasattr(pdelie, "evaluate_weak_ks_residual")
+    assert not hasattr(pdelie, "evaluate_weak_reaction_diffusion_residual")
     assert not hasattr(pdelie, "evaluate_discovery_recovery")
     assert not hasattr(pdelie, "fit_pysindy_discovery")
     assert not hasattr(pdelie, "from_pdebench")
@@ -175,19 +184,24 @@ def test_root_package_does_not_export_runtime_invariant_applier() -> None:
     assert not hasattr(pdelie, "import_generator_family_manifest")
     assert not hasattr(pdelie, "KdVResidualEvaluator")
     assert not hasattr(pdelie, "generate_kdv_1d_field_batch")
+    assert not hasattr(pdelie, "generate_reaction_diffusion_1d_field_batch")
+    assert not hasattr(pdelie, "generate_advection_diffusion_1d_field_batch")
     assert not hasattr(pdelie, "generate_ks_1d_field_batch")
     assert not hasattr(pdelie, "generate_ks_feasibility_field_batch")
     assert not hasattr(pdelie, "KSResidualEvaluator")
     assert not hasattr(pdelie, "KuramotoSivashinskyResidualEvaluator")
+    assert not hasattr(pdelie, "ReactionDiffusionResidualEvaluator")
     assert not hasattr(pdelie, "materialize_uniform_translation_orbit")
     assert not hasattr(pdelie, "split_orbit_train_heldout")
     assert not hasattr(pdelie, "train_test_translation_orbit_split")
     assert not hasattr(pdelie, "WeakKSResidualEvaluator")
+    assert not hasattr(pdelie, "WeakReactionDiffusionResidualEvaluator")
     assert not hasattr(pdelie, "OperatorSymmetry")
     assert not hasattr(pdelie, "run_invariant_workflow_summary_example")
     assert not hasattr(pdelie, "run_formula_generator_validation_example")
     assert not hasattr(pdelie, "run_kdv_vertical_slice_example")
     assert not hasattr(pdelie, "run_orbit_coverage_diagnostics_example")
+    assert not hasattr(pdelie, "run_reaction_diffusion_vertical_slice_example")
     assert not hasattr(pdelie, "run_symmetry_candidate_validation_example")
     assert not hasattr(pdelie, "run_translation_orbit_batch_example")
     assert not hasattr(pdelie, "sample_kdv_mode_coefficients")
@@ -229,6 +243,7 @@ def test_data_package_runtime_api_matches_current_frozen_surface() -> None:
     assert hasattr(data_module, "from_numpy")
     assert hasattr(data_module, "from_xarray")
     assert hasattr(data_module, "generate_kdv_1d_field_batch")
+    assert hasattr(data_module, "generate_reaction_diffusion_1d_field_batch")
     assert hasattr(data_module, "subsample_time")
     assert hasattr(data_module, "subsample_x")
     assert hasattr(data_module, "split_batch_train_heldout")
@@ -239,6 +254,7 @@ def test_data_package_runtime_api_matches_current_frozen_surface() -> None:
     assert not hasattr(data_module, "from_the_well")
     assert not hasattr(data_module, "generate_ks_1d_field_batch")
     assert not hasattr(data_module, "generate_ks_feasibility_field_batch")
+    assert not hasattr(data_module, "generate_advection_diffusion_1d_field_batch")
     assert not hasattr(data_module, "load_pdebench")
     assert not hasattr(data_module, "load_the_well")
     assert not hasattr(data_module, "sample_kdv_mode_coefficients")
@@ -250,6 +266,7 @@ def test_residuals_package_runtime_api_matches_current_frozen_surface() -> None:
     assert hasattr(residuals_module, "HeatResidualEvaluator")
     assert hasattr(residuals_module, "BurgersResidualEvaluator")
     assert hasattr(residuals_module, "KdVResidualEvaluator")
+    assert hasattr(residuals_module, "ReactionDiffusionResidualEvaluator")
     assert hasattr(residuals_module, "ResidualEvaluator")
     assert hasattr(residuals_module, "evaluate_weak_heat_residual")
     assert hasattr(residuals_module, "evaluate_weak_burgers_residual")
@@ -261,6 +278,8 @@ def test_residuals_package_runtime_api_matches_current_frozen_surface() -> None:
     assert not hasattr(residuals_module, "WeakKdVResidualEvaluator")
     assert not hasattr(residuals_module, "WeakKSResidualEvaluator")
     assert not hasattr(residuals_module, "WeakKuramotoSivashinskyResidualEvaluator")
+    assert not hasattr(residuals_module, "WeakReactionDiffusionResidualEvaluator")
+    assert not hasattr(residuals_module, "evaluate_weak_reaction_diffusion_residual")
     assert not hasattr(residuals_module, "KSResidualEvaluator")
     assert not hasattr(residuals_module, "KuramotoSivashinskyResidualEvaluator")
     assert not hasattr(residuals_module, "KDVResidualEvaluator")
@@ -290,6 +309,7 @@ def test_examples_package_runtime_api_matches_current_frozen_surface() -> None:
     assert hasattr(examples_module, "run_invariant_workflow_summary_example")
     assert hasattr(examples_module, "run_kdv_vertical_slice_example")
     assert hasattr(examples_module, "run_orbit_coverage_diagnostics_example")
+    assert hasattr(examples_module, "run_reaction_diffusion_vertical_slice_example")
     assert hasattr(examples_module, "run_symmetry_candidate_validation_example")
     assert hasattr(examples_module, "run_translation_orbit_batch_example")
     assert not hasattr(examples_module, "run_ks_vertical_slice_example")

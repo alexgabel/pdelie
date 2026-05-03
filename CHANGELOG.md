@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.18.0
+
+First final release for the frozen V0.18 Fisher-KPP reaction-diffusion strong path.
+
+- adds `pdelie.data.generate_reaction_diffusion_1d_field_batch(...)` for deterministic synthetic scalar 1D periodic Fisher-KPP fields
+- adds `pdelie.residuals.ReactionDiffusionResidualEvaluator` for the strong residual `u_t - nu*u_xx - rho*u*(1-u) = 0`
+- adds `python -m pdelie.examples.reaction_diffusion_vertical_slice` and `pdelie.examples.run_reaction_diffusion_vertical_slice_example(...)` as JSON-only runtime smoke examples
+- freezes the equation tag `reaction_diffusion_fisher_kpp` with `nu` and `rho` metadata
+- verifies the frozen vertical slice with direct SVD translation evidence, no reference fallback, residual max around `1.07e-5`, residual RMS around `1.22e-6`, and exact held-out verification
+- documents the new APIs in `API_STABILITY.md` as submodule-only runtime APIs with no root exports
+- preserves prior Heat/Burgers strong paths, weak residual reports, normalized periodic KdV, reporting helpers, invariant/orbit diagnostics, orbit batches, candidate validation, and formula-backed generator support
+
+Explicitly deferred for this final release:
+
+- advection-diffusion
+- KS runtime promotion
+- weak reaction-diffusion
+- public custom initial-condition APIs
+- broad dataset adapters such as PDEBench or The Well
+- multidimensional, multivariable, or nonuniform-grid support
+- neural or callable generator APIs
+- operator-facing APIs
+- train/test policy, split management, or heldout-leakage detection
+- PyPI and TestPyPI publication; package-index publishing is deferred to `v1.0` or later
+
 ## 0.17.0
 
 First final release for the frozen V0.17 formula-backed generator interoperability slice.

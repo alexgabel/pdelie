@@ -1,30 +1,20 @@
-# PDELie - Execution Plan (V0.17)
+# PDELie - Execution Plan (V0.18)
 
-## Current Release Status
+**Status:** COMPLETE
 
-**V0.17 is complete as formula-backed generator interoperability**
+**V0.18 is complete as the stable Fisher-KPP reaction-diffusion strong path**
 
-This file is the completed execution record for the `v0.17` release series.
+This file is the completed execution record for the `v0.18` release series.
 
-Committed release theme:
+## Release Theme
 
-`canonical scalar 1D periodic FieldBatch + formula-backed generator candidate -> safe formula metadata/evaluation diagnostics -> empirical configured validation report`
+`v0.18` adds one scoped PDE expansion:
 
-Important release boundary:
+> canonical scalar 1D periodic FieldBatch -> spectral_fd derivatives -> Fisher-KPP residual -> translation fit/verification -> vertical-slice summary/example
 
-> v0.17 adds runtime-only formula-backed generator records, reporting, and candidate validation. It does not change canonical polynomial `GeneratorFamily` semantics, train learned generators, accept Python callables, parse executable formula strings, add a new PDE, promote KS, add weak KS, broaden adapters, add operator APIs, or add root exports.
+The public claim is intentionally narrow. The release adds a stable synthetic Fisher-KPP generator, a strong-form residual evaluator, and a JSON-only vertical-slice smoke example. It does not add advection-diffusion, KS promotion, weak reaction-diffusion, custom initial-condition APIs, broad adapters, multidimensional or nonuniform support, neural/callable generator APIs, operator APIs, split policy, or root exports.
 
-Contracts and stable behavior belong in:
-
-- `docs/specs/SPEC.md`
-- `docs/specs/CONTRACTS_AND_DEFAULTS.md`
-- `docs/specs/API_STABILITY.md`
-- `docs/planning/ROADMAP.md`
-- `docs/planning/V0_17_SCOPE.md`
-
-`API_STABILITY.md` was updated when the public `v0.17` formula-backed APIs landed.
-
-Milestone status summary:
+## Milestone Status
 
 - Milestone 0: COMPLETE
 - Milestone 1: COMPLETE
@@ -34,224 +24,141 @@ Milestone status summary:
 - Milestone 5: COMPLETE
 - Milestone 6: COMPLETE
 
----
+Authoritative scope:
 
-## V0.16 Closeout
+- `docs/planning/V0_18_SCOPE.md`
 
-`v0.16` is complete as external symmetry-candidate validation.
-
-Carried-forward guardrails:
-
-- `validated` means empirical configured validation, not a mathematical proof
-- candidate validation is reporting/interop, not detector training
-- callable descriptors and learned generators remain out of scope
-
-`v0.17` extends that interop surface to safe formula metadata without opening executable or learned-generator scope.
-
----
+`API_STABILITY.md` was updated when the public `v0.18` reaction-diffusion APIs landed.
 
 ## Milestone 0 - Scope Freeze
 
-**Status:** COMPLETE
+Freeze `v0.18` as a stable Fisher-KPP reaction-diffusion strong-path release.
 
-### Goal
+Closeout:
 
-Freeze `v0.17` as formula-backed generator interoperability.
+- added `docs/planning/V0_18_SCOPE.md`
+- reset `PLAN.md` as the active `v0.18` execution record
+- updated `ROADMAP.md` to record `v0.18` as the current completed release
+- kept the stable scope to scalar 1D uniform periodic synthetic data
 
-### Completed Outcome
+## Milestone 1 - Equation And Numerical Semantics Freeze
 
-- added `docs/planning/V0_17_SCOPE.md`
-- reset `PLAN.md` as the active `v0.17` execution record
-- updated `ROADMAP.md` to record `v0.17` as the current completed release
-- kept `API_STABILITY.md` unchanged until implementation landed
-- recorded explicit non-goals:
-  - no callable generator API
-  - no arbitrary formula-string evaluator
-  - no neural detector or learned-generator training
-  - no canonical `GeneratorFamily` semantic change
-  - no KS promotion
-  - no new PDE
-  - no weak KS
-  - no broad adapters
-  - no operator APIs
-  - no root export expansion
+Frozen equation:
 
----
+```text
+u_t = nu*u_xx + rho*u*(1 - u)
+residual = u_t - nu*u_xx - rho*u*(1 - u)
+```
 
-## Milestone 1 - Formula Schema and Validation Semantics Freeze
+Frozen metadata:
 
-**Status:** COMPLETE
+- `field.metadata["parameter_tags"]["equation"] == "reaction_diffusion_fisher_kpp"`
+- `field.metadata["parameter_tags"]["nu"]`
+- `field.metadata["parameter_tags"]["rho"]`
 
-### Goal
+Frozen defaults:
 
-Freeze the formula record, expression policy, and candidate-validation semantics before implementation.
+- `nu = 0.05`
+- `rho = 1.0`
+- smooth bounded Fourier-mode initial conditions
+- deterministic pseudo-spectral periodic RK4 rollout
 
-### Completed Outcome
+Mass and mean drift are diagnostic-only because Fisher-KPP reaction terms are not mass conserving.
 
-M1 froze:
+## Milestone 2 - Synthetic Data Generator
 
-- runtime-only public record:
-  - `pdelie.symmetry.FormulaGeneratorFamily`
-- runtime reporting helper:
-  - `pdelie.reporting.summarize_formula_generator_family(...)`
-- candidate-validation extension:
-  - `pdelie.symmetry.validate_symmetry_candidate(...)` accepts formula objects and strict current formula payloads
-- report discriminator:
-  - `candidate_kind = "formula_generator_family"`
-- supported formula components:
-  - `tau`
-  - `xi`
-  - `phi`
-- supported variables:
-  - `t`
-  - `x`
-  - `u`
-- safe JSON expression AST nodes:
-  - `const`
-  - `var`
-  - `add`
-  - `mul`
-  - integer `pow`
-  - `sin`
-  - `cos`
-  - `reciprocal`
-  - metadata-only `symbolic_reference`
-- formula validation interpretation:
-  - malformed formulas raise typed validation errors
-  - finite formula-evaluation failures return `conclusion = "failed"`
-  - symbolic-reference-only formulas remain reporting/schema results and do not pretend to evaluate
-  - formulas without finite transforms may be only partially validated
-  - formulas with supported passing finite-transform checks may be validated
+Implemented:
 
----
+- `pdelie.data.generate_reaction_diffusion_1d_field_batch(...)`
 
-## Milestone 2 - Formula Record and Reporting Implementation
+The generator returns canonical scalar 1D periodic `FieldBatch` objects with finite unmasked values and the frozen Fisher-KPP equation tag. It has no public custom initial-condition API.
 
-**Status:** COMPLETE
+Validation added:
 
-### Goal
+- deterministic same-seed output and seed sensitivity
+- canonical dims, coords, metadata, scalar var, finite values, no mask by default
+- `from_numpy` ingestion parity
+- invalid size, parameter, mode, amplitude, substep, and domain inputs raise typed validation errors
 
-Implement the runtime-only formula record and reporting helper.
+## Milestone 3 - Residual Evaluator
 
-### Completed Outcome
+Implemented:
 
-- implemented `pdelie.symmetry.FormulaGeneratorFamily`
-- implemented strict `.to_dict()` / `.from_dict()` JSON payload round trips
-- implemented safe expression normalization for the frozen AST
-- rejected invalid variables, components, expression nodes, nonfinite constants, arbitrary strings, and callables with typed validation errors
-- supported symbolic references as metadata-only expressions
-- supported optional `finite_transform_spec` as a canonical `InvariantMapSpec` payload
-- implemented `pdelie.reporting.summarize_formula_generator_family(...)`
-- documented the new APIs in `docs/specs/API_STABILITY.md`
+- `pdelie.residuals.ReactionDiffusionResidualEvaluator`
 
----
+Residual contract:
 
-## Milestone 3 - Formula Candidate Validation
+- evaluates `u_t - nu*u_xx - rho*u*(1-u)`
+- computes `compute_spectral_fd_derivatives(field)` when derivatives are omitted
+- supplied derivatives must include `u_t` and `u_xx`
+- validates scalar 1D periodic finite unmasked fields and the frozen equation tag
 
-**Status:** COMPLETE
+Observed frozen-fixture residual evidence:
 
-### Goal
+- residual max: approximately `1.07e-5`
+- residual RMS: approximately `1.22e-6`
 
-Extend empirical configured candidate validation to formula-backed generator families.
+## Milestone 4 - Vertical Slice And Example
 
-### Completed Outcome
+Implemented:
 
-- extended `validate_symmetry_candidate(...)` for:
-  - `FormulaGeneratorFamily` objects
-  - strict current formula payload mappings
-- added `candidate_kind = "formula_generator_family"`
-- added formula-evaluation diagnostics over canonical scalar 1D periodic `FieldBatch` inputs
-- reported component-level value shapes, max absolute values, RMS values, symbolic-reference unavailability, and denominator-floor failures
-- kept denominator-floor violations as failed empirical reports, not untyped exceptions
-- reused the existing invariant-map residual and inverse validation path when a supported finite-transform spec is attached
-- preserved existing `GeneratorFamily` and `InvariantMapSpec` validation behavior
+- `pdelie.examples.run_reaction_diffusion_vertical_slice_example(...)`
+- command module: `python -m pdelie.examples.reaction_diffusion_vertical_slice`
 
----
+The example emits the existing nested `summarize_vertical_slice(...)` runtime summary shape.
 
-## Milestone 4 - Example
+Observed frozen vertical-slice evidence:
 
-**Status:** COMPLETE
+- derivative keys: `u_t`, `u_x`, `u_xx`
+- residual max: approximately `1.07e-5`
+- residual RMS: approximately `1.22e-6`
+- fit mode: `svd`
+- evidence label: `direct_svd_in_tolerance`
+- reference fallback: `false`
+- selected/SVD span distance: approximately `4.12e-3`
+- verification classification: `exact`
+- first held-out verification error: approximately `1.73e-9`
 
-### Goal
-
-Add a compact JSON-only example for formula-backed candidate validation.
-
-### Completed Outcome
-
-- added `python -m pdelie.examples.formula_generator_validation`
-- added `pdelie.examples.run_formula_generator_validation_example(...)`
-- example demonstrates:
-  - affine formula candidate
-  - trigonometric formula candidate
-  - rational formula candidate with finite diagnostics
-  - formula candidate with supported uniform-translation finite transform
-  - failed nonfinite formula candidate for contrast
-- example output remains runtime smoke/reporting, not a canonical artifact schema
-- root `pdelie` remains unchanged
-
----
+This satisfies the stable promotion condition. No fallback-backed reaction-diffusion claim landed.
 
 ## Milestone 5 - API / Public-surface Audit
 
-**Status:** COMPLETE
+Audit result:
 
-### Goal
+- new APIs are importable only from owning submodules
+- root `pdelie` remains unchanged
+- `API_STABILITY.md` documents the new reaction-diffusion generator, residual evaluator, and example runner
+- no advection-diffusion, KS promotion, weak reaction-diffusion, custom IC API, broad adapter, multidimensional/nonuniform support, operator API, neural/callable generator API, or split policy landed
 
-Verify public surface and documentation match the frozen `v0.17` scope.
+## Milestone 6 - Release Gate And Readiness
 
-### Completed Outcome
+Implemented:
 
-- confirmed `pdelie.symmetry.FormulaGeneratorFamily` is submodule-only
-- confirmed `pdelie.reporting.summarize_formula_generator_family(...)` is submodule-only
-- confirmed `validate_symmetry_candidate(...)` documents and reports formula candidates
-- confirmed root `pdelie` exports remain unchanged
-- confirmed no callable generator API landed
-- confirmed no arbitrary executable formula-string path landed
-- confirmed no neural detector API landed
-- confirmed no public KS generator/residual/example APIs landed
-- confirmed weak KS remains absent
-- confirmed broad adapters, split policy, operator APIs, and root runtime exports remain absent
+- added compact `tests/test_v0_18_release_gate.py`
+- updated CI so the current explicit release gate is `v0_18-release-gate`
+- kept full editable `python -m pytest`
+- kept package smoke and added reaction-diffusion smoke coverage
+- bumped package metadata to `0.18.0`
+- updated README, changelog, publishing notes, roadmap, and release readiness docs
+- documented direct `v0.18.0` Git-tag release path
 
----
+Required checks before tagging:
 
-## Milestone 6 - Release Gate and Readiness
+- `v0_18-release-gate`
+- `editable-tests`
+- `package-smoke`
 
-**Status:** COMPLETE
-
-### Goal
-
-Close the release with compact gate coverage, metadata, docs, and direct Git-tag readiness.
-
-### Completed Outcome
-
-- added compact `tests/test_v0_17_release_gate.py`
-- updated CI so the current explicit release gate is `v0_17-release-gate`
-- kept full editable tests and package smoke
-- bumped package metadata to `0.17.0`
-- updated README, changelog, release readiness, publishing docs, roadmap, and plan
-- documented direct `v0.17.0` Git-tag release path
-- kept PyPI/TestPyPI publishing deferred until `v1.0` or later
-
----
-
-## Final Validation Checklist
-
-Required before tagging:
+Local validation checklist:
 
 - `python -m pytest`
 - `python -m build --sdist --wheel`
-- clean wheel smoke from `dist/pdelie-0.17.0-py3-none-any.whl`
+- clean wheel smoke from `dist/pdelie-0.18.0-py3-none-any.whl`
 - `python -m pdelie.examples.heat_vertical_slice`
 - `python -m pdelie.examples.kdv_vertical_slice`
+- `python -m pdelie.examples.reaction_diffusion_vertical_slice`
 - `python -m pdelie.examples.orbit_coverage_diagnostics`
 - `python -m pdelie.examples.invariant_workflow_summary`
 - `python -m pdelie.examples.translation_orbit_batch`
 - `python -m pdelie.examples.symmetry_candidate_validation`
 - `python -m pdelie.examples.formula_generator_validation`
 - `git diff --check`
-
-Required CI checks before tagging:
-
-- `v0_17-release-gate`
-- `editable-tests`
-- `package-smoke`

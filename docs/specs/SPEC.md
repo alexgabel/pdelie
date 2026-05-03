@@ -17,7 +17,7 @@ It is a **library**, not a project repo.
 - uniform rectilinear grids
 - Lie point symmetries
 - polynomial generator parameterizations
-- synthetic + small benchmark PDEs
+- synthetic + small benchmark PDEs, currently including Heat, Burgers, normalized short-horizon KdV, and frozen scalar 1D Fisher-KPP reaction-diffusion strong paths
 
 ## Experimental
 

@@ -202,6 +202,19 @@ Runtime public API for the frozen `v0.17` Milestone 2/M3 slice:
 - arbitrary executable formula strings, Python callables, learned-generator training, neural detector APIs, public KS runtime APIs, weak KS, broad adapters, split policy, and operator-facing APIs remain deferred
 - these APIs have no root `pdelie` exports
 
+Runtime public API for the frozen `v0.18` Milestone 2/M3/M4 slice:
+
+- `pdelie.data.generate_reaction_diffusion_1d_field_batch` for deterministic synthetic scalar 1D periodic Fisher-KPP reaction-diffusion fields under the frozen `v0.18` generator regime
+- stable generated fields use `field.metadata["parameter_tags"]["equation"] == "reaction_diffusion_fisher_kpp"` and include the frozen `nu` / `rho` parameter tags
+- this generator has no public custom initial-condition API in `v0.18`; it emits smooth bounded Fourier-mode initial conditions inside the frozen synthetic regime
+- `pdelie.residuals.ReactionDiffusionResidualEvaluator` for Fisher-KPP strong-form residuals `u_t - nu*u_xx - rho*u*(1-u) = 0`
+- when derivatives are omitted, the evaluator computes the existing default `compute_spectral_fd_derivatives(field)` order-2 derivative path
+- when derivatives are supplied, they must validate against the field and include `u_t` and `u_xx`
+- stable inputs must be canonical scalar 1D uniform periodic finite unmasked `FieldBatch` objects with the frozen reaction-diffusion equation tag
+- `pdelie.examples.run_reaction_diffusion_vertical_slice_example` for a compact JSON-only runtime smoke example that emits the existing nested `summarize_vertical_slice(...)` summary shape
+- the stable public claim covers the frozen scalar 1D periodic synthetic Fisher-KPP path with direct SVD translation-fit evidence; it does not add advection-diffusion, KS promotion, weak reaction-diffusion, custom initial-condition APIs, broad adapters, multidimensional or nonuniform support, split policy, neural/callable generators, or operator-facing APIs
+- these APIs have no root `pdelie` exports
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 

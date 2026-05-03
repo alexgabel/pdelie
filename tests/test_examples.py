@@ -13,6 +13,7 @@ from pdelie.examples import (
     run_invariant_workflow_summary_example,
     run_kdv_vertical_slice_example,
     run_orbit_coverage_diagnostics_example,
+    run_reaction_diffusion_vertical_slice_example,
     run_symmetry_candidate_validation_example,
     run_translation_orbit_batch_example,
 )
@@ -45,6 +46,8 @@ def _assert_repeated_summary_matches(first: dict[str, object], second: dict[str,
             second_value = second[section][key]
             if key in {"coefficients", "epsilon_values", "error_curve"}:
                 np.testing.assert_allclose(np.asarray(first_value, dtype=float), np.asarray(second_value, dtype=float))
+            elif key == "diagnostics":
+                _assert_nested_summary_matches(first_value, second_value)
             elif key in {
                 "max_abs_residual",
                 "rms_residual",
@@ -56,6 +59,26 @@ def _assert_repeated_summary_matches(first: dict[str, object], second: dict[str,
                 np.testing.assert_allclose(float(first_value), float(second_value))
             else:
                 assert first_value == second_value
+
+
+def _assert_nested_summary_matches(first: object, second: object) -> None:
+    if isinstance(first, dict) and isinstance(second, dict):
+        assert first.keys() == second.keys()
+        for key in first:
+            _assert_nested_summary_matches(first[key], second[key])
+        return
+    if isinstance(first, list) and isinstance(second, list):
+        assert len(first) == len(second)
+        for first_item, second_item in zip(first, second, strict=True):
+            _assert_nested_summary_matches(first_item, second_item)
+        return
+    if isinstance(first, bool) or isinstance(second, bool):
+        assert first == second
+        return
+    if isinstance(first, (int, float)) and isinstance(second, (int, float)):
+        np.testing.assert_allclose(float(first), float(second))
+        return
+    assert first == second
 
 
 def _run_module_json(module_name: str) -> dict[str, object]:
@@ -124,6 +147,35 @@ def test_kdv_vertical_slice_example_is_deterministic() -> None:
     _assert_repeated_summary_matches(first, second)
 
 
+def test_reaction_diffusion_vertical_slice_example_runs_end_to_end_and_is_json_serializable() -> None:
+    result = run_reaction_diffusion_vertical_slice_example()
+    _assert_vertical_slice_summary(result)
+
+    assert result["extra_metrics"]["example_name"] == "reaction_diffusion_vertical_slice"
+    assert result["extra_metrics"]["equation"] == "reaction_diffusion_fisher_kpp"
+    assert result["extra_metrics"]["generator_seed"] == 18018
+    assert result["extra_metrics"]["split_seed"] == 18019
+    assert result["extra_metrics"]["train_size"] == 2
+    assert result["residual"]["max_abs_residual"] < 5e-4
+    assert result["residual"]["rms_residual"] < 5e-5
+    assert np.isfinite(float(result["extra_metrics"]["mean_drift_diagnostic"]))
+    assert np.isfinite(float(result["extra_metrics"]["relative_l2_drift_diagnostic"]))
+    assert result["generator"]["parameterization"] == "polynomial_translation_affine"
+    assert result["generator"]["fit_mode"] == "svd"
+    assert result["generator"]["reference_fallback_used"] is False
+    assert result["generator"]["translation_span_distance"] <= 5e-2
+    assert result["verification"]["classification"] != "failed"
+    assert result["verification"]["first_error"] < 5e-4
+    assert not hasattr(pdelie, "run_reaction_diffusion_vertical_slice_example")
+
+
+def test_reaction_diffusion_vertical_slice_example_is_deterministic() -> None:
+    first = run_reaction_diffusion_vertical_slice_example()
+    second = run_reaction_diffusion_vertical_slice_example()
+
+    _assert_repeated_summary_matches(first, second)
+
+
 def test_heat_vertical_slice_module_prints_json_only() -> None:
     parsed = _run_module_json("pdelie.examples.heat_vertical_slice")
 
@@ -133,6 +185,13 @@ def test_heat_vertical_slice_module_prints_json_only() -> None:
 
 def test_kdv_vertical_slice_module_prints_json_only() -> None:
     parsed = _run_module_json("pdelie.examples.kdv_vertical_slice")
+
+    _assert_vertical_slice_summary(parsed)
+    assert parsed["verification"]["classification"] != "failed"
+
+
+def test_reaction_diffusion_vertical_slice_module_prints_json_only() -> None:
+    parsed = _run_module_json("pdelie.examples.reaction_diffusion_vertical_slice")
 
     _assert_vertical_slice_summary(parsed)
     assert parsed["verification"]["classification"] != "failed"
