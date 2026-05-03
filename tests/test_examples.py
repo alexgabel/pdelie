@@ -25,7 +25,7 @@ from pdelie.examples import (
 
 
 def _assert_vertical_slice_summary(result: dict[str, object]) -> None:
-    assert json.loads(json.dumps(result)) == result
+    assert json.loads(json.dumps(result, allow_nan=False)) == result
     assert result["summary_schema_version"] == "0.1"
     assert result["summary_type"] == "vertical_slice"
     assert result["derivative_backend"] == "spectral_fd"
@@ -242,7 +242,7 @@ def test_advection_diffusion_vertical_slice_module_prints_json_only() -> None:
 def test_orbit_coverage_diagnostics_example_runs_end_to_end() -> None:
     result = run_orbit_coverage_diagnostics_example()
 
-    assert json.loads(json.dumps(result)) == result
+    assert json.loads(json.dumps(result, allow_nan=False)) == result
     assert result["summary_schema_version"] == "0.1"
     assert result["summary_type"] == "orbit_coverage_diagnostics_example"
     assert result["extra_metrics"]["example_name"] == "orbit_coverage_diagnostics"
@@ -271,7 +271,7 @@ def test_orbit_coverage_diagnostics_module_prints_json_only() -> None:
 def test_invariant_workflow_summary_example_runs_end_to_end() -> None:
     result = run_invariant_workflow_summary_example()
 
-    assert json.loads(json.dumps(result)) == result
+    assert json.loads(json.dumps(result, allow_nan=False)) == result
     assert result["summary_schema_version"] == "0.1"
     assert result["summary_type"] == "invariant_workflow_summary_example"
     assert result["extra_metrics"]["example_name"] == "invariant_workflow_summary"
@@ -306,7 +306,7 @@ def test_invariant_workflow_summary_module_prints_json_only() -> None:
 def test_translation_orbit_batch_example_runs_end_to_end() -> None:
     result = run_translation_orbit_batch_example()
 
-    assert json.loads(json.dumps(result)) == result
+    assert json.loads(json.dumps(result, allow_nan=False)) == result
     assert result["summary_schema_version"] == "0.1"
     assert result["summary_type"] == "translation_orbit_batch_example"
     assert result["extra_metrics"]["example_name"] == "translation_orbit_batch"
@@ -339,7 +339,7 @@ def test_translation_orbit_batch_module_prints_json_only() -> None:
 def test_symmetry_candidate_validation_example_runs_end_to_end() -> None:
     result = run_symmetry_candidate_validation_example()
 
-    assert json.loads(json.dumps(result)) == result
+    assert json.loads(json.dumps(result, allow_nan=False)) == result
     assert result["summary_schema_version"] == "0.1"
     assert result["summary_type"] == "symmetry_candidate_validation_example"
     assert result["extra_metrics"]["example_name"] == "symmetry_candidate_validation"
@@ -371,7 +371,7 @@ def test_symmetry_candidate_validation_module_prints_json_only() -> None:
 def test_formula_generator_validation_example_runs_end_to_end() -> None:
     result = run_formula_generator_validation_example()
 
-    assert json.loads(json.dumps(result)) == result
+    assert json.loads(json.dumps(result, allow_nan=False)) == result
     assert result["summary_schema_version"] == "0.1"
     assert result["summary_type"] == "formula_generator_validation_example"
     assert result["extra_metrics"]["example_name"] == "formula_generator_validation"
@@ -405,7 +405,7 @@ def test_formula_generator_validation_module_prints_json_only() -> None:
 def test_generator_confidence_report_example_runs_end_to_end() -> None:
     result = run_generator_confidence_report_example()
 
-    assert json.loads(json.dumps(result)) == result
+    assert json.loads(json.dumps(result, allow_nan=False)) == result
     assert result["summary_schema_version"] == "0.1"
     assert result["summary_type"] == "generator_confidence_report_example"
     assert result["extra_metrics"]["example_name"] == "generator_confidence_report"
@@ -434,7 +434,7 @@ def test_generator_confidence_report_module_prints_json_only() -> None:
 def test_external_data_readiness_example_runs_end_to_end() -> None:
     result = run_external_data_readiness_example()
 
-    assert json.loads(json.dumps(result)) == result
+    assert json.loads(json.dumps(result, allow_nan=False)) == result
     assert result["summary_schema_version"] == "0.1"
     assert result["summary_type"] == "external_data_readiness_example"
     assert result["extra_metrics"]["example_name"] == "external_data_readiness"
@@ -461,7 +461,7 @@ def test_external_data_readiness_module_prints_json_only() -> None:
 def test_downstream_discovery_contracts_example_runs_end_to_end() -> None:
     result = run_downstream_discovery_contracts_example()
 
-    assert json.loads(json.dumps(result)) == result
+    assert json.loads(json.dumps(result, allow_nan=False)) == result
     assert result["summary_schema_version"] == "0.1"
     assert result["summary_type"] == "downstream_discovery_contracts_example"
     assert result["extra_metrics"]["example_name"] == "downstream_discovery_contracts"
@@ -486,7 +486,7 @@ def test_downstream_discovery_contracts_module_prints_json_only() -> None:
 def test_split_leakage_provenance_example_runs_end_to_end() -> None:
     result = run_split_leakage_provenance_example()
 
-    assert json.loads(json.dumps(result)) == result
+    assert json.loads(json.dumps(result, allow_nan=False)) == result
     assert result["summary_schema_version"] == "0.1"
     assert result["summary_type"] == "split_leakage_provenance_example"
     assert result["extra_metrics"]["example_name"] == "split_leakage_provenance"

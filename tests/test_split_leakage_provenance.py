@@ -86,6 +86,17 @@ def test_split_provenance_rejects_invalid_inputs_and_nonstandard_json() -> None:
                 "raw_shifts": [float("nan")],
             },
         )
+    with pytest.raises(SchemaValidationError):
+        summarize_split_leakage_provenance(
+            partitions=["train"],
+            orbit_batch={
+                "summary_type": "uniform_translation_orbit_batch",
+                "output_batch_size": 1,
+                "source_batch_indices": [0.0],
+                "shift_indices": [0],
+                "raw_shifts": [0.0],
+            },
+        )
 
 
 def test_split_provenance_detects_source_overlap_across_partitions() -> None:

@@ -460,7 +460,7 @@ The authoritative `v0.12` scope freeze belongs in:
 
 Its purpose is:
 
-> report provenance risks across user-supplied train/heldout partitions, especially after materialized uniform-translation orbit batches.
+> report provenance risks across user-supplied partitions, especially after materialized uniform-translation orbit batches.
 
 Completed release definition:
 

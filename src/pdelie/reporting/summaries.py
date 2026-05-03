@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import json
-from itertools import combinations
 from collections.abc import Mapping, Sequence
+from itertools import combinations
+from numbers import Integral
 from typing import Any
 
 import numpy as np
@@ -1374,13 +1375,10 @@ def _normalize_index_sequence(
         raise SchemaValidationError(f"{name} must be a sequence of non-negative integers.")
     normalized: list[int] = []
     for index, item in enumerate(value):
-        if isinstance(item, bool):
+        if isinstance(item, bool) or not isinstance(item, Integral):
             raise SchemaValidationError(f"{name}[{index}] must be a non-negative integer.")
-        try:
-            integer = int(item)
-        except (TypeError, ValueError) as exc:
-            raise SchemaValidationError(f"{name}[{index}] must be a non-negative integer.") from exc
-        if integer < 0 or integer != item:
+        integer = int(item)
+        if integer < 0:
             raise SchemaValidationError(f"{name}[{index}] must be a non-negative integer.")
         normalized.append(integer)
     if len(normalized) != expected_length:
