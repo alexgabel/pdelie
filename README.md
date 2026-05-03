@@ -88,13 +88,15 @@ python -m pytest
 
 The repository includes exploratory notebooks under `notebooks/` for the shipped symmetry/discovery runtime surface retained through `v0.17`:
 
-- `00_how_to_use_pdelie_v0_6.ipynb`
+- `00_pde_timeseries_to_generators.ipynb`
 - `01_raw_vs_translation_canonical_discovery.ipynb`
 - `02_robustness_sweeps.ipynb`
 - `03_portability_round_trips.ipynb`
 - `04_discovered_vs_known_translation_generators.ipynb`
 - `05_closure_algebra_diagnostics.ipynb`
 - `06_orbit_coverage_diagnostics.ipynb`
+- `07_external_symmetry_candidates.ipynb`
+- `08_downstream_task_template.ipynb`
 
 These notebooks are non-normative tutorials, not stability contracts.
 Most discovery notebooks require the downstream extras (`.[downstream]` or `.[test]`).
