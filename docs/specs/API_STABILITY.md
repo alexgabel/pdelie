@@ -190,6 +190,18 @@ Runtime public API for the frozen `v0.16` Milestone 2/M3 slice:
 - this API returns a JSON-compatible runtime report, not a canonical object, detector, fitting algorithm, manuscript artifact, or training framework
 - this API has no root `pdelie` export
 
+Runtime public API for the frozen `v0.17` Milestone 2/M3 slice:
+
+- `pdelie.symmetry.FormulaGeneratorFamily` as a runtime-only structured record for formula-backed scalar 1D Lie-point generator families
+- `pdelie.reporting.summarize_formula_generator_family` for JSON-compatible runtime summaries of formula-backed generator records
+- `pdelie.symmetry.validate_symmetry_candidate` now also accepts `FormulaGeneratorFamily` objects and strict current `FormulaGeneratorFamily` payload mappings
+- formula candidate validation reports distinguish `candidate_kind = "formula_generator_family"`
+- formula expressions use a safe JSON AST with supported nodes `const`, `var`, `add`, `mul`, integer `pow`, `sin`, `cos`, `reciprocal`, and metadata-only `symbolic_reference`
+- formula-backed validation performs schema checks, finite formula-evaluation diagnostics when expressions are evaluable, and optional finite-transform validation when a supported `InvariantMapSpec` payload is attached
+- `FormulaGeneratorFamily` is runtime-only and does not change canonical polynomial `GeneratorFamily` semantics
+- arbitrary executable formula strings, Python callables, learned-generator training, neural detector APIs, public KS runtime APIs, weak KS, broad adapters, split policy, and operator-facing APIs remain deferred
+- these APIs have no root `pdelie` exports
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 

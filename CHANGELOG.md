@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.17.0
+
+First final release for the frozen V0.17 formula-backed generator interoperability slice.
+
+- adds `pdelie.symmetry.FormulaGeneratorFamily` as a runtime-only structured record for formula-backed scalar 1D Lie-point generator families
+- adds `pdelie.reporting.summarize_formula_generator_family(...)` for JSON-compatible formula metadata summaries
+- extends `pdelie.symmetry.validate_symmetry_candidate(...)` to accept `FormulaGeneratorFamily` objects and strict current formula payload mappings
+- distinguishes formula candidates with `candidate_kind == "formula_generator_family"`
+- freezes a safe JSON expression AST with `const`, `var`, `add`, `mul`, integer `pow`, `sin`, `cos`, `reciprocal`, and metadata-only `symbolic_reference`
+- reports finite formula-evaluation diagnostics and denominator-floor failures without executing arbitrary strings or callables
+- reuses existing invariant-map residual/inverse validation when a supported finite-transform spec is attached
+- adds `python -m pdelie.examples.formula_generator_validation` and `pdelie.examples.run_formula_generator_validation_example(...)` as runtime smoke examples
+- documents the new APIs in `API_STABILITY.md` as submodule-only runtime APIs with no root exports
+- preserves existing polynomial `GeneratorFamily`, `GeneratorFamily`/`InvariantMapSpec` candidate validation, Heat/Burgers strong paths, weak residual reports, normalized periodic KdV, reporting helpers, orbit diagnostics, orbit batches, and external candidate validation
+
+Explicitly deferred for this final release:
+
+- Python callable generator APIs
+- arbitrary executable formula-string parsing
+- neural symmetry-detector training or learned-generator classes
+- formula-derived finite-flow integration for arbitrary infinitesimal formulas
+- canonical `GeneratorFamily` schema changes
+- train/test policy, split management, or heldout-leakage detection
+- time-translation APIs or `axis="time"` support
+- new PDE support
+- stable KS data generator, residual evaluator, vertical-slice example, imported parity, weak API, or root KS exports
+- broad dataset adapters such as PDEBench or The Well
+- multidimensional, multivariable, nonuniform-grid, operator, or broad adapter expansion
+- PyPI and TestPyPI publication; package-index publishing is deferred to `v1.0` or later
+
 ## 0.16.0
 
 First final release for the frozen V0.16 external symmetry-candidate validation slice.

@@ -8,6 +8,7 @@ import numpy as np
 
 import pdelie
 from pdelie.examples import (
+    run_formula_generator_validation_example,
     run_heat_vertical_slice_example,
     run_invariant_workflow_summary_example,
     run_kdv_vertical_slice_example,
@@ -263,4 +264,38 @@ def test_symmetry_candidate_validation_module_prints_json_only() -> None:
 
     assert parsed["summary_type"] == "symmetry_candidate_validation_example"
     assert len(parsed["cases"]) == 4
+    assert "failed" in parsed["extra_metrics"]["conclusions"]
+
+
+def test_formula_generator_validation_example_runs_end_to_end() -> None:
+    result = run_formula_generator_validation_example()
+
+    assert json.loads(json.dumps(result)) == result
+    assert result["summary_schema_version"] == "0.1"
+    assert result["summary_type"] == "formula_generator_validation_example"
+    assert result["extra_metrics"]["example_name"] == "formula_generator_validation"
+    assert result["extra_metrics"]["candidate_kinds"] == ["formula_generator_family"]
+    assert result["extra_metrics"]["expression_policy"] == "safe_json_ast_no_callables_no_executable_strings"
+    assert len(result["cases"]) == 5
+    cases = {case["case_name"]: case for case in result["cases"]}
+    assert set(cases) == {
+        "affine_formula",
+        "failed_nonfinite_formula",
+        "formula_with_uniform_translation_transform",
+        "rational_formula",
+        "trigonometric_formula",
+    }
+    assert cases["formula_with_uniform_translation_transform"]["report"]["conclusion"] == "validated"
+    assert cases["failed_nonfinite_formula"]["report"]["conclusion"] == "failed"
+    for name in ("affine_formula", "rational_formula", "trigonometric_formula"):
+        assert cases[name]["report"]["candidate_kind"] == "formula_generator_family"
+        assert cases[name]["report"]["conclusion"] == "partially_validated"
+    assert not hasattr(pdelie, "run_formula_generator_validation_example")
+
+
+def test_formula_generator_validation_module_prints_json_only() -> None:
+    parsed = _run_module_json("pdelie.examples.formula_generator_validation")
+
+    assert parsed["summary_type"] == "formula_generator_validation_example"
+    assert len(parsed["cases"]) == 5
     assert "failed" in parsed["extra_metrics"]["conclusions"]

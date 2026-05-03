@@ -453,6 +453,81 @@ The authoritative `v0.12` scope freeze belongs in:
 
 ## Current Completed Release
 
+### `v0.17` - Formula-backed generator families
+**Status:** Completed
+
+`v0.17` is the completed formula-backed generator interoperability release after the `v0.16` external symmetry-candidate validation release.
+
+Its purpose is:
+
+> accept safe formula-backed generator metadata and validate it empirically without turning PDELie into an executable formula parser or learned-generator framework.
+
+Completed release definition:
+
+`canonical scalar 1D periodic FieldBatch + formula-backed generator candidate -> safe formula metadata/evaluation diagnostics -> empirical configured validation report`
+
+Completed scope:
+
+- `pdelie.symmetry.FormulaGeneratorFamily`
+- `pdelie.reporting.summarize_formula_generator_family(...)`
+- `validate_symmetry_candidate(...)` support for `candidate_kind = "formula_generator_family"`
+- strict JSON-compatible formula payload round trips
+- safe formula AST nodes: `const`, `var`, `add`, `mul`, integer `pow`, `sin`, `cos`, `reciprocal`, and metadata-only `symbolic_reference`
+- finite formula-evaluation diagnostics over canonical scalar 1D periodic `FieldBatch` inputs
+- optional reuse of invariant-map validation when a supported finite-transform spec is attached
+- affine, trigonometric, rational, finite-transform-backed, and failed-formula example coverage
+- API/public-surface audit
+- compact current `v0_17-release-gate` readiness
+
+Release interpretation:
+
+- `validated` means configured empirical validation under supplied inputs, not a mathematical proof
+- this is formula metadata and empirical validation interop, not a mathematical proof of symmetry
+- formula records are runtime-only and do not change canonical polynomial `GeneratorFamily` semantics
+- symbolic references are metadata-only unless paired with supported finite-transform evidence
+- callable descriptors, arbitrary executable formula strings, and learned-generator training remain deferred
+- `v0.17.0` is a Git-tag-only release; PyPI and TestPyPI publication are deferred to `v1.0` or later
+
+Explicit non-goals:
+
+- no callable generator API
+- no arbitrary executable formula-string evaluator
+- no neural symmetry-detector training
+- no canonical `GeneratorFamily` schema change
+- no train/test policy
+- no split management
+- no new PDE
+- no stable KS generator or residual evaluator
+- no weak KS API
+- no broad dataset adapters
+- no PDEBench or The Well support
+- no multidimensional, multivariable, or nonuniform-grid expansion
+- no operator-facing symmetry work
+- no root export expansion
+
+The authoritative `v0.17` scope freeze belongs in:
+
+- `V0_17_SCOPE.md`
+
+### Release Gate for `v0.17`
+
+`v0.17` is complete only if:
+
+- formula-backed generator records are documented and covered by tests
+- new APIs are importable from their submodules only
+- root `pdelie` remains unchanged
+- formula candidates validate through the existing symmetry-candidate validator
+- finite formula diagnostics and denominator-floor failures are deterministic
+- supported finite-transform specs reuse existing invariant-map validation
+- formula validation example emits JSON only
+- no public callable, executable-string, neural-detector, KS, weak KS, broad adapter, split-policy, or operator API lands
+- CI uses one compact current release gate plus full editable tests and package smoke
+- package/readiness docs preserve the `v1.0` package-index publishing deferral
+
+---
+
+## Recent Completed Release
+
 ### `v0.16` - External symmetry-candidate validation
 **Status:** Completed
 
@@ -857,28 +932,6 @@ The authoritative `v0.7` scope freeze belongs in:
 
 ## Medium-Term Horizon
 
-### `v0.17` - Formula-backed and non-polynomial generators
-**Status:** Planned
-
-`v0.17` is planned as the first careful step beyond the current polynomial/structured generator support.
-
-Recommended phasing:
-
-- formula-backed metadata first:
-  - affine generators
-  - trigonometric generators
-  - rational or simple analytic forms
-  - externally supplied symbolic references
-- callable or external generators second, treated as less stable unless paired with diagnostics
-- learned-generator interop third, as accepted outputs only
-
-Key freeze decision:
-
-- either introduce a new formula-backed generator record such as `FormulaGeneratorFamily`
-- or keep the first slice as runtime metadata until compatibility with existing `GeneratorFamily` semantics is proven
-
-The conservative default is formula-backed runtime records first, with no change to existing polynomial `GeneratorFamily` semantics until explicitly accepted.
-
 ### `v0.18+` - Scoped PDE expansion
 **Status:** Planned
 
@@ -991,7 +1044,7 @@ It should **not** be edited every time a new idea appears.
 - `v0.14` = invariant workflow summaries and read-only uniform translation orbit reports, without augmentation
 - `v0.15` = materialized uniform translation orbit batches under `pdelie.invariants`
 - `v0.16` = external symmetry-candidate interop and validation, not detector training
-- `v0.17` = formula-backed and non-polynomial generator support after schema semantics are frozen
+- `v0.17` = formula-backed generator records and validation, without callables or learned-generator training
 - `v0.18+` = scoped PDE expansion, with reaction/advection-diffusion preferred unless KS residual-only is deliberately scoped
 - `v1.0` = stable public engine
 - later / experimental = operator-facing symmetry discovery

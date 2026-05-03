@@ -8,6 +8,7 @@ import numpy as np
 
 from pdelie.contracts import DerivativeBatch, GeneratorFamily, ResidualBatch, VerificationReport
 from pdelie.errors import PDELieValidationError, SchemaValidationError, ScopeValidationError
+from pdelie.symmetry.formula import FormulaGeneratorFamily
 from pdelie.symmetry.parameterization import translation_span_distance
 from pdelie.symmetry.parameterization.polynomial_translation import DEFAULT_TRANSLATION_SPAN_TOLERANCE
 
@@ -326,6 +327,82 @@ def summarize_generator_family(generator: GeneratorFamily) -> dict[str, Any]:
         reference_fallback_used=diagnostics.get("reference_fallback_used"),
         fallback_reason=diagnostics.get("fallback_reason"),
         diagnostics=diagnostics,
+    )
+
+
+def _formula_expression_nodes(expression: Mapping[str, Any]) -> list[str]:
+    node = str(expression["node"])
+    if node == "add":
+        return [node, *[item for term in expression["terms"] for item in _formula_expression_nodes(term)]]
+    if node == "mul":
+        return [node, *[item for factor in expression["factors"] for item in _formula_expression_nodes(factor)]]
+    if node == "pow":
+        return [node, *_formula_expression_nodes(expression["base"])]
+    if node in {"sin", "cos", "reciprocal"}:
+        return [node, *_formula_expression_nodes(expression["arg"])]
+    return [node]
+
+
+def _formula_symbolic_references(expression: Mapping[str, Any]) -> list[dict[str, Any]]:
+    node = str(expression["node"])
+    if node == "symbolic_reference":
+        return [{"label": expression["label"], "metadata": expression["metadata"]}]
+    if node == "add":
+        return [item for term in expression["terms"] for item in _formula_symbolic_references(term)]
+    if node == "mul":
+        return [item for factor in expression["factors"] for item in _formula_symbolic_references(factor)]
+    if node == "pow":
+        return _formula_symbolic_references(expression["base"])
+    if node in {"sin", "cos", "reciprocal"}:
+        return _formula_symbolic_references(expression["arg"])
+    return []
+
+
+def summarize_formula_generator_family(formula: FormulaGeneratorFamily) -> dict[str, Any]:
+    if not isinstance(formula, FormulaGeneratorFamily):
+        raise SchemaValidationError("summarize_formula_generator_family requires a FormulaGeneratorFamily.")
+
+    formula.validate()
+    generator_names = [generator["name"] for generator in formula.formula_generators]
+    formula_kinds: dict[str, int] = {}
+    symbolic_references: list[dict[str, Any]] = []
+    component_nodes: dict[str, list[str]] = {component: [] for component in formula.component_names}
+    for generator in formula.formula_generators:
+        for component in formula.component_names:
+            expression = generator["components"][component]
+            nodes = _formula_expression_nodes(expression)
+            for node in nodes:
+                formula_kinds[node] = formula_kinds.get(node, 0) + 1
+            component_nodes[component].append(str(expression["node"]))
+            for reference in _formula_symbolic_references(expression):
+                symbolic_references.append(
+                    {
+                        "generator_name": generator["name"],
+                        "component": component,
+                        "label": reference["label"],
+                        "metadata": reference["metadata"],
+                    }
+                )
+
+    return _summary_payload(
+        "formula_generator_family",
+        parameterization=formula.parameterization,
+        schema_version=formula.schema_version,
+        variables=list(formula.variables),
+        component_names=list(formula.component_names),
+        generator_count=len(formula.formula_generators),
+        generator_names=generator_names,
+        formula_kinds=formula_kinds,
+        component_nodes=component_nodes,
+        finite_transform_available=formula.finite_transform_spec is not None,
+        finite_transform_construction_method=(
+            None
+            if formula.finite_transform_spec is None
+            else formula.finite_transform_spec.get("construction_method")
+        ),
+        symbolic_references=symbolic_references,
+        reciprocal_denominator_floor=FormulaGeneratorFamily.RECIPROCAL_DENOMINATOR_FLOOR,
+        diagnostics=formula.diagnostics,
     )
 
 

@@ -24,6 +24,7 @@ _ROOT_RUNTIME_NAMES = {
     "export_generator_family_manifest",
     "fit_pysindy_discovery",
     "fit_translation_generator",
+    "FormulaGeneratorFamily",
     "from_numpy",
     "from_xarray",
     "generate_burgers_1d_field_batch",
@@ -37,6 +38,7 @@ _ROOT_RUNTIME_NAMES = {
     "plot_verification_curve",
     "render_generator_family",
     "run_heat_vertical_slice_example",
+    "run_formula_generator_validation_example",
     "run_kdv_vertical_slice_example",
     "run_orbit_coverage_diagnostics_example",
     "run_invariant_workflow_summary_example",
@@ -46,6 +48,7 @@ _ROOT_RUNTIME_NAMES = {
     "subsample_time",
     "subsample_x",
     "summarize_generator_fit_diagnostics",
+    "summarize_formula_generator_family",
     "summarize_generator_family",
     "summarize_invariant_workflow",
     "summarize_recovery_grid",
@@ -60,7 +63,6 @@ _ROOT_RUNTIME_NAMES = {
 }
 _DEFERRED_OR_PRIVATE_NAMES = {
     "CallableGeneratorFamily",
-    "FormulaGeneratorFamily",
     "OperatorSymmetry",
     "KSResidualEvaluator",
     "KuramotoSivashinskyResidualEvaluator",
@@ -106,7 +108,6 @@ _DEFERRED_API_STABILITY_NAMES = {
     "pdelie.residuals.evaluate_weak_ks_residual",
     "pdelie.symmetry.OperatorSymmetry",
     "pdelie.symmetry.CallableGeneratorFamily",
-    "pdelie.symmetry.FormulaGeneratorFamily",
     "pdelie.symmetry.validate_generator_candidate",
 }
 _V0_10_REPORTING_APIS = {
@@ -146,6 +147,11 @@ _V0_15_ORBIT_BATCH_APIS = {
 _V0_16_SYMMETRY_VALIDATION_APIS = {
     "pdelie.symmetry.validate_symmetry_candidate",
 }
+_V0_17_FORMULA_GENERATOR_APIS = {
+    "pdelie.symmetry.FormulaGeneratorFamily",
+    "pdelie.reporting.summarize_formula_generator_family",
+    "candidate_kind = \"formula_generator_family\"",
+}
 
 
 def _api_stability_text() -> str:
@@ -169,6 +175,7 @@ def test_api_stability_doc_covers_current_stable_runtime_surface() -> None:
         | _V0_14_INVARIANT_WORKFLOW_APIS
         | _V0_15_ORBIT_BATCH_APIS
         | _V0_16_SYMMETRY_VALIDATION_APIS
+        | _V0_17_FORMULA_GENERATOR_APIS
     ):
         assert api_name in text
 
@@ -197,7 +204,6 @@ def test_api_stability_doc_does_not_promote_deferred_v0_13_surfaces() -> None:
     assert "diagnose_time_translation_consistency" not in text
     assert "validate_generator_candidate" not in text
     assert "CallableGeneratorFamily" not in text
-    assert "FormulaGeneratorFamily" not in text
 
 
 def test_root_package_still_exposes_only_stable_canonical_surface() -> None:
@@ -227,6 +233,7 @@ def test_required_runtime_submodule_apis_remain_importable() -> None:
             "to_pysindy_trajectories",
         },
         "pdelie.examples": {
+            "run_formula_generator_validation_example",
             "run_heat_vertical_slice_example",
             "run_invariant_workflow_summary_example",
             "run_kdv_vertical_slice_example",
@@ -248,6 +255,7 @@ def test_required_runtime_submodule_apis_remain_importable() -> None:
             "import_generator_family_manifest",
         },
         "pdelie.reporting": {
+            "summarize_formula_generator_family",
             "summarize_generator_fit_diagnostics",
             "summarize_generator_family",
             "summarize_invariant_workflow",
@@ -265,6 +273,7 @@ def test_required_runtime_submodule_apis_remain_importable() -> None:
             "evaluate_weak_heat_residual",
         },
         "pdelie.symmetry": {
+            "FormulaGeneratorFamily",
             "compare_generator_spans",
             "diagnose_generator_family_closure",
             "fit_translation_generator",
@@ -303,32 +312,35 @@ def test_deferred_and_private_names_are_not_public_submodule_exports() -> None:
             assert not hasattr(module, name), f"{module.__name__}.{name}"
 
 
-def test_v0_16_planning_docs_record_candidate_validation_and_non_goals() -> None:
+def test_v0_17_planning_docs_record_formula_generators_and_non_goals() -> None:
     plan = _repo_text("docs/planning/PLAN.md")
-    scope = _repo_text("docs/planning/V0_16_SCOPE.md")
+    scope = _repo_text("docs/planning/V0_17_SCOPE.md")
     roadmap = _repo_text("docs/planning/ROADMAP.md")
 
     assert "**Status:** COMPLETE" in plan
-    assert "Milestone 2 - GeneratorFamily Candidate Validation" in plan
-    assert "Milestone 3 - InvariantMapSpec Candidate Validation" in plan
-    assert "pdelie.symmetry.validate_symmetry_candidate" in plan
+    assert "Milestone 2 - Formula Record and Reporting Implementation" in plan
+    assert "Milestone 3 - Formula Candidate Validation" in plan
+    assert "pdelie.symmetry.FormulaGeneratorFamily" in plan
+    assert "pdelie.reporting.summarize_formula_generator_family" in plan
+    assert "candidate_kind = \"formula_generator_family\"" in plan
     assert "not a mathematical proof" in plan
-    assert "callable descriptor API" in plan
+    assert "callable generator API" in plan
     assert "## Milestone 5 - API / Public-surface Audit" in plan
     assert "## Milestone 6 - Release Gate and Readiness" in plan
-    assert "updated CI so the current explicit release gate is `v0_16-release-gate`" in plan
+    assert "updated CI so the current explicit release gate is `v0_17-release-gate`" in plan
     assert "- Milestone 6: COMPLETE" in plan
 
-    assert "external symmetry-candidate validation" in scope
+    assert "formula-backed generator interoperability" in scope
+    assert "pdelie.symmetry.FormulaGeneratorFamily" in scope
+    assert "pdelie.reporting.summarize_formula_generator_family" in scope
     assert "pdelie.symmetry.validate_symmetry_candidate" in scope
-    assert "candidate_kind = \"generator_family\"" in scope
-    assert "candidate_kind = \"invariant_map_spec\"" in scope
-    assert "callable transform descriptors" in scope
-    assert "neural symmetry-detector training" in scope
+    assert "candidate_kind = \"formula_generator_family\"" in scope
+    assert "callable generator APIs" in scope
+    assert "neural generator training" in scope
     assert "- Milestone 4: COMPLETE" in scope
     assert "- Milestone 5: COMPLETE" in scope
     assert "- Milestone 6: COMPLETE" in scope
 
-    assert "`v0.16` is the completed external symmetry-candidate validation release" in roadmap
+    assert "`v0.17` is the completed formula-backed generator interoperability release" in roadmap
     assert "`validated` means configured empirical validation" in roadmap
     assert "- no new PDE" in roadmap
