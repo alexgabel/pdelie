@@ -2,7 +2,7 @@
 
 Numerical discovery and verification of Lie symmetries for PDE data.
 
-The current repository implements the frozen V0.21 external data readiness reporting slice for the existing Heat/Burgers/weak-report/KdV/Fisher-KPP/advection-diffusion engine:
+The current repository implements the frozen V0.22 downstream discovery contracts slice for the existing Heat/Burgers/weak-report/KdV/Fisher-KPP/advection-diffusion engine:
 
 - synthetic 1D heat equation
 - synthetic 1D Burgers equation
@@ -29,10 +29,12 @@ The current repository implements the frozen V0.21 external data readiness repor
 - formula-backed candidate validation through `candidate_kind = "formula_generator_family"`
 - unified generator confidence reports under `pdelie.reporting.summarize_generator_confidence`
 - external data readiness reports under `pdelie.reporting.summarize_field_batch_readiness`
+- downstream discovery bridge/result/workflow contract reports under `pdelie.discovery` and `pdelie.reporting`
 - reaction-diffusion vertical-slice example under `pdelie.examples.run_reaction_diffusion_vertical_slice_example`
 - advection-diffusion vertical-slice example under `pdelie.examples.run_advection_diffusion_vertical_slice_example`
 - generator-confidence example under `pdelie.examples.run_generator_confidence_report_example`
 - external-data-readiness example under `pdelie.examples.run_external_data_readiness_example`
+- downstream-discovery-contracts example under `pdelie.examples.run_downstream_discovery_contracts_example`
 - `FieldBatch -> DerivativeBatch -> ResidualBatch -> GeneratorFamily -> InvariantMapSpec -> VerificationReport`
 - one stable derivative backend: `spectral_fd`
 - family-shaped `GeneratorFamily` with explicit `basis_spec`
@@ -47,7 +49,7 @@ The current repository implements the frozen V0.21 external data readiness repor
 - one runtime-only thin PySINDy discovery adapter under `pdelie.discovery`
 - one runtime-only translation-canonical discovery-input helper under `pdelie.discovery`
 - one runtime-only robustness helper layer under `pdelie.data`
-- one compact current `v0_21-release-gate` CI job plus full editable tests and package smoke
+- one compact current `v0_22-release-gate` CI job plus full editable tests and package smoke
 
 ## Setup
 
@@ -96,7 +98,7 @@ python -m pytest
 
 ## Tutorial Notebooks
 
-The repository includes exploratory notebooks under `notebooks/` for the shipped symmetry/discovery runtime surface retained through `v0.21`:
+The repository includes exploratory notebooks under `notebooks/` for the shipped symmetry/discovery runtime surface retained through `v0.22`:
 
 - `00_pde_timeseries_to_generators.ipynb`
 - `01_raw_vs_translation_canonical_discovery.ipynb`
@@ -266,8 +268,9 @@ Included in the current stable core:
 - advection-diffusion support in `v0.19` adds one scoped scalar 1D periodic constant-coefficient strong path with direct SVD translation-fit evidence; it does not add variable coefficients, weak advection-diffusion, reaction-advection-diffusion, custom initial-condition APIs, time translation, or broader grid support
 - confidence reporting in `v0.20` adds categorical generator-confidence reports; it does not add scalar scores, proof claims, benchmark success policy, train/test policy, or downstream leakage policy
 - external data readiness reporting in `v0.21` adds `FieldBatch` compatibility reports and residual preflight; it does not add file loaders, Dataset support, broad adapters, resampling, metadata mutation, train/test policy, or leakage policy
+- downstream discovery contracts in `v0.22` add bridge/result/workflow reports; they do not add a backend framework, split management, leakage detection, or manuscript benchmark policy
 
-Runtime-level public APIs in the frozen V0.21 slice:
+Runtime-level public APIs in the frozen V0.22 slice:
 
 - `pdelie.data.from_numpy` for strict runtime conversion of explicit NumPy/array-like 1D uniform rectilinear trajectory data into canonical `FieldBatch`
 - `pdelie.data.from_xarray` for strict runtime conversion of explicit `xarray.DataArray` 1D uniform rectilinear trajectory data into canonical `FieldBatch` when the optional `xarray` dependency is installed
@@ -313,6 +316,10 @@ Runtime-level public APIs in the frozen V0.21 slice:
 - `pdelie.discovery.fit_pysindy_discovery` for a runtime-only backend-native PySINDy fit adapter
 - `pdelie.discovery.build_translation_canonical_discovery_inputs` for runtime-only heuristic translation-canonical discovery inputs
 - `pdelie.discovery.summarize_recovery_grid` for runtime-only grouped recovery summaries
+- `pdelie.discovery.summarize_discovery_bridge_output` for JSON-compatible downstream bridge output summaries
+- `pdelie.discovery.summarize_discovery_result` for compact backend-neutral discovery result and recovery summaries
+- `pdelie.reporting.summarize_downstream_discovery_workflow` for combining readiness, confidence, orbit-batch, bridge, and discovery-result reports
+- `pdelie.examples.run_downstream_discovery_contracts_example` for a runtime smoke example of downstream discovery contracts, not a backend framework
 - `pdelie.data.add_gaussian_noise`, `subsample_time`, `subsample_x`, and `split_batch_train_heldout` for deterministic `FieldBatch` robustness workflows
 - `pdelie.portability.export_generator_family_manifest` and `pdelie.portability.import_generator_family_manifest` for manifest-level generator-family portability
 - `pdelie.portability.coerce_generator_family` for strict normalization of canonical, manifest, and narrow legacy translation inputs
@@ -324,7 +331,7 @@ Runtime-level public APIs in the frozen V0.21 slice:
 
 The degraded weak-path release wins in `v0.8` are frozen as representative contract-stability signals. They are fallback-backed release checks, not a general weak-superiority claim.
 
-The KdV support retained through `v0.21` is normalized, periodic, scalar, 1D, and short-horizon. Accepted generator parameters outside the release-guaranteed regime are user-risk and are not general KdV stability guarantees.
+The KdV support retained through `v0.22` is normalized, periodic, scalar, 1D, and short-horizon. Accepted generator parameters outside the release-guaranteed regime are user-risk and are not general KdV stability guarantees.
 
 The `v0.10` reporting helpers are supportability APIs. They produce JSON-compatible runtime summaries, not canonical objects, manuscript tables, or artifact schemas.
 
@@ -352,10 +359,12 @@ The `v0.20` confidence-reporting work adds one categorical supportability helper
 
 The `v0.21` external-data readiness work adds one supportability helper for inspecting canonical `FieldBatch` inputs before residual, confidence, and downstream workflows. It does not load files, accept `xarray.Dataset`, infer PDE identity, resample grids, mutate metadata, or broaden stable numerical scope.
 
+The `v0.22` downstream discovery contracts work adds report-only contracts for bridge outputs, backend-neutral discovery results, optional recovery summaries, and workflow composition. It does not manage splits, detect heldout leakage, define benchmark success criteria, load files, or become a discovery-backend framework.
+
 Explicitly deferred:
 - stable multi-generator PDE fitting
 - multi-generator invariant machinery
-- broad downstream discovery contracts
+- broad downstream discovery backends or benchmark policy
 - `xarray.Dataset` support
 - file-based dataset loaders
 - multidimensional or nonuniform-grid ingestion

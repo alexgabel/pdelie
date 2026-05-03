@@ -255,6 +255,22 @@ Runtime public API for the frozen `v0.21` Milestone 2/M4 slice:
 - this API does not add new PDEs, public KS runtime APIs, weak-form expansion, broad adapters, multidimensional or nonuniform stable support, time translation, split policy, neural/callable generators, or operator-facing APIs
 - these APIs have no root `pdelie` exports
 
+Runtime public API for the frozen `v0.22` Milestone 2/M3/M4 slice:
+
+- `pdelie.discovery.summarize_discovery_bridge_output` for JSON-compatible runtime summaries over downstream bridge arrays
+- bridge summaries use `summary_type = "discovery_bridge_output"` and `summary_schema_version = "0.1"`
+- bridge summaries validate finite 2D trajectories, shared trajectory shape, strictly increasing time, unique feature names, and JSON-compatible source/provenance metadata
+- `pdelie.discovery.summarize_discovery_result` for JSON-compatible runtime summaries over backend-neutral or `fit_pysindy_discovery(...)`-style discovery-result mappings
+- discovery-result summaries use `summary_type = "discovery_result"` and compact coefficient summaries by shape, finite status, norms, and nonzero count; they do not copy full coefficient matrices into the report
+- optional `target_terms` must be feature-keyed and recovery summaries reuse `evaluate_discovery_recovery(...)` for exact, partial, and failed per-feature recovery diagnostics
+- backend failure mappings are summarized as reports instead of raising, while malformed mappings and nonfinite coefficients raise typed validation errors
+- `pdelie.reporting.summarize_downstream_discovery_workflow` for JSON-compatible workflow reports that combine field-readiness, generator-confidence, orbit-batch, bridge, and discovery-result reports
+- downstream workflow reports use `summary_type = "downstream_discovery_workflow"` and report orbit-batch provenance traceability without detecting leakage or managing splits
+- `pdelie.examples.run_downstream_discovery_contracts_example` for a compact JSON-only runtime smoke example
+- these APIs are runtime supportability reports, not canonical objects, backend plugin frameworks, split policies, leakage detectors, manuscript benchmark summaries, file loaders, or transformed `FieldBatch` collections
+- this API does not add new PDEs, public KS runtime APIs, weak-form expansion, broad adapters, `xarray.Dataset` support, multidimensional or nonuniform stable support, time translation, neural/callable generators, or operator-facing APIs
+- these APIs have no root `pdelie` exports
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 

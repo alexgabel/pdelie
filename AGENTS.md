@@ -18,6 +18,7 @@ V0.x stable scope only:
 - canonical polynomial `GeneratorFamily` objects
 - runtime-only formula-backed generator records
 - frozen invariant/reporting/orbit utilities
+- downstream discovery contract reports
 
 ## Do not implement unless explicitly asked
 - neural generators
@@ -27,6 +28,7 @@ V0.x stable scope only:
 - multidimensional or nonuniform-grid expansion
 - paper-specific experiment logic
 - broad dataset adapters or file-based dataset loaders
+- broad discovery-backend frameworks
 - public KS runtime APIs
 - train/test policy or heldout-leakage management
 

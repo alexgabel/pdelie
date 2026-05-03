@@ -9,6 +9,7 @@ import numpy as np
 import pdelie
 from pdelie.examples import (
     run_advection_diffusion_vertical_slice_example,
+    run_downstream_discovery_contracts_example,
     run_external_data_readiness_example,
     run_formula_generator_validation_example,
     run_generator_confidence_report_example,
@@ -454,3 +455,28 @@ def test_external_data_readiness_module_prints_json_only() -> None:
 
     assert parsed["summary_type"] == "external_data_readiness_example"
     assert parsed["extra_metrics"]["readiness_labels"] == ["ready", "not_ready", "not_ready"]
+
+
+def test_downstream_discovery_contracts_example_runs_end_to_end() -> None:
+    result = run_downstream_discovery_contracts_example()
+
+    assert json.loads(json.dumps(result)) == result
+    assert result["summary_schema_version"] == "0.1"
+    assert result["summary_type"] == "downstream_discovery_contracts_example"
+    assert result["extra_metrics"]["example_name"] == "downstream_discovery_contracts"
+    assert result["field_readiness"]["summary_type"] == "field_batch_readiness"
+    assert result["generator_confidence"]["summary_type"] == "generator_confidence"
+    assert result["discovery_inputs"]["summary_type"] == "discovery_bridge_output"
+    assert result["discovery_result"]["summary_type"] == "discovery_result"
+    assert result["workflow"]["summary_type"] == "downstream_discovery_workflow"
+    assert result["workflow"]["component_statuses"]["orbit_provenance"]["status"] == "passed"
+    assert result["extra_metrics"]["recovery_classification"] == "exact"
+    assert result["extra_metrics"]["split_policy"] == "not_managed_by_pdelie"
+    assert not hasattr(pdelie, "run_downstream_discovery_contracts_example")
+
+
+def test_downstream_discovery_contracts_module_prints_json_only() -> None:
+    parsed = _run_module_json("pdelie.examples.downstream_discovery_contracts")
+
+    assert parsed["summary_type"] == "downstream_discovery_contracts_example"
+    assert parsed["workflow"]["summary_type"] == "downstream_discovery_workflow"

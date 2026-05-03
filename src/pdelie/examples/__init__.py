@@ -1,5 +1,6 @@
 __all__ = [
     "run_advection_diffusion_vertical_slice_example",
+    "run_downstream_discovery_contracts_example",
     "run_external_data_readiness_example",
     "run_heat_vertical_slice_example",
     "run_formula_generator_validation_example",
@@ -16,6 +17,14 @@ __all__ = [
 def run_advection_diffusion_vertical_slice_example() -> dict[str, object]:
     from pdelie.examples.advection_diffusion_vertical_slice import (
         run_advection_diffusion_vertical_slice_example as _impl,
+    )
+
+    return _impl()
+
+
+def run_downstream_discovery_contracts_example() -> dict[str, object]:
+    from pdelie.examples.downstream_discovery_contracts import (
+        run_downstream_discovery_contracts_example as _impl,
     )
 
     return _impl()

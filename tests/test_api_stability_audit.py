@@ -45,6 +45,7 @@ _ROOT_RUNTIME_NAMES = {
     "run_advection_diffusion_vertical_slice_example",
     "run_formula_generator_validation_example",
     "run_generator_confidence_report_example",
+    "run_downstream_discovery_contracts_example",
     "run_external_data_readiness_example",
     "run_kdv_vertical_slice_example",
     "run_orbit_coverage_diagnostics_example",
@@ -59,6 +60,9 @@ _ROOT_RUNTIME_NAMES = {
     "summarize_field_batch_readiness",
     "summarize_formula_generator_family",
     "summarize_generator_confidence",
+    "summarize_downstream_discovery_workflow",
+    "summarize_discovery_bridge_output",
+    "summarize_discovery_result",
     "summarize_generator_family",
     "summarize_invariant_workflow",
     "summarize_recovery_grid",
@@ -207,6 +211,15 @@ _V0_21_FIELD_READINESS_APIS = {
     "readiness_label",
     "pdelie.examples.run_external_data_readiness_example",
 }
+_V0_22_DOWNSTREAM_CONTRACT_APIS = {
+    "pdelie.discovery.summarize_discovery_bridge_output",
+    "pdelie.discovery.summarize_discovery_result",
+    "pdelie.reporting.summarize_downstream_discovery_workflow",
+    "pdelie.examples.run_downstream_discovery_contracts_example",
+    "summary_type = \"discovery_bridge_output\"",
+    "summary_type = \"discovery_result\"",
+    "summary_type = \"downstream_discovery_workflow\"",
+}
 
 
 def _api_stability_text() -> str:
@@ -235,6 +248,7 @@ def test_api_stability_doc_covers_current_stable_runtime_surface() -> None:
         | _V0_19_ADVECTION_DIFFUSION_APIS
         | _V0_20_CONFIDENCE_REPORTING_APIS
         | _V0_21_FIELD_READINESS_APIS
+        | _V0_22_DOWNSTREAM_CONTRACT_APIS
     ):
         assert api_name in text
 
@@ -290,12 +304,15 @@ def test_required_runtime_submodule_apis_remain_importable() -> None:
             "build_translation_canonical_discovery_inputs",
             "evaluate_discovery_recovery",
             "fit_pysindy_discovery",
+            "summarize_discovery_bridge_output",
+            "summarize_discovery_result",
             "summarize_recovery_grid",
             "to_pysindy_trajectories",
         },
         "pdelie.examples": {
             "run_formula_generator_validation_example",
             "run_generator_confidence_report_example",
+            "run_downstream_discovery_contracts_example",
             "run_external_data_readiness_example",
             "run_advection_diffusion_vertical_slice_example",
             "run_heat_vertical_slice_example",
@@ -320,6 +337,7 @@ def test_required_runtime_submodule_apis_remain_importable() -> None:
             "import_generator_family_manifest",
         },
         "pdelie.reporting": {
+            "summarize_downstream_discovery_workflow",
             "summarize_formula_generator_family",
             "summarize_field_batch_readiness",
             "summarize_generator_confidence",
@@ -381,35 +399,37 @@ def test_deferred_and_private_names_are_not_public_submodule_exports() -> None:
             assert not hasattr(module, name), f"{module.__name__}.{name}"
 
 
-def test_v0_21_planning_docs_record_external_data_readiness_and_non_goals() -> None:
+def test_v0_22_planning_docs_record_downstream_discovery_contracts_and_non_goals() -> None:
     plan = _repo_text("docs/planning/PLAN.md")
-    scope = _repo_text("docs/planning/V0_21_SCOPE.md")
+    scope = _repo_text("docs/planning/V0_22_SCOPE.md")
     roadmap = _repo_text("docs/planning/ROADMAP.md")
 
     assert "**Status:** COMPLETE" in plan
-    assert "Milestone 2 - Readiness Helper" in plan
-    assert "Milestone 3 - External Data Path Coverage" in plan
-    assert "pdelie.reporting.summarize_field_batch_readiness" in plan
-    assert "pdelie.examples.run_external_data_readiness_example" in plan
-    assert "no file loaders" in plan
-    assert "no Dataset support" in plan
+    assert "Milestone 2 - Bridge Output Summary" in plan
+    assert "Milestone 3 - Discovery Result And Recovery Summary" in plan
+    assert "pdelie.discovery.summarize_discovery_bridge_output" in plan
+    assert "pdelie.discovery.summarize_discovery_result" in plan
+    assert "pdelie.reporting.summarize_downstream_discovery_workflow" in plan
+    assert "pdelie.examples.run_downstream_discovery_contracts_example" in plan
+    assert "split/leakage diagnostics are deferred" in plan
     assert "## Milestone 5 - API / Public-surface Audit" in plan
     assert "## Milestone 6 - Release Gate And Readiness" in plan
-    assert "updated CI so the current explicit release gate is `v0_21-release-gate`" in plan
+    assert "updated CI so the current explicit release gate is `v0_22-release-gate`" in plan
     assert "- Milestone 6: COMPLETE" in plan
 
-    assert "External Data Readiness Reports" in scope
-    assert "pdelie.reporting.summarize_field_batch_readiness" in scope
-    assert "pdelie.examples.run_external_data_readiness_example" in scope
-    assert "ready" in scope
-    assert "needs_attention" in scope
-    assert "not_ready" in scope
+    assert "Downstream Discovery Contracts" in scope
+    assert "pdelie.discovery.summarize_discovery_bridge_output" in scope
+    assert "pdelie.discovery.summarize_discovery_result" in scope
+    assert "pdelie.reporting.summarize_downstream_discovery_workflow" in scope
+    assert "pdelie.examples.run_downstream_discovery_contracts_example" in scope
+    assert "feature-keyed" in scope
+    assert "heldout-leakage detection" in scope
     assert "file loaders" in scope
     assert "train/test split policy" in scope
     assert "- Milestone 4: COMPLETE" in scope
     assert "- Milestone 5: COMPLETE" in scope
     assert "- Milestone 6: COMPLETE" in scope
 
-    assert "`v0.21` is the completed external-data readiness reporting release" in roadmap
-    assert "external data readiness reports" in roadmap
-    assert "- no file loaders" in roadmap
+    assert "`v0.22` is the completed downstream discovery contracts release" in roadmap
+    assert "downstream discovery contracts" in roadmap
+    assert "- no split management or heldout-leakage detection" in roadmap

@@ -1,4 +1,5 @@
 from pdelie.discovery.evaluation import evaluate_discovery_recovery
+from pdelie.discovery.contracts import summarize_discovery_bridge_output, summarize_discovery_result
 from pdelie.discovery.pysindy_adapter import fit_pysindy_discovery
 from pdelie.discovery.pysindy_bridge import to_pysindy_trajectories
 from pdelie.discovery.recovery_grid import summarize_recovery_grid
@@ -8,6 +9,8 @@ __all__ = [
     "build_translation_canonical_discovery_inputs",
     "evaluate_discovery_recovery",
     "fit_pysindy_discovery",
+    "summarize_discovery_bridge_output",
+    "summarize_discovery_result",
     "summarize_recovery_grid",
     "to_pysindy_trajectories",
 ]

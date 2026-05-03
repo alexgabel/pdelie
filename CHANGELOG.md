@@ -1,5 +1,40 @@
 # Changelog
 
+## 0.22.0
+
+First final release for the frozen V0.22 downstream discovery contracts slice.
+
+- adds `pdelie.discovery.summarize_discovery_bridge_output(...)` for JSON-compatible summaries over downstream bridge arrays
+- adds `pdelie.discovery.summarize_discovery_result(...)` for compact backend-neutral discovery-result and recovery summaries
+- adds `pdelie.reporting.summarize_downstream_discovery_workflow(...)` for composing readiness, confidence, orbit-batch, bridge, and discovery-result reports
+- adds `python -m pdelie.examples.downstream_discovery_contracts` and `pdelie.examples.run_downstream_discovery_contracts_example(...)` as JSON-only runtime smoke examples
+- freezes `summary_type == "discovery_bridge_output"`, `summary_type == "discovery_result"`, and `summary_type == "downstream_discovery_workflow"`
+- validates finite 2D trajectory arrays, shared trajectory shapes, strictly increasing time values, unique feature names, and JSON-compatible provenance
+- summarizes coefficient arrays by shape, finite status, norms, and nonzero counts without copying full coefficient matrices into reports
+- supports optional feature-keyed recovery summaries through `evaluate_discovery_recovery(...)`
+- reports orbit-batch source/shift provenance traceability without detecting leakage or managing splits
+- documents the new helpers in `API_STABILITY.md` as submodule-only runtime APIs with no root exports
+- preserves existing Heat/Burgers strong paths, weak residual reports, normalized periodic KdV, Fisher-KPP reaction-diffusion, advection-diffusion, confidence reports, external data readiness, invariant/orbit diagnostics, orbit batches, candidate validation, and formula-backed generator support
+
+Explicitly deferred for this final release:
+
+- split management or heldout-leakage detection
+- downstream augmentation policy
+- a general discovery-backend framework
+- manuscript benchmark thresholds
+- file loaders
+- `xarray.Dataset` support
+- PDEBench or The Well adapters
+- broad dataset adapter framework
+- multidimensional, multivariable, or nonuniform-grid support
+- new PDE support
+- KS runtime promotion
+- weak-form expansion
+- time-translation APIs
+- neural or callable generator APIs
+- operator-facing APIs
+- PyPI and TestPyPI publication; package-index publishing is deferred to `v1.0` or later
+
 ## 0.21.0
 
 First final release for the frozen V0.21 external data readiness report slice.

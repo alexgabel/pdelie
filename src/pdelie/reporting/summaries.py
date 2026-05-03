@@ -15,6 +15,7 @@ from pdelie.contracts import (
     VerificationReport,
 )
 from pdelie.errors import PDELieValidationError, SchemaValidationError, ScopeValidationError
+from pdelie.invariants import OrbitBatchResult
 from pdelie.residuals.base import ResidualEvaluator
 from pdelie.symmetry.formula import FormulaGeneratorFamily
 from pdelie.symmetry.parameterization import translation_span_distance
@@ -217,6 +218,30 @@ def _consistency_summary_or_list_or_none(value: Any, *, name: str) -> dict[str, 
 
 def _orbit_summary_or_list_or_none(value: Any, *, name: str) -> dict[str, Any] | list[dict[str, Any]] | None:
     return _runtime_report_or_list(value, name=name, expected_summary_types={"uniform_translation_orbit"})
+
+
+def _orbit_batch_summary_or_none(value: Any, *, name: str) -> dict[str, Any] | None:
+    if value is None:
+        return None
+    if isinstance(value, OrbitBatchResult):
+        return _runtime_report(
+            value.report,
+            name=name,
+            expected_summary_types={"uniform_translation_orbit_batch"},
+        )
+    return _runtime_report(value, name=name, expected_summary_types={"uniform_translation_orbit_batch"})
+
+
+def _discovery_bridge_summary_or_none(value: Any, *, name: str) -> dict[str, Any] | None:
+    if value is None:
+        return None
+    return _runtime_report(value, name=name, expected_summary_types={"discovery_bridge_output"})
+
+
+def _discovery_result_summary_or_none(value: Any, *, name: str) -> dict[str, Any] | None:
+    if value is None:
+        return None
+    return _runtime_report(value, name=name, expected_summary_types={"discovery_result"})
 
 
 def _thresholds_or_empty(value: Mapping[str, Any] | None) -> dict[str, float]:
@@ -1189,5 +1214,167 @@ def summarize_invariant_workflow(
         generator=generator_summary,
         fit_diagnostics=fit_summary,
         verification=_verification_summary_or_none(verification, name="verification"),
+        extra_metrics=normalized_extra_metrics,
+    )
+
+
+def _workflow_readiness_status(report: Mapping[str, Any] | None) -> dict[str, Any]:
+    if report is None:
+        return _component_status("unavailable", reason="field_readiness_not_provided")
+    label = report.get("readiness_label")
+    if label == "ready":
+        return _component_status("passed", reason="field_readiness_ready")
+    if label == "needs_attention":
+        return _component_status("warning", reason="field_readiness_needs_attention")
+    if label == "not_ready":
+        return _component_status("failed", reason="field_readiness_not_ready")
+    return _component_status("warning", reason="field_readiness_unknown")
+
+
+def _workflow_confidence_status(report: Mapping[str, Any] | None) -> dict[str, Any]:
+    if report is None:
+        return _component_status("unavailable", reason="generator_confidence_not_provided")
+    label = report.get("confidence_label")
+    if label == "strong":
+        return _component_status("passed", reason="generator_confidence_strong")
+    if label in {"qualified", "insufficient_evidence"}:
+        return _component_status("warning", reason=f"generator_confidence_{label}")
+    if label == "failed":
+        return _component_status("failed", reason="generator_confidence_failed")
+    return _component_status("warning", reason="generator_confidence_unknown")
+
+
+def _workflow_discovery_inputs_status(report: Mapping[str, Any] | None) -> dict[str, Any]:
+    if report is None:
+        return _component_status("unavailable", reason="discovery_inputs_not_provided")
+    return _component_status(
+        "passed",
+        reason="discovery_inputs_summarized",
+        details={
+            "trajectory_count": report.get("trajectory_count"),
+            "num_state_features": report.get("num_state_features"),
+        },
+    )
+
+
+def _workflow_discovery_result_status(report: Mapping[str, Any] | None) -> dict[str, Any]:
+    if report is None:
+        return _component_status("unavailable", reason="discovery_result_not_provided")
+    if report.get("status") == "success":
+        return _component_status("passed", reason="discovery_result_success")
+    if report.get("status") == "failed":
+        return _component_status("failed", reason="discovery_result_failed")
+    return _component_status("warning", reason="discovery_result_unknown_status")
+
+
+def _workflow_orbit_provenance_status(report: Mapping[str, Any] | None) -> tuple[dict[str, Any], dict[str, Any] | None]:
+    if report is None:
+        return _component_status("unavailable", reason="orbit_batch_not_provided"), None
+
+    output_batch_size = report.get("output_batch_size")
+    source_indices = report.get("source_batch_indices")
+    shift_indices = report.get("shift_indices")
+    details = {
+        "output_batch_size": output_batch_size,
+        "source_indices_present": isinstance(source_indices, list),
+        "shift_indices_present": isinstance(shift_indices, list),
+        "source_index_count": len(source_indices) if isinstance(source_indices, list) else None,
+        "shift_index_count": len(shift_indices) if isinstance(shift_indices, list) else None,
+    }
+    if not isinstance(output_batch_size, int):
+        return (
+            _component_status("warning", reason="orbit_batch_size_unavailable", details=details),
+            details,
+        )
+    if not isinstance(source_indices, list) and not isinstance(shift_indices, list):
+        return (
+            _component_status("warning", reason="orbit_provenance_indices_not_recorded", details=details),
+            details,
+        )
+    if not isinstance(source_indices, list) or not isinstance(shift_indices, list):
+        return (
+            _component_status("warning", reason="orbit_provenance_partially_recorded", details=details),
+            details,
+        )
+    if len(source_indices) != output_batch_size or len(shift_indices) != output_batch_size:
+        return (
+            _component_status("failed", reason="orbit_provenance_index_count_mismatch", details=details),
+            details,
+        )
+    return _component_status("passed", reason="orbit_provenance_traceable", details=details), details
+
+
+def _workflow_label(component_statuses: Mapping[str, Mapping[str, Any]]) -> str:
+    statuses = [str(status["status"]) for status in component_statuses.values()]
+    if any(status == "failed" for status in statuses):
+        return "failed"
+    if any(status in {"warning", "not_configured", "unavailable"} for status in statuses):
+        return "needs_attention"
+    return "ready"
+
+
+def summarize_downstream_discovery_workflow(
+    *,
+    field_readiness: Mapping[str, Any] | None = None,
+    generator_confidence: Mapping[str, Any] | None = None,
+    orbit_batch: OrbitBatchResult | Mapping[str, Any] | None = None,
+    discovery_inputs: Mapping[str, Any] | None = None,
+    discovery_result: Mapping[str, Any] | None = None,
+    extra_metrics: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Combine downstream discovery runtime reports without imposing split or leakage policy."""
+
+    if extra_metrics is None:
+        normalized_extra_metrics: Mapping[str, Any] = {}
+    else:
+        normalized_extra_metrics = _require_mapping(extra_metrics, name="extra_metrics")
+
+    readiness_summary = (
+        None
+        if field_readiness is None
+        else _runtime_report(
+            field_readiness,
+            name="field_readiness",
+            expected_summary_types={"field_batch_readiness"},
+        )
+    )
+    confidence_summary = (
+        None
+        if generator_confidence is None
+        else _runtime_report(
+            generator_confidence,
+            name="generator_confidence",
+            expected_summary_types={"generator_confidence"},
+        )
+    )
+    orbit_batch_summary = _orbit_batch_summary_or_none(orbit_batch, name="orbit_batch")
+    discovery_inputs_summary = _discovery_bridge_summary_or_none(discovery_inputs, name="discovery_inputs")
+    discovery_result_summary = _discovery_result_summary_or_none(discovery_result, name="discovery_result")
+    orbit_provenance_status, orbit_provenance = _workflow_orbit_provenance_status(orbit_batch_summary)
+
+    component_statuses = {
+        "field_readiness": _workflow_readiness_status(readiness_summary),
+        "generator_confidence": _workflow_confidence_status(confidence_summary),
+        "orbit_provenance": orbit_provenance_status,
+        "discovery_inputs": _workflow_discovery_inputs_status(discovery_inputs_summary),
+        "discovery_result": _workflow_discovery_result_status(discovery_result_summary),
+    }
+    missing_evidence = [
+        component
+        for component, status in component_statuses.items()
+        if status["status"] == "unavailable"
+    ]
+
+    return _summary_payload(
+        "downstream_discovery_workflow",
+        workflow_label=_workflow_label(component_statuses),
+        component_statuses=component_statuses,
+        field_readiness=readiness_summary,
+        generator_confidence=confidence_summary,
+        orbit_batch=orbit_batch_summary,
+        orbit_provenance=orbit_provenance,
+        discovery_inputs=discovery_inputs_summary,
+        discovery_result=discovery_result_summary,
+        missing_evidence=missing_evidence,
         extra_metrics=normalized_extra_metrics,
     )
