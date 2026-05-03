@@ -242,6 +242,19 @@ Runtime public API for the frozen `v0.20` Milestone 2/M3 slice:
 - this API does not add new PDEs, public KS runtime APIs, weak-form expansion, broad adapters, time translation, split policy, neural/callable generators, or operator-facing APIs
 - these APIs have no root `pdelie` exports
 
+Runtime public API for the frozen `v0.21` Milestone 2/M4 slice:
+
+- `pdelie.reporting.summarize_field_batch_readiness` for JSON-compatible runtime readiness reports over canonical `FieldBatch` inputs before downstream residual, confidence, and discovery workflows
+- reports use `summary_type = "field_batch_readiness"` and `summary_schema_version = "0.1"`
+- readiness reports expose categorical `readiness_label` values: `ready`, `needs_attention`, and `not_ready`
+- component statuses reuse the reporting vocabulary `passed`, `warning`, `failed`, `not_configured`, and `unavailable`
+- the helper reports canonical shape/dim compatibility, finite-value diagnostics, mask diagnostics, uniform coordinate diagnostics, metadata completeness, optional expected-equation checks, conservative metadata suggestions, and optional residual-evaluator preflight
+- residual preflight captures typed `PDELieValidationError` failures in the report and propagates unexpected non-PDELie exceptions
+- `pdelie.examples.run_external_data_readiness_example` for a compact JSON-only runtime smoke example demonstrating a ready `from_numpy` field, incomplete metadata, and residual-evaluator mismatch
+- this API is a runtime supportability report, not a canonical object, file loader, `xarray.Dataset` adapter, broad dataset adapter, resampling helper, metadata mutation helper, PDE identity inference engine, train/test policy, or leakage detector
+- this API does not add new PDEs, public KS runtime APIs, weak-form expansion, broad adapters, multidimensional or nonuniform stable support, time translation, split policy, neural/callable generators, or operator-facing APIs
+- these APIs have no root `pdelie` exports
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 

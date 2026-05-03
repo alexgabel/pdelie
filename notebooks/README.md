@@ -1,6 +1,6 @@
 # PDELie Tutorial Notebooks
 
-This directory is the recommended entry point for new PDELie users on the shipped `v0.20` surface.
+This directory is the recommended entry point for new PDELie users on the shipped `v0.21` surface.
 
 Tutorial promise:
 
@@ -31,6 +31,7 @@ These notebooks are tutorials, not API contracts. Example outputs are runtime su
 - Fitting and validating polynomial translation generators in the stable slice.
 - Producing JSON-compatible residual, fit, verification, invariant, orbit, candidate, and formula summaries.
 - Producing categorical generator confidence reports with `summarize_generator_confidence(...)`.
+- Auditing canonical external-data readiness with `summarize_field_batch_readiness(...)` before residual or downstream workflows.
 - Auditing finite uniform x-translation workflows with coverage, consistency, and provenance reports.
 - Materializing uniform translation orbit batches while preserving source/shift provenance.
 - Validating externally supplied `GeneratorFamily`, `InvariantMapSpec`, and `FormulaGeneratorFamily` candidates empirically.
@@ -43,7 +44,7 @@ These notebooks are tutorials, not API contracts. Example outputs are runtime su
 - Not a train/test split manager or leakage detector.
 - Not an operator-learning framework.
 - Not a paper-specific experiment pipeline.
-- Not a general nonuniform or multidimensional PDE framework in `v0.20`.
+- Not a general nonuniform or multidimensional PDE framework in `v0.21`.
 
 KS remains internal feasibility/no-go evidence. `v0.19` advection-diffusion is implemented only as a frozen scalar 1D periodic constant-coefficient strong path.
 
@@ -92,7 +93,7 @@ Jupyter itself is not a core runtime dependency. Install notebook tooling in you
 | `05_closure_algebra_diagnostics.ipynb` | Closure, span, symbolic/formula metadata distinction | core | <1 min | closure/span diagnostics, formula summaries | closure is not residual invariance |
 | `06_orbit_coverage_diagnostics.ipynb` | Coverage, consistency, read-only orbit reports, materialized orbit batches | `.[viz]` optional | ~1 min | `compute_periodic_window_coverage`, `diagnose_uniform_translation_consistency`, orbit reports/batches | no train/test policy, grid-point coverage only |
 | `07_external_symmetry_candidates.ipynb` | Interop dashboard for external/formula candidates | core | <1 min | `validate_symmetry_candidate`, formula records | no callables, no neural training |
-| `08_downstream_task_template.ipynb` | External data and downstream sparse-discovery workflow template | `.[downstream]` or `.[test]` for PySINDy smoke | ~1 min | `from_numpy`, orbit batches, PySINDy bridge, recovery metrics | no paper policy, no threshold policy |
+| `08_downstream_task_template.ipynb` | External data and downstream sparse-discovery workflow template | `.[downstream]` or `.[test]` for PySINDy smoke | ~1 min | `from_numpy`, readiness reports, orbit batches, PySINDy bridge, recovery metrics | no paper policy, no threshold policy |
 
 ## Running From VS Code Or Jupyter
 
@@ -111,7 +112,8 @@ For your own scalar 1D periodic data:
 2. use `pdelie.data.from_numpy(...)` or optional `pdelie.data.from_xarray(...)`
 3. ensure `x` is uniform, periodic, and endpoint-excluded before using spectral/invariant tools
 4. provide metadata tags that match the residual evaluator you plan to use
-5. validate finite, unmasked scalar values before fitting or verification
+5. run `summarize_field_batch_readiness(...)` to inspect canonical scope, metadata, finite values, coordinates, and optional residual-evaluator compatibility
+6. validate finite, unmasked scalar values before fitting or verification
 
 Nonuniform, multidimensional, PDEBench/The Well, and operator-learning data are deferred scope.
 

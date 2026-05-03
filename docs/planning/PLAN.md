@@ -1,18 +1,18 @@
-# PDELie - Execution Plan (V0.20)
+# PDELie - Execution Plan (V0.21)
 
 **Status:** COMPLETE
 
-**V0.20 is complete as the unified generator confidence report release**
+**V0.21 is complete as the external data readiness report release**
 
-This file is the completed execution record for the `v0.20` release series.
+This file is the completed execution record for the `v0.21` release series.
 
 ## Release Theme
 
-`v0.20` adds one scoped supportability/reporting API:
+`v0.21` adds one scoped supportability/reporting API:
 
-> residual / fit / verification / candidate-validation / orbit diagnostics -> JSON-compatible generator confidence report -> categorical evidence label and component statuses
+> user-owned data -> canonical FieldBatch -> readiness report -> optional residual-evaluator preflight -> confidence/downstream workflows
 
-The public claim is intentionally narrow. The release adds a JSON-compatible reporting helper and a JSON-only example. It does not add a scalar confidence score, train/test policy, downstream success policy, new PDEs, KS promotion, weak-form expansion, broad adapters, time translation, neural/callable generator APIs, operator APIs, or root exports.
+The public claim is intentionally narrow. The release adds a JSON-compatible reporting helper and a JSON-only example. It does not add file loaders, Dataset support, broad adapters, resampling, metadata mutation, train/test policy, downstream contracts, new PDEs, KS promotion, weak-form expansion, time translation, neural/callable generator APIs, operator APIs, or root exports.
 
 ## Milestone Status
 
@@ -26,42 +26,48 @@ The public claim is intentionally narrow. The release adds a JSON-compatible rep
 
 Authoritative scope:
 
-- `docs/planning/V0_20_SCOPE.md`
+- `docs/planning/V0_21_SCOPE.md`
 
-`API_STABILITY.md` was updated when the public `v0.20` confidence reporting API landed.
+`API_STABILITY.md` was updated when the public `v0.21` readiness reporting API landed.
 
 ## Milestone 0 - Scope Freeze
 
-Freeze `v0.20` as a reporting/supportability release.
+Freeze `v0.21` as an external-data readiness reporting release.
 
 Closeout:
 
-- added `docs/planning/V0_20_SCOPE.md`
-- reset `PLAN.md` as the active `v0.20` execution record
-- updated `ROADMAP.md` to record `v0.20` as the current completed release
-- kept numerical scope unchanged
+- added `docs/planning/V0_21_SCOPE.md`
+- reset `PLAN.md` as the active `v0.21` execution record
+- updated `ROADMAP.md` to record `v0.21` as the current completed release
+- kept ingestion and numerical scope unchanged
 
 ## Milestone 1 - Semantics Freeze
 
 Frozen public helper:
 
 ```python
-pdelie.reporting.summarize_generator_confidence(...)
+pdelie.reporting.summarize_field_batch_readiness(
+    field,
+    *,
+    residual_evaluator=None,
+    expected_equation=None,
+)
 ```
 
 Frozen interpretation:
 
-- confidence is categorical empirical evidence, not proof
-- no scalar score ships in `v0.20`
+- readiness is empirical compatibility with current stable contracts, not proof of scientific validity
 - reports are runtime summaries, not canonical objects
-- thresholds are caller-configured when they are not already encoded by existing reports
+- residual preflight is optional
+- metadata suggestions are report-only and conservative
+- no file loaders ship in `v0.21`
+- no Dataset support ships in `v0.21`
 
 Frozen labels:
 
-- `strong`
-- `qualified`
-- `failed`
-- `insufficient_evidence`
+- `ready`
+- `needs_attention`
+- `not_ready`
 
 Frozen component statuses:
 
@@ -71,67 +77,71 @@ Frozen component statuses:
 - `not_configured`
 - `unavailable`
 
-## Milestone 2 - Reporting Helper
+## Milestone 2 - Readiness Helper
 
 Implemented:
 
-- `pdelie.reporting.summarize_generator_confidence(...)`
+- `pdelie.reporting.summarize_field_batch_readiness(...)`
 
-The helper reuses existing reporting helpers for residual, generator, fit, verification, candidate-validation, coverage, consistency, and orbit evidence. Existing reporting schemas remain unchanged.
+The helper reports canonical dims/shape, finite values, mask state, time and x coordinate compatibility, metadata completeness, optional expected-equation matching, conservative metadata suggestions, and optional residual-evaluator preflight.
 
-## Milestone 3 - Examples And Notebook Alignment
-
-Implemented:
-
-- `pdelie.examples.run_generator_confidence_report_example(...)`
-- command module: `python -m pdelie.examples.generator_confidence_report`
-
-The example emits JSON only and demonstrates:
-
-- one `strong` direct-SVD Heat case with configured residual and verification thresholds
-- one `qualified` formula-candidate case with partial empirical validation
-
-Tutorial material now points users to the public helper for confidence summaries while retaining notebook display helpers as non-normative display glue.
-
-## Milestone 4 - Cross-PDE Confidence Coverage
+## Milestone 3 - External Data Path Coverage
 
 Validation added for:
 
-- direct-SVD passing evidence
-- reference-fallback qualified evidence
-- partial candidate validation
-- failed candidate validation
-- residual threshold failure
-- insufficient evidence
-- coverage, consistency, and orbit report composition
+- generated Heat, Burgers, KdV, Fisher-KPP, and advection-diffusion fields
+- `from_numpy(...)` fields
+- `from_xarray(...)` DataArray-derived fields when xarray is installed
+- metadata-incomplete fields
+- masked fields
+- nonfinite fields
+- multivariable fields
+- nonperiodic metadata
+- nonuniform coordinates
+- endpoint-duplicated periodic grids when a domain-length tag exposes the duplication
+- expected-equation mismatch
+- residual-evaluator mismatch
 
-Existing Heat, Burgers, KdV, Fisher-KPP, and advection-diffusion vertical-slice paths remain unchanged.
+## Milestone 4 - Example And Notebook Alignment
+
+Implemented:
+
+- `pdelie.examples.run_external_data_readiness_example(...)`
+- command module: `python -m pdelie.examples.external_data_readiness`
+
+The example emits JSON only and demonstrates:
+
+- one ready `from_numpy(...)` Heat field
+- one metadata-incomplete field
+- one residual-evaluator mismatch
+
+Tutorial material now points users to the public helper where external data is introduced.
 
 ## Milestone 5 - API / Public-surface Audit
 
 Audit result:
 
-- `summarize_generator_confidence(...)` is importable only from `pdelie.reporting`
-- `run_generator_confidence_report_example(...)` is importable only from `pdelie.examples`
+- `summarize_field_batch_readiness(...)` is importable only from `pdelie.reporting`
+- `run_external_data_readiness_example(...)` is importable only from `pdelie.examples`
 - root `pdelie` remains unchanged
 - `API_STABILITY.md` documents the new reporting helper and example runner
-- no new PDE, KS runtime API, weak-form expansion, broad adapter, scalar score, train/test policy, time-translation API, operator API, neural/callable generator API, or root export landed
+- no file loader, Dataset adapter, PDEBench/The Well adapter, multidimensional/nonuniform stable API, resampling API, metadata mutation API, new PDE, KS runtime API, weak-form expansion, split/leakage policy, time-translation API, operator API, neural/callable generator API, or root export landed
 
 ## Milestone 6 - Release Gate And Readiness
 
 Implemented:
 
-- added compact `tests/test_v0_20_release_gate.py`
-- updated CI so the current explicit release gate is `v0_20-release-gate`
+- added compact `tests/test_v0_21_release_gate.py`
+- updated CI so the current explicit release gate is `v0_21-release-gate`
 - kept full editable `python -m pytest`
-- kept package smoke and added confidence-report smoke coverage
-- bumped package metadata to `0.20.0`
+- kept package smoke and added field-readiness smoke coverage
+- bumped package metadata to `0.21.0`
 - updated README, changelog, publishing notes, roadmap, and release readiness docs
-- documented direct `v0.20.0` Git-tag release path
+- documented direct `v0.21.0` Git-tag release path
 
 Required checks before tagging:
 
-- `v0_20-release-gate`
+- `v0_21-release-gate`
 - `editable-tests`
 - `package-smoke`
 
@@ -149,4 +159,5 @@ Local validation checklist:
 - `python -m pdelie.examples.symmetry_candidate_validation`
 - `python -m pdelie.examples.formula_generator_validation`
 - `python -m pdelie.examples.generator_confidence_report`
+- `python -m pdelie.examples.external_data_readiness`
 - `git diff --check`

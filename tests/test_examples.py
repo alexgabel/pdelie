@@ -9,6 +9,7 @@ import numpy as np
 import pdelie
 from pdelie.examples import (
     run_advection_diffusion_vertical_slice_example,
+    run_external_data_readiness_example,
     run_formula_generator_validation_example,
     run_generator_confidence_report_example,
     run_heat_vertical_slice_example,
@@ -426,3 +427,30 @@ def test_generator_confidence_report_module_prints_json_only() -> None:
 
     assert parsed["summary_type"] == "generator_confidence_report_example"
     assert parsed["extra_metrics"]["confidence_labels"] == ["strong", "qualified"]
+
+
+def test_external_data_readiness_example_runs_end_to_end() -> None:
+    result = run_external_data_readiness_example()
+
+    assert json.loads(json.dumps(result)) == result
+    assert result["summary_schema_version"] == "0.1"
+    assert result["summary_type"] == "external_data_readiness_example"
+    assert result["extra_metrics"]["example_name"] == "external_data_readiness"
+    assert result["extra_metrics"]["source"] == "from_numpy"
+    assert result["extra_metrics"]["readiness_labels"] == ["ready", "not_ready", "not_ready"]
+    assert len(result["cases"]) == 3
+    cases = {case["case_name"]: case["readiness"] for case in result["cases"]}
+    assert set(cases) == {"from_numpy_heat_ready", "metadata_incomplete", "residual_evaluator_mismatch"}
+    assert cases["from_numpy_heat_ready"]["summary_type"] == "field_batch_readiness"
+    assert cases["from_numpy_heat_ready"]["readiness_label"] == "ready"
+    assert cases["metadata_incomplete"]["component_statuses"]["metadata"]["status"] == "failed"
+    assert cases["residual_evaluator_mismatch"]["component_statuses"]["expected_equation"]["status"] == "passed"
+    assert cases["residual_evaluator_mismatch"]["component_statuses"]["residual_preflight"]["status"] == "failed"
+    assert not hasattr(pdelie, "run_external_data_readiness_example")
+
+
+def test_external_data_readiness_module_prints_json_only() -> None:
+    parsed = _run_module_json("pdelie.examples.external_data_readiness")
+
+    assert parsed["summary_type"] == "external_data_readiness_example"
+    assert parsed["extra_metrics"]["readiness_labels"] == ["ready", "not_ready", "not_ready"]

@@ -10,7 +10,7 @@ Stable contracts remain in `docs/specs/API_STABILITY.md` only after APIs land.
 
 After `v0.14`, the highest-ROI path has been to move from read-only invariant diagnostics toward conservative user-facing data utilities, then external symmetry-candidate validation, then formula-backed generator support, then carefully scoped PDE expansion.
 
-After `v0.20`, the next planned path is to harden external-data readiness, downstream discovery contracts, and split/leakage provenance before considering more difficult axes such as weak forms, broader KdV/KS, multi-generator fitting, broad adapters, multidimensional/nonuniform grids, and time-translation actions.
+After `v0.21`, the next planned path is to harden downstream discovery contracts and split/leakage provenance before considering more difficult axes such as weak forms, broader KdV/KS, multi-generator fitting, broad adapters, multidimensional/nonuniform grids, and time-translation actions.
 
 Staged sequence:
 
@@ -20,7 +20,7 @@ Staged sequence:
 - `v0.18`: stable Fisher-KPP reaction-diffusion strong path
 - `v0.19`: stable advection-diffusion strong path
 - `v0.20`: unified generator confidence reports
-- `v0.21`: planned external data readiness reports
+- `v0.21`: external data readiness reports
 - `v0.22`: planned downstream discovery contracts
 - `v0.23`: planned split/leakage provenance diagnostics
 - `v0.24`: planned weak-form supportability reset
@@ -250,18 +250,18 @@ Explicit boundaries:
 
 ## V0.21 - External Data Readiness Reports
 
-Planned theme:
+Completed theme:
 
 > make user-owned scalar 1D periodic data safer to bring into the stable runtime before broad adapters land.
 
-Candidate scope:
+Implemented scope:
 
 - stronger `FieldBatch` audit reports
 - coordinate and grid diagnostics
 - metadata completeness diagnostics
 - finite-value, mask, scalar-var, and shape diagnostics
 - residual-evaluator compatibility preflight
-- conservative metadata inference for explicit, low-risk cases
+- conservative metadata suggestions for explicit, low-risk cases
 
 Deferred:
 

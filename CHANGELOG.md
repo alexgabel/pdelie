@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.21.0
+
+First final release for the frozen V0.21 external data readiness report slice.
+
+- adds `pdelie.reporting.summarize_field_batch_readiness(...)` for JSON-compatible readiness reports over canonical `FieldBatch` inputs
+- adds `python -m pdelie.examples.external_data_readiness` and `pdelie.examples.run_external_data_readiness_example(...)` as JSON-only runtime smoke examples
+- freezes `summary_type == "field_batch_readiness"` with readiness labels `ready`, `needs_attention`, and `not_ready`
+- reuses component statuses `passed`, `warning`, `failed`, `not_configured`, and `unavailable`
+- reports canonical dims/shape, finite values, mask state, time/x coordinate compatibility, metadata completeness, optional expected-equation matching, conservative metadata suggestions, and optional residual-evaluator preflight
+- captures typed PDELie residual-preflight validation failures in the report while leaving unexpected exceptions visible
+- demonstrates one ready `from_numpy(...)` Heat field, one metadata-incomplete field, and one residual-evaluator mismatch
+- documents the new helper in `API_STABILITY.md` as a submodule-only runtime API with no root export
+- preserves existing Heat/Burgers strong paths, weak residual reports, normalized periodic KdV, Fisher-KPP reaction-diffusion, advection-diffusion, confidence reporting, invariant/orbit diagnostics, orbit batches, candidate validation, and formula-backed generator support
+
+Explicitly deferred for this final release:
+
+- file loaders
+- `xarray.Dataset` support
+- PDEBench or The Well adapters
+- broad dataset adapter framework
+- multidimensional, multivariable, or nonuniform-grid support
+- resampling APIs
+- metadata mutation or PDE identity inference
+- train/test split policy or heldout-leakage policy
+- downstream discovery contracts
+- new PDE support
+- KS runtime promotion
+- weak-form expansion
+- time-translation APIs
+- neural or callable generator APIs
+- operator-facing APIs
+- PyPI and TestPyPI publication; package-index publishing is deferred to `v1.0` or later
+
 ## 0.20.0
 
 First final release for the frozen V0.20 unified generator confidence report slice.
