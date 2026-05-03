@@ -44,6 +44,8 @@ def test_runtime_package_api_is_importable() -> None:
         build_translation_canonical_discovery_inputs,
         evaluate_discovery_recovery,
         fit_pysindy_discovery,
+        summarize_discovery_bridge_output,
+        summarize_discovery_result,
         summarize_recovery_grid,
         to_pysindy_trajectories,
     )
@@ -68,6 +70,7 @@ def test_runtime_package_api_is_importable() -> None:
         evaluate_weak_heat_residual,
     )
     from pdelie.reporting import (
+        summarize_downstream_discovery_workflow,
         summarize_field_batch_readiness,
         summarize_formula_generator_family,
         summarize_generator_confidence,
@@ -116,6 +119,7 @@ def test_runtime_package_api_is_importable() -> None:
     assert evaluate_weak_burgers_residual is not None
     assert evaluate_weak_heat_residual is not None
     assert summarize_generator_fit_diagnostics is not None
+    assert summarize_downstream_discovery_workflow is not None
     assert summarize_field_batch_readiness is not None
     assert summarize_generator_confidence is not None
     assert summarize_formula_generator_family is not None
@@ -128,6 +132,8 @@ def test_runtime_package_api_is_importable() -> None:
     assert build_translation_canonical_discovery_inputs is not None
     assert evaluate_discovery_recovery is not None
     assert fit_pysindy_discovery is not None
+    assert summarize_discovery_bridge_output is not None
+    assert summarize_discovery_result is not None
     assert summarize_recovery_grid is not None
     assert to_pysindy_trajectories is not None
     assert coerce_generator_family is not None
@@ -168,6 +174,8 @@ def test_root_package_does_not_export_runtime_invariant_applier() -> None:
     assert not hasattr(pdelie, "evaluate_weak_advection_diffusion_residual")
     assert not hasattr(pdelie, "evaluate_discovery_recovery")
     assert not hasattr(pdelie, "fit_pysindy_discovery")
+    assert not hasattr(pdelie, "summarize_discovery_bridge_output")
+    assert not hasattr(pdelie, "summarize_discovery_result")
     assert not hasattr(pdelie, "from_pdebench")
     assert not hasattr(pdelie, "from_numpy")
     assert not hasattr(pdelie, "from_the_well")
@@ -178,6 +186,7 @@ def test_root_package_does_not_export_runtime_invariant_applier() -> None:
     assert not hasattr(pdelie, "subsample_x")
     assert not hasattr(pdelie, "summarize_recovery_grid")
     assert not hasattr(pdelie, "summarize_generator_fit_diagnostics")
+    assert not hasattr(pdelie, "summarize_downstream_discovery_workflow")
     assert not hasattr(pdelie, "summarize_field_batch_readiness")
     assert not hasattr(pdelie, "summarize_generator_confidence")
     assert not hasattr(pdelie, "summarize_formula_generator_family")
@@ -214,6 +223,7 @@ def test_root_package_does_not_export_runtime_invariant_applier() -> None:
     assert not hasattr(pdelie, "run_formula_generator_validation_example")
     assert not hasattr(pdelie, "run_generator_confidence_report_example")
     assert not hasattr(pdelie, "run_external_data_readiness_example")
+    assert not hasattr(pdelie, "run_downstream_discovery_contracts_example")
     assert not hasattr(pdelie, "run_kdv_vertical_slice_example")
     assert not hasattr(pdelie, "run_orbit_coverage_diagnostics_example")
     assert not hasattr(pdelie, "run_reaction_diffusion_vertical_slice_example")
@@ -307,6 +317,7 @@ def test_residuals_package_runtime_api_matches_current_frozen_surface() -> None:
 def test_reporting_package_runtime_api_matches_frozen_m2_surface() -> None:
     reporting_module = importlib.import_module("pdelie.reporting")
 
+    assert hasattr(reporting_module, "summarize_downstream_discovery_workflow")
     assert hasattr(reporting_module, "summarize_formula_generator_family")
     assert hasattr(reporting_module, "summarize_field_batch_readiness")
     assert hasattr(reporting_module, "summarize_generator_confidence")
@@ -325,6 +336,7 @@ def test_examples_package_runtime_api_matches_current_frozen_surface() -> None:
     examples_module = importlib.import_module("pdelie.examples")
 
     assert hasattr(examples_module, "run_advection_diffusion_vertical_slice_example")
+    assert hasattr(examples_module, "run_downstream_discovery_contracts_example")
     assert hasattr(examples_module, "run_external_data_readiness_example")
     assert hasattr(examples_module, "run_heat_vertical_slice_example")
     assert hasattr(examples_module, "run_formula_generator_validation_example")
@@ -345,6 +357,8 @@ def test_discovery_package_runtime_api_matches_frozen_milestone_surface() -> Non
     assert hasattr(discovery_module, "build_translation_canonical_discovery_inputs")
     assert hasattr(discovery_module, "evaluate_discovery_recovery")
     assert hasattr(discovery_module, "fit_pysindy_discovery")
+    assert hasattr(discovery_module, "summarize_discovery_bridge_output")
+    assert hasattr(discovery_module, "summarize_discovery_result")
     assert hasattr(discovery_module, "summarize_recovery_grid")
     assert hasattr(discovery_module, "to_pysindy_trajectories")
     assert not hasattr(discovery_module, "_fit_pysindy_smoke")

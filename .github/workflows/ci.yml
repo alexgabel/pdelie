@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  v0_21-release-gate:
+  v0_22-release-gate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -32,8 +32,8 @@ jobs:
           retry 3 python -m pip install -e .[test]
       - name: Check dependencies
         run: python -m pip check
-      - name: Run V0.21 release gate
-        run: python -m pytest tests/test_v0_21_release_gate.py
+      - name: Run V0.22 release gate
+        run: python -m pytest tests/test_v0_22_release_gate.py
   editable-tests:
     runs-on: ubuntu-latest
     steps:
@@ -76,6 +76,7 @@ jobs:
           python -m pdelie.examples.formula_generator_validation
           python -m pdelie.examples.generator_confidence_report
           python -m pdelie.examples.external_data_readiness
+          python -m pdelie.examples.downstream_discovery_contracts
   package-smoke:
     runs-on: ubuntu-latest
     steps:
@@ -136,9 +137,11 @@ jobs:
           )
           from pdelie.examples import (
               run_advection_diffusion_vertical_slice_example,
+              run_downstream_discovery_contracts_example,
               run_external_data_readiness_example,
               run_reaction_diffusion_vertical_slice_example,
           )
+          from pdelie.discovery import summarize_discovery_bridge_output, summarize_discovery_result
           from pdelie.invariants import (
               OrbitBatchResult,
               build_uniform_translation_orbit_batch,
@@ -147,6 +150,7 @@ jobs:
               summarize_uniform_translation_orbit,
           )
           from pdelie.reporting import (
+              summarize_downstream_discovery_workflow,
               summarize_field_batch_readiness,
               summarize_formula_generator_family,
               summarize_generator_confidence,
@@ -172,6 +176,9 @@ jobs:
           assert compute_periodic_window_coverage is not None
           assert diagnose_uniform_translation_consistency is not None
           assert summarize_uniform_translation_orbit is not None
+          assert summarize_discovery_bridge_output is not None
+          assert summarize_discovery_result is not None
+          assert summarize_downstream_discovery_workflow is not None
           assert summarize_field_batch_readiness is not None
           assert summarize_generator_fit_diagnostics is not None
           assert summarize_generator_confidence is not None
@@ -187,11 +194,15 @@ jobs:
           assert generate_advection_diffusion_1d_field_batch is not None
           assert AdvectionDiffusionResidualEvaluator is not None
           assert run_advection_diffusion_vertical_slice_example is not None
+          assert run_downstream_discovery_contracts_example is not None
           assert run_external_data_readiness_example is not None
           assert generate_reaction_diffusion_1d_field_batch is not None
           assert ReactionDiffusionResidualEvaluator is not None
           assert run_reaction_diffusion_vertical_slice_example is not None
           assert not hasattr(pdelie, "summarize_field_batch_readiness")
+          assert not hasattr(pdelie, "summarize_discovery_bridge_output")
+          assert not hasattr(pdelie, "summarize_discovery_result")
+          assert not hasattr(pdelie, "summarize_downstream_discovery_workflow")
           assert not hasattr(pdelie, "summarize_generator_fit_diagnostics")
           assert not hasattr(pdelie, "summarize_vertical_slice")
           assert not hasattr(pdelie, "compute_periodic_window_coverage")
@@ -206,6 +217,7 @@ jobs:
           assert not hasattr(pdelie, "generate_advection_diffusion_1d_field_batch")
           assert not hasattr(pdelie, "AdvectionDiffusionResidualEvaluator")
           assert not hasattr(pdelie, "run_advection_diffusion_vertical_slice_example")
+          assert not hasattr(pdelie, "run_downstream_discovery_contracts_example")
           assert not hasattr(pdelie, "run_external_data_readiness_example")
           assert not hasattr(pdelie, "generate_reaction_diffusion_1d_field_batch")
           assert not hasattr(pdelie, "ReactionDiffusionResidualEvaluator")
@@ -424,6 +436,53 @@ jobs:
           assert not hasattr(pdelie, "from_xarray_dataset")
           assert not hasattr(pdelie, "load_field_batch")
           print("field-readiness-smoke-ok")
+          PY
+      - name: Downstream discovery contracts smoke
+        run: |
+          /tmp/pdelie-rc-venv/bin/python - <<'PY'
+          import json
+          import pdelie
+
+          from pdelie.data import generate_heat_1d_field_batch
+          from pdelie.discovery import (
+              summarize_discovery_bridge_output,
+              summarize_discovery_result,
+              to_pysindy_trajectories,
+          )
+          from pdelie.examples import run_downstream_discovery_contracts_example
+          from pdelie.reporting import summarize_downstream_discovery_workflow
+
+          field = generate_heat_1d_field_batch(batch_size=1, num_times=7, num_points=8, seed=22022)
+          trajectories, time_values, feature_names = to_pysindy_trajectories(field)
+          bridge = summarize_discovery_bridge_output(trajectories, time_values, feature_names)
+          result = summarize_discovery_result({
+              "status": "success",
+              "backend": "manual",
+              "feature_names": ["u"],
+              "library_feature_names": ["u_xx"],
+              "coefficients": [[0.1]],
+              "equation_terms": {"u": {"u_xx": 0.1}},
+              "equation_strings": {"u": "0.1*u_xx"},
+              "fit_diagnostics": {},
+          }, target_terms={"u": {"u_xx": 0.1}})
+          workflow = summarize_downstream_discovery_workflow(
+              discovery_inputs=bridge,
+              discovery_result=result,
+          )
+          example = run_downstream_discovery_contracts_example()
+          json.dumps(bridge)
+          json.dumps(result)
+          json.dumps(workflow)
+          json.dumps(example)
+          assert bridge["summary_type"] == "discovery_bridge_output"
+          assert result["summary_type"] == "discovery_result"
+          assert workflow["summary_type"] == "downstream_discovery_workflow"
+          assert example["summary_type"] == "downstream_discovery_contracts_example"
+          assert not hasattr(pdelie, "summarize_discovery_bridge_output")
+          assert not hasattr(pdelie, "summarize_discovery_result")
+          assert not hasattr(pdelie, "summarize_downstream_discovery_workflow")
+          assert not hasattr(pdelie, "run_downstream_discovery_contracts_example")
+          print("downstream-discovery-contracts-smoke-ok")
           PY
       - name: Generator fit diagnostics smoke
         run: |

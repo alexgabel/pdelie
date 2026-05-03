@@ -453,6 +453,76 @@ The authoritative `v0.12` scope freeze belongs in:
 
 ## Current Completed Release
 
+### `v0.22` - Downstream discovery contracts
+**Status:** Completed
+
+`v0.22` is the completed downstream discovery contracts release after the `v0.21` external-data readiness release.
+
+Its purpose is:
+
+> standardize runtime reports around downstream sparse-discovery workflows without becoming a discovery-backend framework, split-policy layer, leakage detector, or manuscript benchmark.
+
+Completed release definition:
+
+`FieldBatch / orbit batch / bridge outputs / backend-native discovery result -> JSON-compatible discovery summaries -> optional recovery summary -> downstream workflow report`
+
+Completed scope:
+
+- `pdelie.discovery.summarize_discovery_bridge_output(...)`
+- `pdelie.discovery.summarize_discovery_result(...)`
+- `pdelie.reporting.summarize_downstream_discovery_workflow(...)`
+- `pdelie.examples.run_downstream_discovery_contracts_example(...)`
+- frozen report types: `discovery_bridge_output`, `discovery_result`, and `downstream_discovery_workflow`
+- bridge summaries over finite 2D trajectory arrays, strictly increasing time, and unique feature names
+- compact coefficient summaries without copying full coefficient matrices
+- optional feature-keyed recovery summaries via `evaluate_discovery_recovery(...)`
+- orbit-batch provenance traceability checks without split/leakage policy
+- compact current `v0_22-release-gate` readiness
+
+Release interpretation:
+
+- this is a runtime reporting/contracts release, not a canonical object release
+- recovery summaries are empirical configured diagnostics, not benchmark success claims
+- `v0.22.0` is a Git-tag-only release; PyPI and TestPyPI publication are deferred to `v1.0` or later
+
+Explicit non-goals:
+
+- no split management or heldout-leakage detection
+- no general discovery-backend framework
+- no file loaders or `xarray.Dataset` support
+- no PDEBench or The Well adapters
+- no multidimensional or nonuniform-grid stable support
+- no new PDEs
+- no KS runtime promotion
+- no weak-form expansion
+- no time-translation APIs
+- no neural or callable generator API
+- no operator-facing symmetry work
+- no root export expansion
+
+The authoritative `v0.22` scope freeze belongs in:
+
+- `V0_22_SCOPE.md`
+
+### Release Gate for `v0.22`
+
+`v0.22` is complete only if:
+
+- bridge summaries validate finite 2D arrays, increasing time, and unique feature names
+- discovery-result summaries handle success and failure mappings without leaking coefficient arrays
+- feature-keyed recovery summaries are covered by tests
+- workflow summaries combine readiness, confidence, orbit-batch, bridge, and discovery-result reports
+- orbit provenance checks report traceability only and do not manage splits or leakage
+- new APIs are importable from their submodules only
+- root `pdelie` remains unchanged
+- no file loader, Dataset adapter, broad backend framework, new PDE, KS runtime API, weak-form expansion, split/leakage policy, time-translation, neural/callable, or operator API lands
+- CI uses one compact current release gate plus full editable tests and package smoke
+- package/readiness docs preserve the `v1.0` package-index publishing deferral
+
+---
+
+## Recent Completed Release
+
 ### `v0.21` - External data readiness reports
 **Status:** Completed
 
@@ -475,7 +545,7 @@ Completed scope:
 - component statuses: `passed`, `warning`, `failed`, `not_configured`, `unavailable`
 - field shape/dim, finite-value, mask, coordinate, metadata, expected-equation, and residual-preflight diagnostics
 - conservative metadata suggestions without mutation
-- compact current `v0_21-release-gate` readiness
+- compact `v0_21-release-gate` readiness at release closeout
 
 Release interpretation:
 
@@ -1505,7 +1575,7 @@ It should **not** be edited every time a new idea appears.
 - `v0.19` = stable scalar 1D periodic constant-coefficient advection-diffusion strong path
 - `v0.20` = unified generator confidence reports
 - `v0.21` = external data readiness reports
-- `v0.22` = planned downstream discovery contracts and provenance reports
+- `v0.22` = downstream discovery contracts and provenance reports
 - `v0.23` = planned split/leakage provenance diagnostics, not split management
 - `v0.24` = planned weak-form supportability reset
 - `v0.25` = planned KdV scope decision

@@ -1,4 +1,5 @@
 from pdelie.reporting.summaries import (
+    summarize_downstream_discovery_workflow,
     summarize_field_batch_readiness,
     summarize_formula_generator_family,
     summarize_generator_confidence,
@@ -12,6 +13,7 @@ from pdelie.reporting.summaries import (
 )
 
 __all__ = [
+    "summarize_downstream_discovery_workflow",
     "summarize_field_batch_readiness",
     "summarize_formula_generator_family",
     "summarize_generator_confidence",

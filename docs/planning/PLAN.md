@@ -1,18 +1,18 @@
-# PDELie - Execution Plan (V0.21)
+# PDELie - Execution Plan (V0.22)
 
 **Status:** COMPLETE
 
-**V0.21 is complete as the external data readiness report release**
+**V0.22 is complete as the downstream discovery contracts release**
 
-This file is the completed execution record for the `v0.21` release series.
+This file is the completed execution record for the `v0.22` release series.
 
 ## Release Theme
 
-`v0.21` adds one scoped supportability/reporting API:
+`v0.22` adds downstream sparse-discovery supportability reports:
 
-> user-owned data -> canonical FieldBatch -> readiness report -> optional residual-evaluator preflight -> confidence/downstream workflows
+> FieldBatch / orbit batch / bridge outputs / backend-native discovery result -> JSON-compatible discovery summaries -> optional recovery summary -> downstream workflow report
 
-The public claim is intentionally narrow. The release adds a JSON-compatible reporting helper and a JSON-only example. It does not add file loaders, Dataset support, broad adapters, resampling, metadata mutation, train/test policy, downstream contracts, new PDEs, KS promotion, weak-form expansion, time translation, neural/callable generator APIs, operator APIs, or root exports.
+The public claim is intentionally narrow. The release standardizes runtime contracts around downstream discovery inputs, backend-neutral result mappings, recovery summaries, and workflow composition. It does not add split management, leakage detection, broad backend frameworks, file loaders, Dataset support, new PDEs, KS promotion, weak-form expansion, time translation, neural/callable generator APIs, operator APIs, or root exports.
 
 ## Milestone Status
 
@@ -26,122 +26,118 @@ The public claim is intentionally narrow. The release adds a JSON-compatible rep
 
 Authoritative scope:
 
-- `docs/planning/V0_21_SCOPE.md`
+- `docs/planning/V0_22_SCOPE.md`
 
-`API_STABILITY.md` was updated when the public `v0.21` readiness reporting API landed.
+`API_STABILITY.md` was updated when the public `v0.22` discovery/reporting APIs landed.
 
 ## Milestone 0 - Scope Freeze
 
-Freeze `v0.21` as an external-data readiness reporting release.
+Freeze `v0.22` as a downstream discovery contracts release.
 
 Closeout:
 
-- added `docs/planning/V0_21_SCOPE.md`
-- reset `PLAN.md` as the active `v0.21` execution record
-- updated `ROADMAP.md` to record `v0.21` as the current completed release
-- kept ingestion and numerical scope unchanged
+- added `docs/planning/V0_22_SCOPE.md`
+- reset `PLAN.md` as the active `v0.22` execution record
+- updated `ROADMAP.md` to record `v0.22` as the current completed release
+- kept numerical scope and ingestion scope unchanged
 
-## Milestone 1 - Semantics Freeze
+## Milestone 1 - Contract Semantics Freeze
 
-Frozen public helper:
+Frozen public helpers:
 
 ```python
-pdelie.reporting.summarize_field_batch_readiness(
-    field,
+pdelie.discovery.summarize_discovery_bridge_output(
+    trajectories,
+    time_values,
+    feature_names,
     *,
-    residual_evaluator=None,
-    expected_equation=None,
+    source_field_id=None,
+    provenance=None,
+)
+
+pdelie.discovery.summarize_discovery_result(
+    result,
+    *,
+    target_terms=None,
+    support_epsilon=1e-8,
+    train_residual=None,
+    heldout_residual=None,
+    source_result_id=None,
+)
+
+pdelie.reporting.summarize_downstream_discovery_workflow(
+    *,
+    field_readiness=None,
+    generator_confidence=None,
+    orbit_batch=None,
+    discovery_inputs=None,
+    discovery_result=None,
+    extra_metrics=None,
 )
 ```
 
 Frozen interpretation:
 
-- readiness is empirical compatibility with current stable contracts, not proof of scientific validity
 - reports are runtime summaries, not canonical objects
-- residual preflight is optional
-- metadata suggestions are report-only and conservative
-- no file loaders ship in `v0.21`
-- no Dataset support ships in `v0.21`
+- bridge reports validate arrays and provenance without returning transformed `FieldBatch` objects
+- discovery-result reports summarize coefficient matrices without copying them into output
+- `target_terms` must be feature-keyed
+- recovery summaries are empirical configured diagnostics, not benchmark success claims
+- orbit-batch provenance checks are traceability reports only
+- split/leakage diagnostics are deferred
 
-Frozen labels:
-
-- `ready`
-- `needs_attention`
-- `not_ready`
-
-Frozen component statuses:
-
-- `passed`
-- `warning`
-- `failed`
-- `not_configured`
-- `unavailable`
-
-## Milestone 2 - Readiness Helper
+## Milestone 2 - Bridge Output Summary
 
 Implemented:
 
-- `pdelie.reporting.summarize_field_batch_readiness(...)`
+- `pdelie.discovery.summarize_discovery_bridge_output(...)`
 
-The helper reports canonical dims/shape, finite values, mask state, time and x coordinate compatibility, metadata completeness, optional expected-equation matching, conservative metadata suggestions, and optional residual-evaluator preflight.
+The helper validates finite 2D trajectories, shared shape, strictly increasing time, unique feature names, and JSON-compatible provenance.
 
-## Milestone 3 - External Data Path Coverage
-
-Validation added for:
-
-- generated Heat, Burgers, KdV, Fisher-KPP, and advection-diffusion fields
-- `from_numpy(...)` fields
-- `from_xarray(...)` DataArray-derived fields when xarray is installed
-- metadata-incomplete fields
-- masked fields
-- nonfinite fields
-- multivariable fields
-- nonperiodic metadata
-- nonuniform coordinates
-- endpoint-duplicated periodic grids when a domain-length tag exposes the duplication
-- expected-equation mismatch
-- residual-evaluator mismatch
-
-## Milestone 4 - Example And Notebook Alignment
+## Milestone 3 - Discovery Result And Recovery Summary
 
 Implemented:
 
-- `pdelie.examples.run_external_data_readiness_example(...)`
-- command module: `python -m pdelie.examples.external_data_readiness`
+- `pdelie.discovery.summarize_discovery_result(...)`
 
-The example emits JSON only and demonstrates:
+The helper accepts backend-neutral and `fit_pysindy_discovery(...)`-style mappings, summarizes coefficients by compact norms/counts, handles backend failure mappings as reports, and optionally computes feature-keyed recovery summaries through `evaluate_discovery_recovery(...)`.
 
-- one ready `from_numpy(...)` Heat field
-- one metadata-incomplete field
-- one residual-evaluator mismatch
+## Milestone 4 - Workflow Summary And Example
 
-Tutorial material now points users to the public helper where external data is introduced.
+Implemented:
+
+- `pdelie.reporting.summarize_downstream_discovery_workflow(...)`
+- `pdelie.examples.run_downstream_discovery_contracts_example(...)`
+- command module: `python -m pdelie.examples.downstream_discovery_contracts`
+
+The example emits JSON only and combines field readiness, generator confidence, orbit-batch provenance, discovery bridge summaries, discovery-result summaries, and downstream workflow status.
 
 ## Milestone 5 - API / Public-surface Audit
 
 Audit result:
 
-- `summarize_field_batch_readiness(...)` is importable only from `pdelie.reporting`
-- `run_external_data_readiness_example(...)` is importable only from `pdelie.examples`
+- discovery summaries are importable only from `pdelie.discovery`
+- downstream workflow summaries are importable only from `pdelie.reporting`
+- the JSON example is importable only from `pdelie.examples`
 - root `pdelie` remains unchanged
-- `API_STABILITY.md` documents the new reporting helper and example runner
-- no file loader, Dataset adapter, PDEBench/The Well adapter, multidimensional/nonuniform stable API, resampling API, metadata mutation API, new PDE, KS runtime API, weak-form expansion, split/leakage policy, time-translation API, operator API, neural/callable generator API, or root export landed
+- `API_STABILITY.md` documents the new runtime helpers and example runner
+- no split management, leakage detection, broad backend framework, file loader, Dataset adapter, new PDE, KS runtime API, weak-form expansion, time-translation API, operator API, neural/callable generator API, or root export landed
 
 ## Milestone 6 - Release Gate And Readiness
 
 Implemented:
 
-- added compact `tests/test_v0_21_release_gate.py`
-- updated CI so the current explicit release gate is `v0_21-release-gate`
+- added compact `tests/test_v0_22_release_gate.py`
+- updated CI so the current explicit release gate is `v0_22-release-gate`
 - kept full editable `python -m pytest`
-- kept package smoke and added field-readiness smoke coverage
-- bumped package metadata to `0.21.0`
+- kept package smoke and added downstream-discovery-contracts smoke coverage
+- bumped package metadata to `0.22.0`
 - updated README, changelog, publishing notes, roadmap, and release readiness docs
-- documented direct `v0.21.0` Git-tag release path
+- documented direct `v0.22.0` Git-tag release path
 
 Required checks before tagging:
 
-- `v0_21-release-gate`
+- `v0_22-release-gate`
 - `editable-tests`
 - `package-smoke`
 
@@ -160,4 +156,5 @@ Local validation checklist:
 - `python -m pdelie.examples.formula_generator_validation`
 - `python -m pdelie.examples.generator_confidence_report`
 - `python -m pdelie.examples.external_data_readiness`
+- `python -m pdelie.examples.downstream_discovery_contracts`
 - `git diff --check`
