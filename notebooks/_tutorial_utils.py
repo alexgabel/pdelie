@@ -107,6 +107,22 @@ def print_cards(cards: list[Mapping[str, Any]]) -> None:
     print(pretty_json(cards, max_chars=6000))
 
 
+def field_snapshot(field: Any) -> dict[str, Any]:
+    """Return a compact tutorial snapshot of a FieldBatch-like object."""
+    return json_safe(
+        {
+            "dims": list(field.dims),
+            "shape": list(field.values.shape),
+            "time_points": len(field.coords["time"]),
+            "x_points": len(field.coords["x"]),
+            "var_names": list(field.var_names),
+            "metadata_parameter_tags": field.metadata.get("parameter_tags", {}),
+            "mask_present": field.mask is not None,
+            "preprocess_steps": len(field.preprocess_log),
+        }
+    )
+
+
 def plot_field_heatmap(field: Any, *, batch_index: int = 0, title: str = "field") -> None:
     """Visualize a scalar 1D FieldBatch trajectory as a time/x heatmap."""
     import matplotlib.pyplot as plt
@@ -173,4 +189,3 @@ def plot_coverage_counts(coverage: Mapping[str, Any], *, title: str = "coverage"
     ax.set_ylabel("coverage count")
     ax.grid(True, alpha=0.3)
     plt.show()
-

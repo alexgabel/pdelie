@@ -46,6 +46,8 @@ def _assert_repeated_summary_matches(first: dict[str, object], second: dict[str,
             second_value = second[section][key]
             if key in {"coefficients", "epsilon_values", "error_curve"}:
                 np.testing.assert_allclose(np.asarray(first_value, dtype=float), np.asarray(second_value, dtype=float))
+            elif key == "diagnostics":
+                _assert_nested_summary_matches(first_value, second_value)
             elif key in {
                 "max_abs_residual",
                 "rms_residual",
@@ -57,6 +59,23 @@ def _assert_repeated_summary_matches(first: dict[str, object], second: dict[str,
                 np.testing.assert_allclose(float(first_value), float(second_value))
             else:
                 assert first_value == second_value
+
+
+def _assert_nested_summary_matches(first: object, second: object) -> None:
+    if isinstance(first, dict) and isinstance(second, dict):
+        assert first.keys() == second.keys()
+        for key in first:
+            _assert_nested_summary_matches(first[key], second[key])
+        return
+    if isinstance(first, list) and isinstance(second, list):
+        assert len(first) == len(second)
+        for first_item, second_item in zip(first, second, strict=True):
+            _assert_nested_summary_matches(first_item, second_item)
+        return
+    if isinstance(first, (int, float)) and isinstance(second, (int, float)):
+        np.testing.assert_allclose(float(first), float(second))
+        return
+    assert first == second
 
 
 def _run_module_json(module_name: str) -> dict[str, object]:

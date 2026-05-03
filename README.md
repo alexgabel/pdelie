@@ -104,6 +104,15 @@ The repository includes exploratory notebooks under `notebooks/` for the shipped
 These notebooks are non-normative tutorials, not stability contracts.
 Most discovery notebooks require the downstream extras (`.[downstream]` or `.[test]`).
 
+New to `pdelie`? Start with `notebooks/`.
+The first three notebooks are the recommended entry path:
+
+1. `notebooks/00_pde_timeseries_to_generators.ipynb` - canonical PDE time series to generator confidence evidence
+2. `notebooks/02_robustness_sweeps.ipynb` - perturbation sweeps over residual, fit, span, and verification diagnostics
+3. `notebooks/06_orbit_coverage_diagnostics.ipynb` - invariant coverage, consistency, read-only orbit reports, and materialized orbit batches
+
+The notebook packet is tutorial material only. It does not define API stability, train/test policy, leakage safety, or manuscript success criteria.
+
 ## Minimal End-To-End Example
 
 Run the packaged example modules from the repo root:

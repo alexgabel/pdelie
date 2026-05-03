@@ -1,88 +1,138 @@
-# Notebooks
+# PDELie Tutorial Notebooks
 
-This directory contains tutorial notebooks for the shipped `v0.17` runtime surface.
+This directory is the recommended entry point for new PDELie users on the shipped `v0.18` surface.
 
-The tutorial promise is:
+Tutorial promise:
 
 ```text
 PDE time series
 -> canonical FieldBatch
--> residual target
--> fitted or supplied generator candidate
--> empirical confidence report
--> optional orbit materialization / downstream task
+-> derivatives/residuals
+-> generator or symmetry candidate
+-> empirical validation/reporting
+-> optional orbit materialization
+-> optional downstream sparse-discovery task
 ```
 
-These notebooks are:
+These notebooks are tutorials, not API contracts. Example outputs are runtime summaries, not canonical paper artifacts.
 
-- progressive teaching material
-- non-normative
-- not part of the package stability contract
-- intended to be run from the repo root after an editable install
+## Who These Notebooks Are For
 
-Recommended environment:
+- ML/PDE researchers evaluating whether PDELie fits their workflow.
+- Graduate students learning how Lie-symmetry diagnostics connect to numerical PDE data.
+- Users with scalar 1D periodic PDE time series who want a responsible path from data to generator candidates.
+- Developers extending PDELie while keeping public API and experimental boundaries clear.
+
+## What PDELie Is Good For
+
+- Converting supported arrays into canonical `FieldBatch` objects.
+- Computing `spectral_fd` derivatives on uniform periodic 1D grids.
+- Evaluating strong residuals for the stable Heat, Burgers, KdV, and Fisher-KPP paths.
+- Fitting and validating polynomial translation generators in the stable slice.
+- Producing JSON-compatible residual, fit, verification, invariant, orbit, candidate, and formula summaries.
+- Auditing finite uniform x-translation workflows with coverage, consistency, and provenance reports.
+- Materializing uniform translation orbit batches while preserving source/shift provenance.
+- Validating externally supplied `GeneratorFamily`, `InvariantMapSpec`, and `FormulaGeneratorFamily` candidates empirically.
+
+## What PDELie Is Not
+
+- Not a mathematical proof engine.
+- Not a neural symmetry-detector training framework.
+- Not a broad PDEBench/The Well adapter layer.
+- Not a train/test split manager or leakage detector.
+- Not an operator-learning framework.
+- Not a paper-specific experiment pipeline.
+- Not a general nonuniform or multidimensional PDE framework in `v0.18`.
+
+KS remains internal feasibility/no-go evidence. `v0.19` advection-diffusion is only a roadmap direction and is not implemented here.
+
+## Installation
+
+Core editable install:
+
+```bash
+python -m pip install -e .
+```
+
+Test/tutorial environment used by CI:
 
 ```bash
 python -m pip install -e .[test]
 ```
 
-That installs the optional PySINDy, xarray, and Matplotlib dependencies used across the tutorial set.
-If you only want the core library, install `python -m pip install -e .` and skip PySINDy-specific cells.
+Optional focused extras:
 
-Jupyter itself is not a runtime dependency of `pdelie`; install notebook tooling separately in your environment.
+```bash
+python -m pip install -e .[downstream]  # PySINDy bridge path
+python -m pip install -e .[xarray]      # from_xarray ingestion
+python -m pip install -e .[viz]         # Matplotlib plotting helpers
+```
+
+Jupyter itself is not a core runtime dependency. Install notebook tooling in your environment separately.
 
 ## Recommended Learning Path
 
-1. PDE time series to generators
-2. confidence diagnostics under perturbation
-3. invariant/orbit reports
-4. materialized orbit batches with provenance
-5. external and formula-backed symmetry candidates
-6. downstream discovery templates
+1. `00_pde_timeseries_to_generators.ipynb` - quickstart from PDE time series to generator evidence.
+2. `02_robustness_sweeps.ipynb` - confidence diagnostics under perturbation.
+3. `06_orbit_coverage_diagnostics.ipynb` - invariant/orbit reports and materialized orbit batches.
+4. `03_portability_round_trips.ipynb` - generator export/import plus revalidation.
+5. `07_external_symmetry_candidates.ipynb` - external and formula-backed candidate validation.
+6. `08_downstream_task_template.ipynb` - paper-agnostic downstream sparse-discovery template.
 
 ## Notebook Index
 
-- `00_pde_timeseries_to_generators.ipynb`
-  - quickstart for the current `v0.17` surface
-  - canonical fields, derivatives, residuals, fitted generators, held-out verification, and confidence cards
-- `01_raw_vs_translation_canonical_discovery.ipynb`
-  - raw versus translation-canonical Heat discovery inputs
-  - coverage diagnostics and `v0.15` orbit batches as auditable data utilities
-- `02_robustness_sweeps.ipynb`
-  - noise/subsampling/fit-epsilon sweeps using confidence-card metrics
-  - residual RMS, conditioning, span distance, and verification error side by side
-- `03_portability_round_trips.ipynb`
-  - generator-family manifest export/import/coercion
-  - empirical revalidation with `validate_symmetry_candidate(...)`
-- `04_discovered_vs_known_translation_generators.ipynb`
-  - compares fitted `GeneratorFamily`, finite `InvariantMapSpec`, formula-backed `FormulaGeneratorFamily`, and failed candidates under one validation language
-- `05_closure_algebra_diagnostics.ipynb`
-  - algebraic closure diagnostics for polynomial families
-  - formula-backed metadata and the distinction between empirical validation and proof
-- `06_orbit_coverage_diagnostics.ipynb`
-  - public coverage diagnostics, translation-consistency reports, read-only orbit reports, and materialized orbit batches
-- `07_external_symmetry_candidates.ipynb`
-  - dedicated `v0.16-v0.17` candidate-validation tutorial
-  - validates fitted, finite-map, formula-backed, and deliberately failed candidates
-- `08_downstream_task_template.ipynb`
-  - paper-agnostic downstream workflow template
-  - optional orbit materialization, PySINDy bridge inputs, generator validation, and recovery metrics
+| Notebook | Main concept | Required extras | Est. runtime | Stable APIs used | Out-of-scope warnings |
+| --- | --- | --- | --- | --- | --- |
+| `00_pde_timeseries_to_generators.ipynb` | Heat and Fisher-KPP quickstart: field, derivatives, residual, fit, verify, confidence card | `.[viz]` or `.[test]` for plots | 1-2 min | `FieldBatch`, `compute_spectral_fd_derivatives`, Heat/Fisher-KPP residuals, `summarize_vertical_slice` | no proof, no KS, no weak form |
+| `01_raw_vs_translation_canonical_discovery.ipynb` | Raw vs translation-canonical discovery inputs plus orbit-batch contrast | `.[downstream]` or `.[test]` | ~1 min | discovery bridge, coverage diagnostics, orbit batch builder | not a benchmark, no split/leakage policy |
+| `02_robustness_sweeps.ipynb` | Noise/subsampling/fit-epsilon diagnostics | `.[viz]` or `.[test]` | 1-2 min | robustness helpers, fit diagnostics, verification summaries | no robustness guarantee |
+| `03_portability_round_trips.ipynb` | Generator manifest export/import and empirical revalidation | core | <1 min | portability helpers, `validate_symmetry_candidate` | serialization is not scientific validity |
+| `04_discovered_vs_known_translation_generators.ipynb` | Compare fitted, finite-map, formula-backed, and failed candidates | core | <1 min | `GeneratorFamily`, `InvariantMapSpec`, `FormulaGeneratorFamily`, candidate validation | no learned detector, no proof |
+| `05_closure_algebra_diagnostics.ipynb` | Closure, span, symbolic/formula metadata distinction | core | <1 min | closure/span diagnostics, formula summaries | closure is not residual invariance |
+| `06_orbit_coverage_diagnostics.ipynb` | Coverage, consistency, read-only orbit reports, materialized orbit batches | `.[viz]` optional | ~1 min | `compute_periodic_window_coverage`, `diagnose_uniform_translation_consistency`, orbit reports/batches | no train/test policy, grid-point coverage only |
+| `07_external_symmetry_candidates.ipynb` | Interop dashboard for external/formula candidates | core | <1 min | `validate_symmetry_candidate`, formula records | no callables, no neural training |
+| `08_downstream_task_template.ipynb` | External data and downstream sparse-discovery workflow template | `.[downstream]` or `.[test]` for PySINDy smoke | ~1 min | `from_numpy`, orbit batches, PySINDy bridge, recovery metrics | no paper policy, no threshold policy |
 
-## Running From VS Code
+## Running From VS Code Or Jupyter
 
-1. open the repo root
-2. select the environment where `pdelie` is installed
-3. open a notebook from this directory
-4. run cells from top to bottom
+1. Open the repo root.
+2. Select the Python environment where `pdelie` is installed.
+3. Open a notebook from `notebooks/`.
+4. Run cells from top to bottom.
 
-## Notes
+Run from the repo root so imports like `notebooks._tutorial_utils` resolve cleanly.
 
-- confidence cards are a notebook teaching pattern, not a package API
-- discovery notebooks intentionally work with backend-native PySINDy outputs
-- reporting helpers produce runtime summaries, not canonical artifact schemas
-- orbit/coverage reports do not construct augmented datasets
-- materialized orbit batches construct orbit-expanded data but do not decide train/heldout policy, split management, or leakage safety
-- keep source and shift indices enabled when using orbit batches in serious workflows
-- `FormulaGeneratorFamily` stores safe JSON expression metadata; it does not parse executable strings, accept callables, or train learned generators
-- KS remains internal feasibility/no-go evidence; no notebook promotes a public KS runtime API
-- these notebooks should stay paper-agnostic and reusable for tutorials
+## Using External Data
+
+For your own scalar 1D periodic data:
+
+1. arrange values so they can be interpreted as `batch/time/x/var`
+2. use `pdelie.data.from_numpy(...)` or optional `pdelie.data.from_xarray(...)`
+3. ensure `x` is uniform, periodic, and endpoint-excluded before using spectral/invariant tools
+4. provide metadata tags that match the residual evaluator you plan to use
+5. validate finite, unmasked scalar values before fitting or verification
+
+Nonuniform, multidimensional, PDEBench/The Well, and operator-learning data are deferred scope.
+
+## Adapting To Downstream Tasks
+
+The notebooks show where to plug in your own model, loss, optimizer, or sparse-regression backend.
+
+PDELie can prepare canonical data, materialize translation orbits, validate generator candidates, and export backend-native arrays. It does not decide:
+
+- train/test split policy
+- leakage safety
+- threshold policy
+- benchmark success criteria
+- manuscript claims
+
+Orbit batches construct orbit-expanded data. They do not manage train/heldout splits or leakage. Keep source and shift indices enabled for serious workflows.
+
+## Interpretation Notes
+
+- Confidence cards are a tutorial pattern, not a package API.
+- Reporting helpers produce runtime summaries, not canonical artifact schemas.
+- `validate_symmetry_candidate(...)` reports empirical configured validation, not proof.
+- `FormulaGeneratorFamily` stores safe JSON AST metadata; it does not execute strings or callables.
+- Materialized orbit batches are useful data utilities, not an augmentation policy.
+- Examples stay paper-agnostic and lightweight by design.
