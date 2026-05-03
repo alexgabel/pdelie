@@ -23,6 +23,17 @@ _FIT_EVIDENCE_LABELS = frozenset(
         "unavailable",
     }
 )
+_CONFIDENCE_LABELS = frozenset({"strong", "qualified", "failed", "insufficient_evidence"})
+_CONFIDENCE_COMPONENT_STATUSES = frozenset({"passed", "warning", "failed", "not_configured", "unavailable"})
+_CONFIDENCE_THRESHOLD_KEYS = frozenset(
+    {
+        "residual_max_abs",
+        "residual_rms",
+        "verification_first_error",
+        "verification_max_error",
+        "coverage_fraction_min",
+    }
+)
 _WEAK_REPORT_KEYS = frozenset(
     {
         "equation",
@@ -171,6 +182,246 @@ def _verification_summary_or_none(value: Any, *, name: str) -> dict[str, Any] | 
     if isinstance(value, VerificationReport):
         return summarize_verification_report(value)
     return _runtime_report(value, name=name, expected_summary_types={"verification_report"})
+
+
+def _residual_summary_or_none(value: Any, *, name: str) -> dict[str, Any] | None:
+    if value is None:
+        return None
+    if isinstance(value, ResidualBatch):
+        return summarize_residual_batch(value)
+    return _runtime_report(value, name=name, expected_summary_types={"residual_batch", "weak_residual_report"})
+
+
+def _candidate_validation_summary_or_none(value: Any, *, name: str) -> dict[str, Any] | None:
+    if value is None:
+        return None
+    return _runtime_report(value, name=name, expected_summary_types={"symmetry_candidate_validation"})
+
+
+def _coverage_summary_or_list_or_none(value: Any, *, name: str) -> dict[str, Any] | list[dict[str, Any]] | None:
+    return _runtime_report_or_list(value, name=name, expected_summary_types={"periodic_window_coverage"})
+
+
+def _consistency_summary_or_list_or_none(value: Any, *, name: str) -> dict[str, Any] | list[dict[str, Any]] | None:
+    return _runtime_report_or_list(value, name=name, expected_summary_types={"uniform_translation_consistency"})
+
+
+def _orbit_summary_or_list_or_none(value: Any, *, name: str) -> dict[str, Any] | list[dict[str, Any]] | None:
+    return _runtime_report_or_list(value, name=name, expected_summary_types={"uniform_translation_orbit"})
+
+
+def _thresholds_or_empty(value: Mapping[str, Any] | None) -> dict[str, float]:
+    if value is None:
+        return {}
+    thresholds = _finite_mapping_or_none(value, name="thresholds")
+    assert thresholds is not None
+    unknown = sorted(set(thresholds).difference(_CONFIDENCE_THRESHOLD_KEYS))
+    if unknown:
+        raise SchemaValidationError(f"thresholds contains unsupported keys: {unknown}.")
+    return thresholds
+
+
+def _component_status(status: str, *, reason: str, details: Mapping[str, Any] | None = None) -> dict[str, Any]:
+    if status not in _CONFIDENCE_COMPONENT_STATUSES:
+        raise AssertionError(f"unsupported confidence component status: {status}")
+    return {
+        "status": status,
+        "reason": reason,
+        "details": {} if details is None else dict(details),
+    }
+
+
+def _confidence_status_rank(status: str) -> int:
+    return {
+        "failed": 4,
+        "warning": 3,
+        "not_configured": 2,
+        "passed": 1,
+        "unavailable": 0,
+    }[status]
+
+
+def _combine_statuses(items: Sequence[dict[str, Any]], *, unavailable_reason: str) -> dict[str, Any]:
+    if not items:
+        return _component_status("unavailable", reason=unavailable_reason)
+    return max(items, key=lambda item: _confidence_status_rank(str(item["status"])))
+
+
+def _confidence_residual_status(
+    residual: Mapping[str, Any] | None,
+    thresholds: Mapping[str, float],
+) -> dict[str, Any]:
+    if residual is None:
+        return _component_status("unavailable", reason="residual_not_provided")
+
+    configured = {
+        "max_abs_residual": thresholds.get("residual_max_abs"),
+        "rms_residual": thresholds.get("residual_rms"),
+    }
+    configured = {metric: threshold for metric, threshold in configured.items() if threshold is not None}
+    if not configured:
+        return _component_status("not_configured", reason="residual_thresholds_not_configured")
+
+    checked: dict[str, dict[str, float]] = {}
+    missing: list[str] = []
+    failed = False
+    for metric, threshold in configured.items():
+        value = _finite_float_or_none(residual.get(metric), name=f"residual.{metric}")
+        if value is None:
+            missing.append(metric)
+            continue
+        checked[metric] = {"value": value, "threshold": threshold}
+        if value > threshold:
+            failed = True
+
+    if failed:
+        return _component_status("failed", reason="residual_threshold_exceeded", details={"checked": checked})
+    if missing and not checked:
+        return _component_status("unavailable", reason="residual_threshold_metrics_missing", details={"missing": missing})
+    if missing:
+        return _component_status(
+            "warning",
+            reason="residual_partially_configured",
+            details={"checked": checked, "missing": missing},
+        )
+    return _component_status("passed", reason="residual_thresholds_passed", details={"checked": checked})
+
+
+def _confidence_fit_status(fit: Mapping[str, Any] | None) -> dict[str, Any]:
+    if fit is None:
+        return _component_status("unavailable", reason="fit_diagnostics_not_provided")
+    label = fit.get("evidence_label")
+    if label == "direct_svd_in_tolerance":
+        return _component_status("passed", reason="direct_svd_in_tolerance")
+    if label == "direct_svd_out_of_tolerance":
+        return _component_status("failed", reason="direct_svd_out_of_tolerance")
+    if label in {"reference_fallback", "mixed", "unavailable"}:
+        return _component_status("warning", reason=f"fit_evidence_{label}")
+    return _component_status("warning", reason="fit_evidence_unknown")
+
+
+def _confidence_verification_status(
+    verification: Mapping[str, Any] | None,
+    thresholds: Mapping[str, float],
+) -> dict[str, Any]:
+    if verification is None:
+        return _component_status("unavailable", reason="verification_not_provided")
+    if verification.get("classification") == "failed":
+        return _component_status("failed", reason="verification_classification_failed")
+
+    configured = {
+        "first_error": thresholds.get("verification_first_error"),
+        "max_error": thresholds.get("verification_max_error"),
+    }
+    checked: dict[str, dict[str, float]] = {}
+    failed = False
+    for metric, threshold in configured.items():
+        if threshold is None:
+            continue
+        value = _finite_float_or_none(verification.get(metric), name=f"verification.{metric}")
+        if value is None:
+            return _component_status("warning", reason=f"verification_{metric}_missing")
+        checked[metric] = {"value": value, "threshold": threshold}
+        if value > threshold:
+            failed = True
+    if failed:
+        return _component_status("failed", reason="verification_threshold_exceeded", details={"checked": checked})
+    return _component_status("passed", reason="verification_passed", details={"checked": checked})
+
+
+def _confidence_candidate_validation_status(validation: Mapping[str, Any] | None) -> dict[str, Any]:
+    if validation is None:
+        return _component_status("unavailable", reason="candidate_validation_not_provided")
+    conclusion = validation.get("conclusion")
+    if conclusion == "validated":
+        return _component_status("passed", reason="candidate_validated")
+    if conclusion == "partially_validated":
+        return _component_status("warning", reason="candidate_partially_validated")
+    if conclusion == "failed":
+        return _component_status("failed", reason="candidate_validation_failed")
+    return _component_status("warning", reason="candidate_validation_unknown")
+
+
+def _as_report_list(value: dict[str, Any] | list[dict[str, Any]] | None) -> list[dict[str, Any]]:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return value
+    return [value]
+
+
+def _confidence_coverage_status(
+    coverage: dict[str, Any] | list[dict[str, Any]] | None,
+    thresholds: Mapping[str, float],
+) -> dict[str, Any]:
+    reports = _as_report_list(coverage)
+    if not reports:
+        return _component_status("unavailable", reason="coverage_not_provided")
+    threshold = thresholds.get("coverage_fraction_min")
+    if threshold is None:
+        return _component_status("not_configured", reason="coverage_threshold_not_configured")
+
+    fractions = []
+    for index, report in enumerate(reports):
+        fraction = _finite_float_or_none(report.get("coverage_fraction"), name=f"coverage[{index}].coverage_fraction")
+        if fraction is None:
+            return _component_status("warning", reason="coverage_fraction_missing")
+        fractions.append(fraction)
+    failed = any(fraction < threshold for fraction in fractions)
+    status = "failed" if failed else "passed"
+    reason = "coverage_threshold_failed" if failed else "coverage_threshold_passed"
+    return _component_status(status, reason=reason, details={"coverage_fractions": fractions, "threshold": threshold})
+
+
+def _collect_pass_booleans(value: Any) -> list[bool]:
+    if isinstance(value, Mapping):
+        collected: list[bool] = []
+        for key, item in value.items():
+            if isinstance(item, bool) and str(key).endswith("_passed"):
+                collected.append(item)
+            else:
+                collected.extend(_collect_pass_booleans(item))
+        return collected
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+        collected = []
+        for item in value:
+            collected.extend(_collect_pass_booleans(item))
+        return collected
+    return []
+
+
+def _confidence_pass_boolean_status(
+    value: dict[str, Any] | list[dict[str, Any]] | None,
+    *,
+    unavailable_reason: str,
+    not_configured_reason: str,
+    failed_reason: str,
+    passed_reason: str,
+) -> dict[str, Any]:
+    reports = _as_report_list(value)
+    if not reports:
+        return _component_status("unavailable", reason=unavailable_reason)
+    pass_booleans = _collect_pass_booleans(reports)
+    if not pass_booleans:
+        return _component_status("not_configured", reason=not_configured_reason)
+    if not all(pass_booleans):
+        return _component_status("failed", reason=failed_reason, details={"pass_boolean_count": len(pass_booleans)})
+    return _component_status("passed", reason=passed_reason, details={"pass_boolean_count": len(pass_booleans)})
+
+
+def _confidence_label(component_statuses: Mapping[str, Mapping[str, Any]], *, evidence_present: bool) -> str:
+    present_statuses = [
+        str(status["status"])
+        for status in component_statuses.values()
+        if status["status"] != "unavailable"
+    ]
+    if any(status == "failed" for status in present_statuses):
+        return "failed"
+    if not evidence_present:
+        return "insufficient_evidence"
+    if any(status in {"warning", "not_configured"} for status in present_statuses):
+        return "qualified"
+    return "strong"
 
 
 def summarize_residual_batch(residual: ResidualBatch) -> dict[str, Any]:
@@ -450,6 +701,92 @@ def summarize_vertical_slice(
         residual=summarize_residual_batch(residual),
         generator=summarize_generator_family(generator),
         verification=summarize_verification_report(verification),
+        extra_metrics=normalized_extra_metrics,
+    )
+
+
+def summarize_generator_confidence(
+    *,
+    residual: ResidualBatch | Mapping[str, Any] | None = None,
+    generator: GeneratorFamily | Mapping[str, Any] | None = None,
+    fit_diagnostics: GeneratorFamily | Mapping[str, Any] | None = None,
+    verification: VerificationReport | Mapping[str, Any] | None = None,
+    candidate_validation: Mapping[str, Any] | None = None,
+    coverage: Mapping[str, Any] | Sequence[Mapping[str, Any]] | None = None,
+    consistency: Mapping[str, Any] | Sequence[Mapping[str, Any]] | None = None,
+    orbit: Mapping[str, Any] | Sequence[Mapping[str, Any]] | None = None,
+    thresholds: Mapping[str, Any] | None = None,
+    extra_metrics: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    if extra_metrics is None:
+        normalized_extra_metrics: Mapping[str, Any] = {}
+    else:
+        normalized_extra_metrics = _require_mapping(extra_metrics, name="extra_metrics")
+
+    normalized_thresholds = _thresholds_or_empty(thresholds)
+    residual_summary = _residual_summary_or_none(residual, name="residual")
+    generator_summary = _generator_summary_or_none(generator, name="generator")
+    if fit_diagnostics is None and isinstance(generator, GeneratorFamily):
+        fit_summary = summarize_generator_fit_diagnostics(generator)
+    else:
+        fit_summary = _fit_diagnostic_summary_or_none(fit_diagnostics, name="fit_diagnostics")
+    verification_summary = _verification_summary_or_none(verification, name="verification")
+    candidate_validation_summary = _candidate_validation_summary_or_none(
+        candidate_validation,
+        name="candidate_validation",
+    )
+    coverage_summary = _coverage_summary_or_list_or_none(coverage, name="coverage")
+    consistency_summary = _consistency_summary_or_list_or_none(consistency, name="consistency")
+    orbit_summary = _orbit_summary_or_list_or_none(orbit, name="orbit")
+
+    component_statuses = {
+        "residual": _confidence_residual_status(residual_summary, normalized_thresholds),
+        "fit": _confidence_fit_status(fit_summary),
+        "verification": _confidence_verification_status(verification_summary, normalized_thresholds),
+        "candidate_validation": _confidence_candidate_validation_status(candidate_validation_summary),
+        "coverage": _confidence_coverage_status(coverage_summary, normalized_thresholds),
+        "consistency": _confidence_pass_boolean_status(
+            consistency_summary,
+            unavailable_reason="consistency_not_provided",
+            not_configured_reason="consistency_pass_flags_not_reported",
+            failed_reason="consistency_pass_flag_failed",
+            passed_reason="consistency_pass_flags_passed",
+        ),
+        "orbit": _confidence_pass_boolean_status(
+            orbit_summary,
+            unavailable_reason="orbit_not_provided",
+            not_configured_reason="orbit_pass_flags_not_reported",
+            failed_reason="orbit_pass_flag_failed",
+            passed_reason="orbit_pass_flags_passed",
+        ),
+    }
+    missing_evidence = [
+        component
+        for component, status in component_statuses.items()
+        if status["status"] == "unavailable"
+    ]
+    evidence_present = any(
+        item is not None
+        for item in (fit_summary, verification_summary, candidate_validation_summary)
+    )
+    label = _confidence_label(component_statuses, evidence_present=evidence_present)
+    if label not in _CONFIDENCE_LABELS:
+        raise AssertionError(f"unsupported confidence label: {label}")
+
+    return _summary_payload(
+        "generator_confidence",
+        confidence_label=label,
+        component_statuses=component_statuses,
+        residual=residual_summary,
+        generator=generator_summary,
+        fit_diagnostics=fit_summary,
+        verification=verification_summary,
+        candidate_validation=candidate_validation_summary,
+        coverage=coverage_summary,
+        consistency=consistency_summary,
+        orbit=orbit_summary,
+        thresholds=normalized_thresholds,
+        missing_evidence=missing_evidence,
         extra_metrics=normalized_extra_metrics,
     )
 

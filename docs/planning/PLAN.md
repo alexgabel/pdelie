@@ -1,18 +1,18 @@
-# PDELie - Execution Plan (V0.19)
+# PDELie - Execution Plan (V0.20)
 
 **Status:** COMPLETE
 
-**V0.19 is complete as the stable advection-diffusion strong path**
+**V0.20 is complete as the unified generator confidence report release**
 
-This file is the completed execution record for the `v0.19` release series.
+This file is the completed execution record for the `v0.20` release series.
 
 ## Release Theme
 
-`v0.19` adds one scoped PDE expansion:
+`v0.20` adds one scoped supportability/reporting API:
 
-> canonical scalar 1D periodic FieldBatch -> spectral_fd derivatives -> advection-diffusion residual -> translation fit/verification -> vertical-slice summary/example
+> residual / fit / verification / candidate-validation / orbit diagnostics -> JSON-compatible generator confidence report -> categorical evidence label and component statuses
 
-The public claim is intentionally narrow. The release adds a stable synthetic constant-coefficient advection-diffusion generator, a strong-form residual evaluator, and a JSON-only vertical-slice smoke example. It does not add variable-coefficient advection-diffusion, reaction-advection-diffusion, weak advection-diffusion, KS promotion, custom initial-condition APIs, broad adapters, multidimensional or nonuniform support, time translation, neural/callable generator APIs, operator APIs, split policy, or root exports.
+The public claim is intentionally narrow. The release adds a JSON-compatible reporting helper and a JSON-only example. It does not add a scalar confidence score, train/test policy, downstream success policy, new PDEs, KS promotion, weak-form expansion, broad adapters, time translation, neural/callable generator APIs, operator APIs, or root exports.
 
 ## Milestone Status
 
@@ -26,129 +26,112 @@ The public claim is intentionally narrow. The release adds a stable synthetic co
 
 Authoritative scope:
 
-- `docs/planning/V0_19_SCOPE.md`
+- `docs/planning/V0_20_SCOPE.md`
 
-`API_STABILITY.md` was updated when the public `v0.19` advection-diffusion APIs landed.
+`API_STABILITY.md` was updated when the public `v0.20` confidence reporting API landed.
 
 ## Milestone 0 - Scope Freeze
 
-Freeze `v0.19` as a stable constant-coefficient advection-diffusion strong-path release.
+Freeze `v0.20` as a reporting/supportability release.
 
 Closeout:
 
-- added `docs/planning/V0_19_SCOPE.md`
-- reset `PLAN.md` as the active `v0.19` execution record
-- updated `ROADMAP.md` to record `v0.19` as the current completed release
-- kept the stable scope to scalar 1D uniform periodic synthetic data
+- added `docs/planning/V0_20_SCOPE.md`
+- reset `PLAN.md` as the active `v0.20` execution record
+- updated `ROADMAP.md` to record `v0.20` as the current completed release
+- kept numerical scope unchanged
 
-## Milestone 1 - Equation And Numerical Semantics Freeze
+## Milestone 1 - Semantics Freeze
 
-Frozen equation:
+Frozen public helper:
 
-```text
-u_t + c*u_x = nu*u_xx
-residual = u_t + c*u_x - nu*u_xx
+```python
+pdelie.reporting.summarize_generator_confidence(...)
 ```
 
-Frozen metadata:
+Frozen interpretation:
 
-- `field.metadata["parameter_tags"]["equation"] == "advection_diffusion_constant_coefficient"`
-- `field.metadata["parameter_tags"]["c"]`
-- `field.metadata["parameter_tags"]["nu"]`
+- confidence is categorical empirical evidence, not proof
+- no scalar score ships in `v0.20`
+- reports are runtime summaries, not canonical objects
+- thresholds are caller-configured when they are not already encoded by existing reports
 
-Frozen defaults:
+Frozen labels:
 
-- `c = 0.75`
-- `nu = 0.05`
-- zero-mean smooth Fourier-mode initial perturbations
-- exact periodic Fourier evolution
+- `strong`
+- `qualified`
+- `failed`
+- `insufficient_evidence`
 
-Mean drift is diagnostic-only. Periodic constant-coefficient advection-diffusion preserves the mean analytically, but the release gate treats the diagnostic as supportability evidence, not a separate public invariant contract.
+Frozen component statuses:
 
-## Milestone 2 - Synthetic Data Generator
+- `passed`
+- `warning`
+- `failed`
+- `not_configured`
+- `unavailable`
 
-Implemented:
-
-- `pdelie.data.generate_advection_diffusion_1d_field_batch(...)`
-
-The generator returns canonical scalar 1D periodic `FieldBatch` objects with finite unmasked values and the frozen advection-diffusion equation tag. It has no public custom initial-condition API.
-
-Validation added:
-
-- deterministic same-seed output and seed sensitivity
-- canonical dims, coords, metadata, scalar var, finite values, no mask by default
-- exact Fourier phase/diffusion sanity against the frozen multiplier
-- `from_numpy` ingestion parity
-- invalid size, parameter, mode, amplitude, and domain inputs raise typed validation errors
-
-## Milestone 3 - Residual Evaluator
+## Milestone 2 - Reporting Helper
 
 Implemented:
 
-- `pdelie.residuals.AdvectionDiffusionResidualEvaluator`
+- `pdelie.reporting.summarize_generator_confidence(...)`
 
-Residual contract:
+The helper reuses existing reporting helpers for residual, generator, fit, verification, candidate-validation, coverage, consistency, and orbit evidence. Existing reporting schemas remain unchanged.
 
-- evaluates `u_t + c*u_x - nu*u_xx`
-- computes `compute_spectral_fd_derivatives(field)` when derivatives are omitted
-- supplied derivatives must include `u_t`, `u_x`, and `u_xx`
-- validates scalar 1D periodic finite unmasked fields and the frozen equation tag
-- reads `c` and `nu` from metadata when constructor parameters are omitted
-- allows finite signed `c`
-- requires finite positive `nu`
-
-Observed frozen-fixture residual evidence:
-
-- residual max: approximately `5.51e-5`
-- residual RMS: approximately `8.44e-6`
-
-## Milestone 4 - Vertical Slice And Example
+## Milestone 3 - Examples And Notebook Alignment
 
 Implemented:
 
-- `pdelie.examples.run_advection_diffusion_vertical_slice_example(...)`
-- command module: `python -m pdelie.examples.advection_diffusion_vertical_slice`
+- `pdelie.examples.run_generator_confidence_report_example(...)`
+- command module: `python -m pdelie.examples.generator_confidence_report`
 
-The example emits the existing nested `summarize_vertical_slice(...)` runtime summary shape.
+The example emits JSON only and demonstrates:
 
-Observed frozen vertical-slice evidence:
+- one `strong` direct-SVD Heat case with configured residual and verification thresholds
+- one `qualified` formula-candidate case with partial empirical validation
 
-- derivative keys: `u_t`, `u_x`, `u_xx`
-- residual max: approximately `5.51e-5`
-- residual RMS: approximately `8.44e-6`
-- fit mode: `svd`
-- evidence label: `direct_svd_in_tolerance`
-- reference fallback: `false`
-- selected/SVD span distance: approximately `7.87e-4`
-- verification classification: `exact`
-- first held-out verification error: approximately `7.87e-8`
+Tutorial material now points users to the public helper for confidence summaries while retaining notebook display helpers as non-normative display glue.
 
-This satisfies the stable promotion condition. No fallback-backed advection-diffusion claim landed.
+## Milestone 4 - Cross-PDE Confidence Coverage
+
+Validation added for:
+
+- direct-SVD passing evidence
+- reference-fallback qualified evidence
+- partial candidate validation
+- failed candidate validation
+- residual threshold failure
+- insufficient evidence
+- coverage, consistency, and orbit report composition
+
+Existing Heat, Burgers, KdV, Fisher-KPP, and advection-diffusion vertical-slice paths remain unchanged.
 
 ## Milestone 5 - API / Public-surface Audit
 
 Audit result:
 
-- new APIs are importable only from owning submodules
+- `summarize_generator_confidence(...)` is importable only from `pdelie.reporting`
+- `run_generator_confidence_report_example(...)` is importable only from `pdelie.examples`
 - root `pdelie` remains unchanged
-- `API_STABILITY.md` documents the new advection-diffusion generator, residual evaluator, and example runner
-- no variable-coefficient advection-diffusion, reaction-advection-diffusion, weak advection-diffusion, KS promotion, custom IC API, broad adapter, multidimensional/nonuniform support, time-translation API, operator API, neural/callable generator API, or split policy landed
+- `API_STABILITY.md` documents the new reporting helper and example runner
+- no new PDE, KS runtime API, weak-form expansion, broad adapter, scalar score, train/test policy, time-translation API, operator API, neural/callable generator API, or root export landed
 
 ## Milestone 6 - Release Gate And Readiness
 
 Implemented:
 
-- added compact `tests/test_v0_19_release_gate.py`
-- updated CI so the current explicit release gate is `v0_19-release-gate`
+- added compact `tests/test_v0_20_release_gate.py`
+- updated CI so the current explicit release gate is `v0_20-release-gate`
 - kept full editable `python -m pytest`
-- kept package smoke and added advection-diffusion smoke coverage
-- bumped package metadata to `0.19.0`
+- kept package smoke and added confidence-report smoke coverage
+- bumped package metadata to `0.20.0`
 - updated README, changelog, publishing notes, roadmap, and release readiness docs
-- documented direct `v0.19.0` Git-tag release path
+- documented direct `v0.20.0` Git-tag release path
 
 Required checks before tagging:
 
-- `v0_19-release-gate`
+- `v0_20-release-gate`
 - `editable-tests`
 - `package-smoke`
 
@@ -156,7 +139,6 @@ Local validation checklist:
 
 - `python -m pytest`
 - `python -m build --sdist --wheel`
-- clean wheel smoke from `dist/pdelie-0.19.0-py3-none-any.whl`
 - `python -m pdelie.examples.heat_vertical_slice`
 - `python -m pdelie.examples.kdv_vertical_slice`
 - `python -m pdelie.examples.reaction_diffusion_vertical_slice`
@@ -166,4 +148,5 @@ Local validation checklist:
 - `python -m pdelie.examples.translation_orbit_batch`
 - `python -m pdelie.examples.symmetry_candidate_validation`
 - `python -m pdelie.examples.formula_generator_validation`
+- `python -m pdelie.examples.generator_confidence_report`
 - `git diff --check`

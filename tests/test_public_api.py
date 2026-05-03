@@ -69,6 +69,7 @@ def test_runtime_package_api_is_importable() -> None:
     )
     from pdelie.reporting import (
         summarize_formula_generator_family,
+        summarize_generator_confidence,
         summarize_generator_fit_diagnostics,
         summarize_generator_family,
         summarize_invariant_workflow,
@@ -114,6 +115,7 @@ def test_runtime_package_api_is_importable() -> None:
     assert evaluate_weak_burgers_residual is not None
     assert evaluate_weak_heat_residual is not None
     assert summarize_generator_fit_diagnostics is not None
+    assert summarize_generator_confidence is not None
     assert summarize_formula_generator_family is not None
     assert summarize_generator_family is not None
     assert summarize_invariant_workflow is not None
@@ -174,6 +176,7 @@ def test_root_package_does_not_export_runtime_invariant_applier() -> None:
     assert not hasattr(pdelie, "subsample_x")
     assert not hasattr(pdelie, "summarize_recovery_grid")
     assert not hasattr(pdelie, "summarize_generator_fit_diagnostics")
+    assert not hasattr(pdelie, "summarize_generator_confidence")
     assert not hasattr(pdelie, "summarize_formula_generator_family")
     assert not hasattr(pdelie, "summarize_generator_family")
     assert not hasattr(pdelie, "summarize_invariant_workflow")
@@ -206,6 +209,7 @@ def test_root_package_does_not_export_runtime_invariant_applier() -> None:
     assert not hasattr(pdelie, "OperatorSymmetry")
     assert not hasattr(pdelie, "run_invariant_workflow_summary_example")
     assert not hasattr(pdelie, "run_formula_generator_validation_example")
+    assert not hasattr(pdelie, "run_generator_confidence_report_example")
     assert not hasattr(pdelie, "run_kdv_vertical_slice_example")
     assert not hasattr(pdelie, "run_orbit_coverage_diagnostics_example")
     assert not hasattr(pdelie, "run_reaction_diffusion_vertical_slice_example")
@@ -300,6 +304,7 @@ def test_reporting_package_runtime_api_matches_frozen_m2_surface() -> None:
     reporting_module = importlib.import_module("pdelie.reporting")
 
     assert hasattr(reporting_module, "summarize_formula_generator_family")
+    assert hasattr(reporting_module, "summarize_generator_confidence")
     assert hasattr(reporting_module, "summarize_generator_fit_diagnostics")
     assert hasattr(reporting_module, "summarize_generator_family")
     assert hasattr(reporting_module, "summarize_invariant_workflow")
@@ -317,6 +322,7 @@ def test_examples_package_runtime_api_matches_current_frozen_surface() -> None:
     assert hasattr(examples_module, "run_advection_diffusion_vertical_slice_example")
     assert hasattr(examples_module, "run_heat_vertical_slice_example")
     assert hasattr(examples_module, "run_formula_generator_validation_example")
+    assert hasattr(examples_module, "run_generator_confidence_report_example")
     assert hasattr(examples_module, "run_invariant_workflow_summary_example")
     assert hasattr(examples_module, "run_kdv_vertical_slice_example")
     assert hasattr(examples_module, "run_orbit_coverage_diagnostics_example")

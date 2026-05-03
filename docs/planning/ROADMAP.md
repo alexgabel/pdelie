@@ -453,6 +453,72 @@ The authoritative `v0.12` scope freeze belongs in:
 
 ## Current Completed Release
 
+### `v0.20` - Unified generator confidence reports
+**Status:** Completed
+
+`v0.20` is the completed reporting/supportability release after the `v0.19` advection-diffusion strong-path release.
+
+Its purpose is:
+
+> promote the notebook confidence-card teaching pattern into a public runtime reporting helper without adding numerical scope or policy decisions.
+
+Completed release definition:
+
+`residual / fit / verification / candidate-validation / orbit diagnostics -> JSON-compatible generator confidence report -> categorical evidence label and component statuses`
+
+Completed scope:
+
+- `pdelie.reporting.summarize_generator_confidence(...)`
+- `pdelie.examples.run_generator_confidence_report_example(...)`
+- frozen report type: `generator_confidence`
+- categorical confidence labels: `strong`, `qualified`, `failed`, `insufficient_evidence`
+- component statuses: `passed`, `warning`, `failed`, `not_configured`, `unavailable`
+- threshold keys for residual, verification, and coverage checks
+- compact current `v0_20-release-gate` readiness
+
+Release interpretation:
+
+- this is a runtime reporting helper, not a canonical object
+- confidence is empirical configured evidence, not mathematical proof
+- no scalar confidence score ships in `v0.20`
+- `v0.20.0` is a Git-tag-only release; PyPI and TestPyPI publication are deferred to `v1.0` or later
+
+Explicit non-goals:
+
+- no scalar confidence score
+- no benchmark success policy
+- no train/test split or heldout-leakage policy
+- no transformed `FieldBatch` collections from reporting helpers
+- no new PDEs
+- no KS runtime promotion
+- no weak-form expansion
+- no broad dataset adapters
+- no time-translation APIs
+- no neural or callable generator API
+- no operator-facing symmetry work
+- no root export expansion
+
+The authoritative `v0.20` scope freeze belongs in:
+
+- `V0_20_SCOPE.md`
+
+### Release Gate for `v0.20`
+
+`v0.20` is complete only if:
+
+- confidence reports are documented and covered by tests
+- new APIs are importable from their submodules only
+- root `pdelie` remains unchanged
+- direct-SVD, fallback, partial-validation, failed-candidate, residual-threshold-failure, and insufficient-evidence cases are covered
+- the confidence example emits JSON only
+- no new PDE, KS runtime API, weak-form expansion, broad adapter, scalar score, train/test policy, time-translation, neural/callable, split-policy, or operator API lands
+- CI uses one compact current release gate plus full editable tests and package smoke
+- package/readiness docs preserve the `v1.0` package-index publishing deferral
+
+---
+
+## Recent Completed Release
+
 ### `v0.19` - Stable advection-diffusion strong path
 **Status:** Completed
 
@@ -520,7 +586,7 @@ The authoritative `v0.19` scope freeze belongs in:
 
 ---
 
-## Recent Completed Release
+## Earlier Completed Release
 
 ### `v0.18` - Stable Fisher-KPP reaction-diffusion strong path
 **Status:** Completed
@@ -1073,25 +1139,6 @@ Only `Committed` items define the next release target.
 
 The principle is still one stable axis at a time: do not combine PDE expansion, data-adapter expansion, weak-form expansion, multi-generator machinery, and downstream policy in one release.
 
-### `v0.20` - Unified generator confidence reports
-**Status:** Planned
-
-Purpose:
-
-> promote the notebook confidence-card teaching pattern into a public runtime reporting helper.
-
-Candidate scope:
-
-- combine residual health, fit conditioning, span evidence, verification, candidate validation, orbit/coverage diagnostics, and configured thresholds
-- produce JSON-compatible runtime summaries
-- make evidence labels and missing-evidence states explicit
-
-Explicit boundary:
-
-- reporting helpers remain report-only
-- no transformed `FieldBatch` collections are returned from reporting helpers
-- no train/test policy or downstream success policy is encoded
-
 ### `v0.21` - External data readiness reports
 **Status:** Planned
 
@@ -1407,7 +1454,7 @@ It should **not** be edited every time a new idea appears.
 - `v0.17` = formula-backed generator records and validation, without callables or learned-generator training
 - `v0.18` = stable scalar 1D periodic Fisher-KPP reaction-diffusion strong path
 - `v0.19` = stable scalar 1D periodic constant-coefficient advection-diffusion strong path
-- `v0.20` = planned unified generator confidence reports
+- `v0.20` = unified generator confidence reports
 - `v0.21` = planned external data readiness reports
 - `v0.22` = planned downstream discovery contracts and provenance reports
 - `v0.23` = planned split/leakage provenance diagnostics, not split management

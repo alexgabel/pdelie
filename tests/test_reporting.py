@@ -12,6 +12,7 @@ from pdelie.derivatives import compute_spectral_fd_derivatives
 from pdelie.errors import SchemaValidationError, ScopeValidationError
 from pdelie.reporting import (
     summarize_formula_generator_family,
+    summarize_generator_confidence,
     summarize_generator_fit_diagnostics,
     summarize_generator_family,
     summarize_invariant_workflow,
@@ -72,6 +73,21 @@ _FORMULA_GENERATOR_SUMMARY_KEYS = _SUMMARY_PREFIX_KEYS | {
     "reciprocal_denominator_floor",
     "diagnostics",
 }
+_GENERATOR_CONFIDENCE_SUMMARY_KEYS = _SUMMARY_PREFIX_KEYS | {
+    "confidence_label",
+    "component_statuses",
+    "residual",
+    "generator",
+    "fit_diagnostics",
+    "verification",
+    "candidate_validation",
+    "coverage",
+    "consistency",
+    "orbit",
+    "thresholds",
+    "missing_evidence",
+    "extra_metrics",
+}
 
 
 @pytest.fixture(scope="module")
@@ -93,6 +109,17 @@ def heat_artifacts() -> dict[str, object]:
 
 def _assert_json_serializable(payload: dict[str, object]) -> None:
     assert json.loads(json.dumps(payload)) == payload
+
+
+def _candidate_validation_summary(conclusion: str) -> dict[str, object]:
+    return {
+        "summary_schema_version": "0.1",
+        "summary_type": "symmetry_candidate_validation",
+        "candidate_kind": "generator_family",
+        "source_candidate_id": "reporting-test",
+        "conclusion": conclusion,
+        "check_reports": {},
+    }
 
 
 def test_summarize_residual_batch_returns_frozen_json_summary(heat_artifacts: dict[str, object]) -> None:
@@ -506,6 +533,232 @@ def test_summarize_invariant_workflow_rejects_malformed_reports() -> None:
         summarize_invariant_workflow(extra_metrics=["not", "a", "mapping"])  # type: ignore[arg-type]
 
 
+def test_summarize_generator_confidence_reports_strong_direct_svd_case(
+    heat_artifacts: dict[str, object],
+) -> None:
+    summary = summarize_generator_confidence(
+        residual=heat_artifacts["residual"],
+        generator=heat_artifacts["generator"],
+        verification=heat_artifacts["verification"],
+        thresholds={
+            "residual_max_abs": 1e-3,
+            "residual_rms": 1e-4,
+            "verification_first_error": 1e-5,
+            "verification_max_error": 1e-4,
+        },
+        extra_metrics={"case": np.asarray(["heat"])},
+    )
+
+    assert set(summary) == _GENERATOR_CONFIDENCE_SUMMARY_KEYS
+    assert summary["summary_schema_version"] == "0.1"
+    assert summary["summary_type"] == "generator_confidence"
+    assert summary["confidence_label"] == "strong"
+    assert summary["component_statuses"]["residual"]["status"] == "passed"
+    assert summary["component_statuses"]["fit"]["status"] == "passed"
+    assert summary["component_statuses"]["verification"]["status"] == "passed"
+    assert summary["component_statuses"]["candidate_validation"]["status"] == "unavailable"
+    assert summary["fit_diagnostics"]["summary_type"] == "generator_fit_diagnostics"
+    assert summary["generator"]["summary_type"] == "generator_family"
+    assert summary["residual"]["summary_type"] == "residual_batch"
+    assert summary["verification"]["summary_type"] == "verification_report"
+    assert summary["thresholds"]["residual_max_abs"] == 1e-3
+    assert summary["extra_metrics"] == {"case": ["heat"]}
+    _assert_json_serializable(summary)
+
+
+def test_summarize_generator_confidence_accepts_precomputed_reports(
+    heat_artifacts: dict[str, object],
+) -> None:
+    residual_summary = summarize_residual_batch(heat_artifacts["residual"])
+    fit_summary = summarize_generator_fit_diagnostics(heat_artifacts["generator"])
+    verification_summary = summarize_verification_report(heat_artifacts["verification"])
+
+    summary = summarize_generator_confidence(
+        residual=residual_summary,
+        fit_diagnostics=fit_summary,
+        verification=verification_summary,
+        thresholds={"residual_max_abs": 1e-3, "residual_rms": 1e-4},
+    )
+
+    assert summary["confidence_label"] == "strong"
+    assert summary["residual"] == residual_summary
+    assert summary["fit_diagnostics"] == fit_summary
+    assert summary["verification"] == verification_summary
+    assert summary["generator"] is None
+    _assert_json_serializable(summary)
+
+
+def test_summarize_generator_confidence_reports_qualified_reference_fallback() -> None:
+    field = generate_burgers_1d_field_batch(batch_size=4, num_times=33, num_points=64, seed=2011)
+    generator = fit_translation_generator(field, BurgersResidualEvaluator(), epsilon=1e-4)
+
+    summary = summarize_generator_confidence(generator=generator)
+
+    assert summary["confidence_label"] == "qualified"
+    assert summary["component_statuses"]["fit"]["status"] == "warning"
+    assert summary["fit_diagnostics"]["evidence_label"] == "reference_fallback"
+    assert summary["missing_evidence"] == [
+        "residual",
+        "verification",
+        "candidate_validation",
+        "coverage",
+        "consistency",
+        "orbit",
+    ]
+    _assert_json_serializable(summary)
+
+
+def test_summarize_generator_confidence_reports_qualified_partial_candidate() -> None:
+    summary = summarize_generator_confidence(candidate_validation=_candidate_validation_summary("partially_validated"))
+
+    assert summary["confidence_label"] == "qualified"
+    assert summary["component_statuses"]["candidate_validation"]["status"] == "warning"
+    assert summary["candidate_validation"]["conclusion"] == "partially_validated"
+    _assert_json_serializable(summary)
+
+
+def test_summarize_generator_confidence_reports_failed_candidate() -> None:
+    summary = summarize_generator_confidence(candidate_validation=_candidate_validation_summary("failed"))
+
+    assert summary["confidence_label"] == "failed"
+    assert summary["component_statuses"]["candidate_validation"]["status"] == "failed"
+    _assert_json_serializable(summary)
+
+
+def test_summarize_generator_confidence_reports_failed_residual_threshold(
+    heat_artifacts: dict[str, object],
+) -> None:
+    summary = summarize_generator_confidence(
+        residual=heat_artifacts["residual"],
+        generator=heat_artifacts["generator"],
+        verification=heat_artifacts["verification"],
+        thresholds={"residual_max_abs": 1e-12},
+    )
+
+    assert summary["confidence_label"] == "failed"
+    assert summary["component_statuses"]["residual"]["status"] == "failed"
+    assert summary["component_statuses"]["fit"]["status"] == "passed"
+    _assert_json_serializable(summary)
+
+
+def test_summarize_generator_confidence_reports_failed_non_generator_components(
+    heat_artifacts: dict[str, object],
+) -> None:
+    residual_only = summarize_generator_confidence(
+        residual=heat_artifacts["residual"],
+        thresholds={"residual_max_abs": 1e-12},
+    )
+    coverage_only = summarize_generator_confidence(
+        coverage={"summary_type": "periodic_window_coverage", "coverage_fraction": 0.25},
+        thresholds={"coverage_fraction_min": 0.5},
+    )
+    consistency_only = summarize_generator_confidence(
+        consistency={
+            "summary_type": "uniform_translation_consistency",
+            "shift_reports": [{"inverse_passed": False}],
+        },
+    )
+
+    assert residual_only["confidence_label"] == "failed"
+    assert residual_only["component_statuses"]["residual"]["status"] == "failed"
+    assert coverage_only["confidence_label"] == "failed"
+    assert coverage_only["component_statuses"]["coverage"]["status"] == "failed"
+    assert consistency_only["confidence_label"] == "failed"
+    assert consistency_only["component_statuses"]["consistency"]["status"] == "failed"
+
+
+def test_summarize_generator_confidence_requires_generator_evidence_for_non_failed_label(
+    heat_artifacts: dict[str, object],
+) -> None:
+    residual_only = summarize_generator_confidence(
+        residual=heat_artifacts["residual"],
+        thresholds={"residual_max_abs": 1.0, "residual_rms": 1.0},
+    )
+    coverage_only = summarize_generator_confidence(
+        coverage={"summary_type": "periodic_window_coverage", "coverage_fraction": 0.75},
+        thresholds={"coverage_fraction_min": 0.5},
+    )
+    consistency_only = summarize_generator_confidence(
+        consistency={
+            "summary_type": "uniform_translation_consistency",
+            "shift_reports": [{"inverse_passed": True}],
+        },
+    )
+
+    assert residual_only["confidence_label"] == "insufficient_evidence"
+    assert residual_only["component_statuses"]["residual"]["status"] == "passed"
+    assert coverage_only["confidence_label"] == "insufficient_evidence"
+    assert coverage_only["component_statuses"]["coverage"]["status"] == "passed"
+    assert consistency_only["confidence_label"] == "insufficient_evidence"
+    assert consistency_only["component_statuses"]["consistency"]["status"] == "passed"
+
+
+def test_summarize_generator_confidence_reports_insufficient_evidence() -> None:
+    summary = summarize_generator_confidence()
+
+    assert summary["confidence_label"] == "insufficient_evidence"
+    assert all(status["status"] == "unavailable" for status in summary["component_statuses"].values())
+    assert summary["missing_evidence"] == [
+        "residual",
+        "fit",
+        "verification",
+        "candidate_validation",
+        "coverage",
+        "consistency",
+        "orbit",
+    ]
+    _assert_json_serializable(summary)
+
+
+def test_summarize_generator_confidence_handles_coverage_consistency_and_orbit_reports(
+    heat_artifacts: dict[str, object],
+) -> None:
+    field = generate_heat_1d_field_batch(batch_size=2, num_times=9, num_points=16, seed=1220)
+    coverage = compute_periodic_window_coverage(
+        x=field.coords["x"],
+        windows=[{"start": 0.0, "width": np.pi / 2}],
+        shifts=[0.0, np.pi / 2, np.pi, 3 * np.pi / 2],
+    )
+    consistency = diagnose_uniform_translation_consistency(
+        field,
+        shifts=[0.0, float(field.coords["x"][1] - field.coords["x"][0])],
+        residual_evaluator=HeatResidualEvaluator(),
+    )
+    orbit = summarize_uniform_translation_orbit(
+        field,
+        shifts=[0.0, float(field.coords["x"][1] - field.coords["x"][0])],
+        residual_evaluator=HeatResidualEvaluator(),
+    )
+
+    summary = summarize_generator_confidence(
+        generator=heat_artifacts["generator"],
+        verification=heat_artifacts["verification"],
+        coverage=coverage,
+        consistency=consistency,
+        orbit=orbit,
+        thresholds={"coverage_fraction_min": 0.25},
+    )
+
+    assert summary["confidence_label"] == "strong"
+    assert summary["component_statuses"]["coverage"]["status"] == "passed"
+    assert summary["component_statuses"]["consistency"]["status"] == "passed"
+    assert summary["component_statuses"]["orbit"]["status"] == "passed"
+    _assert_json_serializable(summary)
+
+
+def test_summarize_generator_confidence_rejects_malformed_inputs(
+    heat_artifacts: dict[str, object],
+) -> None:
+    with pytest.raises(SchemaValidationError, match="residual"):
+        summarize_generator_confidence(residual={"summary_type": "verification_report"})
+    with pytest.raises(SchemaValidationError, match="fit_diagnostics"):
+        summarize_generator_confidence(fit_diagnostics=object())  # type: ignore[arg-type]
+    with pytest.raises(SchemaValidationError, match="thresholds contains unsupported keys"):
+        summarize_generator_confidence(thresholds={"score": 1.0})
+    with pytest.raises(SchemaValidationError, match="extra_metrics"):
+        summarize_generator_confidence(extra_metrics=["not", "mapping"])  # type: ignore[arg-type]
+
+
 @pytest.mark.parametrize(
     ("helper", "argument"),
     [
@@ -605,6 +858,12 @@ def test_reporting_helpers_do_not_mutate_inputs(heat_artifacts: dict[str, object
         generator=generator,
         verification=verification,
         extra_metrics={"nested": {"array": np.asarray([1.0, 2.0])}},
+    )
+    summarize_generator_confidence(
+        residual=residual,
+        generator=generator,
+        verification=verification,
+        thresholds={"residual_max_abs": 1e-3, "residual_rms": 1e-4},
     )
 
     assert residual.to_dict() == residual_snapshot

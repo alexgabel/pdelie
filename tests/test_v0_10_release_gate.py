@@ -95,8 +95,8 @@ def test_v0_10_release_gate_ci_uses_single_current_release_gate_job() -> None:
     workflow = _repo_text(".github/workflows/ci.yml")
     release_gate_jobs = re.findall(r"^  (v0_\d+-release-gate):", workflow, flags=re.MULTILINE)
 
-    assert release_gate_jobs == ["v0_19-release-gate"]
-    assert "python -m pytest tests/test_v0_19_release_gate.py" in workflow
+    assert release_gate_jobs == ["v0_20-release-gate"]
+    assert "python -m pytest tests/test_v0_20_release_gate.py" in workflow
     assert "run: python -m pytest\n" in workflow
     for historical_job in range(4, 17):
         assert f"v0_{historical_job}-release-gate:" not in workflow

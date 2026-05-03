@@ -10,6 +10,7 @@ import pdelie
 from pdelie.examples import (
     run_advection_diffusion_vertical_slice_example,
     run_formula_generator_validation_example,
+    run_generator_confidence_report_example,
     run_heat_vertical_slice_example,
     run_invariant_workflow_summary_example,
     run_kdv_vertical_slice_example,
@@ -396,3 +397,32 @@ def test_formula_generator_validation_module_prints_json_only() -> None:
     assert parsed["summary_type"] == "formula_generator_validation_example"
     assert len(parsed["cases"]) == 5
     assert "failed" in parsed["extra_metrics"]["conclusions"]
+
+
+def test_generator_confidence_report_example_runs_end_to_end() -> None:
+    result = run_generator_confidence_report_example()
+
+    assert json.loads(json.dumps(result)) == result
+    assert result["summary_schema_version"] == "0.1"
+    assert result["summary_type"] == "generator_confidence_report_example"
+    assert result["extra_metrics"]["example_name"] == "generator_confidence_report"
+    assert result["extra_metrics"]["confidence_labels"] == ["strong", "qualified"]
+    assert len(result["cases"]) == 2
+    cases = {case["case_name"]: case["confidence"] for case in result["cases"]}
+    assert set(cases) == {"formula_candidate_partial_validation", "heat_direct_svd"}
+    assert cases["heat_direct_svd"]["summary_type"] == "generator_confidence"
+    assert cases["heat_direct_svd"]["confidence_label"] == "strong"
+    assert cases["heat_direct_svd"]["fit_diagnostics"]["evidence_label"] == "direct_svd_in_tolerance"
+    assert cases["formula_candidate_partial_validation"]["confidence_label"] == "qualified"
+    assert (
+        cases["formula_candidate_partial_validation"]["candidate_validation"]["conclusion"]
+        == "partially_validated"
+    )
+    assert not hasattr(pdelie, "run_generator_confidence_report_example")
+
+
+def test_generator_confidence_report_module_prints_json_only() -> None:
+    parsed = _run_module_json("pdelie.examples.generator_confidence_report")
+
+    assert parsed["summary_type"] == "generator_confidence_report_example"
+    assert parsed["extra_metrics"]["confidence_labels"] == ["strong", "qualified"]

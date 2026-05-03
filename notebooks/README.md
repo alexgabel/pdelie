@@ -1,6 +1,6 @@
 # PDELie Tutorial Notebooks
 
-This directory is the recommended entry point for new PDELie users on the shipped `v0.19` surface.
+This directory is the recommended entry point for new PDELie users on the shipped `v0.20` surface.
 
 Tutorial promise:
 
@@ -30,6 +30,7 @@ These notebooks are tutorials, not API contracts. Example outputs are runtime su
 - Evaluating strong residuals for the stable Heat, Burgers, KdV, Fisher-KPP, and advection-diffusion paths.
 - Fitting and validating polynomial translation generators in the stable slice.
 - Producing JSON-compatible residual, fit, verification, invariant, orbit, candidate, and formula summaries.
+- Producing categorical generator confidence reports with `summarize_generator_confidence(...)`.
 - Auditing finite uniform x-translation workflows with coverage, consistency, and provenance reports.
 - Materializing uniform translation orbit batches while preserving source/shift provenance.
 - Validating externally supplied `GeneratorFamily`, `InvariantMapSpec`, and `FormulaGeneratorFamily` candidates empirically.
@@ -42,7 +43,7 @@ These notebooks are tutorials, not API contracts. Example outputs are runtime su
 - Not a train/test split manager or leakage detector.
 - Not an operator-learning framework.
 - Not a paper-specific experiment pipeline.
-- Not a general nonuniform or multidimensional PDE framework in `v0.19`.
+- Not a general nonuniform or multidimensional PDE framework in `v0.20`.
 
 KS remains internal feasibility/no-go evidence. `v0.19` advection-diffusion is implemented only as a frozen scalar 1D periodic constant-coefficient strong path.
 
@@ -130,7 +131,7 @@ Orbit batches construct orbit-expanded data. They do not manage train/heldout sp
 
 ## Interpretation Notes
 
-- Confidence cards are a tutorial pattern, not a package API.
+- `summarize_generator_confidence(...)` is the package API for categorical confidence reports; notebook display helpers remain tutorial glue.
 - Reporting helpers produce runtime summaries, not canonical artifact schemas.
 - `validate_symmetry_candidate(...)` reports empirical configured validation, not proof.
 - `FormulaGeneratorFamily` stores safe JSON AST metadata; it does not execute strings or callables.
