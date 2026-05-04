@@ -510,15 +510,8 @@ def test_v0_24_planning_docs_record_weak_supportability_and_non_goals() -> None:
 
 
 def test_v0_25_planning_docs_record_kdv_scope_decision_and_non_goals() -> None:
-    plan = _repo_text("docs/planning/PLAN.md")
     scope = _repo_text("docs/planning/V0_25_SCOPE.md")
     roadmap = _repo_text("docs/planning/ROADMAP.md")
-
-    assert "**Status:** COMPLETE" in plan
-    assert "KdV scope decision" in plan
-    assert "pdelie.examples.run_kdv_scope_decision_example" in plan
-    assert "keep_public_kdv_surface_frozen" in plan
-    assert "- Milestone 6: COMPLETE" in plan
 
     assert "KdV Scope Decision" in scope
     assert "current_frozen_supported" in scope
@@ -532,3 +525,31 @@ def test_v0_25_planning_docs_record_kdv_scope_decision_and_non_goals() -> None:
     assert "`v0.25` is the completed KdV scope decision release" in roadmap
     assert "keep KdV public APIs frozen" in roadmap
     assert "- no weak KdV" in roadmap
+
+
+def test_v0_26_planning_docs_record_ks_revisit_decision_and_non_goals() -> None:
+    plan = _repo_text("docs/planning/PLAN.md")
+    scope = _repo_text("docs/planning/V0_26_SCOPE.md")
+    roadmap = _repo_text("docs/planning/ROADMAP.md")
+    api_stability = _api_stability_text()
+
+    assert "**Status:** COMPLETE" in plan
+    assert "KS revisit decision" in plan
+    assert "current_no_go_reference_fallback" in plan
+    assert "v0.26b" in plan
+    assert "- Milestone 6: COMPLETE" in plan
+
+    assert "KS Revisit Decision" in scope
+    assert "current_no_go_reference_fallback" in scope
+    assert "direct_strong_candidate_for_v0_26b_promotion" in scope
+    assert "Promotion evidence must come from the frozen primary fixture" in scope
+    assert "no public KS residual evaluator" in scope
+    assert "no residual-only KS API" in scope
+    assert "no weak KS API" in scope
+    assert "- Milestone 4: COMPLETE" in scope
+    assert "- Milestone 5: COMPLETE" in scope
+    assert "- Milestone 6: COMPLETE" in scope
+
+    assert "`v0.26` is the completed Kuramoto-Sivashinsky revisit decision release" in roadmap
+    assert "`v0.26b` - KS promotion" in roadmap
+    assert "Decision-only note for the frozen `v0.26` KS revisit decision" in api_stability

@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  v0_25-release-gate:
+  v0_26-release-gate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -32,8 +32,8 @@ jobs:
           retry 3 python -m pip install -e .[test]
       - name: Check dependencies
         run: python -m pip check
-      - name: Run V0.25 release gate
-        run: python -m pytest tests/test_v0_25_release_gate.py
+      - name: Run V0.26 release gate
+        run: python -m pytest tests/test_v0_26_release_gate.py
   editable-tests:
     runs-on: ubuntu-latest
     steps:

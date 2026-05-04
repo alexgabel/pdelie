@@ -80,14 +80,14 @@ def test_v0_11_release_gate_metadata_docs_and_ci_are_aligned() -> None:
     publishing = _repo_text("docs/releases/PUBLISHING.md")
     release_gate_jobs = re.findall(r"^  (v0_\d+-release-gate):", workflow, flags=re.MULTILINE)
 
-    assert release_gate_jobs == ["v0_25-release-gate"]
-    assert "python -m pytest tests/test_v0_25_release_gate.py" in workflow
+    assert release_gate_jobs == ["v0_26-release-gate"]
+    assert "python -m pytest tests/test_v0_26_release_gate.py" in workflow
 
     assert "## 0.11.0" in changelog
-    assert "V0.25" in readme
+    assert "V0.26" in readme
     assert "stable KS runtime" in readme
     assert "package version: `0.11.0`" in readiness
     assert "git tag: `v0.11.0`" in readiness
     assert "no-go/defer" in readiness
     assert "Do not run TestPyPI or PyPI publishing for `v0.11`" in readiness
-    assert "including `v0.25.0`" in publishing
+    assert "including `v0.26.0`" in publishing

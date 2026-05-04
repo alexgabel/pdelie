@@ -22,7 +22,7 @@ def _repo_text(path: str) -> str:
 def test_v0_19_release_gate_metadata_docs_and_ci_are_aligned() -> None:
     pyproject = tomllib.loads(_repo_text("pyproject.toml"))
     workflow = _repo_text(".github/workflows/ci.yml")
-    readiness = _repo_text("docs/releases/V0_25_RELEASE_READINESS.md")
+    readiness = _repo_text("docs/releases/V0_26_RELEASE_READINESS.md")
     readme = _repo_text("README.md")
     changelog = _repo_text("CHANGELOG.md")
     publishing = _repo_text("docs/releases/PUBLISHING.md")
@@ -31,18 +31,18 @@ def test_v0_19_release_gate_metadata_docs_and_ci_are_aligned() -> None:
     roadmap = _repo_text("docs/planning/ROADMAP.md")
     release_gate_jobs = re.findall(r"^  (v0_\d+-release-gate):", workflow, flags=re.MULTILINE)
 
-    assert pyproject["project"]["version"] == "0.25.0"
-    assert release_gate_jobs == ["v0_25-release-gate"]
-    assert "python -m pytest tests/test_v0_25_release_gate.py" in workflow
+    assert pyproject["project"]["version"] == "0.26.0"
+    assert release_gate_jobs == ["v0_26-release-gate"]
+    assert "python -m pytest tests/test_v0_26_release_gate.py" in workflow
     assert "v0_18-release-gate" not in workflow
 
-    assert "## 0.25.0" in changelog
-    assert "V0.25" in readme
+    assert "## 0.26.0" in changelog
+    assert "V0.26" in readme
     assert "advection_diffusion_constant_coefficient" in readme
-    assert "package version: `0.25.0`" in readiness
-    assert "git tag: `v0.25.0`" in readiness
-    assert "Do not publish to TestPyPI or PyPI for `v0.25.0`" in readiness
-    assert "including `v0.25.0`" in publishing
+    assert "package version: `0.26.0`" in readiness
+    assert "git tag: `v0.26.0`" in readiness
+    assert "Do not publish to TestPyPI or PyPI for `v0.26.0`" in readiness
+    assert "including `v0.26.0`" in publishing
     assert "Milestone 6: COMPLETE" in plan
     assert "Milestone 6: COMPLETE" in scope
     assert "`v0.19` - Stable advection-diffusion strong path" in roadmap

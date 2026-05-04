@@ -311,6 +311,16 @@ Runtime public API for the frozen `v0.25` Milestone 5 slice:
 - `v0.25` adds no new KdV generator, residual evaluator, weak residual report, custom initial-condition API, configurable-coefficient API, weak derivative backend, WSINDy-like surface, broad adapter, time-translation API, neural/callable generator API, operator-facing API, or root export
 - these APIs have no root `pdelie` exports
 
+Decision-only note for the frozen `v0.26` KS revisit decision:
+
+- `v0.26` adds no new public runtime API
+- `v0.26` records the KS revisit decision `current_no_go_reference_fallback`
+- internal KS residual and verification evidence remains feasible, but translation fitting remains reference-fallback-backed and therefore not promotable
+- decision labels include `current_no_go_reference_fallback`, `residual_feasible_fit_not_promotable`, `direct_strong_candidate_for_v0_26b_promotion`, and `deferred_no_go`
+- `v0.26b` is reserved as the follow-up KS promotion release name if a separate scope freeze accepts future direct-SVD/no-fallback evidence
+- this decision does not add a stable public Kuramoto-Sivashinsky data generator or residual evaluator
+- this decision does not add a public KS vertical-slice example, public KS status example, residual-only KS public API, weak KS API, custom KS initial-condition API, configurable KS coefficient API, broad KS regime support, root KS export, broad adapter, time-translation API, neural/callable generator API, or operator-facing API
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 

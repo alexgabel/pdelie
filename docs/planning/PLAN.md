@@ -1,33 +1,32 @@
-# PDELie - Execution Plan (V0.25)
+# PDELie - Execution Plan (V0.26)
 
 **Status:** COMPLETE
 
-**V0.25 is complete as the KdV scope decision release**
+**V0.26 is complete as the KS revisit decision release**
 
-This file is the completed execution record for the `v0.25` release series.
+This file is the completed execution record for the `v0.26` release series.
 
 ## Release Theme
 
-`v0.25` makes an explicit KdV scope decision:
-
-> keep the public KdV APIs frozen to the normalized scalar 1D periodic short-horizon strong path, while recording diagnostic-only evidence for broader KdV directions.
+`v0.26` revisits the Kuramoto-Sivashinsky no-go with modern confidence diagnostics while keeping public KS runtime promotion out of scope.
 
 Decision label:
 
 ```text
-keep_public_kdv_surface_frozen
+current_no_go_reference_fallback
 ```
 
-Stable public path retained:
+Stable investigation path:
 
 ```text
-canonical scalar 1D periodic FieldBatch
--> spectral_fd derivatives with u_xxx
--> KdVResidualEvaluator for u_t + 6*u*u_x + u_xxx = 0
--> translation fit / verification / confidence reports
+internal normalized KS fixture
+-> spectral_fd derivatives through u_xxxx
+-> internal KS residual feasibility
+-> translation fit / verification / confidence report
+-> explicit v0.26 decision label
 ```
 
-The release adds no new core KdV APIs. It adds one JSON example and test-only feasibility/guardrail evidence.
+The release adds no public KS data generator, residual evaluator, vertical-slice example, status example, weak KS API, residual-only API, or root export.
 
 ## Milestone Status
 
@@ -41,105 +40,102 @@ The release adds no new core KdV APIs. It adds one JSON example and test-only fe
 
 Authoritative scope:
 
-- `docs/planning/V0_25_SCOPE.md`
+- `docs/planning/V0_26_SCOPE.md`
 
-`API_STABILITY.md` was updated when the public `v0.25` example runner landed.
+`API_STABILITY.md` records the decision-only status but does not add a stable KS runtime contract.
 
 ## Milestone 0 - Scope Freeze
 
-Freeze `v0.25` as a KdV scope decision release.
+Freeze `v0.26` as a KS revisit decision release.
 
 Closeout:
 
-- added `docs/planning/V0_25_SCOPE.md`
-- reset `PLAN.md` as the active `v0.25` execution record
-- updated `ROADMAP.md` to record `v0.25` as the current completed release
-- explicitly kept custom KdV initial conditions, configurable coefficients, general KdV, and weak KdV out of public scope
+- added `docs/planning/V0_26_SCOPE.md`
+- reset `PLAN.md` as the active `v0.26` execution record
+- updated `ROADMAP.md` to record `v0.26` as the current completed release
+- reserved `v0.26b` as the follow-up KS promotion release name
+- explicitly kept KS runtime APIs out of `v0.26`
 
 ## Milestone 1 - Decision Criteria Freeze
 
-Frozen evidence categories:
+Frozen decision labels:
 
-- `current_frozen_supported`
-- `diagnostic_only`
+- `current_no_go_reference_fallback`
+- `residual_feasible_fit_not_promotable`
+- `direct_strong_candidate_for_v0_26b_promotion`
 - `deferred_no_go`
 
-Frozen retained KdV thresholds:
+Frozen promotion-candidate thresholds:
 
-- residual max `< 1e-2`
-- residual RMS `< 2e-3`
+- residual max `< 5e-2`
+- residual RMS `< 1e-2`
+- first verification error `< 5e-4`
+- verification classification not `failed`
 - fit evidence label `direct_svd_in_tolerance`
 - `reference_fallback_used is False`
-- selected span distance `<= 5e-2`
-- first held-out verification error `< 1e-4`
-- verification classification not `failed`
-- configured generator confidence label `strong`
 
-## Milestone 2 - Internal KdV Scope Matrix
+Promotion evidence must come from the frozen primary fixture. Diagnostic variants cannot define promotion.
+
+## Milestone 2 - Minimal KS No-Go Reproduction Matrix
 
 Implemented test-only diagnostic coverage for:
 
-- current frozen fixture behavior
-- longer horizons
-- larger amplitudes
-- more Fourier modes
-- deterministic custom initial-condition rollout feasibility
-- configurable-coefficient sign/scaling checks
-- broader KdV regime evidence classified as diagnostic-only
+- frozen primary fixture
+- seed sweep
+- fit-epsilon sweep
+- one resolution variant
+- fit/fallback diagnostics
+- verification diagnostics
+- generator confidence report
 
-No helper was exported from `pdelie.data`, `pdelie.residuals`, or root `pdelie`.
+No helper was exported from `pdelie.data`, `pdelie.residuals`, `pdelie.examples`, or root `pdelie`.
 
-## Milestone 3 - Current KdV Surface Hardening
+## Milestone 3 - Primary Fixture Strong-Path Re-Evaluation
 
-The existing public KdV path is hardened through tests for:
+The frozen primary fixture remains:
 
-- deterministic generation and canonical fields
-- `KdVResidualEvaluator` residual thresholds
-- direct-SVD translation fitting
-- held-out verification
-- candidate validation
-- generator confidence reports
-- imported parity and invariant/orbit consistency
+- residual-feasible
+- verification-feasible
+- reference-fallback-backed for translation fitting
 
-The frozen path remains direct-SVD-backed, not fallback-backed.
+The direct SVD path is not promotable in `v0.26`.
 
-## Milestone 4 - Weak KdV Decision
+## Milestone 4 - Optional Variant Diagnostics
 
-Weak KdV remains deferred.
+Variant diagnostics remain test-only and diagnostic-only.
 
 Closeout:
 
-- preserved the existing proof that the frozen quartic bump is not valid for honest third-order weak KdV
-- added identity-first checks for a stronger boundary-regular candidate profile
-- kept all weak KdV evidence test-only and diagnostic-only
-- preserved no-public-export guards for weak KdV names
+- no best-of-sweep promotion path was added
+- variants may inform future work only
+- `v0.26b` remains a separate scope decision if future evidence justifies promotion
 
-## Milestone 5 - Example and Docs
+## Milestone 5 - Decision Docs
 
-Implemented:
+Docs now state:
 
-- `pdelie.examples.run_kdv_scope_decision_example(...)`
-- command module: `python -m pdelie.examples.kdv_scope_decision`
+- KS remains deferred in `v0.26`
+- residual feasibility is not enough for public PDELie support
+- public KS promotion requires a separate `v0.26b` scope freeze
+- weak KS remains deferred
 
-The example uses public APIs only. It reports readiness, residual, fit diagnostics, verification, candidate validation, confidence, and explicit deferred decisions.
-
-Docs now state that custom KdV initial conditions, configurable coefficients, general KdV regimes, and weak KdV remain deferred.
+No packaged KS runtime/status example was added.
 
 ## Milestone 6 - Release Gate And Readiness
 
 Implemented:
 
-- added compact `tests/test_v0_25_release_gate.py`
-- updated CI so the current explicit release gate is `v0_25-release-gate`
+- added compact `tests/test_v0_26_release_gate.py`
+- updated CI so the current explicit release gate is `v0_26-release-gate`
 - kept full editable `python -m pytest`
-- kept package smoke and added KdV scope-decision smoke coverage
-- bumped package metadata to `0.25.0`
+- kept package smoke
+- bumped package metadata to `0.26.0`
 - updated README, changelog, publishing notes, roadmap, and release readiness docs
-- documented direct `v0.25.0` Git-tag release path
+- documented direct `v0.26.0` Git-tag release path
 
 Required checks before tagging:
 
-- `v0_25-release-gate`
+- `v0_26-release-gate`
 - `editable-tests`
 - `package-smoke`
 
@@ -147,20 +143,6 @@ Local validation checklist:
 
 - `python -m pytest`
 - `python -m build --sdist --wheel`
-- `python -m pdelie.examples.heat_vertical_slice`
-- `python -m pdelie.examples.kdv_vertical_slice`
-- `python -m pdelie.examples.kdv_scope_decision`
-- `python -m pdelie.examples.reaction_diffusion_vertical_slice`
-- `python -m pdelie.examples.advection_diffusion_vertical_slice`
-- `python -m pdelie.examples.orbit_coverage_diagnostics`
-- `python -m pdelie.examples.invariant_workflow_summary`
-- `python -m pdelie.examples.translation_orbit_batch`
-- `python -m pdelie.examples.symmetry_candidate_validation`
-- `python -m pdelie.examples.formula_generator_validation`
-- `python -m pdelie.examples.generator_confidence_report`
-- `python -m pdelie.examples.external_data_readiness`
-- `python -m pdelie.examples.downstream_discovery_contracts`
-- `python -m pdelie.examples.split_leakage_provenance`
-- `python -m pdelie.examples.weak_form_supportability`
+- all packaged examples
 - `python scripts/check_notebooks.py`
 - `git diff --check`

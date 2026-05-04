@@ -59,7 +59,7 @@ def test_v0_12_release_record_remains_intact() -> None:
     assert "**Status:** Completed" in roadmap
 
 
-def test_v0_12_release_gate_current_ci_visibility_is_v0_18_only() -> None:
+def test_v0_12_release_gate_current_ci_visibility_tracks_latest_release() -> None:
     pyproject = tomllib.loads(_repo_text("pyproject.toml"))
     workflow = _repo_text(".github/workflows/ci.yml")
     readme = _repo_text("README.md")
@@ -67,14 +67,14 @@ def test_v0_12_release_gate_current_ci_visibility_is_v0_18_only() -> None:
     plan = _repo_text("docs/planning/PLAN.md")
     release_gate_jobs = re.findall(r"^  (v0_\d+-release-gate):", workflow, flags=re.MULTILINE)
 
-    assert pyproject["project"]["version"] == "0.25.0"
-    assert release_gate_jobs == ["v0_25-release-gate"]
-    assert "python -m pytest tests/test_v0_25_release_gate.py" in workflow
+    assert pyproject["project"]["version"] == "0.26.0"
+    assert release_gate_jobs == ["v0_26-release-gate"]
+    assert "python -m pytest tests/test_v0_26_release_gate.py" in workflow
     assert "v0_12-release-gate" not in workflow
-    assert "V0.25" in readme
+    assert "V0.26" in readme
     assert "summarize_generator_fit_diagnostics" in readme
-    assert "including `v0.25.0`" in publishing
-    assert "V0.25 is complete" in plan
+    assert "including `v0.26.0`" in publishing
+    assert "V0.26 is complete" in plan
 
 
 def test_v0_12_release_gate_fit_diagnostic_helper_is_documented_and_submodule_only() -> None:

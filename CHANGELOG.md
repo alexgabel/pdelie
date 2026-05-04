@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.26.0
+
+First final release for the frozen V0.26 KS revisit decision.
+
+- records the KS decision `current_no_go_reference_fallback`
+- confirms the internal normalized KS fixture remains residual-feasible and verification-feasible
+- records that translation fitting remains reference-fallback-backed, so public KS support is still not promotable
+- adds test-only KS revisit evidence with residual, fit, verification, and generator confidence diagnostics
+- adds a minimal test-only KS no-go reproduction matrix covering the frozen fixture, seed sweep, fit-epsilon sweep, and one resolution variant
+- reserves `v0.26b` as the follow-up KS promotion release name if a future scope freeze accepts direct-SVD/no-fallback evidence
+- documents that `confidence_label == "strong"` would not be sufficient for KS promotion without direct SVD in tolerance and `reference_fallback_used is False`
+- keeps `API_STABILITY.md` free of stable KS runtime contracts
+- preserves existing Heat/Burgers strong paths, weak Heat/Burgers residual reports, weak supportability reporting, normalized short-horizon KdV, Fisher-KPP reaction-diffusion, advection-diffusion, invariant/orbit diagnostics, candidate validation, formula-backed generator records, confidence reports, readiness reports, downstream contracts, split provenance diagnostics, and KdV scope decision evidence
+
+Explicitly deferred for this final release:
+
+- public KS data generator
+- public KS residual evaluator
+- public KS vertical-slice or status example
+- residual-only KS public API
+- weak KS APIs
+- custom KS initial-condition APIs
+- configurable KS coefficient APIs
+- broad KS regime support
+- root KS exports
+- broad adapters or file loaders
+- multidimensional, multivariable, or nonuniform-grid support
+- train/test policy or leakage prevention
+- time-translation APIs
+- neural or callable generator APIs
+- operator-facing APIs
+- PyPI and TestPyPI publication; package-index publishing is deferred to `v1.0` or later
+
 ## 0.25.0
 
 First final release for the frozen V0.25 KdV scope decision.
