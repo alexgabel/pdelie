@@ -25,9 +25,9 @@ Execution state belongs in:
 
 ## Current State
 
-- Current completed release: `v0.24.0`
-- Current theme: weak-form supportability reports for frozen Heat/Burgers weak residual slices
-- Next planned release: `v0.25` KdV scope decision
+- Current completed release: `v0.25.0`
+- Current theme: KdV scope decision and guardrail hardening
+- Next planned release: `v0.26` KS revisit
 - Public package docs start at [`../../README.md`](../../README.md) and [`../README.md`](../README.md)
 - Durable contributor guidance lives in [`../../CONTRIBUTING.md`](../../CONTRIBUTING.md)
 
@@ -463,6 +463,74 @@ The authoritative `v0.12` scope freeze belongs in:
 
 ## Current Completed Release
 
+### `v0.25` - KdV scope decision
+**Status:** Completed
+
+`v0.25` is the completed KdV scope decision release after the `v0.24` weak-form supportability reset.
+
+Its purpose is:
+
+> decide whether KdV should expand beyond the frozen normalized scalar 1D periodic short-horizon strong path.
+
+Completed release definition:
+
+`frozen normalized KdV strong path + diagnostic broader-regime evidence + weak KdV identity checks -> explicit KdV scope decision`
+
+Completed scope:
+
+- `pdelie.examples.run_kdv_scope_decision_example(...)`
+- command module: `python -m pdelie.examples.kdv_scope_decision`
+- frozen report type: `kdv_scope_decision_example`
+- evidence categories: `current_frozen_supported`, `diagnostic_only`, and `deferred_no_go`
+- test-only KdV scope matrix for longer horizons, larger amplitudes, more modes, custom initial-condition feasibility, and configurable-coefficient sign/scaling
+- test-only weak KdV identity checks for a stronger boundary-regular candidate profile
+- compact current `v0_25-release-gate` readiness
+
+Release interpretation:
+
+- this is a decision and guardrail release, not a KdV expansion release
+- the existing normalized short-horizon KdV strong path remains stable
+- the decision is to keep KdV public APIs frozen
+- broader KdV evidence is diagnostic-only unless a later release explicitly opens a narrower promotion path
+- `v0.25.0` is a Git-tag-only release; PyPI and TestPyPI publication are deferred to `v1.0` or later
+
+Explicit non-goals:
+
+- no custom KdV initial-condition public API
+- no configurable KdV coefficient public API
+- no general KdV support outside the frozen normalized short-horizon regime
+- no weak KdV
+- no weak derivative backend
+- no WSINDy implementation
+- no KS runtime promotion
+- no broad adapters or file loaders
+- no multidimensional or nonuniform stable support
+- no time-translation APIs
+- no neural or callable generator API
+- no operator-facing symmetry work
+- no root export expansion
+
+The authoritative `v0.25` scope freeze belongs in:
+
+- `V0_25_SCOPE.md`
+
+### Release Gate for `v0.25`
+
+`v0.25` is complete only if:
+
+- the current KdV strong path remains direct-SVD-backed
+- broader-regime KdV evidence remains diagnostic-only
+- custom initial-condition and configurable-coefficient evidence remains test-only
+- weak KdV remains absent from public APIs
+- the KdV scope-decision example emits strict JSON
+- API stability docs and public-surface tests agree that no broadened KdV surface landed
+- CI uses one compact current release gate plus full editable tests and package smoke
+- package/readiness docs preserve the `v1.0` package-index publishing deferral
+
+---
+
+## Recent Completed Release
+
 ### `v0.24` - Weak-form supportability reset
 **Status:** Completed
 
@@ -484,7 +552,7 @@ Completed scope:
 - frozen supportability labels: `supported_existing_slice`, `diagnostic_only`, `failed`, and `insufficient_evidence`
 - normalized weak contract metadata including quadrature rule, test-function family/order, patch shape/stride, row counts, skipped-patch counts, and finite-value policy
 - internal Fisher-KPP weak feasibility remains test-only and `diagnostic_only`
-- compact current `v0_24-release-gate` readiness
+- compact `v0_24-release-gate` readiness
 
 Release interpretation:
 
@@ -1397,24 +1465,6 @@ The following sequence is planned, not committed execution.
 Only `Committed` items define the next release target.
 
 The principle is still one stable axis at a time: do not combine PDE expansion, data-adapter expansion, weak-form expansion, multi-generator machinery, and downstream policy in one release.
-
-### `v0.25` - KdV scope decision
-**Status:** Planned
-
-Purpose:
-
-> decide whether KdV should expand beyond the frozen normalized periodic short-horizon regime.
-
-Candidate scope:
-
-- custom KdV initial-condition feasibility
-- configurable KdV coefficient feasibility
-- general KdV support decision
-- weak KdV decision
-
-Acceptable outcome:
-
-- keep KdV frozen and document why if the broader regime is not supportable.
 
 ### `v0.26` - KS revisit
 **Status:** Planned

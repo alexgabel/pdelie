@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.25.0
+
+First final release for the frozen V0.25 KdV scope decision.
+
+- adds `python -m pdelie.examples.kdv_scope_decision` and `pdelie.examples.run_kdv_scope_decision_example(...)` as JSON-only runtime smoke examples
+- records the KdV decision `keep_public_kdv_surface_frozen`
+- keeps the existing normalized scalar 1D periodic short-horizon KdV strong path stable and direct-SVD-backed
+- reports public KdV evidence through readiness, residual, fit diagnostics, verification, candidate validation, and generator confidence summaries
+- freezes KdV decision evidence categories `current_frozen_supported`, `diagnostic_only`, and `deferred_no_go`
+- adds test-only KdV scope matrix coverage for longer horizons, larger amplitudes, more Fourier modes, custom initial-condition rollout determinism, and configurable-coefficient sign/scaling
+- adds test-only weak KdV identity checks for a stronger boundary-regular candidate profile
+- preserves the no-go that the frozen quartic bump is not sufficient for honest third-order weak KdV
+- documents the new example and decision in `API_STABILITY.md` as submodule-only runtime surface with no root export
+- preserves existing Heat/Burgers strong paths, weak Heat/Burgers residual reports, weak supportability reporting, normalized short-horizon KdV, Fisher-KPP reaction-diffusion, advection-diffusion, invariant/orbit diagnostics, candidate validation, formula-backed generator records, confidence reports, readiness reports, downstream contracts, and split provenance diagnostics
+
+Explicitly deferred for this final release:
+
+- custom KdV initial-condition public APIs
+- configurable KdV coefficient public APIs
+- general KdV support outside the frozen normalized periodic short-horizon regime
+- weak KdV APIs
+- weak derivative backend
+- WSINDy
+- weak sparse recovery
+- KS runtime promotion
+- broad adapters or file loaders
+- multidimensional, multivariable, or nonuniform-grid support
+- train/test policy or leakage prevention
+- time-translation APIs
+- neural or callable generator APIs
+- operator-facing APIs
+- PyPI and TestPyPI publication; package-index publishing is deferred to `v1.0` or later
+
 ## 0.24.0
 
 First final release for the frozen V0.24 weak-form supportability reset.

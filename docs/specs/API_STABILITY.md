@@ -300,6 +300,17 @@ Runtime public API for the frozen `v0.24` Milestone 2/M4 slice:
 - `v0.24` does not implement WSINDy, weak design matrices, weak sparse recovery, a weak derivative backend, weak KdV, weak KS, public weak reaction-diffusion residual evaluators, new PDEs, broad adapters, split policy, neural/callable generators, operator-facing APIs, or root exports
 - these APIs have no root `pdelie` exports
 
+Runtime public API for the frozen `v0.25` Milestone 5 slice:
+
+- `pdelie.examples.run_kdv_scope_decision_example` for a compact JSON-only runtime smoke example documenting the KdV scope decision
+- KdV scope-decision examples use `summary_type = "kdv_scope_decision_example"` and `summary_schema_version = "0.1"`
+- report evidence categories are `current_frozen_supported`, `diagnostic_only`, and `deferred_no_go`
+- the existing normalized scalar 1D periodic short-horizon KdV strong path remains stable and direct-SVD-backed under the frozen public regime
+- the recorded `v0.25` decision is `keep_public_kdv_surface_frozen`
+- custom KdV initial conditions, configurable KdV coefficients, general KdV support outside the frozen normalized short-horizon regime, and weak KdV remain deferred
+- `v0.25` adds no new KdV generator, residual evaluator, weak residual report, custom initial-condition API, configurable-coefficient API, weak derivative backend, WSINDy-like surface, broad adapter, time-translation API, neural/callable generator API, operator-facing API, or root export
+- these APIs have no root `pdelie` exports
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 

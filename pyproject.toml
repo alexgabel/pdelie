@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pdelie"
-version = "0.24.0"
-description = "V0.24 weak-form supportability reports plus retained provenance, downstream contracts, confidence reports, PDE strong paths, and symmetry diagnostics"
+version = "0.25.0"
+description = "V0.25 KdV scope decision plus retained weak supportability, provenance, downstream contracts, confidence reports, PDE strong paths, and symmetry diagnostics"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"

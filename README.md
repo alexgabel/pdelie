@@ -2,14 +2,14 @@
 
 [![CI](https://github.com/alexgabel/pdelie/actions/workflows/ci.yml/badge.svg)](https://github.com/alexgabel/pdelie/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-%3E%3D3.11-blue)
-![Version](https://img.shields.io/badge/version-0.24.0-blue)
+![Version](https://img.shields.io/badge/version-0.25.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 PDELie is a research library for empirical Lie-symmetry workflows on controlled PDE time-series data. It turns canonical scalar 1D periodic fields into residuals, generator candidates, verification reports, confidence summaries, invariant/orbit diagnostics, and downstream discovery reports.
 
 ![PDELie pipeline](docs/assets/pdelie_pipeline.svg)
 
-The current stable release is `v0.24.0` / **V0.24**: weak-form supportability reports for the frozen public Heat/Burgers weak residual report slice, explicit weak contracts, and internal diagnostic-only Fisher-KPP feasibility. PDELie reports configured empirical supportability; it does not implement WSINDy, weak design matrices, weak sparse recovery, or a weak derivative backend.
+The current stable release is `v0.25.0` / **V0.25**: a KdV scope decision and guardrail hardening release. PDELie keeps KdV public support frozen to the normalized scalar 1D periodic short-horizon strong path, while documenting diagnostic-only evidence for broader KdV regimes and weak KdV feasibility.
 
 ## Install
 
@@ -128,7 +128,7 @@ PDELie is not:
 - an operator-learning framework
 - a paper-specific experiment pipeline
 
-KS remains internal feasibility/no-go evidence, including an internal KS diagnostic sweep; no stable KS runtime API is promoted. Weak-form methods beyond the frozen Heat/Burgers weak-report slice and `v0.24` supportability reporting layer remain deferred.
+KdV remains intentionally frozen to the normalized scalar 1D periodic short-horizon strong path: no custom KdV initial-condition API, configurable KdV coefficients, general KdV regime support, or weak KdV API is promoted. KS remains internal feasibility/no-go evidence, including an internal KS diagnostic sweep; no stable KS runtime API is promoted. Weak-form methods beyond the frozen Heat/Burgers weak-report slice and `v0.24` supportability reporting layer remain deferred.
 
 ## Examples
 
@@ -137,6 +137,7 @@ Packaged examples print JSON-compatible runtime summaries:
 ```bash
 python -m pdelie.examples.heat_vertical_slice
 python -m pdelie.examples.kdv_vertical_slice
+python -m pdelie.examples.kdv_scope_decision
 python -m pdelie.examples.reaction_diffusion_vertical_slice
 python -m pdelie.examples.advection_diffusion_vertical_slice
 python -m pdelie.examples.orbit_coverage_diagnostics
@@ -157,7 +158,7 @@ These are smoke/reporting examples, not canonical artifact schemas.
 
 The current release is validated by:
 
-- the explicit `v0_24-release-gate` CI job
+- the explicit `v0_25-release-gate` CI job
 - full editable `python -m pytest`
 - built-wheel package smoke
 - packaged example smoke

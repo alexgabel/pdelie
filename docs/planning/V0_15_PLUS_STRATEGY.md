@@ -24,7 +24,7 @@ Staged sequence:
 - `v0.22`: downstream discovery contracts
 - `v0.23`: split/leakage provenance diagnostics
 - `v0.24`: planned weak-form supportability reset
-- `v0.25`: planned KdV scope decision
+- `v0.25`: completed KdV scope decision; public KdV remains frozen
 - `v0.26`: planned KS revisit
 - `v0.27`: planned multi-generator feasibility
 - `v0.28`: planned data ecosystem feasibility
@@ -343,6 +343,8 @@ Deferred unless separately proven:
 
 ## V0.25 - KdV Scope Decision
 
+Status: completed. The decision is to keep public KdV frozen.
+
 Planned theme:
 
 > decide whether KdV should remain frozen or expand beyond normalized periodic short-horizon support.
@@ -357,6 +359,14 @@ Candidate decisions:
 Acceptable outcome:
 
 - keep KdV frozen and document why if the broader regime is not supportable.
+
+Completed outcome:
+
+- current normalized scalar 1D periodic short-horizon KdV strong path remains stable
+- custom KdV initial conditions remain deferred
+- configurable KdV coefficients remain deferred
+- general KdV support outside the frozen normalized periodic short-horizon regime remains deferred
+- weak KdV remains deferred
 
 ---
 

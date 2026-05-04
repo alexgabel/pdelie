@@ -6,6 +6,7 @@ __all__ = [
     "run_formula_generator_validation_example",
     "run_generator_confidence_report_example",
     "run_invariant_workflow_summary_example",
+    "run_kdv_scope_decision_example",
     "run_kdv_vertical_slice_example",
     "run_orbit_coverage_diagnostics_example",
     "run_reaction_diffusion_vertical_slice_example",
@@ -64,6 +65,12 @@ def run_invariant_workflow_summary_example() -> dict[str, object]:
 
 def run_kdv_vertical_slice_example() -> dict[str, object]:
     from pdelie.examples.kdv_vertical_slice import run_kdv_vertical_slice_example as _impl
+
+    return _impl()
+
+
+def run_kdv_scope_decision_example() -> dict[str, object]:
+    from pdelie.examples.kdv_scope_decision import run_kdv_scope_decision_example as _impl
 
     return _impl()
 
