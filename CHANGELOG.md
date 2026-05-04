@@ -1,5 +1,37 @@
 # Changelog
 
+## 0.27.0
+
+First final release for the frozen V0.27 multi-generator diagnostics decision.
+
+- adds `python -m pdelie.examples.multi_generator_diagnostics` and `pdelie.examples.run_multi_generator_diagnostics_example(...)` as JSON-only diagnostic examples
+- records the multi-generator decision `multi_generator_diagnostics_feasible_fitting_deferred`
+- freezes the bracket convention `[X_i, X_j] = X_i · ∇X_j - X_j · ∇X_i`
+- records structure constants as `[X_i, X_j] = sum_k C[i, j, k] X_k`
+- updates closure diagnostics so well-formed rank-deficient families return diagnostic reports instead of raising solely due to redundant rows
+- updates span diagnostics so rank-deficient or zero-rank well-formed comparisons return warning/failed reports instead of untyped crashes
+- extends `validate_symmetry_candidate(...)` with `closure_required=True|False` for `GeneratorFamily` candidates
+- ensures multi-row generator candidates with only algebraic closure evidence conclude at most `partially_validated`
+- adds supplied-family diagnostics for closed affine, non-closed polynomial, rank-deficient, and basis-mismatch cases
+- preserves existing single-generator translation fitting, verification, confidence reports, KdV/KS decision evidence, weak supportability, downstream contracts, split provenance, invariant/orbit diagnostics, formula-backed generator records, Fisher-KPP, and advection-diffusion paths
+
+Explicitly deferred for this final release:
+
+- public multi-generator PDE fitting
+- multi-generator finite flows
+- BCH composition
+- exponential-map finite-flow integration
+- multi-generator invariant charts
+- multi-parameter orbit charts
+- group-action atlas
+- operator-facing APIs
+- neural or callable generator APIs
+- root export expansion
+- broad adapters or file loaders
+- multidimensional, multivariable, or nonuniform-grid support
+- train/test policy or leakage prevention
+- PyPI and TestPyPI publication; package-index publishing is deferred to `v1.0` or later
+
 ## 0.26.0
 
 First final release for the frozen V0.26 KS revisit decision.

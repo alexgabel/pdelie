@@ -100,6 +100,19 @@ def _orthonormal_row_span(matrix: np.ndarray) -> tuple[np.ndarray, int, float]:
     return vh[:rank], rank, _condition_number_from_values(retained)
 
 
+def _rank_status(rank: int, row_count: int) -> str:
+    if rank == 0:
+        return "zero_rank"
+    if rank < row_count:
+        return "rank_deficient"
+    return "full_rank"
+
+
+def _json_finite_or_none(value: float) -> float | None:
+    normalized = float(value)
+    return normalized if np.isfinite(normalized) else None
+
+
 def _projection_residual(source_basis: np.ndarray, target_basis: np.ndarray) -> float:
     projector = target_basis.T @ target_basis
     residual = source_basis - source_basis @ projector
@@ -116,7 +129,7 @@ def compare_generator_spans(
 
     Raises:
         SchemaValidationError: for unsupported inner products or non-equivalent basis semantics.
-        ShapeValidationError: if either effective span has zero numerical rank.
+        ShapeValidationError: if the ambient metric is not positive semidefinite.
     """
 
     reference.validate()
@@ -138,17 +151,11 @@ def compare_generator_spans(
     reference_basis, reference_rank, reference_condition = _orthonormal_row_span(reference_transformed)
     candidate_basis, candidate_rank, candidate_condition = _orthonormal_row_span(candidate_transformed)
 
-    if reference_rank == 0 or candidate_rank == 0:
-        raise ShapeValidationError("compare_generator_spans requires both generator families to have nonzero rank.")
-
-    comparison_rank = min(reference_rank, candidate_rank)
-    singular_values = np.linalg.svd(reference_basis @ candidate_basis.T, compute_uv=False)
-    principal_angles = np.arccos(np.clip(singular_values[:comparison_rank], -1.0, 1.0))
-
-    reference_to_candidate = _projection_residual(reference_basis, candidate_basis)
-    candidate_to_reference = _projection_residual(candidate_basis, reference_basis)
-
-    return {
+    reference_row_count = int(reference.coefficients.shape[0])
+    candidate_row_count = int(candidate.coefficients.shape[0])
+    reference_rank_status = _rank_status(reference_rank, reference_row_count)
+    candidate_rank_status = _rank_status(candidate_rank, candidate_row_count)
+    base_report: dict[str, object] = {
         "inner_product": inner_product,
         "evaluation_mode": "exact_polynomial",
         "domain": {
@@ -159,6 +166,51 @@ def compare_generator_spans(
         "component_weights": component_weights,
         "reference_rank": reference_rank,
         "candidate_rank": candidate_rank,
+        "reference_rank_status": reference_rank_status,
+        "candidate_rank_status": candidate_rank_status,
+    }
+
+    if reference_rank == 0 or candidate_rank == 0:
+        return {
+            **base_report,
+            "comparison_status": "failed",
+            "status_reason": "effective span rank is zero for at least one family.",
+            "comparison_rank": 0,
+            "principal_angles_radians": [],
+            "projection_residual": {
+                "summary": None,
+                "reference_to_candidate": None,
+                "candidate_to_reference": None,
+            },
+            "conditioning": {
+                "ambient_metric": _json_finite_or_none(ambient_condition_number),
+                "reference_span": _json_finite_or_none(reference_condition),
+                "candidate_span": _json_finite_or_none(candidate_condition),
+            },
+        }
+
+    comparison_status = (
+        "passed"
+        if reference_rank_status == "full_rank" and candidate_rank_status == "full_rank"
+        else "warning"
+    )
+    status_reason = (
+        None
+        if comparison_status == "passed"
+        else "one or both families are rank-deficient under the runtime metric policy."
+    )
+
+    comparison_rank = min(reference_rank, candidate_rank)
+    singular_values = np.linalg.svd(reference_basis @ candidate_basis.T, compute_uv=False)
+    principal_angles = np.arccos(np.clip(singular_values[:comparison_rank], -1.0, 1.0))
+
+    reference_to_candidate = _projection_residual(reference_basis, candidate_basis)
+    candidate_to_reference = _projection_residual(candidate_basis, reference_basis)
+
+    return {
+        **base_report,
+        "comparison_status": comparison_status,
+        "status_reason": status_reason,
         "comparison_rank": comparison_rank,
         "principal_angles_radians": principal_angles.tolist(),
         "projection_residual": {
@@ -167,9 +219,9 @@ def compare_generator_spans(
             "candidate_to_reference": candidate_to_reference,
         },
         "conditioning": {
-            "ambient_metric": ambient_condition_number,
-            "reference_span": reference_condition,
-            "candidate_span": candidate_condition,
+            "ambient_metric": _json_finite_or_none(ambient_condition_number),
+            "reference_span": _json_finite_or_none(reference_condition),
+            "candidate_span": _json_finite_or_none(candidate_condition),
         },
     }
 

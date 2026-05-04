@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from pdelie import GeneratorFamily, ScopeValidationError, ShapeValidationError, VerificationReport
+from pdelie import GeneratorFamily, ScopeValidationError, VerificationReport
 from pdelie.contracts import _translation_generator_basis_spec
 from pdelie.symmetry import diagnose_generator_family_closure
 
@@ -125,11 +125,16 @@ def test_diagnose_generator_family_closure_reports_expected_affine_structure_con
         np.array([[1.0, 0.0], [0.0, 1.0]], dtype=float),
         basis_spec=_x_basis_spec(),
     )
+    expected = np.zeros((2, 2, 2), dtype=float)
+    expected[0, 1, 0] = 1.0
+    expected[1, 0, 0] = -1.0
 
-    report = diagnose_generator_family_closure(generator)
+    report = diagnose_generator_family_closure(generator, expected_structure_constants=expected)
     tensor = np.asarray(report["structure_constants"]["tensor"], dtype=float)
 
     assert report["closure"]["summary"] == pytest.approx(0.0, abs=1e-12)
+    assert report["structure_constants"]["structure_constant_error"] == pytest.approx(0.0, abs=1e-12)
+    np.testing.assert_allclose(report["structure_constants"]["expected_structure_constants"], expected, atol=1e-12)
     np.testing.assert_allclose(tensor[0, 1], [1.0, 0.0], atol=1e-12)
     np.testing.assert_allclose(tensor[1, 0], [-1.0, 0.0], atol=1e-12)
     np.testing.assert_allclose(tensor[0, 0], [0.0, 0.0], atol=1e-12)
@@ -288,14 +293,22 @@ def test_diagnose_generator_family_closure_uses_family_aware_interpretation_labe
     assert report["verification_classifications"] == expected_classifications
 
 
-def test_diagnose_generator_family_closure_rejects_rank_deficient_family_with_degeneracy_message() -> None:
+def test_diagnose_generator_family_closure_reports_rank_deficient_family_without_exception() -> None:
     generator = _make_generator(
         np.array([[1.0, 0.0], [2.0, 0.0]], dtype=float),
         basis_spec=_x_basis_spec(),
     )
 
-    with pytest.raises(ShapeValidationError, match="rank-deficient family"):
-        diagnose_generator_family_closure(generator)
+    report = diagnose_generator_family_closure(generator)
+
+    assert report["family_rank"] == 1
+    assert report["family_rank_status"] == "rank_deficient"
+    assert report["structure_constants"]["status"] == "unavailable"
+    assert report["structure_constants"]["tensor"] is None
+    assert report["structure_constants"]["structure_constant_error"] is None
+    assert report["closure"]["status"] == "unavailable"
+    assert report["closure"]["summary"] is None
+    assert report["jacobi"]["mode"] == "unavailable_rank_deficient"
 
 
 def test_diagnose_generator_family_closure_returns_required_core_report_schema() -> None:
@@ -309,19 +322,32 @@ def test_diagnose_generator_family_closure_returns_required_core_report_schema()
     assert set(report) == {
         "interpretation_label",
         "verification_classifications",
+        "bracket_convention",
+        "basis_order",
         "inner_product",
         "computation_mode",
         "domain",
         "component_weights",
         "component_targets",
         "family_rank",
+        "family_rank_status",
         "structure_constants",
         "closure",
         "antisymmetry",
         "jacobi",
         "conditioning",
     }
-    assert set(report["structure_constants"]) == {"tensor", "estimation_mode", "conditioning"}
-    assert set(report["closure"]) == {"summary", "pairwise_residuals"}
-    assert set(report["antisymmetry"]) == {"summary", "pairwise_residuals"}
-    assert set(report["jacobi"]) == {"summary", "triple_residuals", "mode"}
+    assert set(report["structure_constants"]) == {
+        "tensor",
+        "estimation_mode",
+        "conditioning",
+        "status",
+        "expected_structure_constants",
+        "structure_constant_error",
+    }
+    assert set(report["closure"]) == {"summary", "pairwise_residuals", "status"}
+    assert set(report["antisymmetry"]) == {"summary", "pairwise_residuals", "status"}
+    assert set(report["jacobi"]) == {"summary", "triple_residuals", "mode", "status"}
+    assert report["bracket_convention"] == "[X_i, X_j] = X_i · ∇X_j - X_j · ∇X_i"
+    assert report["basis_order"] == ["row_0", "row_1"]
+    assert report["family_rank_status"] == "full_rank"

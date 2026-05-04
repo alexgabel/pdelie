@@ -1,32 +1,32 @@
-# PDELie - Execution Plan (V0.26)
+# PDELie - Execution Plan (V0.27)
 
 **Status:** COMPLETE
 
-**V0.26 is complete as the KS revisit decision release**
+**V0.27 is complete as the multi-generator diagnostics decision release**
 
-This file is the completed execution record for the `v0.26` release series.
+This file is the completed execution record for the `v0.27` release series.
 
 ## Release Theme
 
-`v0.26` revisits the Kuramoto-Sivashinsky no-go with modern confidence diagnostics while keeping public KS runtime promotion out of scope.
+`v0.27` diagnoses supplied multi-row `GeneratorFamily` objects without promoting public multi-generator PDE fitting or finite group-action machinery.
 
 Decision label:
 
 ```text
-current_no_go_reference_fallback
+multi_generator_diagnostics_feasible_fitting_deferred
 ```
 
 Stable investigation path:
 
 ```text
-internal normalized KS fixture
--> spectral_fd derivatives through u_xxxx
--> internal KS residual feasibility
--> translation fit / verification / confidence report
--> explicit v0.26 decision label
+canonical scalar 1D periodic FieldBatch
+-> residual evaluator
+-> supplied multi-row GeneratorFamily
+-> algebraic diagnostics + PDE-context diagnostics + fit probe diagnostics
+-> explicit public promotion decision
 ```
 
-The release adds no public KS data generator, residual evaluator, vertical-slice example, status example, weak KS API, residual-only API, or root export.
+The release adds no public multi-generator fitting API, finite-flow API, BCH composition API, invariant chart, orbit builder, operator API, neural/callable generator API, or root export.
 
 ## Milestone Status
 
@@ -40,102 +40,89 @@ The release adds no public KS data generator, residual evaluator, vertical-slice
 
 Authoritative scope:
 
-- `docs/planning/V0_26_SCOPE.md`
-
-`API_STABILITY.md` records the decision-only status but does not add a stable KS runtime contract.
+- `docs/planning/V0_27_SCOPE.md`
 
 ## Milestone 0 - Scope Freeze
 
-Freeze `v0.26` as a KS revisit decision release.
+Freeze `v0.27` as multi-generator diagnostics/decision only.
 
 Closeout:
 
-- added `docs/planning/V0_26_SCOPE.md`
-- reset `PLAN.md` as the active `v0.26` execution record
-- updated `ROADMAP.md` to record `v0.26` as the current completed release
-- reserved `v0.26b` as the follow-up KS promotion release name
-- explicitly kept KS runtime APIs out of `v0.26`
+- added `docs/planning/V0_27_SCOPE.md`
+- reset `PLAN.md` as the active `v0.27` execution record
+- updated `ROADMAP.md` to record `v0.27` as the current completed release
+- explicitly deferred multi-generator PDE fitting, finite flows, BCH composition, invariant charts, orbit charts, and root exports
 
-## Milestone 1 - Decision Criteria Freeze
+## Milestone 1 - Semantics Freeze
 
-Frozen decision labels:
+Frozen semantics:
 
-- `current_no_go_reference_fallback`
-- `residual_feasible_fit_not_promotable`
-- `direct_strong_candidate_for_v0_26b_promotion`
-- `deferred_no_go`
+- bracket convention: `[X_i, X_j] = X_i · ∇X_j - X_j · ∇X_i`
+- structure constants: `[X_i, X_j] = sum_k C[i, j, k] X_k`
+- basis order is the row order of `GeneratorFamily.coefficients`
+- closure diagnostics are algebraic evidence only
+- rank-deficient well-formed families report diagnostic status instead of raising solely due to redundancy
+- `closure_required=True|False` controls whether closure failure is a failed or warning validation check
 
-Frozen promotion-candidate thresholds:
+## Milestone 2 - Algebraic Diagnostic Matrix
 
-- residual max `< 5e-2`
-- residual RMS `< 1e-2`
-- first verification error `< 5e-4`
-- verification classification not `failed`
-- fit evidence label `direct_svd_in_tolerance`
-- `reference_fallback_used is False`
+Implemented supplied-family diagnostic coverage for:
 
-Promotion evidence must come from the frozen primary fixture. Diagnostic variants cannot define promotion.
+- abelian two-generator translations
+- affine `x` algebra
+- affine `u` algebra
+- non-closed polynomial family
+- rank-deficient family
+- basis-mismatch behavior
 
-## Milestone 2 - Minimal KS No-Go Reproduction Matrix
+No generator fitting from PDE data was added in this milestone.
 
-Implemented test-only diagnostic coverage for:
+## Milestone 3 - PDE-Context Diagnostics
 
-- frozen primary fixture
-- seed sweep
-- fit-epsilon sweep
-- one resolution variant
-- fit/fallback diagnostics
-- verification diagnostics
-- generator confidence report
-
-No helper was exported from `pdelie.data`, `pdelie.residuals`, `pdelie.examples`, or root `pdelie`.
-
-## Milestone 3 - Primary Fixture Strong-Path Re-Evaluation
-
-The frozen primary fixture remains:
-
-- residual-feasible
-- verification-feasible
-- reference-fallback-backed for translation fitting
-
-The direct SVD path is not promotable in `v0.26`.
-
-## Milestone 4 - Optional Variant Diagnostics
-
-Variant diagnostics remain test-only and diagnostic-only.
+Candidate validation now separates algebraic closure from PDE-context evidence.
 
 Closeout:
 
+- multi-row family closure checks no longer imply PDE residual symmetry
+- multi-row candidates without finite-transform or residual-preservation evidence conclude at most `partially_validated`
+- PDE-context reports use explicit algebraic-only / blocked / not-meaningful language
+- single-generator translation validation remains unchanged
+
+## Milestone 4 - Internal Fit Probe
+
+Fit-probe evidence remains diagnostic-only.
+
+Closeout:
+
+- no public fitting helper was added
+- no runtime example performs fitting
+- no API stability entry promotes multi-generator fitting
 - no best-of-sweep promotion path was added
-- variants may inform future work only
-- `v0.26b` remains a separate scope decision if future evidence justifies promotion
 
-## Milestone 5 - Decision Docs
+## Milestone 5 - Example And Docs
 
-Docs now state:
+Implemented:
 
-- KS remains deferred in `v0.26`
-- residual feasibility is not enough for public PDELie support
-- public KS promotion requires a separate `v0.26b` scope freeze
-- weak KS remains deferred
+- added `python -m pdelie.examples.multi_generator_diagnostics`
+- added `pdelie.examples.run_multi_generator_diagnostics_example(...)`
+- updated README, changelog, roadmap, API stability, release readiness, and public-surface docs
 
-No packaged KS runtime/status example was added.
+The example uses supplied `GeneratorFamily` objects only and reports diagnostic status.
 
 ## Milestone 6 - Release Gate And Readiness
 
 Implemented:
 
-- added compact `tests/test_v0_26_release_gate.py`
-- updated CI so the current explicit release gate is `v0_26-release-gate`
+- added compact `tests/test_v0_27_release_gate.py`
+- updated CI so the current explicit release gate is `v0_27-release-gate`
 - kept full editable `python -m pytest`
 - kept package smoke
-- bumped package metadata to `0.26.0`
-- updated README, changelog, publishing notes, roadmap, and release readiness docs
-- documented direct `v0.26.0` Git-tag release path
+- bumped package metadata to `0.27.0`
+- documented direct `v0.27.0` Git-tag release path
 
 Required checks before tagging:
 
-- `v0_26-release-gate`
+- `v0_27-release-gate`
 - `editable-tests`
 - `package-smoke`
 

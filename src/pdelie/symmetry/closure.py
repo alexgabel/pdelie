@@ -21,6 +21,7 @@ _SAMPLED_GRID_POINTS_PER_AXIS = 5
 _MAX_SAMPLED_GRID_POINTS = 15625
 _FALLBACK_DOMAIN_BOUND = 1.0
 _SYMMETRY_ALGEBRA_CLASSIFICATIONS = frozenset({"exact", "approximate"})
+_BRACKET_CONVENTION = "[X_i, X_j] = X_i · ∇X_j - X_j · ∇X_i"
 
 _Polynomial = dict[tuple[int, ...], float]
 _VectorField = dict[str, _Polynomial]
@@ -279,6 +280,35 @@ def _family_metric_summary(metric_matrix: np.ndarray) -> tuple[int, float]:
     return int(positive.size), _condition_number(positive)
 
 
+def _json_finite_or_none(value: float) -> float | None:
+    normalized = float(value)
+    return normalized if np.isfinite(normalized) else None
+
+
+def _basis_order(generator: GeneratorFamily) -> list[str]:
+    if generator.generator_names is not None:
+        return [str(name) for name in generator.generator_names]
+    return [f"row_{index}" for index in range(int(generator.coefficients.shape[0]))]
+
+
+def _normalize_expected_structure_constants(
+    expected_structure_constants: Any | None,
+    *,
+    family_size: int,
+) -> np.ndarray | None:
+    if expected_structure_constants is None:
+        return None
+    normalized = np.asarray(expected_structure_constants, dtype=float)
+    if normalized.shape != (family_size, family_size, family_size):
+        raise ShapeValidationError(
+            "expected_structure_constants must have shape "
+            f"({family_size}, {family_size}, {family_size})."
+        )
+    if not np.all(np.isfinite(normalized)):
+        raise ShapeValidationError("expected_structure_constants must contain only finite values.")
+    return normalized
+
+
 def _solve_projection_coefficients(metric_matrix: np.ndarray, rhs: np.ndarray) -> tuple[np.ndarray, float]:
     coefficients, _, _, singular_values = np.linalg.lstsq(metric_matrix, rhs, rcond=None)
     return np.asarray(coefficients, dtype=float), _condition_number(np.asarray(singular_values, dtype=float))
@@ -385,6 +415,7 @@ def diagnose_generator_family_closure(
     component_targets: Mapping[str, str] | None = None,
     inner_product: str = "normalized_polynomial_l2",
     computation_mode: str = "auto",
+    expected_structure_constants: Any | None = None,
 ) -> dict[str, object]:
     """Diagnose runtime closure properties for a canonical polynomial GeneratorFamily."""
 
@@ -410,6 +441,10 @@ def diagnose_generator_family_closure(
         for row in np.asarray(generator.coefficients, dtype=float)
     ]
     family_size = len(family_fields)
+    expected_tensor = _normalize_expected_structure_constants(
+        expected_structure_constants,
+        family_size=family_size,
+    )
 
     if resolved_mode == "exact_polynomial":
         metric_matrix = np.empty((family_size, family_size), dtype=float)
@@ -443,10 +478,59 @@ def diagnose_generator_family_closure(
         domain["grid_points_per_axis"] = _SAMPLED_GRID_POINTS_PER_AXIS
 
     family_rank, family_condition = _family_metric_summary(metric_matrix)
+    family_rank_status = "full_rank" if family_rank == family_size else "rank_deficient"
+    base_report: dict[str, object] = {
+        "interpretation_label": interpretation_label,
+        "verification_classifications": verification_classifications,
+        "bracket_convention": _BRACKET_CONVENTION,
+        "basis_order": _basis_order(generator),
+        "inner_product": inner_product,
+        "computation_mode": resolved_mode,
+        "domain": domain,
+        "component_weights": component_weights,
+        "component_targets": resolved_component_targets,
+        "family_rank": family_rank,
+        "family_rank_status": family_rank_status,
+    }
     if family_rank != family_size:
-        raise ShapeValidationError(
-            "diagnose_generator_family_closure requires full effective family rank under the runtime metric policy; structure constants are not uniquely defined for a rank-deficient family."
-        )
+        conditioning = {
+            "family_gram": _json_finite_or_none(family_condition),
+            "structure_constant_solve": None,
+        }
+        return {
+            **base_report,
+            "structure_constants": {
+                "tensor": None,
+                "estimation_mode": "unavailable_rank_deficient",
+                "conditioning": conditioning,
+                "status": "unavailable",
+                "reason": "structure constants are not uniquely defined for a rank-deficient family.",
+                "expected_structure_constants": (
+                    None if expected_tensor is None else expected_tensor.tolist()
+                ),
+                "structure_constant_error": None,
+            },
+            "closure": {
+                "summary": None,
+                "pairwise_residuals": None,
+                "status": "unavailable",
+                "reason": "closure residuals are not uniquely diagnosable for a rank-deficient family.",
+            },
+            "antisymmetry": {
+                "summary": None,
+                "pairwise_residuals": None,
+                "status": "unavailable",
+                "reason": "antisymmetry residuals are not uniquely diagnosable for a rank-deficient family.",
+            },
+            "jacobi": {
+                "summary": None,
+                "triple_residuals": None,
+                "mode": "unavailable_rank_deficient",
+                "status": "unavailable",
+                "reason": "Jacobi residuals are not uniquely diagnosable for a rank-deficient family.",
+            },
+            "conditioning": conditioning,
+        }
 
     structure_tensor = np.zeros((family_size, family_size, family_size), dtype=float)
     closure_residuals = np.zeros((family_size, family_size), dtype=float)
@@ -558,39 +642,42 @@ def diagnose_generator_family_closure(
         jacobi_summary = float(np.max(jacobi_array))
 
     conditioning = {
-        "family_gram": family_condition,
-        "structure_constant_solve": solve_condition,
+        "family_gram": _json_finite_or_none(family_condition),
+        "structure_constant_solve": _json_finite_or_none(solve_condition),
     }
+    structure_constant_error = (
+        None
+        if expected_tensor is None
+        else float(np.max(np.abs(structure_tensor - expected_tensor)))
+    )
 
     return {
-        "interpretation_label": interpretation_label,
-        "verification_classifications": verification_classifications,
-        "inner_product": inner_product,
-        "computation_mode": resolved_mode,
-        "domain": domain,
-        "component_weights": component_weights,
-        "component_targets": resolved_component_targets,
-        "family_rank": family_rank,
+        **base_report,
         "structure_constants": {
             "tensor": structure_tensor.tolist(),
             "estimation_mode": resolved_mode,
-            "conditioning": {
-                "family_gram": family_condition,
-                "structure_constant_solve": solve_condition,
-            },
+            "conditioning": conditioning,
+            "status": "available",
+            "expected_structure_constants": (
+                None if expected_tensor is None else expected_tensor.tolist()
+            ),
+            "structure_constant_error": structure_constant_error,
         },
         "closure": {
             "summary": float(np.max(closure_residuals)),
             "pairwise_residuals": closure_residuals.tolist(),
+            "status": "available",
         },
         "antisymmetry": {
             "summary": float(np.max(antisymmetry_residuals)),
             "pairwise_residuals": antisymmetry_residuals.tolist(),
+            "status": "available",
         },
         "jacobi": {
             "summary": jacobi_summary,
             "triple_residuals": jacobi_residuals,
             "mode": "structure_constants",
+            "status": "available",
         },
         "conditioning": conditioning,
     }

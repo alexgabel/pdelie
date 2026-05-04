@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pdelie"
-version = "0.26.0"
-description = "V0.26 KS revisit decision plus retained KdV scope decision, weak supportability, provenance, downstream contracts, confidence reports, PDE strong paths, and symmetry diagnostics"
+version = "0.27.0"
+description = "V0.27 multi-generator diagnostics decision plus retained KS/KdV decisions, weak supportability, provenance, downstream contracts, confidence reports, PDE strong paths, and symmetry diagnostics"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"

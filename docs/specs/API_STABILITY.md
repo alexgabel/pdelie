@@ -321,6 +321,18 @@ Decision-only note for the frozen `v0.26` KS revisit decision:
 - this decision does not add a stable public Kuramoto-Sivashinsky data generator or residual evaluator
 - this decision does not add a public KS vertical-slice example, public KS status example, residual-only KS public API, weak KS API, custom KS initial-condition API, configurable KS coefficient API, broad KS regime support, root KS export, broad adapter, time-translation API, neural/callable generator API, or operator-facing API
 
+Runtime public API and behavior updates for the frozen `v0.27` multi-generator diagnostics decision:
+
+- `pdelie.examples.run_multi_generator_diagnostics_example` for a compact JSON-only runtime diagnostic example over supplied multi-row `GeneratorFamily` objects
+- multi-generator diagnostic examples use `summary_type = "multi_generator_diagnostics_example"` and `summary_schema_version = "0.1"`
+- `pdelie.symmetry.diagnose_generator_family_closure` now reports well-formed rank-deficient families as diagnostic reports with `family_rank_status = "rank_deficient"` instead of raising solely because structure constants are non-unique
+- `pdelie.symmetry.compare_generator_spans` now reports well-formed zero-rank/rank-deficient span comparisons with `comparison_status = "failed"` or `"warning"` instead of crashing solely because rank is deficient
+- `pdelie.symmetry.validate_symmetry_candidate` now accepts `closure_required=True|False` for `GeneratorFamily` candidates
+- multi-row `GeneratorFamily` validation keeps algebraic closure diagnostics separate from PDE-context evidence; closure passing alone does not prove PDE residual symmetry
+- the recorded `v0.27` decision is `multi_generator_diagnostics_feasible_fitting_deferred`
+- this release does not add public multi-generator PDE fitting, finite multi-generator flows, BCH composition, exponential-map integration, invariant charts, multi-parameter orbit charts, group-action atlases, operator APIs, neural/callable generator APIs, or root exports
+- these APIs have no root `pdelie` exports
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 
@@ -334,7 +346,7 @@ These must not change without version bump.
 - weak-form derivatives and weak-form methods beyond the frozen `v0.8` weak residual report slice and the `v0.24` weak supportability reporting layer
 - operator symmetry
 - advanced invariant maps
-- multi-generator invariant machinery
+- multi-generator invariant machinery, finite flows, BCH composition, and public multi-generator PDE fitting
 
 These may change without warning.
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from pdelie import GeneratorFamily, SchemaValidationError, ShapeValidationError
+from pdelie import GeneratorFamily, SchemaValidationError
 from pdelie.contracts import _translation_generator_basis_spec
 from pdelie.symmetry import compare_generator_spans
 
@@ -153,6 +153,35 @@ def test_compare_generator_spans_reports_directional_residual_for_strict_contain
     )
 
 
+def test_compare_generator_spans_warns_for_rank_deficient_but_nonzero_family() -> None:
+    reference = _make_generator(
+        np.array([[1.0, 0.0], [0.0, 1.0]], dtype=float),
+        basis_spec={
+            "variables": ["x"],
+            "component_names": ["xi"],
+            "basis_terms": [
+                {"label": "1", "powers": [0]},
+                {"label": "x", "powers": [1]},
+            ],
+            "component_ordering": ["xi"],
+            "term_ordering": ["1", "x"],
+            "layout": "component_major",
+        },
+    )
+    candidate = _make_generator(
+        np.array([[1.0, 0.0], [2.0, 0.0]], dtype=float),
+        basis_spec=reference.basis_spec,
+    )
+
+    report = compare_generator_spans(reference, candidate)
+
+    assert report["comparison_status"] == "warning"
+    assert report["reference_rank_status"] == "full_rank"
+    assert report["candidate_rank_status"] == "rank_deficient"
+    assert report["candidate_rank"] == 1
+    assert report["status_reason"] == "one or both families are rank-deficient under the runtime metric policy."
+
+
 def test_compare_generator_spans_accepts_structurally_equivalent_basis_specs() -> None:
     reordered_basis_spec = {
         "layout": "component_major",
@@ -213,7 +242,7 @@ def test_compare_generator_spans_rejects_non_equivalent_basis_semantics() -> Non
         compare_generator_spans(reference, candidate)
 
 
-def test_compare_generator_spans_rejects_zero_rank_spans() -> None:
+def test_compare_generator_spans_reports_zero_rank_spans_without_exception() -> None:
     reference = _make_generator(
         np.zeros((1, 4), dtype=float),
         basis_spec=_translation_generator_basis_spec(),
@@ -225,8 +254,14 @@ def test_compare_generator_spans_rejects_zero_rank_spans() -> None:
         parameterization="polynomial_translation_affine",
     )
 
-    with pytest.raises(ShapeValidationError, match="nonzero rank"):
-        compare_generator_spans(reference, candidate)
+    report = compare_generator_spans(reference, candidate)
+
+    assert report["comparison_status"] == "failed"
+    assert report["reference_rank_status"] == "zero_rank"
+    assert report["candidate_rank_status"] == "full_rank"
+    assert report["comparison_rank"] == 0
+    assert report["principal_angles_radians"] == []
+    assert report["projection_residual"]["summary"] is None
 
 
 def test_compare_generator_spans_returns_required_core_report_schema() -> None:
@@ -250,6 +285,10 @@ def test_compare_generator_spans_returns_required_core_report_schema() -> None:
         "component_weights",
         "reference_rank",
         "candidate_rank",
+        "reference_rank_status",
+        "candidate_rank_status",
+        "comparison_status",
+        "status_reason",
         "comparison_rank",
         "principal_angles_radians",
         "projection_residual",

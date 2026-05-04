@@ -17,6 +17,7 @@ from pdelie.examples import (
     run_invariant_workflow_summary_example,
     run_kdv_scope_decision_example,
     run_kdv_vertical_slice_example,
+    run_multi_generator_diagnostics_example,
     run_orbit_coverage_diagnostics_example,
     run_reaction_diffusion_vertical_slice_example,
     run_split_leakage_provenance_example,
@@ -189,6 +190,38 @@ def test_kdv_scope_decision_module_prints_json_only() -> None:
     assert parsed["summary_type"] == "kdv_scope_decision_example"
     assert parsed["decision"]["conclusion"] == "keep_public_kdv_surface_frozen"
     assert parsed["current_frozen_path"]["confidence"]["confidence_label"] == "strong"
+
+
+def test_multi_generator_diagnostics_example_runs_end_to_end() -> None:
+    result = run_multi_generator_diagnostics_example()
+
+    assert json.loads(json.dumps(result, allow_nan=False)) == result
+    assert result["summary_schema_version"] == "0.1"
+    assert result["summary_type"] == "multi_generator_diagnostics_example"
+    assert result["decision"]["conclusion"] == "multi_generator_diagnostics_feasible_fitting_deferred"
+    assert result["decision"]["public_promotion_decision"] == "no_public_multi_generator_fitting_or_invariant_action"
+    assert result["algebraic_diagnostics"]["closed_affine_x"]["family_rank_status"] == "full_rank"
+    assert result["algebraic_diagnostics"]["closed_affine_x"]["structure_constants"]["structure_constant_error"] == 0.0
+    assert result["algebraic_diagnostics"]["nonclosed_polynomial"]["closure"]["summary"] > 0.0
+    assert result["algebraic_diagnostics"]["rank_deficient_affine"]["family_rank_status"] == "rank_deficient"
+    assert (
+        result["algebraic_diagnostics"]["rank_deficient_span_comparison"]["comparison_status"]
+        == "warning"
+    )
+    assert result["pde_context_diagnostics"]["closed_affine_x"]["conclusion"] == "partially_validated"
+    assert result["pde_context_diagnostics"]["nonclosed_required"]["conclusion"] == "failed"
+    assert result["pde_context_diagnostics"]["nonclosed_optional"]["conclusion"] == "partially_validated"
+    assert result["fit_probe_diagnostics"]["label"] == "fit_probe_diagnostic_only"
+    assert result["confidence"]["confidence_label"] == "qualified"
+    assert result["extra_metrics"]["closure_does_not_imply_pde_symmetry"] is True
+    assert not hasattr(pdelie, "run_multi_generator_diagnostics_example")
+
+
+def test_multi_generator_diagnostics_module_prints_json_only() -> None:
+    parsed = _run_module_json("pdelie.examples.multi_generator_diagnostics")
+
+    assert parsed["summary_type"] == "multi_generator_diagnostics_example"
+    assert parsed["fit_probe_diagnostics"]["runtime_example_runs_fit_probe"] is False
 
 
 def test_reaction_diffusion_vertical_slice_example_runs_end_to_end_and_is_json_serializable() -> None:
