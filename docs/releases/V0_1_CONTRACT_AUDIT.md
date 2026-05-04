@@ -2,7 +2,7 @@
 
 This audit compares the implemented MVP against:
 
-- `../../AGENTS.md`
+- the durable contributor guidance now tracked in `../../CONTRIBUTING.md`
 - `../specs/SPEC.md`
 - `../specs/CONTRACTS_AND_DEFAULTS.md`
 - `../specs/API_STABILITY.md`

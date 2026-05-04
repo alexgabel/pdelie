@@ -48,6 +48,7 @@ _ROOT_RUNTIME_NAMES = {
     "run_downstream_discovery_contracts_example",
     "run_external_data_readiness_example",
     "run_split_leakage_provenance_example",
+    "run_weak_form_supportability_example",
     "run_kdv_vertical_slice_example",
     "run_orbit_coverage_diagnostics_example",
     "run_reaction_diffusion_vertical_slice_example",
@@ -72,6 +73,7 @@ _ROOT_RUNTIME_NAMES = {
     "summarize_verification_report",
     "summarize_vertical_slice",
     "summarize_weak_residual_report",
+    "summarize_weak_form_supportability",
     "summarize_uniform_translation_orbit",
     "to_pysindy_trajectories",
     "to_sympy_component_expressions",
@@ -232,6 +234,14 @@ _V0_23_SPLIT_PROVENANCE_APIS = {
     "risk_label",
     "traceable_overlap",
 }
+_V0_24_WEAK_SUPPORTABILITY_APIS = {
+    "pdelie.reporting.summarize_weak_form_supportability",
+    "pdelie.examples.run_weak_form_supportability_example",
+    "summary_type = \"weak_form_supportability\"",
+    "supportability_label",
+    "supported_existing_slice",
+    "diagnostic_only",
+}
 
 
 def _api_stability_text() -> str:
@@ -262,6 +272,7 @@ def test_api_stability_doc_covers_current_stable_runtime_surface() -> None:
         | _V0_21_FIELD_READINESS_APIS
         | _V0_22_DOWNSTREAM_CONTRACT_APIS
         | _V0_23_SPLIT_PROVENANCE_APIS
+        | _V0_24_WEAK_SUPPORTABILITY_APIS
     ):
         assert api_name in text
 
@@ -270,7 +281,10 @@ def test_api_stability_doc_covers_current_stable_runtime_surface() -> None:
     assert "not canonical objects, artifact schemas, manuscript-table generators, or figure/rendering APIs" in text
     assert "do not construct augmented datasets, orbit datasets, or transformed `FieldBatch` collections" in text
     assert "time-translation diagnostics remain deferred" in text
-    assert "weak-form derivatives and weak-form methods beyond the frozen `v0.8` weak residual report slice" in text
+    assert (
+        "weak-form derivatives and weak-form methods beyond the frozen `v0.8` weak residual report slice "
+        "and the `v0.24` weak supportability reporting layer"
+    ) in text
     assert "operator symmetry" in text
 
 
@@ -328,6 +342,7 @@ def test_required_runtime_submodule_apis_remain_importable() -> None:
             "run_downstream_discovery_contracts_example",
             "run_external_data_readiness_example",
             "run_split_leakage_provenance_example",
+            "run_weak_form_supportability_example",
             "run_advection_diffusion_vertical_slice_example",
             "run_heat_vertical_slice_example",
             "run_invariant_workflow_summary_example",
@@ -363,6 +378,7 @@ def test_required_runtime_submodule_apis_remain_importable() -> None:
             "summarize_verification_report",
             "summarize_vertical_slice",
             "summarize_weak_residual_report",
+            "summarize_weak_form_supportability",
         },
         "pdelie.residuals": {
             "AdvectionDiffusionResidualEvaluator",
@@ -437,20 +453,8 @@ def test_v0_22_planning_docs_record_downstream_discovery_contracts_and_non_goals
 
 
 def test_v0_23_planning_docs_record_split_provenance_and_non_goals() -> None:
-    plan = _repo_text("docs/planning/PLAN.md")
     scope = _repo_text("docs/planning/V0_23_SCOPE.md")
     roadmap = _repo_text("docs/planning/ROADMAP.md")
-
-    assert "**Status:** COMPLETE" in plan
-    assert "Milestone 2 - Split Provenance Helper" in plan
-    assert "Milestone 3 - Orbit-Batch Risk Coverage" in plan
-    assert "pdelie.reporting.summarize_split_leakage_provenance" in plan
-    assert "pdelie.examples.run_split_leakage_provenance_example" in plan
-    assert "no split creation" in plan
-    assert "## Milestone 5 - API / Public-surface Audit" in plan
-    assert "## Milestone 6 - Release Gate And Readiness" in plan
-    assert "updated CI so the current explicit release gate is `v0_23-release-gate`" in plan
-    assert "- Milestone 6: COMPLETE" in plan
 
     assert "Split / Leakage Provenance Diagnostics" in scope
     assert "pdelie.reporting.summarize_split_leakage_provenance" in scope
@@ -466,3 +470,34 @@ def test_v0_23_planning_docs_record_split_provenance_and_non_goals() -> None:
     assert "`v0.23` is the completed split/leakage provenance diagnostics release" in roadmap
     assert "split/leakage provenance diagnostics" in roadmap
     assert "- no split management or leakage prevention" in roadmap
+
+
+def test_v0_24_planning_docs_record_weak_supportability_and_non_goals() -> None:
+    plan = _repo_text("docs/planning/PLAN.md")
+    scope = _repo_text("docs/planning/V0_24_SCOPE.md")
+    roadmap = _repo_text("docs/planning/ROADMAP.md")
+
+    assert "**Status:** COMPLETE" in plan
+    assert "Milestone 2 - Reporting Helper" in plan
+    assert "Milestone 3 - Internal Feasibility Harness" in plan
+    assert "pdelie.reporting.summarize_weak_form_supportability" in plan
+    assert "pdelie.examples.run_weak_form_supportability_example" in plan
+    assert "no WSINDy" in plan
+    assert "weak derivative backend" in plan
+    assert "updated CI so the current explicit release gate is `v0_24-release-gate`" in plan
+    assert "- Milestone 6: COMPLETE" in plan
+
+    assert "Weak-Form Supportability Reset" in scope
+    assert "pdelie.reporting.summarize_weak_form_supportability" in scope
+    assert "pdelie.examples.run_weak_form_supportability_example" in scope
+    assert "supported_existing_slice" in scope
+    assert "diagnostic_only" in scope
+    assert "does not implement WSINDy" in scope
+    assert "weak derivative backend" in scope
+    assert "- Milestone 4: COMPLETE" in scope
+    assert "- Milestone 5: COMPLETE" in scope
+    assert "- Milestone 6: COMPLETE" in scope
+
+    assert "`v0.24` is the completed weak-form supportability reset" in roadmap
+    assert "weak-form supportability reset" in roadmap
+    assert "- no weak derivative backend" in roadmap

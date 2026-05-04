@@ -12,6 +12,7 @@ __all__ = [
     "run_split_leakage_provenance_example",
     "run_symmetry_candidate_validation_example",
     "run_translation_orbit_batch_example",
+    "run_weak_form_supportability_example",
 ]
 
 
@@ -95,5 +96,11 @@ def run_symmetry_candidate_validation_example() -> dict[str, object]:
 
 def run_translation_orbit_batch_example() -> dict[str, object]:
     from pdelie.examples.translation_orbit_batch import run_translation_orbit_batch_example as _impl
+
+    return _impl()
+
+
+def run_weak_form_supportability_example() -> dict[str, object]:
+    from pdelie.examples.weak_form_supportability import run_weak_form_supportability_example as _impl
 
     return _impl()

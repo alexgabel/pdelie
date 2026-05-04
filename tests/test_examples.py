@@ -21,6 +21,7 @@ from pdelie.examples import (
     run_split_leakage_provenance_example,
     run_symmetry_candidate_validation_example,
     run_translation_orbit_batch_example,
+    run_weak_form_supportability_example,
 )
 
 
@@ -505,3 +506,40 @@ def test_split_leakage_provenance_module_prints_json_only() -> None:
 
     assert parsed["summary_type"] == "split_leakage_provenance_example"
     assert parsed["traceable_overlap"]["risk_label"] == "traceable_overlap"
+
+
+def test_weak_form_supportability_example_runs_end_to_end() -> None:
+    result = run_weak_form_supportability_example()
+
+    assert json.loads(json.dumps(result, allow_nan=False)) == result
+    assert result["summary_schema_version"] == "0.1"
+    assert result["summary_type"] == "weak_form_supportability_example"
+    assert result["extra_metrics"]["example_name"] == "weak_form_supportability"
+    assert result["extra_metrics"]["supportability_labels"] == [
+        "supported_existing_slice",
+        "supported_existing_slice",
+        "diagnostic_only",
+    ]
+    cases = {case["case_name"]: case["supportability"] for case in result["cases"]}
+    assert set(cases) == {
+        "burgers_weak_public_slice",
+        "fisher_kpp_internal_feasibility_marker",
+        "heat_weak_public_slice",
+    }
+    assert cases["heat_weak_public_slice"]["summary_type"] == "weak_form_supportability"
+    assert cases["heat_weak_public_slice"]["quadrature_rule"] == "composite_tensor_product_trapezoidal_native_window"
+    assert cases["burgers_weak_public_slice"]["supportability_label"] == "supported_existing_slice"
+    assert cases["fisher_kpp_internal_feasibility_marker"]["supportability_label"] == "diagnostic_only"
+    assert cases["fisher_kpp_internal_feasibility_marker"]["feasibility"]["visibility"] == "internal_diagnostic_only"
+    assert not hasattr(pdelie, "run_weak_form_supportability_example")
+
+
+def test_weak_form_supportability_module_prints_json_only() -> None:
+    parsed = _run_module_json("pdelie.examples.weak_form_supportability")
+
+    assert parsed["summary_type"] == "weak_form_supportability_example"
+    assert parsed["extra_metrics"]["supportability_labels"] == [
+        "supported_existing_slice",
+        "supported_existing_slice",
+        "diagnostic_only",
+    ]

@@ -1,5 +1,40 @@
 # Changelog
 
+## 0.24.0
+
+First final release for the frozen V0.24 weak-form supportability reset.
+
+- adds `pdelie.reporting.summarize_weak_form_supportability(...)` for JSON-compatible report-only supportability summaries over existing weak residual reports, weak contracts, strong residual evidence, robustness/imported-parity diagnostics, and internal feasibility summaries
+- adds `python -m pdelie.examples.weak_form_supportability` and `pdelie.examples.run_weak_form_supportability_example(...)` as JSON-only runtime smoke examples
+- freezes `summary_type == "weak_form_supportability"` with supportability labels `supported_existing_slice`, `diagnostic_only`, `failed`, and `insufficient_evidence`
+- defines `supported_existing_slice` narrowly as the existing frozen public Heat/Burgers weak residual report surface, not a general weak backend or weak discovery claim
+- normalizes weak contract metadata including equation, equation form, test-function family/order, supported operator order, integration-by-parts depth, boundary vanishing order, patch shape/stride, quadrature rule, normalization, valid-window policy, row count, skipped-patch count, and finite-value policy
+- records quadrature in every weak supportability report and validates strict JSON compatibility with `allow_nan=False`
+- adds test-only, identity-first Fisher-KPP weak feasibility diagnostics covering constant-field, pure-time, pure-space Fourier integration-by-parts, manufactured smooth-field, generated-field sanity, quadrature tolerance, and no-public-export guards
+- keeps Fisher-KPP weak feasibility diagnostic-only and out of package runtime examples except for a static JSON-compatible marker
+- documents the new helper in `API_STABILITY.md` as a submodule-only runtime API with no root export
+- preserves existing split provenance, downstream discovery contracts, external-data readiness, confidence reports, Heat/Burgers strong paths, weak Heat/Burgers residual reports, normalized periodic KdV, Fisher-KPP reaction-diffusion strong path, advection-diffusion strong path, invariant/orbit diagnostics, orbit batches, candidate validation, and formula-backed generator support
+
+Explicitly deferred for this final release:
+
+- WSINDy
+- weak design matrices
+- weak sparse recovery
+- public weak derivative backend or `DerivativeBatch.backend = "weak"` promotion
+- weak KdV APIs
+- weak KS APIs
+- public weak reaction-diffusion APIs
+- weak residual evaluator subclasses
+- new PDE support
+- KS runtime promotion
+- broad adapters or file loaders
+- multidimensional, multivariable, or nonuniform-grid support
+- train/test policy or leakage prevention
+- time-translation APIs
+- neural or callable generator APIs
+- operator-facing APIs
+- PyPI and TestPyPI publication; package-index publishing is deferred to `v1.0` or later
+
 ## 0.23.0
 
 First final release for the frozen V0.23 split/leakage provenance diagnostics slice.

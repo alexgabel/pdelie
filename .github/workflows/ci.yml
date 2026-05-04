@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  v0_23-release-gate:
+  v0_24-release-gate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -32,8 +32,8 @@ jobs:
           retry 3 python -m pip install -e .[test]
       - name: Check dependencies
         run: python -m pip check
-      - name: Run V0.23 release gate
-        run: python -m pytest tests/test_v0_23_release_gate.py
+      - name: Run V0.24 release gate
+        run: python -m pytest tests/test_v0_24_release_gate.py
   editable-tests:
     runs-on: ubuntu-latest
     steps:
@@ -78,6 +78,7 @@ jobs:
           python -m pdelie.examples.external_data_readiness
           python -m pdelie.examples.downstream_discovery_contracts
           python -m pdelie.examples.split_leakage_provenance
+          python -m pdelie.examples.weak_form_supportability
   package-smoke:
     runs-on: ubuntu-latest
     steps:
@@ -142,6 +143,7 @@ jobs:
               run_external_data_readiness_example,
               run_reaction_diffusion_vertical_slice_example,
               run_split_leakage_provenance_example,
+              run_weak_form_supportability_example,
           )
           from pdelie.discovery import summarize_discovery_bridge_output, summarize_discovery_result
           from pdelie.invariants import (
@@ -163,6 +165,7 @@ jobs:
               summarize_split_leakage_provenance,
               summarize_verification_report,
               summarize_vertical_slice,
+              summarize_weak_form_supportability,
               summarize_weak_residual_report,
           )
           from pdelie.symmetry import FormulaGeneratorFamily, validate_symmetry_candidate
@@ -192,6 +195,7 @@ jobs:
           assert summarize_split_leakage_provenance is not None
           assert summarize_verification_report is not None
           assert summarize_vertical_slice is not None
+          assert summarize_weak_form_supportability is not None
           assert summarize_weak_residual_report is not None
           assert validate_symmetry_candidate is not None
           assert FormulaGeneratorFamily is not None
@@ -201,6 +205,7 @@ jobs:
           assert run_downstream_discovery_contracts_example is not None
           assert run_external_data_readiness_example is not None
           assert run_split_leakage_provenance_example is not None
+          assert run_weak_form_supportability_example is not None
           assert generate_reaction_diffusion_1d_field_batch is not None
           assert ReactionDiffusionResidualEvaluator is not None
           assert run_reaction_diffusion_vertical_slice_example is not None
@@ -209,6 +214,7 @@ jobs:
           assert not hasattr(pdelie, "summarize_discovery_result")
           assert not hasattr(pdelie, "summarize_downstream_discovery_workflow")
           assert not hasattr(pdelie, "summarize_split_leakage_provenance")
+          assert not hasattr(pdelie, "summarize_weak_form_supportability")
           assert not hasattr(pdelie, "summarize_generator_fit_diagnostics")
           assert not hasattr(pdelie, "summarize_vertical_slice")
           assert not hasattr(pdelie, "compute_periodic_window_coverage")
@@ -226,6 +232,7 @@ jobs:
           assert not hasattr(pdelie, "run_downstream_discovery_contracts_example")
           assert not hasattr(pdelie, "run_external_data_readiness_example")
           assert not hasattr(pdelie, "run_split_leakage_provenance_example")
+          assert not hasattr(pdelie, "run_weak_form_supportability_example")
           assert not hasattr(pdelie, "generate_reaction_diffusion_1d_field_batch")
           assert not hasattr(pdelie, "ReactionDiffusionResidualEvaluator")
           assert not hasattr(pdelie, "run_reaction_diffusion_vertical_slice_example")
@@ -525,6 +532,32 @@ jobs:
           assert not hasattr(pdelie, "split_orbit_train_heldout")
           assert not hasattr(pdelie, "train_test_translation_orbit_split")
           print("split-leakage-provenance-smoke-ok")
+          PY
+      - name: Weak form supportability smoke
+        run: |
+          /tmp/pdelie-rc-venv/bin/python - <<'PY'
+          import json
+          import pdelie
+
+          from pdelie.data import generate_heat_1d_field_batch
+          from pdelie.examples import run_weak_form_supportability_example
+          from pdelie.reporting import summarize_weak_form_supportability
+          from pdelie.residuals import evaluate_weak_heat_residual
+
+          field = generate_heat_1d_field_batch(batch_size=1, num_times=7, num_points=16, seed=24024)
+          weak_report = evaluate_weak_heat_residual(field)
+          summary = summarize_weak_form_supportability(weak_report=weak_report)
+          example = run_weak_form_supportability_example()
+          json.dumps(summary, allow_nan=False)
+          json.dumps(example, allow_nan=False)
+          assert summary["summary_type"] == "weak_form_supportability"
+          assert summary["supportability_label"] == "supported_existing_slice"
+          assert example["summary_type"] == "weak_form_supportability_example"
+          assert not hasattr(pdelie, "summarize_weak_form_supportability")
+          assert not hasattr(pdelie, "run_weak_form_supportability_example")
+          assert not hasattr(pdelie, "compute_weak_derivatives")
+          assert not hasattr(pdelie, "evaluate_weak_reaction_diffusion_residual")
+          print("weak-form-supportability-smoke-ok")
           PY
       - name: Generator fit diagnostics smoke
         run: |

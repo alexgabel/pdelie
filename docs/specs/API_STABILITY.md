@@ -286,6 +286,20 @@ Runtime public API for the frozen `v0.23` Milestone 2/M4 slice:
 - this API does not add file loaders, Dataset adapters, broad backend frameworks, new PDEs, public KS runtime APIs, weak-form expansion, multidimensional or nonuniform stable support, time translation, neural/callable generators, operator-facing APIs, or root exports
 - these APIs have no root `pdelie` exports
 
+Runtime public API for the frozen `v0.24` Milestone 2/M4 slice:
+
+- `pdelie.reporting.summarize_weak_form_supportability` for JSON-compatible runtime reports over existing weak residual reports, explicit weak contracts, strong residual summaries, robustness/imported-parity diagnostics, and internal feasibility summaries
+- weak supportability reports use `summary_type = "weak_form_supportability"` and `summary_schema_version = "0.1"`
+- reports expose `supportability_label` values: `supported_existing_slice`, `diagnostic_only`, `failed`, and `insufficient_evidence`
+- `supported_existing_slice` is intentionally narrow: it means the configured evidence supports only the frozen public Heat/Burgers weak residual report surface, not a general weak derivative backend, weak residual evaluator integration, weak design matrix, or weak sparse-discovery method
+- weak contracts normalize report metadata such as test-function family/order, supported operator order, integration-by-parts depth, boundary vanishing order, patch shape/stride, quadrature rule, normalization, valid-window policy, row counts, skipped-patch counts, finite-value policy, equation, and equation form
+- quadrature is recorded in every weak supportability report
+- malformed/nonfinite evidence raises typed validation errors unless a nested report already encodes a failure status
+- internal Fisher-KPP weak feasibility remains diagnostic-only test evidence; no public weak reaction-diffusion API is added
+- `pdelie.examples.run_weak_form_supportability_example` for a compact JSON-only runtime smoke example demonstrating Heat/Burgers weak supportability plus a static internal Fisher-KPP feasibility marker
+- `v0.24` does not implement WSINDy, weak design matrices, weak sparse recovery, a weak derivative backend, weak KdV, weak KS, public weak reaction-diffusion residual evaluators, new PDEs, broad adapters, split policy, neural/callable generators, operator-facing APIs, or root exports
+- these APIs have no root `pdelie` exports
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 
@@ -296,7 +310,7 @@ These must not change without version bump.
 ## Experimental API
 
 - neural generators
-- weak-form derivatives and weak-form methods beyond the frozen `v0.8` weak residual report slice
+- weak-form derivatives and weak-form methods beyond the frozen `v0.8` weak residual report slice and the `v0.24` weak supportability reporting layer
 - operator symmetry
 - advanced invariant maps
 - multi-generator invariant machinery

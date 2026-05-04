@@ -45,6 +45,14 @@ _SPLIT_LEAKAGE_RISK_LABELS = frozenset(
         "inconclusive",
     }
 )
+_WEAK_FORM_SUPPORTABILITY_LABELS = frozenset(
+    {
+        "supported_existing_slice",
+        "diagnostic_only",
+        "failed",
+        "insufficient_evidence",
+    }
+)
 _CONFIDENCE_THRESHOLD_KEYS = frozenset(
     {
         "residual_max_abs",
@@ -66,6 +74,38 @@ _WEAK_REPORT_KEYS = frozenset(
         "diagnostics",
     }
 )
+_WEAK_SUPPORTABILITY_THRESHOLD_KEYS = frozenset(
+    {
+        "weak_report_max_abs",
+        "weak_report_rms",
+        "weak_report_l2",
+        "finite_required",
+        "min_weak_rows",
+        "max_skipped_fraction",
+        "imported_parity_abs_tol",
+        "imported_parity_rel_tol",
+        "robustness_required_cases",
+    }
+)
+_WEAK_CONTRACT_FIELDS = (
+    "schema_version",
+    "equation",
+    "equation_form",
+    "test_function_family",
+    "test_function_order",
+    "operator_order_supported",
+    "integration_by_parts_depth",
+    "boundary_vanishing_order",
+    "patch_shape",
+    "patch_stride",
+    "quadrature_rule",
+    "normalization",
+    "valid_window_policy",
+    "row_count",
+    "skipped_patch_count",
+    "finite_value_policy",
+)
+_FROZEN_PUBLIC_WEAK_EQUATIONS = frozenset({"heat_1d", "burgers_1d"})
 
 def _json_safe(value: Any) -> Any:
     if isinstance(value, np.ndarray):
@@ -874,6 +914,593 @@ def summarize_weak_residual_report(report: Mapping[str, Any]) -> dict[str, Any]:
         l2_residual=float(np.linalg.norm(window_residuals.ravel(), ord=2)),
         diagnostics=diagnostics,
     )
+
+
+def _non_negative_integral_or_none(value: Any, *, name: str) -> int | None:
+    if value is None:
+        return None
+    if isinstance(value, bool) or not isinstance(value, Integral):
+        raise SchemaValidationError(f"{name} must be a non-negative integer.")
+    normalized = int(value)
+    if normalized < 0:
+        raise SchemaValidationError(f"{name} must be a non-negative integer.")
+    return normalized
+
+
+def _positive_integer_sequence_or_none(value: Any, *, name: str) -> list[int] | None:
+    if value is None:
+        return None
+    if isinstance(value, (str, bytes)) or not isinstance(value, Sequence):
+        raise SchemaValidationError(f"{name} must be a sequence of positive integers.")
+    normalized: list[int] = []
+    for index, item in enumerate(value):
+        if isinstance(item, bool) or not isinstance(item, Integral):
+            raise SchemaValidationError(f"{name}[{index}] must be a positive integer.")
+        integer = int(item)
+        if integer <= 0:
+            raise SchemaValidationError(f"{name}[{index}] must be a positive integer.")
+        normalized.append(integer)
+    return normalized
+
+
+def _string_or_none(value: Any, *, name: str) -> str | None:
+    if value is None:
+        return None
+    if not isinstance(value, str) or not value.strip():
+        raise SchemaValidationError(f"{name} must be a non-empty string when provided.")
+    return value
+
+
+def _weak_thresholds_or_empty(value: Mapping[str, Any] | None) -> dict[str, Any]:
+    if value is None:
+        return {}
+    mapping = _require_mapping(value, name="thresholds")
+    unknown = sorted(set(mapping).difference(_WEAK_SUPPORTABILITY_THRESHOLD_KEYS))
+    if unknown:
+        raise SchemaValidationError(f"thresholds contains unsupported weak-form keys: {unknown}.")
+
+    normalized: dict[str, Any] = {}
+    for key, item in mapping.items():
+        if key == "finite_required":
+            if not isinstance(item, bool):
+                raise SchemaValidationError("thresholds.finite_required must be a boolean.")
+            normalized[key] = item
+        elif key == "robustness_required_cases":
+            if isinstance(item, (str, bytes)) or not isinstance(item, Sequence):
+                raise SchemaValidationError("thresholds.robustness_required_cases must be a sequence of strings.")
+            cases = []
+            for index, case in enumerate(item):
+                if not isinstance(case, str) or not case.strip():
+                    raise SchemaValidationError(
+                        f"thresholds.robustness_required_cases[{index}] must be a non-empty string."
+                    )
+                cases.append(case)
+            normalized[key] = cases
+        elif key == "min_weak_rows":
+            normalized[key] = _non_negative_integral_or_none(item, name=f"thresholds.{key}")
+        elif key == "max_skipped_fraction":
+            fraction = _finite_float_or_none(item, name=f"thresholds.{key}")
+            if fraction is None or fraction < 0.0 or fraction > 1.0:
+                raise SchemaValidationError(f"thresholds.{key} must be a finite fraction in [0, 1].")
+            normalized[key] = fraction
+        else:
+            scalar = _finite_float_or_none(item, name=f"thresholds.{key}")
+            if scalar is None or scalar < 0.0:
+                raise SchemaValidationError(f"thresholds.{key} must be a finite non-negative scalar.")
+            normalized[key] = scalar
+    return normalized
+
+
+def _weak_report_summary_and_metrics(
+    *,
+    weak_report: Mapping[str, Any] | None,
+    weak_report_summary: Mapping[str, Any] | None,
+) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
+    if weak_report is not None and weak_report_summary is not None:
+        raise SchemaValidationError("Provide either weak_report or weak_report_summary, not both.")
+    if weak_report is None and weak_report_summary is None:
+        return None, None
+
+    if weak_report is not None:
+        summary = summarize_weak_residual_report(weak_report)
+        residuals = _require_finite(
+            np.asarray(_require_mapping(weak_report, name="weak_report")["window_residuals"], dtype=float),
+            name="weak_report.window_residuals",
+        )
+        row_count = int(residuals.size)
+        metrics = {
+            "max_abs_residual": float(np.max(np.abs(residuals))),
+            "rms_residual": float(np.sqrt(np.mean(np.square(residuals)))),
+            "l2_residual": float(np.linalg.norm(residuals.ravel(), ord=2)),
+            "row_count": row_count,
+            "finite": True,
+        }
+        return summary, metrics
+
+    assert weak_report_summary is not None
+    summary = _runtime_report(
+        weak_report_summary,
+        name="weak_report_summary",
+        expected_summary_types={"weak_residual_report"},
+    )
+    shape = summary.get("window_residual_shape")
+    row_count = None
+    if isinstance(shape, Sequence) and not isinstance(shape, (str, bytes)):
+        row_count = 1
+        for item in shape:
+            if isinstance(item, bool) or not isinstance(item, Integral) or int(item) <= 0:
+                row_count = None
+                break
+            row_count *= int(item)
+    l2 = _finite_float_or_none(summary.get("l2_residual"), name="weak_report_summary.l2_residual")
+    metrics = {
+        "max_abs_residual": _finite_float_or_none(
+            summary.get("max_abs_residual"),
+            name="weak_report_summary.max_abs_residual",
+        ),
+        "rms_residual": None if l2 is None or row_count in (None, 0) else float(l2 / np.sqrt(float(row_count))),
+        "l2_residual": l2,
+        "row_count": row_count,
+        "finite": True,
+    }
+    return summary, metrics
+
+
+def _operator_order_for_weak_equation(equation: str | None) -> int | None:
+    if equation in {"heat_1d", "burgers_1d"}:
+        return 2
+    return None
+
+
+def _contract_from_weak_report_summary(summary: Mapping[str, Any] | None) -> dict[str, Any] | None:
+    if summary is None:
+        return None
+    diagnostics = _require_mapping(summary.get("diagnostics", {}), name="weak_report_summary.diagnostics")
+    shape = summary.get("window_residual_shape")
+    row_count = None
+    if isinstance(shape, Sequence) and not isinstance(shape, (str, bytes)):
+        row_count = 1
+        for item in shape:
+            if isinstance(item, bool) or not isinstance(item, Integral):
+                row_count = None
+                break
+            row_count *= int(item)
+    window_counts = diagnostics.get("window_counts")
+    if isinstance(window_counts, Mapping) and row_count is None:
+        time_count = window_counts.get("time")
+        x_count = window_counts.get("x")
+        if isinstance(time_count, Integral) and isinstance(x_count, Integral):
+            row_count = int(time_count) * int(x_count)
+
+    equation = str(summary.get("equation")) if summary.get("equation") is not None else None
+    return {
+        "schema_version": "0.1",
+        "equation": equation,
+        "equation_form": str(summary.get("equation_form")) if summary.get("equation_form") is not None else None,
+        "test_function_family": diagnostics.get("test_function"),
+        "test_function_order": 4 if diagnostics.get("test_function") == "separable_quartic_bump_beta" else None,
+        "operator_order_supported": _operator_order_for_weak_equation(equation),
+        "integration_by_parts_depth": _operator_order_for_weak_equation(equation),
+        "boundary_vanishing_order": 1,
+        "patch_shape": [
+            diagnostics.get("time_window_size"),
+            diagnostics.get("x_window_size"),
+        ],
+        "patch_stride": [
+            diagnostics.get("time_window_stride"),
+            diagnostics.get("x_window_stride"),
+        ],
+        "quadrature_rule": diagnostics.get("quadrature"),
+        "normalization": summary.get("normalization"),
+        "valid_window_policy": "interior_time_periodic_x_wrapped",
+        "row_count": row_count,
+        "skipped_patch_count": 0,
+        "finite_value_policy": "finite_window_residuals_required",
+    }
+
+
+def _normalize_weak_contract(value: Any, *, name: str) -> dict[str, Any] | None:
+    if value is None:
+        return None
+    safe = _validate_strict_json_compatible(_require_mapping(value, name=name), name=name)
+    assert isinstance(safe, Mapping)
+    normalized = {field: safe.get(field) for field in _WEAK_CONTRACT_FIELDS}
+
+    for field in (
+        "schema_version",
+        "equation",
+        "equation_form",
+        "test_function_family",
+        "quadrature_rule",
+        "normalization",
+        "valid_window_policy",
+        "finite_value_policy",
+    ):
+        normalized[field] = _string_or_none(normalized[field], name=f"{name}.{field}")
+
+    for field in (
+        "test_function_order",
+        "operator_order_supported",
+        "integration_by_parts_depth",
+        "boundary_vanishing_order",
+        "row_count",
+        "skipped_patch_count",
+    ):
+        normalized[field] = _non_negative_integral_or_none(normalized[field], name=f"{name}.{field}")
+
+    normalized["patch_shape"] = _positive_integer_sequence_or_none(
+        normalized["patch_shape"],
+        name=f"{name}.patch_shape",
+    )
+    normalized["patch_stride"] = _positive_integer_sequence_or_none(
+        normalized["patch_stride"],
+        name=f"{name}.patch_stride",
+    )
+    return dict(normalized)
+
+
+def _weak_report_status(
+    summary: Mapping[str, Any] | None,
+    metrics: Mapping[str, Any] | None,
+    thresholds: Mapping[str, Any],
+) -> dict[str, Any]:
+    if summary is None or metrics is None:
+        return _component_status("unavailable", reason="weak_report_not_provided")
+
+    equation = summary.get("equation")
+    details: dict[str, Any] = {"equation": equation, "checked": {}}
+    if equation not in _FROZEN_PUBLIC_WEAK_EQUATIONS:
+        return _component_status(
+            "warning",
+            reason="weak_report_not_frozen_public_heat_burgers_slice",
+            details=details,
+        )
+
+    checks = {
+        "max_abs_residual": thresholds.get("weak_report_max_abs"),
+        "rms_residual": thresholds.get("weak_report_rms"),
+        "l2_residual": thresholds.get("weak_report_l2"),
+    }
+    failed = False
+    missing: list[str] = []
+    for metric, threshold in checks.items():
+        if threshold is None:
+            continue
+        value = _finite_float_or_none(metrics.get(metric), name=f"weak_report_metrics.{metric}")
+        if value is None:
+            missing.append(metric)
+            failed = True
+            continue
+        details["checked"][metric] = {"value": value, "threshold": threshold}
+        if value > threshold:
+            failed = True
+
+    if thresholds.get("finite_required") is True and metrics.get("finite") is not True:
+        failed = True
+        details["finite_required"] = True
+
+    if missing:
+        details["missing_metrics"] = missing
+    if failed:
+        return _component_status("failed", reason="weak_report_threshold_failed", details=details)
+    return _component_status("passed", reason="weak_report_supported_existing_slice", details=details)
+
+
+def _weak_contract_status(contract: Mapping[str, Any] | None, thresholds: Mapping[str, Any]) -> dict[str, Any]:
+    if contract is None:
+        return _component_status("unavailable", reason="weak_contract_not_provided")
+
+    details = {
+        "quadrature_rule": contract.get("quadrature_rule"),
+        "row_count": contract.get("row_count"),
+        "skipped_patch_count": contract.get("skipped_patch_count"),
+    }
+    failures: list[str] = []
+    if contract.get("quadrature_rule") is None:
+        failures.append("quadrature_rule_missing")
+
+    min_rows = thresholds.get("min_weak_rows")
+    row_count = contract.get("row_count")
+    if min_rows is not None and (not isinstance(row_count, Integral) or int(row_count) < int(min_rows)):
+        failures.append("row_count_below_threshold")
+        details["min_weak_rows"] = int(min_rows)
+
+    max_skipped_fraction = thresholds.get("max_skipped_fraction")
+    skipped_count = contract.get("skipped_patch_count")
+    if max_skipped_fraction is not None:
+        if not isinstance(row_count, Integral) or not isinstance(skipped_count, Integral):
+            failures.append("skipped_fraction_unavailable")
+        else:
+            denominator = int(row_count) + int(skipped_count)
+            skipped_fraction = 0.0 if denominator == 0 else float(int(skipped_count) / denominator)
+            details["skipped_fraction"] = skipped_fraction
+            details["max_skipped_fraction"] = float(max_skipped_fraction)
+            if skipped_fraction > float(max_skipped_fraction):
+                failures.append("skipped_fraction_above_threshold")
+
+    if thresholds.get("finite_required") is True and contract.get("finite_value_policy") is None:
+        failures.append("finite_value_policy_missing")
+
+    if failures:
+        return _component_status(
+            "failed",
+            reason="weak_contract_threshold_failed",
+            details={"failures": failures, **details},
+        )
+    return _component_status("passed", reason="weak_contract_recorded", details=details)
+
+
+def _strong_residual_support_status(summary: Mapping[str, Any] | None) -> dict[str, Any]:
+    if summary is None:
+        return _component_status("unavailable", reason="strong_residual_not_provided")
+    return _component_status(
+        "passed",
+        reason="strong_residual_summarized",
+        details={
+            "max_abs_residual": summary.get("max_abs_residual"),
+            "rms_residual": summary.get("rms_residual"),
+        },
+    )
+
+
+def _mapping_or_sequence_strict(value: Any, *, name: str) -> dict[str, Any] | list[Any] | None:
+    if value is None:
+        return None
+    if isinstance(value, Mapping):
+        return _validate_strict_json_compatible(dict(value), name=name)
+    if isinstance(value, (str, bytes)) or not isinstance(value, Sequence):
+        raise SchemaValidationError(f"{name} must be a mapping or sequence.")
+    return _validate_strict_json_compatible(list(value), name=name)
+
+
+def _contains_failed_status(value: Any) -> bool:
+    if isinstance(value, Mapping):
+        for key, item in value.items():
+            if str(key) in {"status", "conclusion", "label"} and item in {"failed", "not_ready"}:
+                return True
+            if _contains_failed_status(item):
+                return True
+    elif isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+        return any(_contains_failed_status(item) for item in value)
+    return False
+
+
+def _case_names_from_report(value: Any) -> set[str]:
+    names: set[str] = set()
+    if isinstance(value, Mapping):
+        cases = value.get("cases")
+        if isinstance(cases, Sequence) and not isinstance(cases, (str, bytes)):
+            for item in cases:
+                if isinstance(item, Mapping):
+                    case_name = item.get("case_name", item.get("name"))
+                    if isinstance(case_name, str):
+                        names.add(case_name)
+        for key, item in value.items():
+            if key != "cases" and isinstance(item, Mapping):
+                names.add(str(key))
+    elif isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+        for item in value:
+            if isinstance(item, Mapping):
+                case_name = item.get("case_name", item.get("name"))
+                if isinstance(case_name, str):
+                    names.add(case_name)
+    return names
+
+
+def _robustness_status(value: Any, thresholds: Mapping[str, Any]) -> dict[str, Any]:
+    if value is None:
+        return _component_status("unavailable", reason="robustness_not_provided")
+    if _contains_failed_status(value):
+        return _component_status("failed", reason="robustness_report_failed")
+    required_cases = thresholds.get("robustness_required_cases")
+    if required_cases:
+        available = _case_names_from_report(value)
+        missing = [case for case in required_cases if case not in available]
+        if missing:
+            return _component_status("failed", reason="robustness_required_cases_missing", details={"missing": missing})
+        return _component_status(
+            "passed",
+            reason="robustness_required_cases_present",
+            details={"cases": sorted(available)},
+        )
+    return _component_status("passed", reason="robustness_summarized")
+
+
+def _first_metric(value: Any, keys: set[str]) -> float | None:
+    if isinstance(value, Mapping):
+        for key, item in value.items():
+            if str(key) in keys:
+                scalar = _finite_float_or_none(item, name=str(key))
+                if scalar is not None:
+                    return scalar
+            nested = _first_metric(item, keys)
+            if nested is not None:
+                return nested
+    elif isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+        for item in value:
+            nested = _first_metric(item, keys)
+            if nested is not None:
+                return nested
+    return None
+
+
+def _imported_parity_status(value: Any, thresholds: Mapping[str, Any]) -> dict[str, Any]:
+    if value is None:
+        return _component_status("unavailable", reason="imported_parity_not_provided")
+    if _contains_failed_status(value):
+        return _component_status("failed", reason="imported_parity_report_failed")
+    details: dict[str, Any] = {}
+    abs_tol = thresholds.get("imported_parity_abs_tol")
+    rel_tol = thresholds.get("imported_parity_rel_tol")
+    failed = False
+    if abs_tol is not None:
+        abs_delta = _first_metric(
+            value,
+            {"max_abs_delta", "max_abs_difference", "max_abs_error", "absolute_delta", "abs_delta"},
+        )
+        details["absolute_delta"] = abs_delta
+        details["absolute_tolerance"] = abs_tol
+        failed = failed or abs_delta is None or abs_delta > abs_tol
+    if rel_tol is not None:
+        rel_delta = _first_metric(
+            value,
+            {"max_relative_delta", "max_relative_difference", "relative_delta", "rel_delta"},
+        )
+        details["relative_delta"] = rel_delta
+        details["relative_tolerance"] = rel_tol
+        failed = failed or rel_delta is None or rel_delta > rel_tol
+    if failed:
+        return _component_status("failed", reason="imported_parity_threshold_failed", details=details)
+    return _component_status("passed", reason="imported_parity_summarized", details=details)
+
+
+def _feasibility_status(value: Any) -> dict[str, Any]:
+    if value is None:
+        return _component_status("unavailable", reason="feasibility_not_provided")
+    if _contains_failed_status(value):
+        return _component_status("failed", reason="feasibility_report_failed")
+    visibility = value.get("visibility") if isinstance(value, Mapping) else None
+    if visibility == "internal_diagnostic_only":
+        return _component_status("warning", reason="internal_feasibility_diagnostic_only")
+    return _component_status("warning", reason="feasibility_not_public_support")
+
+
+def _weak_supportability_label(
+    *,
+    weak_summary: Mapping[str, Any] | None,
+    weak_contract: Mapping[str, Any] | None,
+    feasibility: Any,
+    component_statuses: Mapping[str, Mapping[str, Any]],
+) -> str:
+    statuses = [str(status["status"]) for status in component_statuses.values() if status["status"] != "unavailable"]
+    if any(status == "failed" for status in statuses):
+        return "failed"
+
+    public_weak_report = weak_summary is not None and weak_summary.get("equation") in _FROZEN_PUBLIC_WEAK_EQUATIONS
+    if public_weak_report:
+        return "supported_existing_slice"
+
+    internal_diagnostic_feasibility = (
+        isinstance(feasibility, Mapping) and feasibility.get("visibility") == "internal_diagnostic_only"
+    )
+    if internal_diagnostic_feasibility:
+        return "diagnostic_only"
+
+    if weak_summary is not None or feasibility is not None:
+        return "diagnostic_only"
+    return "insufficient_evidence"
+
+
+def summarize_weak_form_supportability(
+    *,
+    weak_report: Mapping[str, Any] | None = None,
+    weak_report_summary: Mapping[str, Any] | None = None,
+    weak_contract: Mapping[str, Any] | None = None,
+    strong_residual: ResidualBatch | Mapping[str, Any] | None = None,
+    strong_residual_summary: Mapping[str, Any] | None = None,
+    robustness: Mapping[str, Any] | Sequence[Mapping[str, Any]] | None = None,
+    imported_parity: Mapping[str, Any] | Sequence[Mapping[str, Any]] | None = None,
+    feasibility: Mapping[str, Any] | Sequence[Mapping[str, Any]] | None = None,
+    thresholds: Mapping[str, Any] | None = None,
+    extra_metrics: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Summarize weak-form supportability without promoting a weak backend.
+
+    The label is empirical and report-local. It is not a WSINDy implementation, weak
+    sparse-recovery policy, or mathematical proof of weak-form validity.
+    """
+
+    normalized_thresholds = _weak_thresholds_or_empty(thresholds)
+    weak_summary, weak_metrics = _weak_report_summary_and_metrics(
+        weak_report=weak_report,
+        weak_report_summary=weak_report_summary,
+    )
+    derived_contract = _contract_from_weak_report_summary(weak_summary)
+    normalized_contract = _normalize_weak_contract(
+        weak_contract if weak_contract is not None else derived_contract,
+        name="weak_contract",
+    )
+
+    if strong_residual is not None and strong_residual_summary is not None:
+        raise SchemaValidationError("Provide either strong_residual or strong_residual_summary, not both.")
+    if strong_residual_summary is not None:
+        strong_summary = _runtime_report(
+            strong_residual_summary,
+            name="strong_residual_summary",
+            expected_summary_types={"residual_batch"},
+        )
+    else:
+        strong_summary = _residual_summary_or_none(strong_residual, name="strong_residual")
+        if strong_summary is not None and strong_summary.get("summary_type") != "residual_batch":
+            raise SchemaValidationError("strong_residual must summarize to summary_type 'residual_batch'.")
+
+    normalized_robustness = _mapping_or_sequence_strict(robustness, name="robustness")
+    normalized_imported_parity = _mapping_or_sequence_strict(imported_parity, name="imported_parity")
+    normalized_feasibility = _mapping_or_sequence_strict(feasibility, name="feasibility")
+    normalized_extra_metrics = (
+        {}
+        if extra_metrics is None
+        else _validate_strict_json_compatible(_require_mapping(extra_metrics, name="extra_metrics"), name="extra_metrics")
+    )
+
+    component_statuses = {
+        "weak_report": _weak_report_status(weak_summary, weak_metrics, normalized_thresholds),
+        "weak_contract": _weak_contract_status(normalized_contract, normalized_thresholds),
+        "strong_residual": _strong_residual_support_status(strong_summary),
+        "robustness": _robustness_status(normalized_robustness, normalized_thresholds),
+        "imported_parity": _imported_parity_status(normalized_imported_parity, normalized_thresholds),
+        "feasibility": _feasibility_status(normalized_feasibility),
+    }
+    label = _weak_supportability_label(
+        weak_summary=weak_summary,
+        weak_contract=normalized_contract,
+        feasibility=normalized_feasibility,
+        component_statuses=component_statuses,
+    )
+    if label not in _WEAK_FORM_SUPPORTABILITY_LABELS:
+        raise AssertionError(f"unsupported weak supportability label: {label}")
+
+    missing_evidence = [
+        component
+        for component, status in component_statuses.items()
+        if status["status"] == "unavailable"
+    ]
+    quadrature_rule = None
+    if normalized_contract is not None:
+        quadrature_rule = normalized_contract.get("quadrature_rule")
+    if quadrature_rule is None and isinstance(normalized_feasibility, Mapping):
+        quadrature_rule = normalized_feasibility.get("quadrature_rule")
+    if quadrature_rule is None:
+        quadrature_rule = "not_configured"
+
+    payload = {
+        "summary_schema_version": _SUMMARY_SCHEMA_VERSION,
+        "summary_type": "weak_form_supportability",
+        "supportability_label": label,
+        "component_statuses": component_statuses,
+        "weak_report": weak_summary,
+        "weak_report_metrics": weak_metrics,
+        "weak_contract": normalized_contract,
+        "quadrature_rule": quadrature_rule,
+        "strong_residual": strong_summary,
+        "robustness": normalized_robustness,
+        "imported_parity": normalized_imported_parity,
+        "feasibility": normalized_feasibility,
+        "thresholds": normalized_thresholds,
+        "missing_evidence": missing_evidence,
+        "policy": {
+            "scope": "frozen_public_heat_burgers_weak_residual_report_slice",
+            "supports_wsindy": False,
+            "supports_weak_derivative_backend": False,
+            "supports_weak_sparse_recovery": False,
+            "supports_weak_kdv": False,
+            "supports_weak_ks": False,
+            "supports_public_weak_reaction_diffusion": False,
+            "interpretation": "empirical_configured_supportability_not_mathematical_proof",
+        },
+        "extra_metrics": normalized_extra_metrics,
+    }
+    return _validate_strict_json_compatible(payload, name="weak_form_supportability summary")
 
 
 def _selected_coefficients_fallback(generator: GeneratorFamily) -> list[float] | list[list[float]]:

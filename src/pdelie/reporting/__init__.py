@@ -10,6 +10,7 @@ from pdelie.reporting.summaries import (
     summarize_split_leakage_provenance,
     summarize_verification_report,
     summarize_vertical_slice,
+    summarize_weak_form_supportability,
     summarize_weak_residual_report,
 )
 
@@ -25,5 +26,6 @@ __all__ = [
     "summarize_split_leakage_provenance",
     "summarize_verification_report",
     "summarize_vertical_slice",
+    "summarize_weak_form_supportability",
     "summarize_weak_residual_report",
 ]

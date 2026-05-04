@@ -28,6 +28,7 @@ from pdelie.reporting import (
     summarize_residual_batch,
     summarize_verification_report,
     summarize_vertical_slice,
+    summarize_weak_form_supportability,
     summarize_weak_residual_report,
 )
 from pdelie.symmetry import FormulaGeneratorFamily
@@ -111,6 +112,22 @@ _FIELD_BATCH_READINESS_SUMMARY_KEYS = _SUMMARY_PREFIX_KEYS | {
     "metadata_suggestions",
     "residual_preflight",
     "stable_scope",
+}
+_WEAK_FORM_SUPPORTABILITY_SUMMARY_KEYS = _SUMMARY_PREFIX_KEYS | {
+    "supportability_label",
+    "component_statuses",
+    "weak_report",
+    "weak_report_metrics",
+    "weak_contract",
+    "quadrature_rule",
+    "strong_residual",
+    "robustness",
+    "imported_parity",
+    "feasibility",
+    "thresholds",
+    "missing_evidence",
+    "policy",
+    "extra_metrics",
 }
 
 
@@ -417,6 +434,26 @@ def test_summarize_weak_residual_report_accepts_frozen_heat_and_burgers_reports(
         assert summary["max_abs_residual"] == pytest.approx(float(np.max(np.abs(residuals))))
         assert summary["l2_residual"] == pytest.approx(float(np.linalg.norm(residuals.ravel(), ord=2)))
         _assert_json_serializable(summary)
+
+
+def test_summarize_weak_form_supportability_reports_frozen_public_slice() -> None:
+    heat = generate_heat_1d_field_batch(batch_size=1, num_times=5, num_points=9, seed=1022)
+    weak_report = evaluate_weak_heat_residual(heat)
+
+    summary = summarize_weak_form_supportability(
+        weak_report=weak_report,
+        thresholds={"finite_required": True, "min_weak_rows": 1, "max_skipped_fraction": 0.0},
+    )
+
+    assert set(summary) == _WEAK_FORM_SUPPORTABILITY_SUMMARY_KEYS
+    assert summary["summary_schema_version"] == "0.1"
+    assert summary["summary_type"] == "weak_form_supportability"
+    assert summary["supportability_label"] == "supported_existing_slice"
+    assert summary["weak_report"]["summary_type"] == "weak_residual_report"
+    assert summary["weak_contract"]["quadrature_rule"] == "composite_tensor_product_trapezoidal_native_window"
+    assert summary["component_statuses"]["weak_report"]["status"] == "passed"
+    assert summary["policy"]["supports_wsindy"] is False
+    assert json.loads(json.dumps(summary, allow_nan=False)) == summary
 
 
 def test_summarize_generator_family_reports_translation_fit_fields(heat_artifacts: dict[str, object]) -> None:

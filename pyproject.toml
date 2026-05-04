@@ -1,15 +1,42 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "pdelie"
-version = "0.23.0"
-description = "V0.23 split/leakage provenance diagnostics plus retained downstream contracts, external data readiness, confidence reports, PDE strong paths, and symmetry diagnostics"
+version = "0.24.0"
+description = "V0.24 weak-form supportability reports plus retained provenance, downstream contracts, confidence reports, PDE strong paths, and symmetry diagnostics"
+readme = "README.md"
 requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+  {name = "Alex Gabel"},
+]
+keywords = [
+  "lie-symmetry",
+  "pde",
+  "scientific-machine-learning",
+  "symbolic-regression",
+  "system-identification",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Topic :: Scientific/Engineering",
+  "Topic :: Scientific/Engineering :: Mathematics",
+]
 dependencies = [
   "numpy>=1.24,<2",
 ]
+
+[project.urls]
+Homepage = "https://github.com/alexgabel/pdelie"
+Repository = "https://github.com/alexgabel/pdelie"
+Issues = "https://github.com/alexgabel/pdelie/issues"
+Documentation = "https://github.com/alexgabel/pdelie/tree/main/docs"
 
 # Optional downstream bridge path is currently validated on the
 # PySINDy 1.x / scikit-learn 1.2.x line only.
