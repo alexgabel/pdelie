@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  v0_22-release-gate:
+  v0_23-release-gate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -32,8 +32,8 @@ jobs:
           retry 3 python -m pip install -e .[test]
       - name: Check dependencies
         run: python -m pip check
-      - name: Run V0.22 release gate
-        run: python -m pytest tests/test_v0_22_release_gate.py
+      - name: Run V0.23 release gate
+        run: python -m pytest tests/test_v0_23_release_gate.py
   editable-tests:
     runs-on: ubuntu-latest
     steps:
@@ -77,6 +77,7 @@ jobs:
           python -m pdelie.examples.generator_confidence_report
           python -m pdelie.examples.external_data_readiness
           python -m pdelie.examples.downstream_discovery_contracts
+          python -m pdelie.examples.split_leakage_provenance
   package-smoke:
     runs-on: ubuntu-latest
     steps:
@@ -140,6 +141,7 @@ jobs:
               run_downstream_discovery_contracts_example,
               run_external_data_readiness_example,
               run_reaction_diffusion_vertical_slice_example,
+              run_split_leakage_provenance_example,
           )
           from pdelie.discovery import summarize_discovery_bridge_output, summarize_discovery_result
           from pdelie.invariants import (
@@ -158,6 +160,7 @@ jobs:
               summarize_generator_family,
               summarize_invariant_workflow,
               summarize_residual_batch,
+              summarize_split_leakage_provenance,
               summarize_verification_report,
               summarize_vertical_slice,
               summarize_weak_residual_report,
@@ -186,6 +189,7 @@ jobs:
           assert summarize_generator_family is not None
           assert summarize_invariant_workflow is not None
           assert summarize_residual_batch is not None
+          assert summarize_split_leakage_provenance is not None
           assert summarize_verification_report is not None
           assert summarize_vertical_slice is not None
           assert summarize_weak_residual_report is not None
@@ -196,6 +200,7 @@ jobs:
           assert run_advection_diffusion_vertical_slice_example is not None
           assert run_downstream_discovery_contracts_example is not None
           assert run_external_data_readiness_example is not None
+          assert run_split_leakage_provenance_example is not None
           assert generate_reaction_diffusion_1d_field_batch is not None
           assert ReactionDiffusionResidualEvaluator is not None
           assert run_reaction_diffusion_vertical_slice_example is not None
@@ -203,6 +208,7 @@ jobs:
           assert not hasattr(pdelie, "summarize_discovery_bridge_output")
           assert not hasattr(pdelie, "summarize_discovery_result")
           assert not hasattr(pdelie, "summarize_downstream_discovery_workflow")
+          assert not hasattr(pdelie, "summarize_split_leakage_provenance")
           assert not hasattr(pdelie, "summarize_generator_fit_diagnostics")
           assert not hasattr(pdelie, "summarize_vertical_slice")
           assert not hasattr(pdelie, "compute_periodic_window_coverage")
@@ -219,6 +225,7 @@ jobs:
           assert not hasattr(pdelie, "run_advection_diffusion_vertical_slice_example")
           assert not hasattr(pdelie, "run_downstream_discovery_contracts_example")
           assert not hasattr(pdelie, "run_external_data_readiness_example")
+          assert not hasattr(pdelie, "run_split_leakage_provenance_example")
           assert not hasattr(pdelie, "generate_reaction_diffusion_1d_field_batch")
           assert not hasattr(pdelie, "ReactionDiffusionResidualEvaluator")
           assert not hasattr(pdelie, "run_reaction_diffusion_vertical_slice_example")
@@ -483,6 +490,41 @@ jobs:
           assert not hasattr(pdelie, "summarize_downstream_discovery_workflow")
           assert not hasattr(pdelie, "run_downstream_discovery_contracts_example")
           print("downstream-discovery-contracts-smoke-ok")
+          PY
+      - name: Split leakage provenance smoke
+        run: |
+          /tmp/pdelie-rc-venv/bin/python - <<'PY'
+          import json
+          import pdelie
+
+          from pdelie.data import generate_heat_1d_field_batch
+          from pdelie.examples import run_split_leakage_provenance_example
+          from pdelie.invariants import build_uniform_translation_orbit_batch
+          from pdelie.reporting import (
+              summarize_downstream_discovery_workflow,
+              summarize_split_leakage_provenance,
+          )
+
+          field = generate_heat_1d_field_batch(batch_size=2, num_times=7, num_points=16, seed=23023)
+          orbit = build_uniform_translation_orbit_batch(field, shifts=[0.0, 6.283185307179586])
+          split = summarize_split_leakage_provenance(
+              partitions=["train", "train", "heldout", "heldout"],
+              orbit_batch=orbit,
+          )
+          workflow = summarize_downstream_discovery_workflow(split_provenance=split)
+          example = run_split_leakage_provenance_example()
+          json.dumps(split, allow_nan=False)
+          json.dumps(workflow, allow_nan=False)
+          json.dumps(example, allow_nan=False)
+          assert split["summary_type"] == "split_leakage_provenance"
+          assert split["risk_label"] == "traceable_overlap"
+          assert workflow["split_provenance"]["summary_type"] == "split_leakage_provenance"
+          assert example["summary_type"] == "split_leakage_provenance_example"
+          assert not hasattr(pdelie, "summarize_split_leakage_provenance")
+          assert not hasattr(pdelie, "run_split_leakage_provenance_example")
+          assert not hasattr(pdelie, "split_orbit_train_heldout")
+          assert not hasattr(pdelie, "train_test_translation_orbit_split")
+          print("split-leakage-provenance-smoke-ok")
           PY
       - name: Generator fit diagnostics smoke
         run: |

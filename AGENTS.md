@@ -18,6 +18,7 @@ V0.x stable scope only:
 - canonical polynomial `GeneratorFamily` objects
 - runtime-only formula-backed generator records
 - frozen invariant/reporting/orbit utilities
+- runtime downstream discovery and split-provenance reports
 - downstream discovery contract reports
 
 ## Do not implement unless explicitly asked
@@ -31,6 +32,7 @@ V0.x stable scope only:
 - broad discovery-backend frameworks
 - public KS runtime APIs
 - train/test policy or heldout-leakage management
+- leakage prevention or split creation
 
 ## Workflow
 For nontrivial tasks:

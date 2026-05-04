@@ -9,6 +9,7 @@ __all__ = [
     "run_kdv_vertical_slice_example",
     "run_orbit_coverage_diagnostics_example",
     "run_reaction_diffusion_vertical_slice_example",
+    "run_split_leakage_provenance_example",
     "run_symmetry_candidate_validation_example",
     "run_translation_orbit_batch_example",
 ]
@@ -76,6 +77,12 @@ def run_reaction_diffusion_vertical_slice_example() -> dict[str, object]:
     from pdelie.examples.reaction_diffusion_vertical_slice import (
         run_reaction_diffusion_vertical_slice_example as _impl,
     )
+
+    return _impl()
+
+
+def run_split_leakage_provenance_example() -> dict[str, object]:
+    from pdelie.examples.split_leakage_provenance import run_split_leakage_provenance_example as _impl
 
     return _impl()
 

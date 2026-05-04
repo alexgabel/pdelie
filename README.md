@@ -2,7 +2,7 @@
 
 Numerical discovery and verification of Lie symmetries for PDE data.
 
-The current repository implements the frozen V0.22 downstream discovery contracts slice for the existing Heat/Burgers/weak-report/KdV/Fisher-KPP/advection-diffusion engine:
+The current repository implements the frozen V0.23 split/leakage provenance diagnostics slice for the existing Heat/Burgers/weak-report/KdV/Fisher-KPP/advection-diffusion engine:
 
 - synthetic 1D heat equation
 - synthetic 1D Burgers equation
@@ -30,11 +30,13 @@ The current repository implements the frozen V0.22 downstream discovery contract
 - unified generator confidence reports under `pdelie.reporting.summarize_generator_confidence`
 - external data readiness reports under `pdelie.reporting.summarize_field_batch_readiness`
 - downstream discovery bridge/result/workflow contract reports under `pdelie.discovery` and `pdelie.reporting`
+- split/leakage provenance diagnostics under `pdelie.reporting.summarize_split_leakage_provenance`
 - reaction-diffusion vertical-slice example under `pdelie.examples.run_reaction_diffusion_vertical_slice_example`
 - advection-diffusion vertical-slice example under `pdelie.examples.run_advection_diffusion_vertical_slice_example`
 - generator-confidence example under `pdelie.examples.run_generator_confidence_report_example`
 - external-data-readiness example under `pdelie.examples.run_external_data_readiness_example`
 - downstream-discovery-contracts example under `pdelie.examples.run_downstream_discovery_contracts_example`
+- split-leakage-provenance example under `pdelie.examples.run_split_leakage_provenance_example`
 - `FieldBatch -> DerivativeBatch -> ResidualBatch -> GeneratorFamily -> InvariantMapSpec -> VerificationReport`
 - one stable derivative backend: `spectral_fd`
 - family-shaped `GeneratorFamily` with explicit `basis_spec`
@@ -49,7 +51,7 @@ The current repository implements the frozen V0.22 downstream discovery contract
 - one runtime-only thin PySINDy discovery adapter under `pdelie.discovery`
 - one runtime-only translation-canonical discovery-input helper under `pdelie.discovery`
 - one runtime-only robustness helper layer under `pdelie.data`
-- one compact current `v0_22-release-gate` CI job plus full editable tests and package smoke
+- one compact current `v0_23-release-gate` CI job plus full editable tests and package smoke
 
 ## Setup
 
@@ -98,7 +100,7 @@ python -m pytest
 
 ## Tutorial Notebooks
 
-The repository includes exploratory notebooks under `notebooks/` for the shipped symmetry/discovery runtime surface retained through `v0.22`:
+The repository includes exploratory notebooks under `notebooks/` for the shipped symmetry/discovery runtime surface retained through `v0.23`:
 
 - `00_pde_timeseries_to_generators.ipynb`
 - `01_raw_vs_translation_canonical_discovery.ipynb`
@@ -137,6 +139,9 @@ python -m pdelie.examples.translation_orbit_batch
 python -m pdelie.examples.symmetry_candidate_validation
 python -m pdelie.examples.formula_generator_validation
 python -m pdelie.examples.generator_confidence_report
+python -m pdelie.examples.external_data_readiness
+python -m pdelie.examples.downstream_discovery_contracts
+python -m pdelie.examples.split_leakage_provenance
 ```
 
 Those commands are validated in CI after editable install.
@@ -178,6 +183,13 @@ The translation orbit batch example demonstrates:
 2. shift-major batch growth with duplicate shifts preserved
 3. source/shift provenance in a JSON-compatible report
 4. residual sanity on the materialized `FieldBatch` outputs
+
+The split/leakage provenance example demonstrates:
+
+1. a clean user-supplied partition report
+2. traceable overlap after orbit materialization
+3. missing provenance when source/shift indices are not recorded
+4. downstream workflow integration without split creation or leakage prevention
 
 The symmetry candidate validation example demonstrates:
 
@@ -269,8 +281,9 @@ Included in the current stable core:
 - confidence reporting in `v0.20` adds categorical generator-confidence reports; it does not add scalar scores, proof claims, benchmark success policy, train/test policy, or downstream leakage policy
 - external data readiness reporting in `v0.21` adds `FieldBatch` compatibility reports and residual preflight; it does not add file loaders, Dataset support, broad adapters, resampling, metadata mutation, train/test policy, or leakage policy
 - downstream discovery contracts in `v0.22` add bridge/result/workflow reports; they do not add a backend framework, split management, leakage detection, or manuscript benchmark policy
+- split/leakage provenance diagnostics in `v0.23` add report-only partition/provenance risk summaries; they do not create splits, prevent leakage, or define benchmark policy
 
-Runtime-level public APIs in the frozen V0.22 slice:
+Runtime-level public APIs in the frozen V0.23 slice:
 
 - `pdelie.data.from_numpy` for strict runtime conversion of explicit NumPy/array-like 1D uniform rectilinear trajectory data into canonical `FieldBatch`
 - `pdelie.data.from_xarray` for strict runtime conversion of explicit `xarray.DataArray` 1D uniform rectilinear trajectory data into canonical `FieldBatch` when the optional `xarray` dependency is installed
@@ -318,8 +331,10 @@ Runtime-level public APIs in the frozen V0.22 slice:
 - `pdelie.discovery.summarize_recovery_grid` for runtime-only grouped recovery summaries
 - `pdelie.discovery.summarize_discovery_bridge_output` for JSON-compatible downstream bridge output summaries
 - `pdelie.discovery.summarize_discovery_result` for compact backend-neutral discovery result and recovery summaries
-- `pdelie.reporting.summarize_downstream_discovery_workflow` for combining readiness, confidence, orbit-batch, bridge, and discovery-result reports
+- `pdelie.reporting.summarize_downstream_discovery_workflow` for combining readiness, confidence, orbit-batch, bridge, discovery-result, and optional split-provenance reports
 - `pdelie.examples.run_downstream_discovery_contracts_example` for a runtime smoke example of downstream discovery contracts, not a backend framework
+- `pdelie.reporting.summarize_split_leakage_provenance` for JSON-compatible report-only diagnostics over user-supplied partitions and available source/shift provenance
+- `pdelie.examples.run_split_leakage_provenance_example` for a runtime smoke example of split/leakage provenance diagnostics, not split management or leakage prevention
 - `pdelie.data.add_gaussian_noise`, `subsample_time`, `subsample_x`, and `split_batch_train_heldout` for deterministic `FieldBatch` robustness workflows
 - `pdelie.portability.export_generator_family_manifest` and `pdelie.portability.import_generator_family_manifest` for manifest-level generator-family portability
 - `pdelie.portability.coerce_generator_family` for strict normalization of canonical, manifest, and narrow legacy translation inputs
@@ -331,7 +346,7 @@ Runtime-level public APIs in the frozen V0.22 slice:
 
 The degraded weak-path release wins in `v0.8` are frozen as representative contract-stability signals. They are fallback-backed release checks, not a general weak-superiority claim.
 
-The KdV support retained through `v0.22` is normalized, periodic, scalar, 1D, and short-horizon. Accepted generator parameters outside the release-guaranteed regime are user-risk and are not general KdV stability guarantees.
+The KdV support retained through `v0.23` is normalized, periodic, scalar, 1D, and short-horizon. Accepted generator parameters outside the release-guaranteed regime are user-risk and are not general KdV stability guarantees.
 
 The `v0.10` reporting helpers are supportability APIs. They produce JSON-compatible runtime summaries, not canonical objects, manuscript tables, or artifact schemas.
 
@@ -360,6 +375,8 @@ The `v0.20` confidence-reporting work adds one categorical supportability helper
 The `v0.21` external-data readiness work adds one supportability helper for inspecting canonical `FieldBatch` inputs before residual, confidence, and downstream workflows. It does not load files, accept `xarray.Dataset`, infer PDE identity, resample grids, mutate metadata, or broaden stable numerical scope.
 
 The `v0.22` downstream discovery contracts work adds report-only contracts for bridge outputs, backend-neutral discovery results, optional recovery summaries, and workflow composition. It does not manage splits, detect heldout leakage, define benchmark success criteria, load files, or become a discovery-backend framework.
+
+The `v0.23` split/leakage provenance work adds report-only diagnostics for user-supplied partitions and available source/shift provenance. It reports detectable overlap risks; it does not create splits, prevent leakage, define benchmark policy, or choose downstream acceptance thresholds.
 
 Explicitly deferred:
 - stable multi-generator PDE fitting
