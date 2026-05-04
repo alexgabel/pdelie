@@ -23,9 +23,10 @@ Staged sequence:
 - `v0.21`: external data readiness reports
 - `v0.22`: downstream discovery contracts
 - `v0.23`: split/leakage provenance diagnostics
-- `v0.24`: planned weak-form supportability reset
-- `v0.25`: planned KdV scope decision
-- `v0.26`: planned KS revisit
+- `v0.24`: completed weak-form supportability reset
+- `v0.25`: completed KdV scope decision; public KdV remains frozen
+- `v0.26`: completed KS revisit decision; public KS remains deferred
+- `v0.26b`: planned KS promotion decision, only after a separate scope freeze
 - `v0.27`: planned multi-generator feasibility
 - `v0.28`: planned data ecosystem feasibility
 - `v0.29`: planned grid-domain feasibility
@@ -343,6 +344,8 @@ Deferred unless separately proven:
 
 ## V0.25 - KdV Scope Decision
 
+Status: completed. The decision is to keep public KdV frozen.
+
 Planned theme:
 
 > decide whether KdV should remain frozen or expand beyond normalized periodic short-horizon support.
@@ -358,29 +361,53 @@ Acceptable outcome:
 
 - keep KdV frozen and document why if the broader regime is not supportable.
 
+Completed outcome:
+
+- current normalized scalar 1D periodic short-horizon KdV strong path remains stable
+- custom KdV initial conditions remain deferred
+- configurable KdV coefficients remain deferred
+- general KdV support outside the frozen normalized periodic short-horizon regime remains deferred
+- weak KdV remains deferred
+
 ---
 
-## V0.26 - KS Revisit
+## V0.26 - KS Revisit Decision
 
-Planned theme:
+Completed theme:
 
-> revisit the `v0.11`/`v0.12` KS no-go with better confidence diagnostics.
+> revisit the `v0.11`/`v0.12` KS no-go with confidence diagnostics, without promoting public KS runtime APIs in the same release.
 
-Candidate decisions:
+Completed decision:
 
-- stable KS data generator
-- stable KS residual evaluator
+- `current_no_go_reference_fallback`
+
+Follow-up:
+
+- `v0.26b` is reserved for the actual KS promotion release if a separate scope freeze accepts future direct-SVD/no-fallback evidence.
+
+Deferred in `v0.26`:
+
+- public KS data generator
+- public KS residual evaluator
 - KS vertical-slice example
 - KS imported parity
 - weak KS API
 - root KS export
-- continued no-go/defer
+
+---
+
+## V0.26b - KS Promotion Decision
+
+Planned theme:
+
+> decide whether the KS direct-SVD/no-fallback evidence is stable enough to promote a narrow public KS runtime surface.
 
 Default stance:
 
 - no root KS export
 - no weak KS
-- no stable full KS path unless direct residual-based fitting evidence improves
+- no residual-only KS public API
+- no public KS path unless direct residual-based fitting evidence remains stable under a separate scope freeze
 
 ---
 

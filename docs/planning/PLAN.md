@@ -1,18 +1,32 @@
-# PDELie - Execution Plan (V0.24)
+# PDELie - Execution Plan (V0.26)
 
 **Status:** COMPLETE
 
-**V0.24 is complete as the weak-form supportability reset release**
+**V0.26 is complete as the KS revisit decision release**
 
-This file is the completed execution record for the `v0.24` release series.
+This file is the completed execution record for the `v0.26` release series.
 
 ## Release Theme
 
-`v0.24` adds weak-form supportability reporting:
+`v0.26` revisits the Kuramoto-Sivashinsky no-go with modern confidence diagnostics while keeping public KS runtime promotion out of scope.
 
-> existing Heat/Burgers weak residual reports + explicit weak contracts + strong residual evidence + robustness/imported-parity diagnostics + internal identity-first Fisher-KPP feasibility -> JSON-compatible weak-form supportability report
+Decision label:
 
-The public claim is intentionally narrow. The release reports supportability of the existing frozen Heat/Burgers weak residual report slice and diagnostic-only internal feasibility evidence. It does not add a weak derivative backend, weak design matrices, WSINDy, weak sparse recovery, weak KdV, weak KS, public weak reaction-diffusion APIs, new PDEs, broad adapters, split policy, neural/callable APIs, operator APIs, or root exports.
+```text
+current_no_go_reference_fallback
+```
+
+Stable investigation path:
+
+```text
+internal normalized KS fixture
+-> spectral_fd derivatives through u_xxxx
+-> internal KS residual feasibility
+-> translation fit / verification / confidence report
+-> explicit v0.26 decision label
+```
+
+The release adds no public KS data generator, residual evaluator, vertical-slice example, status example, weak KS API, residual-only API, or root export.
 
 ## Milestone Status
 
@@ -26,111 +40,102 @@ The public claim is intentionally narrow. The release reports supportability of 
 
 Authoritative scope:
 
-- `docs/planning/V0_24_SCOPE.md`
+- `docs/planning/V0_26_SCOPE.md`
 
-`API_STABILITY.md` was updated when the public `v0.24` reporting helper landed.
+`API_STABILITY.md` records the decision-only status but does not add a stable KS runtime contract.
 
 ## Milestone 0 - Scope Freeze
 
-Freeze `v0.24` as a weak-form supportability reset.
+Freeze `v0.26` as a KS revisit decision release.
 
 Closeout:
 
-- added `docs/planning/V0_24_SCOPE.md`
-- reset `PLAN.md` as the active `v0.24` execution record
-- updated `ROADMAP.md` to record `v0.24` as the current completed release
-- explicitly kept WSINDy, weak design matrices, weak sparse recovery, and weak derivative backends out of scope
+- added `docs/planning/V0_26_SCOPE.md`
+- reset `PLAN.md` as the active `v0.26` execution record
+- updated `ROADMAP.md` to record `v0.26` as the current completed release
+- reserved `v0.26b` as the follow-up KS promotion release name
+- explicitly kept KS runtime APIs out of `v0.26`
 
-## Milestone 1 - Semantics Freeze
+## Milestone 1 - Decision Criteria Freeze
 
-Frozen public helper:
+Frozen decision labels:
 
-```python
-pdelie.reporting.summarize_weak_form_supportability(
-    *,
-    weak_report=None,
-    weak_report_summary=None,
-    weak_contract=None,
-    strong_residual=None,
-    strong_residual_summary=None,
-    robustness=None,
-    imported_parity=None,
-    feasibility=None,
-    thresholds=None,
-    extra_metrics=None,
-)
-```
+- `current_no_go_reference_fallback`
+- `residual_feasible_fit_not_promotable`
+- `direct_strong_candidate_for_v0_26b_promotion`
+- `deferred_no_go`
 
-Frozen interpretation:
+Frozen promotion-candidate thresholds:
 
-- supportability labels are `supported_existing_slice`, `diagnostic_only`, `failed`, and `insufficient_evidence`
-- `supported_existing_slice` covers only the frozen public Heat/Burgers weak residual report surface
-- weak contracts normalize equation, test-function, operator-order, integration-by-parts, patch, quadrature, row-count, skipped-patch, and finite-value-policy metadata
-- quadrature is recorded in every weak supportability report
-- malformed/nonfinite evidence raises typed validation errors unless a nested report already encodes failure
-- no scalar weak confidence score
-- no WSINDy implementation, weak design matrix, weak sparse recovery, weak derivative backend, weak KdV, weak KS, or public weak reaction-diffusion API
+- residual max `< 5e-2`
+- residual RMS `< 1e-2`
+- first verification error `< 5e-4`
+- verification classification not `failed`
+- fit evidence label `direct_svd_in_tolerance`
+- `reference_fallback_used is False`
 
-## Milestone 2 - Reporting Helper
+Promotion evidence must come from the frozen primary fixture. Diagnostic variants cannot define promotion.
 
-Implemented:
+## Milestone 2 - Minimal KS No-Go Reproduction Matrix
 
-- `pdelie.reporting.summarize_weak_form_supportability(...)`
+Implemented test-only diagnostic coverage for:
 
-The helper reuses `summarize_weak_residual_report(...)` and `summarize_residual_batch(...)`, validates strict JSON compatibility, derives weak contracts from frozen weak report diagnostics when useful, applies local thresholds, and returns deterministic component statuses and supportability labels.
+- frozen primary fixture
+- seed sweep
+- fit-epsilon sweep
+- one resolution variant
+- fit/fallback diagnostics
+- verification diagnostics
+- generator confidence report
 
-## Milestone 3 - Internal Feasibility Harness
+No helper was exported from `pdelie.data`, `pdelie.residuals`, `pdelie.examples`, or root `pdelie`.
 
-Implemented test-only Fisher-KPP feasibility diagnostics under `tests/_helpers`.
+## Milestone 3 - Primary Fixture Strong-Path Re-Evaluation
 
-The harness is identity-first:
+The frozen primary fixture remains:
 
-- constant-field identity check
-- pure-time sign check
-- pure-space Fourier integration-by-parts check
-- manufactured smooth Fisher-KPP-like weak identity check
-- generated Fisher-KPP field sanity check
-- quadrature and tolerance recording
-- no-public-export guards
+- residual-feasible
+- verification-feasible
+- reference-fallback-backed for translation fitting
 
-This evidence remains `diagnostic_only` regardless of numerical quality.
+The direct SVD path is not promotable in `v0.26`.
 
-## Milestone 4 - Example and Docs
+## Milestone 4 - Optional Variant Diagnostics
 
-Implemented:
+Variant diagnostics remain test-only and diagnostic-only.
 
-- `pdelie.examples.run_weak_form_supportability_example(...)`
-- command module: `python -m pdelie.examples.weak_form_supportability`
+Closeout:
 
-The example emits JSON only, demonstrates Heat/Burgers weak supportability through public APIs, and includes a static internal Fisher-KPP feasibility marker. It does not import `tests/_helpers`.
+- no best-of-sweep promotion path was added
+- variants may inform future work only
+- `v0.26b` remains a separate scope decision if future evidence justifies promotion
 
-Docs now state explicitly that PDELie weak residual reports are not WSINDy.
+## Milestone 5 - Decision Docs
 
-## Milestone 5 - API / Public-surface Audit
+Docs now state:
 
-Audit result:
+- KS remains deferred in `v0.26`
+- residual feasibility is not enough for public PDELie support
+- public KS promotion requires a separate `v0.26b` scope freeze
+- weak KS remains deferred
 
-- weak supportability summaries are importable only from `pdelie.reporting`
-- the JSON example is importable only from `pdelie.examples`
-- root `pdelie` remains unchanged
-- `API_STABILITY.md` documents the new runtime helper and example runner
-- no weak derivative backend, weak KdV, weak KS, public weak reaction-diffusion API, weak residual evaluator subclass, broad adapter, new PDE, time-translation API, operator API, neural/callable generator API, split policy, or root export landed
+No packaged KS runtime/status example was added.
 
 ## Milestone 6 - Release Gate And Readiness
 
 Implemented:
 
-- added compact `tests/test_v0_24_release_gate.py`
-- updated CI so the current explicit release gate is `v0_24-release-gate`
+- added compact `tests/test_v0_26_release_gate.py`
+- updated CI so the current explicit release gate is `v0_26-release-gate`
 - kept full editable `python -m pytest`
-- kept package smoke and added weak-form-supportability smoke coverage
-- bumped package metadata to `0.24.0`
+- kept package smoke
+- bumped package metadata to `0.26.0`
 - updated README, changelog, publishing notes, roadmap, and release readiness docs
-- documented direct `v0.24.0` Git-tag release path
+- documented direct `v0.26.0` Git-tag release path
 
 Required checks before tagging:
 
-- `v0_24-release-gate`
+- `v0_26-release-gate`
 - `editable-tests`
 - `package-smoke`
 
@@ -138,19 +143,6 @@ Local validation checklist:
 
 - `python -m pytest`
 - `python -m build --sdist --wheel`
-- `python -m pdelie.examples.heat_vertical_slice`
-- `python -m pdelie.examples.kdv_vertical_slice`
-- `python -m pdelie.examples.reaction_diffusion_vertical_slice`
-- `python -m pdelie.examples.advection_diffusion_vertical_slice`
-- `python -m pdelie.examples.orbit_coverage_diagnostics`
-- `python -m pdelie.examples.invariant_workflow_summary`
-- `python -m pdelie.examples.translation_orbit_batch`
-- `python -m pdelie.examples.symmetry_candidate_validation`
-- `python -m pdelie.examples.formula_generator_validation`
-- `python -m pdelie.examples.generator_confidence_report`
-- `python -m pdelie.examples.external_data_readiness`
-- `python -m pdelie.examples.downstream_discovery_contracts`
-- `python -m pdelie.examples.split_leakage_provenance`
-- `python -m pdelie.examples.weak_form_supportability`
+- all packaged examples
 - `python scripts/check_notebooks.py`
 - `git diff --check`

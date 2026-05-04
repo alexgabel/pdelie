@@ -15,6 +15,7 @@ from pdelie.examples import (
     run_generator_confidence_report_example,
     run_heat_vertical_slice_example,
     run_invariant_workflow_summary_example,
+    run_kdv_scope_decision_example,
     run_kdv_vertical_slice_example,
     run_orbit_coverage_diagnostics_example,
     run_reaction_diffusion_vertical_slice_example,
@@ -151,6 +152,43 @@ def test_kdv_vertical_slice_example_is_deterministic() -> None:
     second = run_kdv_vertical_slice_example()
 
     _assert_repeated_summary_matches(first, second)
+
+
+def test_kdv_scope_decision_example_runs_end_to_end() -> None:
+    result = run_kdv_scope_decision_example()
+
+    assert json.loads(json.dumps(result, allow_nan=False)) == result
+    assert result["summary_schema_version"] == "0.1"
+    assert result["summary_type"] == "kdv_scope_decision_example"
+    assert result["decision"]["evidence_category"] == "current_frozen_supported"
+    assert result["decision"]["conclusion"] == "keep_public_kdv_surface_frozen"
+    assert result["current_frozen_path"]["readiness"]["readiness_label"] == "ready"
+    assert result["current_frozen_path"]["residual"]["max_abs_residual"] < 1e-2
+    assert result["current_frozen_path"]["residual"]["rms_residual"] < 2e-3
+    assert result["current_frozen_path"]["fit_diagnostics"]["evidence_label"] == "direct_svd_in_tolerance"
+    assert result["current_frozen_path"]["fit_diagnostics"]["reference_fallback_used"] is False
+    assert result["current_frozen_path"]["verification"]["classification"] != "failed"
+    assert result["current_frozen_path"]["confidence"]["confidence_label"] == "strong"
+    assert result["current_frozen_path"]["candidate_validation"]["conclusion"] == "validated"
+    assert result["extra_metrics"]["example_name"] == "kdv_scope_decision"
+    assert result["extra_metrics"]["reference_fallback_used"] is False
+    assert result["extra_metrics"]["translation_span_distance"] <= 5e-2
+    assert {decision["decision"] for decision in result["deferred_decisions"]} == {
+        "configurable_kdv_coefficients",
+        "custom_kdv_initial_conditions",
+        "general_kdv_regime",
+        "weak_kdv",
+    }
+    assert {decision["evidence_category"] for decision in result["deferred_decisions"]} == {"deferred_no_go"}
+    assert not hasattr(pdelie, "run_kdv_scope_decision_example")
+
+
+def test_kdv_scope_decision_module_prints_json_only() -> None:
+    parsed = _run_module_json("pdelie.examples.kdv_scope_decision")
+
+    assert parsed["summary_type"] == "kdv_scope_decision_example"
+    assert parsed["decision"]["conclusion"] == "keep_public_kdv_surface_frozen"
+    assert parsed["current_frozen_path"]["confidence"]["confidence_label"] == "strong"
 
 
 def test_reaction_diffusion_vertical_slice_example_runs_end_to_end_and_is_json_serializable() -> None:

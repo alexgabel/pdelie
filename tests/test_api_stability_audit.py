@@ -43,6 +43,7 @@ _ROOT_RUNTIME_NAMES = {
     "render_generator_family",
     "run_heat_vertical_slice_example",
     "run_advection_diffusion_vertical_slice_example",
+    "run_kdv_scope_decision_example",
     "run_formula_generator_validation_example",
     "run_generator_confidence_report_example",
     "run_downstream_discovery_contracts_example",
@@ -105,6 +106,9 @@ _DEFERRED_OR_PRIVATE_NAMES = {
     "load_dataset",
     "load_field_batch",
     "generate_ks_1d_field_batch",
+    "generate_configurable_kdv_1d_field_batch",
+    "generate_general_kdv_1d_field_batch",
+    "generate_kdv_1d_field_batch_from_initial_condition",
     "generate_ks_feasibility_field_batch",
     "generate_reaction_advection_diffusion_1d_field_batch",
     "generate_variable_coefficient_advection_diffusion_1d_field_batch",
@@ -112,6 +116,7 @@ _DEFERRED_OR_PRIVATE_NAMES = {
     "load_the_well",
     "materialize_uniform_translation_orbit",
     "sample_kdv_mode_coefficients",
+    "ConfigurableKdVResidualEvaluator",
     "split_orbit_train_heldout",
     "split_leakage_enforcer",
     "summarize_generator_confidence_score",
@@ -131,6 +136,9 @@ _DEFERRED_API_STABILITY_NAMES = {
     "pdelie.data.from_the_well",
     "pdelie.data.load_dataset",
     "pdelie.data.load_field_batch",
+    "pdelie.data.generate_configurable_kdv_1d_field_batch",
+    "pdelie.data.generate_general_kdv_1d_field_batch",
+    "pdelie.data.generate_kdv_1d_field_batch_from_initial_condition",
     "pdelie.data.generate_ks_1d_field_batch",
     "pdelie.data.generate_reaction_advection_diffusion_1d_field_batch",
     "pdelie.data.generate_variable_coefficient_advection_diffusion_1d_field_batch",
@@ -143,6 +151,7 @@ _DEFERRED_API_STABILITY_NAMES = {
     "pdelie.reporting.summarize_orbit_coverage_feasibility",
     "pdelie.residuals.KSResidualEvaluator",
     "pdelie.residuals.KuramotoSivashinskyResidualEvaluator",
+    "pdelie.residuals.ConfigurableKdVResidualEvaluator",
     "pdelie.residuals.WeakKSResidualEvaluator",
     "pdelie.residuals.WeakReactionDiffusionResidualEvaluator",
     "pdelie.residuals.evaluate_weak_ks_residual",
@@ -242,6 +251,12 @@ _V0_24_WEAK_SUPPORTABILITY_APIS = {
     "supported_existing_slice",
     "diagnostic_only",
 }
+_V0_25_KDV_SCOPE_DECISION_APIS = {
+    "pdelie.examples.run_kdv_scope_decision_example",
+    "summary_type = \"kdv_scope_decision_example\"",
+    "current_frozen_supported",
+    "deferred_no_go",
+}
 
 
 def _api_stability_text() -> str:
@@ -273,6 +288,7 @@ def test_api_stability_doc_covers_current_stable_runtime_surface() -> None:
         | _V0_22_DOWNSTREAM_CONTRACT_APIS
         | _V0_23_SPLIT_PROVENANCE_APIS
         | _V0_24_WEAK_SUPPORTABILITY_APIS
+        | _V0_25_KDV_SCOPE_DECISION_APIS
     ):
         assert api_name in text
 
@@ -346,6 +362,7 @@ def test_required_runtime_submodule_apis_remain_importable() -> None:
             "run_advection_diffusion_vertical_slice_example",
             "run_heat_vertical_slice_example",
             "run_invariant_workflow_summary_example",
+            "run_kdv_scope_decision_example",
             "run_kdv_vertical_slice_example",
             "run_orbit_coverage_diagnostics_example",
             "run_reaction_diffusion_vertical_slice_example",
@@ -473,19 +490,8 @@ def test_v0_23_planning_docs_record_split_provenance_and_non_goals() -> None:
 
 
 def test_v0_24_planning_docs_record_weak_supportability_and_non_goals() -> None:
-    plan = _repo_text("docs/planning/PLAN.md")
     scope = _repo_text("docs/planning/V0_24_SCOPE.md")
     roadmap = _repo_text("docs/planning/ROADMAP.md")
-
-    assert "**Status:** COMPLETE" in plan
-    assert "Milestone 2 - Reporting Helper" in plan
-    assert "Milestone 3 - Internal Feasibility Harness" in plan
-    assert "pdelie.reporting.summarize_weak_form_supportability" in plan
-    assert "pdelie.examples.run_weak_form_supportability_example" in plan
-    assert "no WSINDy" in plan
-    assert "weak derivative backend" in plan
-    assert "updated CI so the current explicit release gate is `v0_24-release-gate`" in plan
-    assert "- Milestone 6: COMPLETE" in plan
 
     assert "Weak-Form Supportability Reset" in scope
     assert "pdelie.reporting.summarize_weak_form_supportability" in scope
@@ -501,3 +507,49 @@ def test_v0_24_planning_docs_record_weak_supportability_and_non_goals() -> None:
     assert "`v0.24` is the completed weak-form supportability reset" in roadmap
     assert "weak-form supportability reset" in roadmap
     assert "- no weak derivative backend" in roadmap
+
+
+def test_v0_25_planning_docs_record_kdv_scope_decision_and_non_goals() -> None:
+    scope = _repo_text("docs/planning/V0_25_SCOPE.md")
+    roadmap = _repo_text("docs/planning/ROADMAP.md")
+
+    assert "KdV Scope Decision" in scope
+    assert "current_frozen_supported" in scope
+    assert "deferred_no_go" in scope
+    assert "custom KdV initial conditions remain deferred" in scope
+    assert "weak KdV remains deferred" in scope
+    assert "- Milestone 4: COMPLETE" in scope
+    assert "- Milestone 5: COMPLETE" in scope
+    assert "- Milestone 6: COMPLETE" in scope
+
+    assert "`v0.25` is the completed KdV scope decision release" in roadmap
+    assert "keep KdV public APIs frozen" in roadmap
+    assert "- no weak KdV" in roadmap
+
+
+def test_v0_26_planning_docs_record_ks_revisit_decision_and_non_goals() -> None:
+    plan = _repo_text("docs/planning/PLAN.md")
+    scope = _repo_text("docs/planning/V0_26_SCOPE.md")
+    roadmap = _repo_text("docs/planning/ROADMAP.md")
+    api_stability = _api_stability_text()
+
+    assert "**Status:** COMPLETE" in plan
+    assert "KS revisit decision" in plan
+    assert "current_no_go_reference_fallback" in plan
+    assert "v0.26b" in plan
+    assert "- Milestone 6: COMPLETE" in plan
+
+    assert "KS Revisit Decision" in scope
+    assert "current_no_go_reference_fallback" in scope
+    assert "direct_strong_candidate_for_v0_26b_promotion" in scope
+    assert "Promotion evidence must come from the frozen primary fixture" in scope
+    assert "no public KS residual evaluator" in scope
+    assert "no residual-only KS API" in scope
+    assert "no weak KS API" in scope
+    assert "- Milestone 4: COMPLETE" in scope
+    assert "- Milestone 5: COMPLETE" in scope
+    assert "- Milestone 6: COMPLETE" in scope
+
+    assert "`v0.26` is the completed Kuramoto-Sivashinsky revisit decision release" in roadmap
+    assert "`v0.26b` - KS promotion" in roadmap
+    assert "Decision-only note for the frozen `v0.26` KS revisit decision" in api_stability

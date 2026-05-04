@@ -25,9 +25,9 @@ Execution state belongs in:
 
 ## Current State
 
-- Current completed release: `v0.24.0`
-- Current theme: weak-form supportability reports for frozen Heat/Burgers weak residual slices
-- Next planned release: `v0.25` KdV scope decision
+- Current completed release: `v0.26.0`
+- Current theme: KS revisit decision with public promotion deferred to `v0.26b`
+- Next planned release: `v0.26b` KS promotion decision, only if direct-SVD/no-fallback evidence is accepted in a separate scope freeze
 - Public package docs start at [`../../README.md`](../../README.md) and [`../README.md`](../README.md)
 - Durable contributor guidance lives in [`../../CONTRIBUTING.md`](../../CONTRIBUTING.md)
 
@@ -463,6 +463,142 @@ The authoritative `v0.12` scope freeze belongs in:
 
 ## Current Completed Release
 
+### `v0.26` - KS revisit decision
+**Status:** Completed
+
+`v0.26` is the completed Kuramoto-Sivashinsky revisit decision release after the `v0.25` KdV scope decision.
+
+Its purpose is:
+
+> revisit the `v0.11`/`v0.12` KS no-go with confidence diagnostics, without promoting public KS runtime APIs in the same release.
+
+Completed release definition:
+
+`internal normalized KS fixture + order-4 spectral_fd residual feasibility + translation fit / verification / confidence diagnostics + minimal no-go reproduction matrix -> explicit KS decision`
+
+Completed scope:
+
+- test-only `ks_revisit_decision` report
+- decision labels: `current_no_go_reference_fallback`, `residual_feasible_fit_not_promotable`, `direct_strong_candidate_for_v0_26b_promotion`, and `deferred_no_go`
+- primary KS fixture confidence report using `summarize_generator_confidence(...)`
+- minimal test-only matrix over seed, fit-epsilon, and one resolution variant
+- compact current `v0_26-release-gate` readiness
+
+Release interpretation:
+
+- this is a decision release, not a KS promotion release
+- the primary KS fixture remains residual-feasible and verification-feasible
+- translation fitting remains reference-fallback-backed, so public KS support remains deferred
+- `v0.26b` is reserved as the follow-up promotion release name if a separate scope freeze accepts future direct-SVD/no-fallback evidence
+- `v0.26.0` is a Git-tag-only release; PyPI and TestPyPI publication are deferred to `v1.0` or later
+
+Explicit non-goals:
+
+- no public KS data generator
+- no public KS residual evaluator
+- no public KS vertical-slice example
+- no public KS status example
+- no residual-only KS public API
+- no weak KS API
+- no custom KS initial-condition API
+- no configurable KS coefficient API
+- no broad KS regime support
+- no root KS export
+- no broad adapters or file loaders
+- no multidimensional or nonuniform stable support
+- no time-translation APIs
+- no neural or callable generator API
+- no operator-facing symmetry work
+
+The authoritative `v0.26` scope freeze belongs in:
+
+- `V0_26_SCOPE.md`
+
+### Release Gate for `v0.26`
+
+`v0.26` is complete only if:
+
+- the primary KS fixture records `current_no_go_reference_fallback`
+- residual and verification evidence remain feasible but fit evidence remains fallback-backed
+- confidence evidence is present and does not override the direct-SVD/no-fallback promotion rule
+- matrix variants remain diagnostic-only
+- no public KS runtime API, weak KS API, status example, or root KS export lands
+- API stability docs record the decision-only status without adding stable KS runtime contracts
+- CI uses one compact current release gate plus full editable tests and package smoke
+- package/readiness docs preserve the `v1.0` package-index publishing deferral
+
+---
+
+## Recent Completed Release
+
+### `v0.25` - KdV scope decision
+**Status:** Completed
+
+`v0.25` is the completed KdV scope decision release after the `v0.24` weak-form supportability reset.
+
+Its purpose is:
+
+> decide whether KdV should expand beyond the frozen normalized scalar 1D periodic short-horizon strong path.
+
+Completed release definition:
+
+`frozen normalized KdV strong path + diagnostic broader-regime evidence + weak KdV identity checks -> explicit KdV scope decision`
+
+Completed scope:
+
+- `pdelie.examples.run_kdv_scope_decision_example(...)`
+- command module: `python -m pdelie.examples.kdv_scope_decision`
+- frozen report type: `kdv_scope_decision_example`
+- evidence categories: `current_frozen_supported`, `diagnostic_only`, and `deferred_no_go`
+- test-only KdV scope matrix for longer horizons, larger amplitudes, more modes, custom initial-condition feasibility, and configurable-coefficient sign/scaling
+- test-only weak KdV identity checks for a stronger boundary-regular candidate profile
+- compact current `v0_25-release-gate` readiness
+
+Release interpretation:
+
+- this is a decision and guardrail release, not a KdV expansion release
+- the existing normalized short-horizon KdV strong path remains stable
+- the decision is to keep KdV public APIs frozen
+- broader KdV evidence is diagnostic-only unless a later release explicitly opens a narrower promotion path
+- `v0.25.0` is a Git-tag-only release; PyPI and TestPyPI publication are deferred to `v1.0` or later
+
+Explicit non-goals:
+
+- no custom KdV initial-condition public API
+- no configurable KdV coefficient public API
+- no general KdV support outside the frozen normalized short-horizon regime
+- no weak KdV
+- no weak derivative backend
+- no WSINDy implementation
+- no KS runtime promotion
+- no broad adapters or file loaders
+- no multidimensional or nonuniform stable support
+- no time-translation APIs
+- no neural or callable generator API
+- no operator-facing symmetry work
+- no root export expansion
+
+The authoritative `v0.25` scope freeze belongs in:
+
+- `V0_25_SCOPE.md`
+
+### Release Gate for `v0.25`
+
+`v0.25` is complete only if:
+
+- the current KdV strong path remains direct-SVD-backed
+- broader-regime KdV evidence remains diagnostic-only
+- custom initial-condition and configurable-coefficient evidence remains test-only
+- weak KdV remains absent from public APIs
+- the KdV scope-decision example emits strict JSON
+- API stability docs and public-surface tests agree that no broadened KdV surface landed
+- CI uses one compact current release gate plus full editable tests and package smoke
+- package/readiness docs preserve the `v1.0` package-index publishing deferral
+
+---
+
+## Recent Completed Release
+
 ### `v0.24` - Weak-form supportability reset
 **Status:** Completed
 
@@ -484,7 +620,7 @@ Completed scope:
 - frozen supportability labels: `supported_existing_slice`, `diagnostic_only`, `failed`, and `insufficient_evidence`
 - normalized weak contract metadata including quadrature rule, test-function family/order, patch shape/stride, row counts, skipped-patch counts, and finite-value policy
 - internal Fisher-KPP weak feasibility remains test-only and `diagnostic_only`
-- compact current `v0_24-release-gate` readiness
+- compact `v0_24-release-gate` readiness
 
 Release interpretation:
 
@@ -1398,51 +1534,35 @@ Only `Committed` items define the next release target.
 
 The principle is still one stable axis at a time: do not combine PDE expansion, data-adapter expansion, weak-form expansion, multi-generator machinery, and downstream policy in one release.
 
-### `v0.25` - KdV scope decision
+### `v0.26b` - KS promotion
 **Status:** Planned
 
 Purpose:
 
-> decide whether KdV should expand beyond the frozen normalized periodic short-horizon regime.
-
-Candidate scope:
-
-- custom KdV initial-condition feasibility
-- configurable KdV coefficient feasibility
-- general KdV support decision
-- weak KdV decision
-
-Acceptable outcome:
-
-- keep KdV frozen and document why if the broader regime is not supportable.
-
-### `v0.26` - KS revisit
-**Status:** Planned
-
-Purpose:
-
-> revisit the `v0.11`/`v0.12` KS no-go with better confidence diagnostics.
+> promote a public KS runtime surface only if a separate scope freeze accepts direct-SVD/no-fallback evidence after the `v0.26` decision release.
 
 Candidate decisions:
 
-- stable KS residual-only public path
-- stable full KS strong path
-- continued no-go/defer
+- stable KS data generator
+- stable KS residual evaluator
+- stable KS vertical-slice example
+- imported parity for the promoted KS surface
+- continued no-go/defer if evidence does not remain stable
 
 Explicitly evaluated:
 
-- stable KS data generator
-- stable KS residual evaluator
-- KS vertical-slice example
+- direct-SVD/no-fallback primary fixture evidence
+- residual and verification margins
+- confidence-report stability
 - KS imported parity
-- weak KS API
 - root KS export
 
 Default stance:
 
 - no root KS export
 - no weak KS
-- no public full KS path unless direct residual-based fitting evidence improves
+- no residual-only KS public API
+- no public KS path unless direct residual-based fitting evidence remains stable after a separate `v0.26b` scope freeze
 
 ### `v0.27` - Multi-generator feasibility
 **Status:** Planned
@@ -1639,8 +1759,9 @@ It should **not** be edited every time a new idea appears.
 - `v0.22` = downstream discovery contracts and provenance reports
 - `v0.23` = split/leakage provenance diagnostics, not split management or leakage prevention
 - `v0.24` = weak-form supportability reset, not WSINDy or a weak derivative backend
-- `v0.25` = planned KdV scope decision
-- `v0.26` = planned KS revisit
+- `v0.25` = completed KdV scope decision; public KdV remains frozen
+- `v0.26` = completed KS revisit decision; public KS remains deferred
+- `v0.26b` = planned KS promotion decision, only after a separate scope freeze
 - `v0.27` = planned multi-generator feasibility
 - `v0.28` = planned data ecosystem feasibility
 - `v0.29` = planned grid-domain feasibility

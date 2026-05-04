@@ -300,6 +300,27 @@ Runtime public API for the frozen `v0.24` Milestone 2/M4 slice:
 - `v0.24` does not implement WSINDy, weak design matrices, weak sparse recovery, a weak derivative backend, weak KdV, weak KS, public weak reaction-diffusion residual evaluators, new PDEs, broad adapters, split policy, neural/callable generators, operator-facing APIs, or root exports
 - these APIs have no root `pdelie` exports
 
+Runtime public API for the frozen `v0.25` Milestone 5 slice:
+
+- `pdelie.examples.run_kdv_scope_decision_example` for a compact JSON-only runtime smoke example documenting the KdV scope decision
+- KdV scope-decision examples use `summary_type = "kdv_scope_decision_example"` and `summary_schema_version = "0.1"`
+- report evidence categories are `current_frozen_supported`, `diagnostic_only`, and `deferred_no_go`
+- the existing normalized scalar 1D periodic short-horizon KdV strong path remains stable and direct-SVD-backed under the frozen public regime
+- the recorded `v0.25` decision is `keep_public_kdv_surface_frozen`
+- custom KdV initial conditions, configurable KdV coefficients, general KdV support outside the frozen normalized short-horizon regime, and weak KdV remain deferred
+- `v0.25` adds no new KdV generator, residual evaluator, weak residual report, custom initial-condition API, configurable-coefficient API, weak derivative backend, WSINDy-like surface, broad adapter, time-translation API, neural/callable generator API, operator-facing API, or root export
+- these APIs have no root `pdelie` exports
+
+Decision-only note for the frozen `v0.26` KS revisit decision:
+
+- `v0.26` adds no new public runtime API
+- `v0.26` records the KS revisit decision `current_no_go_reference_fallback`
+- internal KS residual and verification evidence remains feasible, but translation fitting remains reference-fallback-backed and therefore not promotable
+- decision labels include `current_no_go_reference_fallback`, `residual_feasible_fit_not_promotable`, `direct_strong_candidate_for_v0_26b_promotion`, and `deferred_no_go`
+- `v0.26b` is reserved as the follow-up KS promotion release name if a separate scope freeze accepts future direct-SVD/no-fallback evidence
+- this decision does not add a stable public Kuramoto-Sivashinsky data generator or residual evaluator
+- this decision does not add a public KS vertical-slice example, public KS status example, residual-only KS public API, weak KS API, custom KS initial-condition API, configurable KS coefficient API, broad KS regime support, root KS export, broad adapter, time-translation API, neural/callable generator API, or operator-facing API
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 
