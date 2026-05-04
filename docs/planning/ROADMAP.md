@@ -23,6 +23,16 @@ Execution state belongs in:
 
 ---
 
+## Current State
+
+- Current completed release: `v0.23.0`
+- Current theme: split/leakage provenance diagnostics over user-supplied partitions
+- Next planned release: `v0.24` weak-form supportability reset
+- Public package docs start at [`../../README.md`](../../README.md) and [`../README.md`](../README.md)
+- Durable contributor guidance lives in [`../../CONTRIBUTING.md`](../../CONTRIBUTING.md)
+
+---
+
 ## Planning Status Labels
 
 Every roadmap item must be one of:
@@ -1566,7 +1576,8 @@ This is not part of the near-term non-operator Paper 1 path and should not be mi
 ### Non-authoritative for scheduling
 - `V0_15_PLUS_STRATEGY.md`
 - `../strategy/INTEROPERABILITY_AND_BENCHMARKING.md`
-- `LLM_CONTEXT.md`
+
+Local agent/context files such as `AGENTS.md` and `LLM_CONTEXT.md` are intentionally untracked. They do not define release scope, package contracts, or scheduling.
 
 These may describe strategic horizons or research directions, but they do **not** commit a feature to a release.
 

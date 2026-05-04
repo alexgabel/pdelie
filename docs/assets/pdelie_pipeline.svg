@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="240" viewBox="0 0 1120 240" role="img" aria-labelledby="title desc">
+  <title id="title">PDELie workflow pipeline</title>
+  <desc id="desc">PDE time series flow into FieldBatch, residual targets, generator candidates, confidence reports, and orbit or downstream diagnostics.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#35607a"/>
+    </marker>
+    <style>
+      .bg { fill: #f7fbfd; }
+      .box { fill: #ffffff; stroke: #35607a; stroke-width: 2; rx: 12; }
+      .title { font: 700 18px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #17384f; }
+      .label { font: 500 13px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #355466; }
+      .arrow { stroke: #35607a; stroke-width: 2.4; fill: none; marker-end: url(#arrow); }
+      .note { font: 500 12px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #607987; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="1120" height="240"/>
+
+  <g transform="translate(34 54)">
+    <rect class="box" width="150" height="96"/>
+    <text class="title" x="75" y="36" text-anchor="middle">PDE time</text>
+    <text class="title" x="75" y="58" text-anchor="middle">series</text>
+    <text class="label" x="75" y="80" text-anchor="middle">synthetic or imported</text>
+  </g>
+
+  <path class="arrow" d="M 194 102 H 250"/>
+
+  <g transform="translate(260 54)">
+    <rect class="box" width="150" height="96"/>
+    <text class="title" x="75" y="42" text-anchor="middle">FieldBatch</text>
+    <text class="label" x="75" y="66" text-anchor="middle">canonical data</text>
+    <text class="label" x="75" y="84" text-anchor="middle">coords + metadata</text>
+  </g>
+
+  <path class="arrow" d="M 420 102 H 476"/>
+
+  <g transform="translate(486 54)">
+    <rect class="box" width="150" height="96"/>
+    <text class="title" x="75" y="42" text-anchor="middle">Residual</text>
+    <text class="label" x="75" y="66" text-anchor="middle">derivatives + target</text>
+    <text class="label" x="75" y="84" text-anchor="middle">equation evidence</text>
+  </g>
+
+  <path class="arrow" d="M 646 102 H 702"/>
+
+  <g transform="translate(712 54)">
+    <rect class="box" width="150" height="96"/>
+    <text class="title" x="75" y="36" text-anchor="middle">Generator</text>
+    <text class="title" x="75" y="58" text-anchor="middle">candidate</text>
+    <text class="label" x="75" y="80" text-anchor="middle">fit or supplied</text>
+  </g>
+
+  <path class="arrow" d="M 872 102 H 928"/>
+
+  <g transform="translate(938 54)">
+    <rect class="box" width="150" height="96"/>
+    <text class="title" x="75" y="36" text-anchor="middle">Confidence</text>
+    <text class="title" x="75" y="58" text-anchor="middle">report</text>
+    <text class="label" x="75" y="80" text-anchor="middle">verification + risks</text>
+  </g>
+
+  <path class="arrow" d="M 1013 154 V 192 H 146 V 154"/>
+  <text class="note" x="560" y="212" text-anchor="middle">Optional workflow diagnostics: orbit materialization, downstream discovery contracts, split-provenance reports</text>
+</svg>

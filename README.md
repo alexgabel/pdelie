@@ -1,132 +1,137 @@
-# pdelie
+# PDELie
 
-Numerical discovery and verification of Lie symmetries for PDE data.
+[![CI](https://github.com/alexgabel/pdelie/actions/workflows/ci.yml/badge.svg)](https://github.com/alexgabel/pdelie/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/python-%3E%3D3.11-blue)
+![Version](https://img.shields.io/badge/version-0.23.0-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
 
-The current repository implements the frozen V0.23 split/leakage provenance diagnostics slice for the existing Heat/Burgers/weak-report/KdV/Fisher-KPP/advection-diffusion engine:
+PDELie is a research library for empirical Lie-symmetry workflows on controlled PDE time-series data. It turns canonical scalar 1D periodic fields into residuals, generator candidates, verification reports, confidence summaries, invariant/orbit diagnostics, and downstream discovery reports.
 
-- synthetic 1D heat equation
-- synthetic 1D Burgers equation
-- synthetic normalized periodic short-horizon KdV
-- synthetic scalar 1D periodic Fisher-KPP reaction-diffusion tagged as `reaction_diffusion_fisher_kpp`
-- synthetic scalar 1D periodic constant-coefficient advection-diffusion tagged as `advection_diffusion_constant_coefficient`
-- strict external structured ingestion into canonical `FieldBatch`
-- deterministic window-indexed weak residual reports under `pdelie.residuals`
-- JSON-compatible runtime supportability summaries under `pdelie.reporting`
-- generator-fit diagnostic summaries under `pdelie.reporting.summarize_generator_fit_diagnostics`
-- uniform periodic grid
-- `spectral_fd` derivatives through `u_xxxx`
-- normalized KdV strong residuals under `pdelie.residuals.KdVResidualEvaluator`
-- Fisher-KPP reaction-diffusion strong residuals under `pdelie.residuals.ReactionDiffusionResidualEvaluator`
-- advection-diffusion strong residuals under `pdelie.residuals.AdvectionDiffusionResidualEvaluator`
-- internal Kuramoto-Sivashinsky diagnostic sweep evidence with stable runtime promotion deferred
-- public orbit/coverage diagnostics under `pdelie.invariants`
-- invariant workflow summaries under `pdelie.reporting.summarize_invariant_workflow`
-- read-only uniform translation orbit reports under `pdelie.invariants.summarize_uniform_translation_orbit`
-- materialized uniform translation orbit batches under `pdelie.invariants.build_uniform_translation_orbit_batch`
-- empirical external symmetry-candidate validation reports under `pdelie.symmetry.validate_symmetry_candidate`
-- runtime-only formula-backed generator records under `pdelie.symmetry.FormulaGeneratorFamily`
-- formula generator summaries under `pdelie.reporting.summarize_formula_generator_family`
-- formula-backed candidate validation through `candidate_kind = "formula_generator_family"`
-- unified generator confidence reports under `pdelie.reporting.summarize_generator_confidence`
-- external data readiness reports under `pdelie.reporting.summarize_field_batch_readiness`
-- downstream discovery bridge/result/workflow contract reports under `pdelie.discovery` and `pdelie.reporting`
-- split/leakage provenance diagnostics under `pdelie.reporting.summarize_split_leakage_provenance`
-- reaction-diffusion vertical-slice example under `pdelie.examples.run_reaction_diffusion_vertical_slice_example`
-- advection-diffusion vertical-slice example under `pdelie.examples.run_advection_diffusion_vertical_slice_example`
-- generator-confidence example under `pdelie.examples.run_generator_confidence_report_example`
-- external-data-readiness example under `pdelie.examples.run_external_data_readiness_example`
-- downstream-discovery-contracts example under `pdelie.examples.run_downstream_discovery_contracts_example`
-- split-leakage-provenance example under `pdelie.examples.run_split_leakage_provenance_example`
-- `FieldBatch -> DerivativeBatch -> ResidualBatch -> GeneratorFamily -> InvariantMapSpec -> VerificationReport`
-- one stable derivative backend: `spectral_fd`
-- family-shaped `GeneratorFamily` with explicit `basis_spec`
-- runtime-only symbolic helpers under `pdelie.symmetry`
-- runtime-only span and closure diagnostics under `pdelie.symmetry`
-- optional `pdelie.viz` visualization layer
-- one stable invariant canonical object: `InvariantMapSpec`
-- one runtime-only invariant path retained from V0.3: `pdelie.invariants.InvariantApplier`
-- one runtime-only backend-specific downstream bridge retained from V0.3: `pdelie.discovery.to_pysindy_trajectories`
-- one runtime-only portability layer retained from V0.5: `pdelie.portability`
-- one runtime-only discovery metrics layer under `pdelie.discovery`
-- one runtime-only thin PySINDy discovery adapter under `pdelie.discovery`
-- one runtime-only translation-canonical discovery-input helper under `pdelie.discovery`
-- one runtime-only robustness helper layer under `pdelie.data`
-- one compact current `v0_23-release-gate` CI job plus full editable tests and package smoke
+![PDELie pipeline](docs/assets/pdelie_pipeline.svg)
 
-## Setup
+The current stable release is `v0.23.0` / **V0.23**: split/leakage provenance diagnostics for user-supplied partitions and materialized uniform-translation orbit batches. PDELie reports traceability and detectable overlap; it does not create splits, prevent leakage, or define benchmark policy.
 
-### Conda environment
+## Install
 
-From the repo root:
-
-```bash
-conda env create -f environment.yml
-conda activate pdelie
-```
-
-### Editable install
-
-Core install from the repo root:
+Core editable install:
 
 ```bash
 python -m pip install -e .
 ```
 
-### Optional dependencies
-
-- `.[viz]` adds the optional Matplotlib visualization layer exposed under `pdelie.viz`
-- `.[downstream]` adds the optional narrow PySINDy bridge path exposed under `pdelie.discovery`
-- `.[xarray]` adds the optional `xarray.DataArray` ingestion path exposed under `pdelie.data.from_xarray`
-- `.[test]` installs the test environment used in CI and includes the current viz/downstream/xarray test dependencies
-- `sympy` is an optional runtime dependency for `pdelie.symmetry.to_sympy_component_expressions`; it is not required for the core install
-
-The downstream path is still intentionally narrow: it is currently validated on the PySINDy 1.x / scikit-learn 1.2.x line under Python `<3.12`, matching the policy in `pyproject.toml`.
-
-## Run Tests
-
-From the repo root:
+CI/test/tutorial install:
 
 ```bash
-python -m pytest
+python -m pip install -e .[test]
 ```
 
-## Repository Docs
+Focused optional extras:
 
-- specifications and contracts: `docs/specs/`
-- planning and frozen scope docs: `docs/planning/`
-- release-readiness history: `docs/releases/`
-- non-normative strategy notes: `docs/strategy/`
-- exploratory notebooks and usage guides: `notebooks/`
+```bash
+python -m pip install -e .[viz]         # Matplotlib plotting helpers
+python -m pip install -e .[xarray]      # xarray.DataArray ingestion
+python -m pip install -e .[downstream]  # narrow PySINDy bridge path
+```
 
-## Tutorial Notebooks
+The downstream path is intentionally narrow and currently validated on the PySINDy 1.x / scikit-learn 1.2.x line under Python `<3.12`.
 
-The repository includes exploratory notebooks under `notebooks/` for the shipped symmetry/discovery runtime surface retained through `v0.23`:
+## 60-Second Example
 
-- `00_pde_timeseries_to_generators.ipynb`
-- `01_raw_vs_translation_canonical_discovery.ipynb`
-- `02_robustness_sweeps.ipynb`
-- `03_portability_round_trips.ipynb`
-- `04_discovered_vs_known_translation_generators.ipynb`
-- `05_closure_algebra_diagnostics.ipynb`
-- `06_orbit_coverage_diagnostics.ipynb`
-- `07_external_symmetry_candidates.ipynb`
-- `08_downstream_task_template.ipynb`
+```python
+from pdelie.data import generate_heat_1d_field_batch, split_batch_train_heldout
+from pdelie.derivatives import compute_spectral_fd_derivatives
+from pdelie.residuals import HeatResidualEvaluator
+from pdelie.symmetry import fit_translation_generator
+from pdelie.verification import verify_translation_generator
+from pdelie.reporting import (
+    summarize_generator_confidence,
+    summarize_generator_fit_diagnostics,
+    summarize_residual_batch,
+    summarize_verification_report,
+)
 
-These notebooks are non-normative tutorials, not stability contracts.
-Most discovery notebooks require the downstream extras (`.[downstream]` or `.[test]`).
+field = generate_heat_1d_field_batch(batch_size=5, num_times=33, num_points=64, seed=0)
+train, heldout = split_batch_train_heldout(field, train_size=2, seed=1)
 
-New to `pdelie`? Start with `notebooks/`.
-The first three notebooks are the recommended entry path:
+evaluator = HeatResidualEvaluator()
+derivatives = compute_spectral_fd_derivatives(train)
+residual = evaluator.evaluate(train, derivatives)
+generator = fit_translation_generator(train, evaluator, epsilon=1e-4)
+verification = verify_translation_generator(heldout, generator, evaluator)
 
-1. `notebooks/00_pde_timeseries_to_generators.ipynb` - canonical PDE time series to generator confidence evidence
-2. `notebooks/02_robustness_sweeps.ipynb` - perturbation sweeps over residual, fit, span, and verification diagnostics
-3. `notebooks/06_orbit_coverage_diagnostics.ipynb` - invariant coverage, consistency, read-only orbit reports, and materialized orbit batches
+confidence = summarize_generator_confidence(
+    residual=summarize_residual_batch(residual),
+    generator=generator,
+    fit_diagnostics=summarize_generator_fit_diagnostics(generator),
+    verification=summarize_verification_report(verification),
+    thresholds={"residual_rms": 1e-5, "verification_first_error": 5e-4},
+)
 
-The notebook packet is tutorial material only. It does not define API stability, train/test policy, leakage safety, or manuscript success criteria.
+print(confidence["confidence_label"])
+print(confidence["component_statuses"])
+```
 
-## Minimal End-To-End Example
+## Tutorial Path
 
-Run the packaged example modules from the repo root:
+New users should start with `notebooks/`. The recommended first pass is:
+
+1. `notebooks/00_pde_timeseries_to_generators.ipynb` - PDE time series to generator evidence.
+2. `notebooks/02_robustness_sweeps.ipynb` - residual, fit, span, and verification diagnostics under perturbation.
+3. `notebooks/06_orbit_coverage_diagnostics.ipynb` - invariant coverage, consistency, read-only orbit reports, and materialized orbit batches.
+
+The notebooks are tutorials, not API contracts. They do not define train/test policy, leakage safety, threshold policy, or manuscript success criteria.
+
+## Stable Scope
+
+PDELie is intentionally conservative. The stable `v0.x` surface currently covers:
+
+- canonical objects: `FieldBatch`, `DerivativeBatch`, `ResidualBatch`, `GeneratorFamily`, `InvariantMapSpec`, `VerificationReport`
+- uniform rectilinear grids, with the strongest support for scalar 1D periodic fields
+- synthetic Heat, Burgers, normalized short-horizon KdV, Fisher-KPP reaction-diffusion tagged as `reaction_diffusion_fisher_kpp`, and constant-coefficient advection-diffusion tagged as `advection_diffusion_constant_coefficient`
+- `spectral_fd` derivatives through `u_xxxx`
+- polynomial translation-generator fitting and finite-transform verification
+- JSON-compatible reporting helpers for residuals, fits, verification, confidence, readiness, invariant workflows, downstream discovery contracts, and split-provenance diagnostics
+- uniform `x`-translation coverage, consistency, read-only orbit reports, and materialized orbit batches
+- empirical validation of `GeneratorFamily`, `InvariantMapSpec`, and safe formula-backed `FormulaGeneratorFamily` candidates
+- narrow structured ingestion through `from_numpy(...)` and optional `from_xarray(...)`
+- narrow optional downstream support through PySINDy bridge utilities and backend-neutral discovery reports
+
+The authoritative public surface is documented in [`docs/specs/API_STABILITY.md`](docs/specs/API_STABILITY.md).
+
+Selected runtime helpers include:
+
+- `pdelie.reporting.summarize_generator_fit_diagnostics`
+- `pdelie.invariants.compute_periodic_window_coverage`
+- `pdelie.invariants.diagnose_uniform_translation_consistency`
+- `pdelie.reporting.summarize_invariant_workflow`
+- `pdelie.invariants.summarize_uniform_translation_orbit`
+- `pdelie.invariants.build_uniform_translation_orbit_batch`
+- `pdelie.invariants.OrbitBatchResult`
+- `pdelie.symmetry.validate_symmetry_candidate`
+- `pdelie.symmetry.FormulaGeneratorFamily`
+- `pdelie.reporting.summarize_generator_confidence`
+- `pdelie.reporting.summarize_field_batch_readiness`
+- `pdelie.discovery.summarize_discovery_bridge_output`
+- `pdelie.reporting.summarize_downstream_discovery_workflow`
+- `pdelie.reporting.summarize_split_leakage_provenance`
+
+## What PDELie Is Not
+
+PDELie is not:
+
+- a mathematical proof engine
+- a neural symmetry-detector training framework
+- a broad PDEBench/The Well adapter layer
+- a general nonuniform or multidimensional PDE framework
+- a split manager, leakage-prevention tool, or benchmark policy layer
+- an operator-learning framework
+- a paper-specific experiment pipeline
+
+KS remains internal feasibility/no-go evidence, including an internal KS diagnostic sweep; no stable KS runtime API is promoted. Weak-form support beyond the frozen Heat/Burgers weak-report slice remains deferred.
+
+## Examples
+
+Packaged examples print JSON-compatible runtime summaries:
 
 ```bash
 python -m pdelie.examples.heat_vertical_slice
@@ -144,261 +149,27 @@ python -m pdelie.examples.downstream_discovery_contracts
 python -m pdelie.examples.split_leakage_provenance
 ```
 
-Those commands are validated in CI after editable install.
-The built-wheel packaging smoke keeps a smaller import/residual check for KdV.
+These are smoke/reporting examples, not canonical artifact schemas.
 
-The Heat example demonstrates:
+## Validation
 
-1. generate synthetic heat-equation data
-2. compute `spectral_fd` derivatives
-3. evaluate the analytic heat residual
-4. fit the polynomial spatial-translation baseline
-5. verify the generator on held-out heat batches
+The current release is validated by:
 
-The KdV example demonstrates the frozen normalized periodic short-horizon KdV strong path:
+- the explicit `v0_23-release-gate` CI job
+- full editable `python -m pytest`
+- built-wheel package smoke
+- packaged example smoke
+- notebook structural validation through `python scripts/check_notebooks.py`
+- `git diff --check`
 
-1. generate synthetic KdV data
-2. split train/heldout batches
-3. compute `spectral_fd` derivatives through `u_xxx`
-4. evaluate the normalized KdV residual
-5. fit and verify the polynomial spatial-translation baseline
+Package-index publishing is deferred until `v1.0` or later. Current `v0.x` releases are Git-tag-only.
 
-The orbit/coverage diagnostics example demonstrates:
+## Documentation
 
-1. grid-point coverage for periodic half-open windows under uniform shifts
-2. the frozen field-shift-then-fixed-window convention
-3. uniform-translation consistency checks on stable Heat and KdV fixtures
-4. residual RMS stability checks under the existing residual evaluators
-
-The invariant workflow summary example demonstrates:
-
-1. read-only uniform translation orbit reports for Heat and KdV fixtures
-2. coverage and consistency diagnostics nested into one workflow summary
-3. generator fit diagnostics and finite-transform verification summaries
-4. report-only provenance through optional `source_field_id` values
-
-The translation orbit batch example demonstrates:
-
-1. materialized uniform translation orbit batches for Heat and KdV fixtures
-2. shift-major batch growth with duplicate shifts preserved
-3. source/shift provenance in a JSON-compatible report
-4. residual sanity on the materialized `FieldBatch` outputs
-
-The split/leakage provenance example demonstrates:
-
-1. a clean user-supplied partition report
-2. traceable overlap after orbit materialization
-3. missing provenance when source/shift indices are not recorded
-4. downstream workflow integration without split creation or leakage prevention
-
-The symmetry candidate validation example demonstrates:
-
-1. externally supplied `GeneratorFamily` and `InvariantMapSpec` payload validation
-2. Heat and KdV configured empirical validation reports
-3. a failed candidate for contrast
-4. the v0.16 interpretation that `validated` means configured empirical validation, not a mathematical proof
-
-The formula generator validation example demonstrates:
-
-1. affine, trigonometric, and rational formula-backed candidates
-2. safe JSON AST formula metadata, not executable formula strings
-3. a formula candidate with a supported uniform-translation finite-transform spec
-4. a failed denominator-floor case for contrast
-
-The generator confidence report example demonstrates:
-
-1. one `strong` direct-SVD Heat case with configured residual and verification thresholds
-2. one `qualified` formula-backed candidate with partial empirical validation
-3. categorical confidence labels and component statuses
-4. no scalar confidence score, train/test policy, or proof claim
-
-You can also call the examples programmatically.
-They return JSON-compatible runtime summaries, not canonical artifact schemas.
-The Heat and KdV examples return nested `vertical_slice` summaries; the invariant examples return diagnostic/workflow summaries:
-
-```python
-from pdelie.examples import (
-    run_heat_vertical_slice_example,
-    run_formula_generator_validation_example,
-    run_generator_confidence_report_example,
-    run_invariant_workflow_summary_example,
-    run_kdv_vertical_slice_example,
-    run_orbit_coverage_diagnostics_example,
-    run_symmetry_candidate_validation_example,
-    run_translation_orbit_batch_example,
-)
-
-result = run_kdv_vertical_slice_example()
-print(result["verification"]["classification"])
-
-coverage = run_orbit_coverage_diagnostics_example()
-print(coverage["coverage_cases"][0]["coverage_fraction"])
-
-workflow = run_invariant_workflow_summary_example()
-print(workflow["workflows"][0]["summary_type"])
-
-orbit_batch = run_translation_orbit_batch_example()
-print(orbit_batch["cases"][0]["orbit_report"]["output_batch_size"])
-
-candidate_validation = run_symmetry_candidate_validation_example()
-print(candidate_validation["cases"][0]["report"]["conclusion"])
-
-formula_validation = run_formula_generator_validation_example()
-print(formula_validation["cases"][0]["report"]["candidate_kind"])
-
-confidence = run_generator_confidence_report_example()
-print(confidence["cases"][0]["confidence"]["confidence_label"])
-```
-
-## Current Scope
-
-Included in the current stable core:
-
-- stable canonical objects and typed validation errors, including `InvariantMapSpec`
-- synthetic heat, Burgers, and normalized periodic short-horizon KdV data
-- strict structured external-data ingestion into canonical `FieldBatch` via `from_numpy(...)` and `from_xarray(...)`
-- stable weak residual report APIs under `pdelie.residuals` for Heat and Burgers
-- stable normalized KdV strong residual evaluator under `pdelie.residuals`
-- stable supportability reporting helpers under `pdelie.reporting`, including generator-fit diagnostic summaries
-- polynomial translation baseline for the stable PDE slice
-- finite-transform verification for the stable PDE slice
-- family-shaped `GeneratorFamily` serialization and narrow translation compatibility migration
-- manifest export/import for canonical `GeneratorFamily` portability
-- strict external-family normalization for canonical payloads, manifests, and the narrow legacy translation payload
-- single-generator invariant map support
-- runtime-only discovery recovery metrics, backend-native PySINDy discovery fits, translation-canonical discovery inputs, robustness utilities, and structured-ingestion parity coverage for the current Heat/Burgers slice
-- matched Heat/Burgers benchmark and release-gate checks in the test layer
-- consolidated current release-gate CI visibility while retaining historical gate tests in the full test suite
-- KdV is stable only for the normalized periodic short-horizon strong path; weak KdV remains explicitly deferred
-- KS remains internal feasibility/no-go evidence from `v0.11` plus internal diagnostic sweep evidence in `v0.12`; no stable KS runtime API is promoted
-- orbit/coverage diagnostics from `v0.13` are public under `pdelie.invariants`; they report coverage and consistency but do not construct augmented datasets
-- invariant workflow summaries and uniform translation orbit reports in `v0.14` are read-only runtime reports; they do not construct augmented datasets, orbit datasets, or transformed `FieldBatch` collections
-- materialized uniform translation orbit batches in `v0.15` are conservative data utilities; they append along batch and record provenance, but do not manage train/test splits or leakage policy
-- external symmetry-candidate validation in `v0.16` accepts `GeneratorFamily` and `InvariantMapSpec` objects or strict payload mappings and returns empirical configured validation reports; it does not train detectors or accept callables
-- formula-backed generator support in `v0.17` adds safe runtime formula records, reporting, and empirical validation; it does not parse executable strings, accept callables, train learned generators, or change canonical polynomial `GeneratorFamily`
-- Fisher-KPP reaction-diffusion support in `v0.18` adds one scoped scalar 1D periodic strong path with direct SVD translation-fit evidence; it does not add advection-diffusion, KS promotion, weak reaction-diffusion, custom initial-condition APIs, or broader grid support
-- advection-diffusion support in `v0.19` adds one scoped scalar 1D periodic constant-coefficient strong path with direct SVD translation-fit evidence; it does not add variable coefficients, weak advection-diffusion, reaction-advection-diffusion, custom initial-condition APIs, time translation, or broader grid support
-- confidence reporting in `v0.20` adds categorical generator-confidence reports; it does not add scalar scores, proof claims, benchmark success policy, train/test policy, or downstream leakage policy
-- external data readiness reporting in `v0.21` adds `FieldBatch` compatibility reports and residual preflight; it does not add file loaders, Dataset support, broad adapters, resampling, metadata mutation, train/test policy, or leakage policy
-- downstream discovery contracts in `v0.22` add bridge/result/workflow reports; they do not add a backend framework, split management, leakage detection, or manuscript benchmark policy
-- split/leakage provenance diagnostics in `v0.23` add report-only partition/provenance risk summaries; they do not create splits, prevent leakage, or define benchmark policy
-
-Runtime-level public APIs in the frozen V0.23 slice:
-
-- `pdelie.data.from_numpy` for strict runtime conversion of explicit NumPy/array-like 1D uniform rectilinear trajectory data into canonical `FieldBatch`
-- `pdelie.data.from_xarray` for strict runtime conversion of explicit `xarray.DataArray` 1D uniform rectilinear trajectory data into canonical `FieldBatch` when the optional `xarray` dependency is installed
-- `pdelie.derivatives.compute_spectral_fd_derivatives(..., max_spatial_order=4)` for `u_xxxx` on the existing uniform periodic `spectral_fd` backend; the default `max_spatial_order=2` behavior remains preserved
-- `pdelie.data.generate_kdv_1d_field_batch` for normalized periodic short-horizon synthetic KdV under the frozen v0.9 generator regime
-- `pdelie.residuals.KdVResidualEvaluator` for the normalized strong-form residual `u_t + 6*u*u_x + u_xxx = 0`
-- `pdelie.examples.run_kdv_vertical_slice_example` for a runtime smoke example, not a canonical report schema
-- `pdelie.data.generate_reaction_diffusion_1d_field_batch` for synthetic scalar 1D periodic Fisher-KPP reaction-diffusion under the frozen v0.18 generator regime
-- `pdelie.residuals.ReactionDiffusionResidualEvaluator` for the strong-form residual `u_t - nu*u_xx - rho*u*(1-u) = 0`
-- `pdelie.examples.run_reaction_diffusion_vertical_slice_example` for a runtime smoke example, not a canonical report schema
-- `pdelie.data.generate_advection_diffusion_1d_field_batch` for synthetic scalar 1D periodic constant-coefficient advection-diffusion under the frozen v0.19 generator regime
-- `pdelie.residuals.AdvectionDiffusionResidualEvaluator` for the strong-form residual `u_t + c*u_x - nu*u_xx = 0`
-- `pdelie.examples.run_advection_diffusion_vertical_slice_example` for a runtime smoke example, not a canonical report schema
-- `pdelie.residuals.evaluate_weak_heat_residual` for deterministic window-indexed weak residual report dicts over canonical scalar 1D uniform periodic Heat `FieldBatch` data
-- `pdelie.residuals.evaluate_weak_burgers_residual` for deterministic window-indexed weak residual report dicts over canonical scalar 1D uniform periodic Burgers `FieldBatch` data
-- `pdelie.reporting.summarize_residual_batch` for JSON-compatible runtime summaries of `ResidualBatch` outputs
-- `pdelie.reporting.summarize_weak_residual_report` for JSON-compatible summaries of frozen weak residual report dicts
-- `pdelie.reporting.summarize_generator_family` for JSON-compatible summaries of `GeneratorFamily` coefficients and diagnostics
-- `pdelie.reporting.summarize_generator_fit_diagnostics` for JSON-compatible summaries of generator-fit diagnostics, singular values, condition number, selected/SVD span distances, fallback status, and evidence labels
-- `pdelie.reporting.summarize_verification_report` for JSON-compatible summaries of finite-transform verification sweeps
-- `pdelie.reporting.summarize_vertical_slice` for nested derivative/residual/generator/verification runtime summaries
-- `pdelie.reporting.summarize_invariant_workflow` for nested coverage, consistency, orbit, generator, fit-diagnostic, verification, and extra-metric runtime summaries
-- `pdelie.invariants.InvariantApplier` for single-generator periodic `x` uniform translation only
-- `pdelie.invariants.compute_periodic_window_coverage` for JSON-compatible grid-point coverage diagnostics over endpoint-excluded periodic 1D grids, half-open windows, and uniform translation shifts
-- `pdelie.invariants.diagnose_uniform_translation_consistency` for JSON-compatible diagnostics of uniform-translation structure, inverse/period-wrap consistency, provenance, and optional residual stability
-- `pdelie.invariants.summarize_uniform_translation_orbit` for read-only uniform `x`-translation orbit reports over canonical scalar 1D periodic `FieldBatch` inputs
-- `pdelie.invariants.build_uniform_translation_orbit_batch` for materialized uniform `x`-translation orbit batches with provenance reports
-- `pdelie.invariants.OrbitBatchResult` as a runtime-only structured result containing the materialized `FieldBatch` and report
-- `pdelie.examples.run_orbit_coverage_diagnostics_example` for a runtime smoke example of the public orbit/coverage diagnostics, not a canonical report schema
-- `pdelie.examples.run_invariant_workflow_summary_example` for a runtime smoke example combining Heat, KdV, coverage, orbit, fit, and verification summaries
-- `pdelie.examples.run_translation_orbit_batch_example` for a runtime smoke example of materialized orbit batches, not a canonical report schema
-- `pdelie.symmetry.validate_symmetry_candidate` for empirical configured validation reports over externally supplied `GeneratorFamily` and `InvariantMapSpec` candidates
-- `pdelie.examples.run_symmetry_candidate_validation_example` for a runtime smoke example of external symmetry-candidate validation, not a canonical report schema
-- `pdelie.symmetry.FormulaGeneratorFamily` for runtime-only formula-backed scalar 1D Lie-point generator records
-- `pdelie.reporting.summarize_formula_generator_family` for JSON-compatible runtime summaries of formula-backed generator records
-- `pdelie.examples.run_formula_generator_validation_example` for a runtime smoke example of formula-backed candidate validation, not a canonical report schema
-- `pdelie.reporting.summarize_generator_confidence` for JSON-compatible categorical confidence reports over residual, fit, verification, candidate-validation, coverage, consistency, and orbit evidence
-- `pdelie.examples.run_generator_confidence_report_example` for a runtime smoke example of unified generator confidence reporting, not a canonical report schema
-- `pdelie.reporting.summarize_field_batch_readiness` for JSON-compatible external data readiness reports over canonical `FieldBatch` inputs
-- `pdelie.examples.run_external_data_readiness_example` for a runtime smoke example of external data readiness reporting, not a canonical report schema
-- `pdelie.discovery.to_pysindy_trajectories` for the narrow backend-specific PySINDy bridge
-- `pdelie.discovery.evaluate_discovery_recovery` for runtime-only support/coefficient recovery metrics over caller-supplied canonical term strings
-- `pdelie.discovery.fit_pysindy_discovery` for a runtime-only backend-native PySINDy fit adapter
-- `pdelie.discovery.build_translation_canonical_discovery_inputs` for runtime-only heuristic translation-canonical discovery inputs
-- `pdelie.discovery.summarize_recovery_grid` for runtime-only grouped recovery summaries
-- `pdelie.discovery.summarize_discovery_bridge_output` for JSON-compatible downstream bridge output summaries
-- `pdelie.discovery.summarize_discovery_result` for compact backend-neutral discovery result and recovery summaries
-- `pdelie.reporting.summarize_downstream_discovery_workflow` for combining readiness, confidence, orbit-batch, bridge, discovery-result, and optional split-provenance reports
-- `pdelie.examples.run_downstream_discovery_contracts_example` for a runtime smoke example of downstream discovery contracts, not a backend framework
-- `pdelie.reporting.summarize_split_leakage_provenance` for JSON-compatible report-only diagnostics over user-supplied partitions and available source/shift provenance
-- `pdelie.examples.run_split_leakage_provenance_example` for a runtime smoke example of split/leakage provenance diagnostics, not split management or leakage prevention
-- `pdelie.data.add_gaussian_noise`, `subsample_time`, `subsample_x`, and `split_batch_train_heldout` for deterministic `FieldBatch` robustness workflows
-- `pdelie.portability.export_generator_family_manifest` and `pdelie.portability.import_generator_family_manifest` for manifest-level generator-family portability
-- `pdelie.portability.coerce_generator_family` for strict normalization of canonical, manifest, and narrow legacy translation inputs
-- `pdelie.symmetry.render_generator_family` for deterministic symbolic display
-- `pdelie.symmetry.to_sympy_component_expressions` when `sympy` is installed at runtime
-- `pdelie.symmetry.compare_generator_spans` for runtime span diagnostics
-- `pdelie.symmetry.diagnose_generator_family_closure` for runtime closure diagnostics
-- `pdelie.viz.plot_generator_coefficients`, `plot_generator_symbolic_summary`, `plot_verification_curve`, `plot_span_diagnostics`, and `plot_closure_diagnostics` when `matplotlib` is installed
-
-The degraded weak-path release wins in `v0.8` are frozen as representative contract-stability signals. They are fallback-backed release checks, not a general weak-superiority claim.
-
-The KdV support retained through `v0.23` is normalized, periodic, scalar, 1D, and short-horizon. Accepted generator parameters outside the release-guaranteed regime are user-risk and are not general KdV stability guarantees.
-
-The `v0.10` reporting helpers are supportability APIs. They produce JSON-compatible runtime summaries, not canonical objects, manuscript tables, or artifact schemas.
-
-The `v0.11` KS feasibility track does not promote stable KS runtime support. Internal feasibility evidence passes residual, mass, and canonical held-out verification checks, but translation fitting is reference-fallback-backed rather than direct SVD in-tolerance recovery.
-
-The `v0.12` diagnostics work hardens supportability without changing numerical scope. The public addition is the submodule-only `summarize_generator_fit_diagnostics(...)` helper. The internal KS diagnostic sweep and orbit/coverage feasibility helpers remain test-only evidence, not public runtime APIs.
-
-The `v0.13` diagnostics work promotes only the reusable orbit/coverage reporting layer under `pdelie.invariants`. These diagnostics support invariant and finite-transform workflows but do not construct augmented datasets, orbit views, train branches, or manuscript artifacts.
-
-The `v0.14` workflow work adds read-only orbit reports and combined invariant workflow summaries. These helpers combine existing reports and canonical objects into JSON-compatible runtime summaries; they do not construct augmented datasets, orbit datasets, transformed `FieldBatch` collections, or time-translation APIs.
-
-The `v0.15` data-utility work adds materialized uniform translation orbit batches. This is the first conservative user-facing data utility beyond diagnostics: it returns a `FieldBatch` plus provenance report, preserves duplicate shifts, and records source/shift indices when requested. It still does not manage train/test splits, leakage policy, or downstream experiment design.
-
-The `v0.15` orbit-batch helper constructs orbit-expanded data. It does not decide train/heldout policy or leakage safety. Serious workflows should keep source and shift indices enabled so materialized samples remain auditable.
-
-The `v0.16` candidate-validation work adds detector interop through strict payload validation and empirical reports. `validated` means the configured checks passed under the supplied field, residual evaluator, epsilons, and optional reference; it is not a mathematical proof. Callable descriptors, learned detector training, KS promotion, and operator-facing APIs remain deferred.
-
-The `v0.17` formula-generator work adds safe formula-backed runtime records and empirical validation. Formula records use JSON AST metadata, not executable code or arbitrary string parsing.
-
-The `v0.18` reaction-diffusion work adds one stable Fisher-KPP strong path. The stable claim covers the frozen scalar 1D periodic synthetic regime with direct SVD translation-fit evidence. Mean and L2 drift are diagnostic-only because Fisher-KPP reaction terms are not conservation laws.
-
-The `v0.19` advection-diffusion work adds one stable constant-coefficient strong path. The stable claim covers the frozen scalar 1D periodic synthetic regime with exact Fourier rollout and direct SVD translation-fit evidence. Variable coefficients, weak advection-diffusion, and custom initial-condition APIs remain deferred.
-
-The `v0.20` confidence-reporting work adds one categorical supportability helper. The stable claim covers JSON-compatible evidence composition only. It does not define a scalar confidence score, proof system, benchmark success policy, train/test policy, or leakage-safety policy.
-
-The `v0.21` external-data readiness work adds one supportability helper for inspecting canonical `FieldBatch` inputs before residual, confidence, and downstream workflows. It does not load files, accept `xarray.Dataset`, infer PDE identity, resample grids, mutate metadata, or broaden stable numerical scope.
-
-The `v0.22` downstream discovery contracts work adds report-only contracts for bridge outputs, backend-neutral discovery results, optional recovery summaries, and workflow composition. It does not manage splits, detect heldout leakage, define benchmark success criteria, load files, or become a discovery-backend framework.
-
-The `v0.23` split/leakage provenance work adds report-only diagnostics for user-supplied partitions and available source/shift provenance. It reports detectable overlap risks; it does not create splits, prevent leakage, define benchmark policy, or choose downstream acceptance thresholds.
-
-Explicitly deferred:
-- stable multi-generator PDE fitting
-- multi-generator invariant machinery
-- broad downstream discovery backends or benchmark policy
-- `xarray.Dataset` support
-- file-based dataset loaders
-- multidimensional or nonuniform-grid ingestion
-- metadata inference
-- operator symmetry
-- weak derivatives and broader weak-form methods beyond the frozen `v0.8` weak residual report slice
-- weak KdV APIs
-- custom KdV initial conditions or configurable KdV coefficients
-- general KdV support outside the frozen normalized periodic short-horizon regime
-- variable-coefficient advection-diffusion
-- reaction-advection-diffusion
-- weak advection-diffusion
-- weak reaction-diffusion
-- custom reaction-diffusion initial-condition APIs
-- stable KS data generator, residual evaluator, vertical-slice example, imported parity, weak KS API, or root KS export
-- public orbit-view builders beyond the frozen materialized uniform translation orbit batch helper
-- train/test split management, heldout-leakage detection, or downstream augmentation policy
-- transformed `FieldBatch` collections from reporting helpers
-- time-translation APIs or `axis="time"` support
-- broad adapters and interoperability work
+- Docs index: [`docs/README.md`](docs/README.md)
+- Contracts and specs: [`docs/specs/`](docs/specs/)
+- Public API stability: [`docs/specs/API_STABILITY.md`](docs/specs/API_STABILITY.md)
+- Roadmap and planning: [`docs/planning/`](docs/planning/)
+- Release readiness: [`docs/releases/`](docs/releases/)
+- Tutorials: [`notebooks/README.md`](notebooks/README.md)
+- Contributor guide: [`CONTRIBUTING.md`](CONTRIBUTING.md)
