@@ -16,14 +16,14 @@ These files must be aligned before any release candidate or final release is pub
 
 ## V0.x Package-Index Deferral
 
-For the current `v0.x` series, including `v0.23.0`, release completion means:
+For the current `v0.x` series, including `v0.24.0`, release completion means:
 
 - metadata, docs, tests, build, and wheel-smoke checks pass
 - the release PR is merged
 - the merged commit is tagged in Git as the final version
 
-`v0.23.0` is intentionally a Git-tag-only release.
-Do not publish to TestPyPI or PyPI for `v0.23.0`.
+`v0.24.0` is intentionally a Git-tag-only release.
+Do not publish to TestPyPI or PyPI for `v0.24.0`.
 
 Package-index publishing through TestPyPI or PyPI is deferred until `v1.0` or later.
 The publishing model below remains the intended future package-index workflow once publication is re-enabled.
@@ -105,6 +105,7 @@ python -m pdelie.examples.kdv_vertical_slice
 python -m pdelie.examples.orbit_coverage_diagnostics
 python -m pdelie.examples.invariant_workflow_summary
 python -m pdelie.examples.split_leakage_provenance
+python -m pdelie.examples.weak_form_supportability
 ls -1 dist
 ~~~
 

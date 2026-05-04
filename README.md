@@ -2,14 +2,14 @@
 
 [![CI](https://github.com/alexgabel/pdelie/actions/workflows/ci.yml/badge.svg)](https://github.com/alexgabel/pdelie/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-%3E%3D3.11-blue)
-![Version](https://img.shields.io/badge/version-0.23.0-blue)
+![Version](https://img.shields.io/badge/version-0.24.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 PDELie is a research library for empirical Lie-symmetry workflows on controlled PDE time-series data. It turns canonical scalar 1D periodic fields into residuals, generator candidates, verification reports, confidence summaries, invariant/orbit diagnostics, and downstream discovery reports.
 
 ![PDELie pipeline](docs/assets/pdelie_pipeline.svg)
 
-The current stable release is `v0.23.0` / **V0.23**: split/leakage provenance diagnostics for user-supplied partitions and materialized uniform-translation orbit batches. PDELie reports traceability and detectable overlap; it does not create splits, prevent leakage, or define benchmark policy.
+The current stable release is `v0.24.0` / **V0.24**: weak-form supportability reports for the frozen public Heat/Burgers weak residual report slice, explicit weak contracts, and internal diagnostic-only Fisher-KPP feasibility. PDELie reports configured empirical supportability; it does not implement WSINDy, weak design matrices, weak sparse recovery, or a weak derivative backend.
 
 ## Install
 
@@ -90,7 +90,7 @@ PDELie is intentionally conservative. The stable `v0.x` surface currently covers
 - synthetic Heat, Burgers, normalized short-horizon KdV, Fisher-KPP reaction-diffusion tagged as `reaction_diffusion_fisher_kpp`, and constant-coefficient advection-diffusion tagged as `advection_diffusion_constant_coefficient`
 - `spectral_fd` derivatives through `u_xxxx`
 - polynomial translation-generator fitting and finite-transform verification
-- JSON-compatible reporting helpers for residuals, fits, verification, confidence, readiness, invariant workflows, downstream discovery contracts, and split-provenance diagnostics
+- JSON-compatible reporting helpers for residuals, weak reports, weak supportability, fits, verification, confidence, readiness, invariant workflows, downstream discovery contracts, and split-provenance diagnostics
 - uniform `x`-translation coverage, consistency, read-only orbit reports, and materialized orbit batches
 - empirical validation of `GeneratorFamily`, `InvariantMapSpec`, and safe formula-backed `FormulaGeneratorFamily` candidates
 - narrow structured ingestion through `from_numpy(...)` and optional `from_xarray(...)`
@@ -114,6 +114,7 @@ Selected runtime helpers include:
 - `pdelie.discovery.summarize_discovery_bridge_output`
 - `pdelie.reporting.summarize_downstream_discovery_workflow`
 - `pdelie.reporting.summarize_split_leakage_provenance`
+- `pdelie.reporting.summarize_weak_form_supportability`
 
 ## What PDELie Is Not
 
@@ -127,7 +128,7 @@ PDELie is not:
 - an operator-learning framework
 - a paper-specific experiment pipeline
 
-KS remains internal feasibility/no-go evidence, including an internal KS diagnostic sweep; no stable KS runtime API is promoted. Weak-form support beyond the frozen Heat/Burgers weak-report slice remains deferred.
+KS remains internal feasibility/no-go evidence, including an internal KS diagnostic sweep; no stable KS runtime API is promoted. Weak-form methods beyond the frozen Heat/Burgers weak-report slice and `v0.24` supportability reporting layer remain deferred.
 
 ## Examples
 
@@ -147,6 +148,7 @@ python -m pdelie.examples.generator_confidence_report
 python -m pdelie.examples.external_data_readiness
 python -m pdelie.examples.downstream_discovery_contracts
 python -m pdelie.examples.split_leakage_provenance
+python -m pdelie.examples.weak_form_supportability
 ```
 
 These are smoke/reporting examples, not canonical artifact schemas.
@@ -155,7 +157,7 @@ These are smoke/reporting examples, not canonical artifact schemas.
 
 The current release is validated by:
 
-- the explicit `v0_23-release-gate` CI job
+- the explicit `v0_24-release-gate` CI job
 - full editable `python -m pytest`
 - built-wheel package smoke
 - packaged example smoke

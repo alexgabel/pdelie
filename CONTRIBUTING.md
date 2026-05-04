@@ -28,7 +28,7 @@ Do not implement these unless a frozen scope explicitly asks for them:
 
 - neural generators
 - Python-callable or executable-string generator APIs
-- advanced weak-form methods beyond frozen weak-report slices
+- advanced weak-form methods beyond frozen weak-report slices and supportability reports
 - operator symmetry
 - multidimensional or nonuniform-grid expansion
 - paper-specific experiment logic

@@ -27,7 +27,7 @@ It is a **library**, not a project repo.
 
 - neural generators
 - Python-callable generators and executable formula strings
-- weak-form derivatives and weak-form extensions beyond the frozen `v0.8` weak residual report slice
+- weak-form derivatives and weak-form extensions beyond the frozen `v0.8` weak residual report slice and `v0.24` supportability reporting layer
 - broad dataset adapters, file-based dataset loaders, and Dataset-level ingestion
 - broad discovery-backend frameworks, split management, leakage prevention, and heldout-leakage policy
 - multidimensional, multivariable, and nonuniform-grid stable expansion

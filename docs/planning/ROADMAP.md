@@ -25,9 +25,9 @@ Execution state belongs in:
 
 ## Current State
 
-- Current completed release: `v0.23.0`
-- Current theme: split/leakage provenance diagnostics over user-supplied partitions
-- Next planned release: `v0.24` weak-form supportability reset
+- Current completed release: `v0.24.0`
+- Current theme: weak-form supportability reports for frozen Heat/Burgers weak residual slices
+- Next planned release: `v0.25` KdV scope decision
 - Public package docs start at [`../../README.md`](../../README.md) and [`../README.md`](../README.md)
 - Durable contributor guidance lives in [`../../CONTRIBUTING.md`](../../CONTRIBUTING.md)
 
@@ -463,6 +463,78 @@ The authoritative `v0.12` scope freeze belongs in:
 
 ## Current Completed Release
 
+### `v0.24` - Weak-form supportability reset
+**Status:** Completed
+
+`v0.24` is the completed weak-form supportability reset after the `v0.23` split/leakage provenance diagnostics release.
+
+Its purpose is:
+
+> report supportability for existing Heat/Burgers weak residual reports, explicit weak contracts, strong residual evidence, robustness/imported-parity diagnostics, and internal identity-first Fisher-KPP feasibility without promoting a weak backend.
+
+Completed release definition:
+
+`existing Heat/Burgers weak residual reports + explicit weak contracts + strong residual evidence + noisy/coarse/imported parity diagnostics + internal identity-first Fisher-KPP feasibility -> JSON-compatible weak-form supportability report`
+
+Completed scope:
+
+- `pdelie.reporting.summarize_weak_form_supportability(...)`
+- `pdelie.examples.run_weak_form_supportability_example(...)`
+- frozen report type: `weak_form_supportability`
+- frozen supportability labels: `supported_existing_slice`, `diagnostic_only`, `failed`, and `insufficient_evidence`
+- normalized weak contract metadata including quadrature rule, test-function family/order, patch shape/stride, row counts, skipped-patch counts, and finite-value policy
+- internal Fisher-KPP weak feasibility remains test-only and `diagnostic_only`
+- compact current `v0_24-release-gate` readiness
+
+Release interpretation:
+
+- this is a runtime supportability/reporting release, not a weak-form expansion
+- `supported_existing_slice` means only the frozen public Heat/Burgers weak residual report surface
+- `v0.24` does not implement WSINDy, weak design matrices, weak sparse recovery, or a weak derivative backend
+- `v0.24.0` is a Git-tag-only release; PyPI and TestPyPI publication are deferred to `v1.0` or later
+
+Explicit non-goals:
+
+- no weak derivative backend
+- no WSINDy implementation
+- no weak design matrices or weak sparse recovery
+- no weak KdV
+- no weak KS
+- no public weak reaction-diffusion API
+- no new PDEs
+- no KS runtime promotion
+- no broad adapters or file loaders
+- no multidimensional or nonuniform-grid stable support
+- no split management or leakage prevention
+- no time-translation APIs
+- no neural or callable generator API
+- no operator-facing symmetry work
+- no root export expansion
+
+The authoritative `v0.24` scope freeze belongs in:
+
+- `V0_24_SCOPE.md`
+
+### Release Gate for `v0.24`
+
+`v0.24` is complete only if:
+
+- Heat/Burgers weak reports can produce `supported_existing_slice`
+- only internal feasibility evidence produces `diagnostic_only`
+- configured weak metric failures produce `failed`
+- missing weak evidence produces `insufficient_evidence`
+- malformed contracts, invalid thresholds, and nonfinite metadata raise typed validation errors
+- Fisher-KPP weak feasibility remains test-only and identity-first
+- new APIs are importable from their submodules only
+- root `pdelie` remains unchanged
+- no weak backend, WSINDy surface, weak KdV, weak KS, public weak reaction-diffusion API, new PDE, broad adapter, split policy, time-translation, neural/callable, or operator API lands
+- CI uses one compact current release gate plus full editable tests and package smoke
+- package/readiness docs preserve the `v1.0` package-index publishing deferral
+
+---
+
+## Recent Completed Release
+
 ### `v0.23` - Split/leakage provenance diagnostics
 **Status:** Completed
 
@@ -485,53 +557,18 @@ Completed scope:
 - frozen risk labels: `no_detected_overlap`, `traceable_overlap`, `missing_provenance`, and `inconclusive`
 - source overlap, source-and-shift overlap, identity-shift overlap, and partition-pair diagnostics
 - strict JSON-compatible optional source/sample metadata
-- compact current `v0_23-release-gate` readiness
 
 Release interpretation:
 
 - this is a runtime provenance diagnostics release, not a split-policy release
 - leakage means detectable provenance overlap under available metadata, not a proof of experimental invalidity
-- `v0.23.0` is a Git-tag-only release; PyPI and TestPyPI publication are deferred to `v1.0` or later
-
-Explicit non-goals:
-
 - no split management or leakage prevention
-- no automatic split creation
-- no downstream augmentation policy
-- no benchmark success criteria
-- no file loaders or `xarray.Dataset` support
-- no PDEBench or The Well adapters
-- no multidimensional or nonuniform-grid stable support
-- no new PDEs
-- no KS runtime promotion
-- no weak-form expansion
-- no time-translation APIs
-- no neural or callable generator API
-- no operator-facing symmetry work
-- no root export expansion
 
 The authoritative `v0.23` scope freeze belongs in:
 
 - `V0_23_SCOPE.md`
 
-### Release Gate for `v0.23`
-
-`v0.23` is complete only if:
-
-- partition labels are user supplied and validated as non-empty strings
-- partition/sample count mismatches raise typed validation errors
-- optional metadata is strict JSON-compatible
-- no-overlap, source-overlap, source-and-shift-overlap, identity-shift-overlap, missing-provenance, and partial-provenance cases are tested
-- downstream workflow summaries nest split provenance without adding split policy
-- new APIs are importable from their submodules only
-- root `pdelie` remains unchanged
-- no split manager, leakage-prevention helper, file loader, Dataset adapter, broad backend framework, new PDE, KS runtime API, weak-form expansion, time-translation, neural/callable, or operator API lands
-- CI uses one compact current release gate plus full editable tests and package smoke
-- package/readiness docs preserve the `v1.0` package-index publishing deferral
-
 ---
-
-## Recent Completed Release
 
 ### `v0.22` - Downstream discovery contracts
 **Status:** Completed
@@ -1361,26 +1398,6 @@ Only `Committed` items define the next release target.
 
 The principle is still one stable axis at a time: do not combine PDE expansion, data-adapter expansion, weak-form expansion, multi-generator machinery, and downstream policy in one release.
 
-### `v0.24` - Weak-form supportability reset
-**Status:** Planned
-
-Purpose:
-
-> decide whether weak derivatives and broader weak-form methods can be promoted beyond the frozen `v0.8` weak residual report slice.
-
-Candidate scope:
-
-- weak derivative backend feasibility
-- broader weak-form residual method contracts
-- weak reaction-diffusion feasibility
-- noisy/coarse-data supportability diagnostics
-
-Deferred unless separately proven:
-
-- weak KdV APIs
-- weak KS APIs
-- broad noisy-data superiority claims
-
 ### `v0.25` - KdV scope decision
 **Status:** Planned
 
@@ -1571,6 +1588,7 @@ This is not part of the near-term non-operator Paper 1 path and should not be mi
 - `V0_21_SCOPE.md` once frozen
 - `V0_22_SCOPE.md` once frozen
 - `V0_23_SCOPE.md` once frozen
+- `V0_24_SCOPE.md` once frozen
 - `PLAN.md` for current execution only
 
 ### Non-authoritative for scheduling
@@ -1620,7 +1638,7 @@ It should **not** be edited every time a new idea appears.
 - `v0.21` = external data readiness reports
 - `v0.22` = downstream discovery contracts and provenance reports
 - `v0.23` = split/leakage provenance diagnostics, not split management or leakage prevention
-- `v0.24` = planned weak-form supportability reset
+- `v0.24` = weak-form supportability reset, not WSINDy or a weak derivative backend
 - `v0.25` = planned KdV scope decision
 - `v0.26` = planned KS revisit
 - `v0.27` = planned multi-generator feasibility
