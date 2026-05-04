@@ -44,6 +44,7 @@ _ROOT_RUNTIME_NAMES = {
     "run_heat_vertical_slice_example",
     "run_advection_diffusion_vertical_slice_example",
     "run_kdv_scope_decision_example",
+    "run_multi_generator_diagnostics_example",
     "run_formula_generator_validation_example",
     "run_generator_confidence_report_example",
     "run_downstream_discovery_contracts_example",
@@ -125,6 +126,13 @@ _DEFERRED_OR_PRIVATE_NAMES = {
     "summarize_orbit_coverage",
     "summarize_orbit_coverage_feasibility",
     "train_test_translation_orbit_split",
+    "fit_multi_generator_family",
+    "fit_generator_family_span",
+    "MultiGeneratorInvariantChart",
+    "build_multi_generator_orbit",
+    "compose_bch",
+    "integrate_generator_flow",
+    "build_multi_parameter_orbit_chart",
 }
 _DEFERRED_API_STABILITY_NAMES = {
     "pdelie.data.augment_translation_orbit",
@@ -160,6 +168,12 @@ _DEFERRED_API_STABILITY_NAMES = {
     "pdelie.residuals.WeakAdvectionDiffusionResidualEvaluator",
     "pdelie.symmetry.OperatorSymmetry",
     "pdelie.symmetry.CallableGeneratorFamily",
+    "pdelie.symmetry.fit_multi_generator_family",
+    "pdelie.symmetry.fit_generator_family_span",
+    "pdelie.symmetry.MultiGeneratorInvariantChart",
+    "pdelie.symmetry.build_multi_generator_orbit",
+    "pdelie.symmetry.compose_bch",
+    "pdelie.symmetry.integrate_generator_flow",
     "pdelie.symmetry.validate_generator_candidate",
 }
 _V0_10_REPORTING_APIS = {
@@ -257,6 +271,13 @@ _V0_25_KDV_SCOPE_DECISION_APIS = {
     "current_frozen_supported",
     "deferred_no_go",
 }
+_V0_27_MULTI_GENERATOR_DIAGNOSTICS_APIS = {
+    "pdelie.examples.run_multi_generator_diagnostics_example",
+    "summary_type = \"multi_generator_diagnostics_example\"",
+    "family_rank_status = \"rank_deficient\"",
+    "closure_required=True|False",
+    "multi_generator_diagnostics_feasible_fitting_deferred",
+}
 
 
 def _api_stability_text() -> str:
@@ -289,6 +310,7 @@ def test_api_stability_doc_covers_current_stable_runtime_surface() -> None:
         | _V0_23_SPLIT_PROVENANCE_APIS
         | _V0_24_WEAK_SUPPORTABILITY_APIS
         | _V0_25_KDV_SCOPE_DECISION_APIS
+        | _V0_27_MULTI_GENERATOR_DIAGNOSTICS_APIS
     ):
         assert api_name in text
 
@@ -533,12 +555,6 @@ def test_v0_26_planning_docs_record_ks_revisit_decision_and_non_goals() -> None:
     roadmap = _repo_text("docs/planning/ROADMAP.md")
     api_stability = _api_stability_text()
 
-    assert "**Status:** COMPLETE" in plan
-    assert "KS revisit decision" in plan
-    assert "current_no_go_reference_fallback" in plan
-    assert "v0.26b" in plan
-    assert "- Milestone 6: COMPLETE" in plan
-
     assert "KS Revisit Decision" in scope
     assert "current_no_go_reference_fallback" in scope
     assert "direct_strong_candidate_for_v0_26b_promotion" in scope
@@ -553,3 +569,33 @@ def test_v0_26_planning_docs_record_ks_revisit_decision_and_non_goals() -> None:
     assert "`v0.26` is the completed Kuramoto-Sivashinsky revisit decision release" in roadmap
     assert "`v0.26b` - KS promotion" in roadmap
     assert "Decision-only note for the frozen `v0.26` KS revisit decision" in api_stability
+
+
+def test_v0_27_planning_docs_record_multi_generator_diagnostics_decision_and_non_goals() -> None:
+    plan = _repo_text("docs/planning/PLAN.md")
+    scope = _repo_text("docs/planning/V0_27_SCOPE.md")
+    roadmap = _repo_text("docs/planning/ROADMAP.md")
+    api_stability = _api_stability_text()
+
+    assert "**Status:** COMPLETE" in plan
+    assert "multi-generator diagnostics decision" in plan
+    assert "multi_generator_diagnostics_feasible_fitting_deferred" in plan
+    assert "no public multi-generator fitting API" in plan
+    assert "- Milestone 6: COMPLETE" in plan
+
+    assert "Multi-Generator Diagnostics Decision" in scope
+    assert "bracket convention" in scope
+    assert "family_rank_status" in scope
+    assert "rank_deficient" in scope
+    assert "closure_required=True|False" in scope
+    assert "no BCH composition" in scope
+    assert "no exponential-map finite-flow integration" in scope
+    assert "- Milestone 4: COMPLETE" in scope
+    assert "- Milestone 5: COMPLETE" in scope
+    assert "- Milestone 6: COMPLETE" in scope
+
+    assert "`v0.27` - Multi-generator diagnostics decision" in roadmap
+    assert "no public multi-generator fitting" in roadmap
+    assert "Runtime public API and behavior updates for the frozen `v0.27`" in api_stability
+    assert "pdelie.examples.run_multi_generator_diagnostics_example" in api_stability
+    assert "multi_generator_diagnostics_feasible_fitting_deferred" in api_stability

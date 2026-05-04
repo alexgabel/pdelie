@@ -25,9 +25,9 @@ Execution state belongs in:
 
 ## Current State
 
-- Current completed release: `v0.26.0`
-- Current theme: KS revisit decision with public promotion deferred to `v0.26b`
-- Next planned release: `v0.26b` KS promotion decision, only if direct-SVD/no-fallback evidence is accepted in a separate scope freeze
+- Current completed release: `v0.27.0`
+- Current theme: multi-generator diagnostics decision with fitting and invariant-action promotion deferred
+- Next planned release: not frozen; `v0.26b` remains reserved for KS promotion only if a separate scope freeze accepts direct-SVD/no-fallback evidence
 - Public package docs start at [`../../README.md`](../../README.md) and [`../README.md`](../README.md)
 - Durable contributor guidance lives in [`../../CONTRIBUTING.md`](../../CONTRIBUTING.md)
 
@@ -463,6 +463,71 @@ The authoritative `v0.12` scope freeze belongs in:
 
 ## Current Completed Release
 
+### `v0.27` - Multi-generator diagnostics decision
+**Status:** Completed
+
+`v0.27` is the completed multi-generator diagnostics decision release after the `v0.26` KS revisit decision.
+
+Its purpose is:
+
+> diagnose supplied multi-row `GeneratorFamily` objects without promoting public multi-generator PDE fitting or finite group-action machinery.
+
+Completed release definition:
+
+`supplied multi-row GeneratorFamily + algebraic diagnostics + PDE-context diagnostic labels + internal-only fit-probe status -> explicit multi-generator promotion decision`
+
+Completed scope:
+
+- `pdelie.examples.run_multi_generator_diagnostics_example(...)`
+- `python -m pdelie.examples.multi_generator_diagnostics`
+- rank-deficient closure diagnostics report `family_rank_status = "rank_deficient"` instead of raising solely for redundant rows
+- rank-deficient/zero-rank span comparisons return warning/failed reports
+- `validate_symmetry_candidate(..., closure_required=True|False)` for `GeneratorFamily` candidates
+- supplied-family diagnostics for closed affine, non-closed polynomial, rank-deficient, and basis-mismatch cases
+- compact current `v0_27-release-gate` readiness
+
+Release interpretation:
+
+- closure, span, and structure constants are algebraic diagnostics, not proof of PDE residual symmetry
+- public multi-generator PDE fitting remains deferred
+- finite multi-generator flows, BCH composition, invariant charts, and multi-parameter orbit charts remain deferred
+- `v0.27.0` is a Git-tag-only release; PyPI and TestPyPI publication are deferred to `v1.0` or later
+
+Explicit non-goals:
+
+- no public multi-generator PDE fitting
+- no finite multi-generator flows
+- no BCH composition
+- no exponential-map finite-flow integration
+- no multi-generator invariant charts
+- no multi-parameter orbit charts
+- no group-action atlas
+- no broad adapters or file loaders
+- no multidimensional or nonuniform stable support
+- no time-translation APIs
+- no neural or callable generator API
+- no operator-facing symmetry work
+
+The authoritative `v0.27` scope freeze belongs in:
+
+- `V0_27_SCOPE.md`
+
+### Release Gate for `v0.27`
+
+`v0.27` is complete only if:
+
+- supplied closed families report expected structure constants under the frozen bracket convention
+- non-closed families report nonzero closure residuals
+- rank-deficient well-formed families return diagnostic reports, not automatic exceptions
+- multi-row candidate validation separates algebraic evidence from PDE-context evidence
+- no public multi-generator fitting, finite-flow, BCH, invariant-chart, orbit-chart, operator, neural/callable, or root export surface lands
+- CI uses one compact current release gate plus full editable tests and package smoke
+- package/readiness docs preserve the `v1.0` package-index publishing deferral
+
+---
+
+## Recent Completed Release
+
 ### `v0.26` - KS revisit decision
 **Status:** Completed
 
@@ -476,60 +541,18 @@ Completed release definition:
 
 `internal normalized KS fixture + order-4 spectral_fd residual feasibility + translation fit / verification / confidence diagnostics + minimal no-go reproduction matrix -> explicit KS decision`
 
-Completed scope:
-
-- test-only `ks_revisit_decision` report
-- decision labels: `current_no_go_reference_fallback`, `residual_feasible_fit_not_promotable`, `direct_strong_candidate_for_v0_26b_promotion`, and `deferred_no_go`
-- primary KS fixture confidence report using `summarize_generator_confidence(...)`
-- minimal test-only matrix over seed, fit-epsilon, and one resolution variant
-- compact current `v0_26-release-gate` readiness
-
 Release interpretation:
 
 - this is a decision release, not a KS promotion release
 - the primary KS fixture remains residual-feasible and verification-feasible
 - translation fitting remains reference-fallback-backed, so public KS support remains deferred
 - `v0.26b` is reserved as the follow-up promotion release name if a separate scope freeze accepts future direct-SVD/no-fallback evidence
-- `v0.26.0` is a Git-tag-only release; PyPI and TestPyPI publication are deferred to `v1.0` or later
-
-Explicit non-goals:
-
-- no public KS data generator
-- no public KS residual evaluator
-- no public KS vertical-slice example
-- no public KS status example
-- no residual-only KS public API
-- no weak KS API
-- no custom KS initial-condition API
-- no configurable KS coefficient API
-- no broad KS regime support
-- no root KS export
-- no broad adapters or file loaders
-- no multidimensional or nonuniform stable support
-- no time-translation APIs
-- no neural or callable generator API
-- no operator-facing symmetry work
 
 The authoritative `v0.26` scope freeze belongs in:
 
 - `V0_26_SCOPE.md`
 
-### Release Gate for `v0.26`
-
-`v0.26` is complete only if:
-
-- the primary KS fixture records `current_no_go_reference_fallback`
-- residual and verification evidence remain feasible but fit evidence remains fallback-backed
-- confidence evidence is present and does not override the direct-SVD/no-fallback promotion rule
-- matrix variants remain diagnostic-only
-- no public KS runtime API, weak KS API, status example, or root KS export lands
-- API stability docs record the decision-only status without adding stable KS runtime contracts
-- CI uses one compact current release gate plus full editable tests and package smoke
-- package/readiness docs preserve the `v1.0` package-index publishing deferral
-
----
-
-## Recent Completed Release
+### Earlier Recent Release
 
 ### `v0.25` - KdV scope decision
 **Status:** Completed

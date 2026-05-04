@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  v0_26-release-gate:
+  v0_27-release-gate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -32,8 +32,8 @@ jobs:
           retry 3 python -m pip install -e .[test]
       - name: Check dependencies
         run: python -m pip check
-      - name: Run V0.26 release gate
-        run: python -m pytest tests/test_v0_26_release_gate.py
+      - name: Run V0.27 release gate
+        run: python -m pytest tests/test_v0_27_release_gate.py
   editable-tests:
     runs-on: ubuntu-latest
     steps:
@@ -68,6 +68,7 @@ jobs:
           python -m pdelie.examples.heat_vertical_slice
           python -m pdelie.examples.kdv_vertical_slice
           python -m pdelie.examples.kdv_scope_decision
+          python -m pdelie.examples.multi_generator_diagnostics
           python -m pdelie.examples.reaction_diffusion_vertical_slice
           python -m pdelie.examples.advection_diffusion_vertical_slice
           python -m pdelie.examples.orbit_coverage_diagnostics
@@ -143,6 +144,7 @@ jobs:
               run_downstream_discovery_contracts_example,
               run_external_data_readiness_example,
               run_kdv_scope_decision_example,
+              run_multi_generator_diagnostics_example,
               run_reaction_diffusion_vertical_slice_example,
               run_split_leakage_provenance_example,
               run_weak_form_supportability_example,
@@ -207,6 +209,7 @@ jobs:
           assert run_downstream_discovery_contracts_example is not None
           assert run_external_data_readiness_example is not None
           assert run_kdv_scope_decision_example is not None
+          assert run_multi_generator_diagnostics_example is not None
           assert run_split_leakage_provenance_example is not None
           assert run_weak_form_supportability_example is not None
           assert generate_reaction_diffusion_1d_field_batch is not None
@@ -235,6 +238,7 @@ jobs:
           assert not hasattr(pdelie, "run_downstream_discovery_contracts_example")
           assert not hasattr(pdelie, "run_external_data_readiness_example")
           assert not hasattr(pdelie, "run_kdv_scope_decision_example")
+          assert not hasattr(pdelie, "run_multi_generator_diagnostics_example")
           assert not hasattr(pdelie, "run_split_leakage_provenance_example")
           assert not hasattr(pdelie, "run_weak_form_supportability_example")
           assert not hasattr(pdelie, "generate_reaction_diffusion_1d_field_batch")

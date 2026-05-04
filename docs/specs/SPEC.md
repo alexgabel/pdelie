@@ -17,6 +17,7 @@ It is a **library**, not a project repo.
 - uniform rectilinear grids
 - Lie point symmetries
 - canonical polynomial `GeneratorFamily` parameterizations
+- algebraic span and closure diagnostics for supplied polynomial `GeneratorFamily` objects
 - runtime-only formula-backed generator records and empirical candidate-validation reports
 - frozen invariant, reporting, uniform-translation orbit, and materialized-orbit utilities
 - runtime-only downstream discovery bridge/result/workflow reports
@@ -33,7 +34,8 @@ It is a **library**, not a project repo.
 - broad discovery-backend frameworks, split management, leakage prevention, and heldout-leakage policy
 - multidimensional, multivariable, and nonuniform-grid stable expansion
 - operator-level symmetry discovery
-- multi-generator invariant charts
+- public multi-generator PDE fitting
+- multi-generator invariant charts, finite flows, BCH composition, and multi-parameter orbit atlases
 
 ---
 

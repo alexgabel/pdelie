@@ -234,6 +234,7 @@ def test_root_package_does_not_export_runtime_invariant_applier() -> None:
     assert not hasattr(pdelie, "run_downstream_discovery_contracts_example")
     assert not hasattr(pdelie, "run_kdv_scope_decision_example")
     assert not hasattr(pdelie, "run_kdv_vertical_slice_example")
+    assert not hasattr(pdelie, "run_multi_generator_diagnostics_example")
     assert not hasattr(pdelie, "run_orbit_coverage_diagnostics_example")
     assert not hasattr(pdelie, "run_reaction_diffusion_vertical_slice_example")
     assert not hasattr(pdelie, "run_split_leakage_provenance_example")
@@ -256,6 +257,12 @@ def test_root_package_does_not_export_runtime_invariant_applier() -> None:
     assert not hasattr(pdelie, "plot_verification_curve")
     assert not hasattr(pdelie, "plot_span_diagnostics")
     assert not hasattr(pdelie, "plot_closure_diagnostics")
+    assert not hasattr(pdelie, "fit_multi_generator_family")
+    assert not hasattr(pdelie, "fit_generator_family_span")
+    assert not hasattr(pdelie, "MultiGeneratorInvariantChart")
+    assert not hasattr(pdelie, "build_multi_generator_orbit")
+    assert not hasattr(pdelie, "compose_bch")
+    assert not hasattr(pdelie, "integrate_generator_flow")
 
 
 def test_invariants_package_runtime_api_matches_frozen_milestone_surface() -> None:
@@ -365,6 +372,7 @@ def test_examples_package_runtime_api_matches_current_frozen_surface() -> None:
     assert hasattr(examples_module, "run_generator_confidence_report_example")
     assert hasattr(examples_module, "run_invariant_workflow_summary_example")
     assert hasattr(examples_module, "run_kdv_vertical_slice_example")
+    assert hasattr(examples_module, "run_multi_generator_diagnostics_example")
     assert hasattr(examples_module, "run_orbit_coverage_diagnostics_example")
     assert hasattr(examples_module, "run_reaction_diffusion_vertical_slice_example")
     assert hasattr(examples_module, "run_split_leakage_provenance_example")
@@ -372,6 +380,7 @@ def test_examples_package_runtime_api_matches_current_frozen_surface() -> None:
     assert hasattr(examples_module, "run_translation_orbit_batch_example")
     assert hasattr(examples_module, "run_weak_form_supportability_example")
     assert not hasattr(examples_module, "run_ks_vertical_slice_example")
+    assert not hasattr(examples_module, "run_multi_generator_feasibility_example")
     assert not hasattr(examples_module, "run_orbit_coverage_feasibility")
 
 
@@ -410,6 +419,12 @@ def test_symmetry_package_runtime_api_matches_frozen_m4_surface() -> None:
     assert not hasattr(symmetry_module, "CallableGeneratorFamily")
     assert not hasattr(symmetry_module, "OperatorSymmetry")
     assert not hasattr(symmetry_module, "build_translation_orbit_views")
+    assert not hasattr(symmetry_module, "fit_multi_generator_family")
+    assert not hasattr(symmetry_module, "fit_generator_family_span")
+    assert not hasattr(symmetry_module, "MultiGeneratorInvariantChart")
+    assert not hasattr(symmetry_module, "build_multi_generator_orbit")
+    assert not hasattr(symmetry_module, "compose_bch")
+    assert not hasattr(symmetry_module, "integrate_generator_flow")
 
 
 def test_viz_package_runtime_api_matches_frozen_m5_surface() -> None:

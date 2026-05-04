@@ -2,14 +2,14 @@
 
 [![CI](https://github.com/alexgabel/pdelie/actions/workflows/ci.yml/badge.svg)](https://github.com/alexgabel/pdelie/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-%3E%3D3.11-blue)
-![Version](https://img.shields.io/badge/version-0.26.0-blue)
+![Version](https://img.shields.io/badge/version-0.27.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 PDELie is a research library for empirical Lie-symmetry workflows on controlled PDE time-series data. It turns canonical scalar 1D periodic fields into residuals, generator candidates, verification reports, confidence summaries, invariant/orbit diagnostics, and downstream discovery reports.
 
 ![PDELie pipeline](docs/assets/pdelie_pipeline.svg)
 
-The current stable release is `v0.26.0` / **V0.26**: a KS revisit decision release. PDELie confirms that the internal normalized Kuramoto-Sivashinsky fixture remains residual-feasible and verification-feasible, but translation fitting is still reference-fallback-backed, so public KS runtime APIs remain deferred. Actual KS promotion is reserved for a separate `v0.26b` scope freeze if future direct-SVD/no-fallback evidence supports it.
+The current stable release is `v0.27.0` / **V0.27**: a multi-generator diagnostics decision release. PDELie now diagnoses supplied multi-row `GeneratorFamily` objects with rank, span, closure, bracket, and structure-constant evidence while keeping PDE-context validation and fit recoverability explicitly separate. Public multi-generator fitting, finite multi-generator flows, BCH composition, invariant charts, and root exports remain deferred.
 
 ## Install
 
@@ -91,6 +91,7 @@ PDELie is intentionally conservative. The stable `v0.x` surface currently covers
 - `spectral_fd` derivatives through `u_xxxx`
 - polynomial translation-generator fitting and finite-transform verification
 - JSON-compatible reporting helpers for residuals, weak reports, weak supportability, fits, verification, confidence, readiness, invariant workflows, downstream discovery contracts, and split-provenance diagnostics
+- algebraic span/closure diagnostics for supplied polynomial `GeneratorFamily` objects, including diagnostic handling of rank-deficient well-formed families
 - uniform `x`-translation coverage, consistency, read-only orbit reports, and materialized orbit batches
 - empirical validation of `GeneratorFamily`, `InvariantMapSpec`, and safe formula-backed `FormulaGeneratorFamily` candidates
 - narrow structured ingestion through `from_numpy(...)` and optional `from_xarray(...)`
@@ -138,6 +139,7 @@ Packaged examples print JSON-compatible runtime summaries:
 python -m pdelie.examples.heat_vertical_slice
 python -m pdelie.examples.kdv_vertical_slice
 python -m pdelie.examples.kdv_scope_decision
+python -m pdelie.examples.multi_generator_diagnostics
 python -m pdelie.examples.reaction_diffusion_vertical_slice
 python -m pdelie.examples.advection_diffusion_vertical_slice
 python -m pdelie.examples.orbit_coverage_diagnostics
@@ -158,7 +160,7 @@ These are smoke/reporting examples, not canonical artifact schemas.
 
 The current release is validated by:
 
-- the explicit `v0_26-release-gate` CI job
+- the explicit `v0_27-release-gate` CI job
 - full editable `python -m pytest`
 - built-wheel package smoke
 - packaged example smoke

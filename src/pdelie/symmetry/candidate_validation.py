@@ -32,6 +32,12 @@ _RELATIVE_L2_EPS = 1e-12
 _FORMULA_RECIPROCAL_DENOMINATOR_FLOOR = FormulaGeneratorFamily.RECIPROCAL_DENOMINATOR_FLOOR
 
 
+def _require_bool(value: Any, *, name: str) -> bool:
+    if not isinstance(value, bool):
+        raise SchemaValidationError(f"{name} must be a bool.")
+    return value
+
+
 def _json_safe(value: Any) -> Any:
     if isinstance(value, np.ndarray):
         return [_json_safe(item) for item in value.tolist()]
@@ -225,6 +231,8 @@ def _conclusion(checks: Mapping[str, Mapping[str, Any]]) -> str:
 
 
 def _span_passed(report: Mapping[str, Any]) -> bool:
+    if report.get("comparison_status") != "passed":
+        return False
     angles = np.asarray(report["principal_angles_radians"], dtype=float)
     projection = report["projection_residual"]
     return bool(
@@ -235,6 +243,10 @@ def _span_passed(report: Mapping[str, Any]) -> bool:
 
 
 def _closure_passed(report: Mapping[str, Any]) -> bool:
+    if report.get("family_rank_status") != "full_rank":
+        return False
+    if report["closure"].get("status") != "available":
+        return False
     return bool(
         float(report["closure"]["summary"]) <= _CLOSURE_TOLERANCE
         and float(report["antisymmetry"]["summary"]) <= _CLOSURE_TOLERANCE
@@ -249,6 +261,7 @@ def _validate_generator_candidate(
     residual_evaluator: ResidualEvaluator,
     reference_generator: GeneratorFamily | None,
     finite_transform_epsilons: np.ndarray,
+    closure_required: bool,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     from pdelie.reporting import summarize_generator_family, summarize_verification_report
 
@@ -294,8 +307,9 @@ def _validate_generator_candidate(
             closure_report = diagnose_generator_family_closure(generator)
         except PDELieValidationError as exc:
             checks["closure_diagnostics"] = {
-                "required": True,
-                "status": "failed",
+                "required": closure_required,
+                "status": "failed" if closure_required else "warning",
+                "required_by_closure_policy": closure_required,
                 "threshold": {
                     "closure": _CLOSURE_TOLERANCE,
                     "antisymmetry": _CLOSURE_TOLERANCE,
@@ -304,9 +318,15 @@ def _validate_generator_candidate(
                 "error": str(exc),
             }
         else:
+            closure_passed = _closure_passed(closure_report)
             checks["closure_diagnostics"] = {
-                "required": True,
-                "status": "passed" if _closure_passed(closure_report) else "failed",
+                "required": closure_required,
+                "status": (
+                    "passed"
+                    if closure_passed
+                    else ("failed" if closure_required else "warning")
+                ),
+                "required_by_closure_policy": closure_required,
                 "threshold": {
                     "closure": _CLOSURE_TOLERANCE,
                     "antisymmetry": _CLOSURE_TOLERANCE,
@@ -314,9 +334,17 @@ def _validate_generator_candidate(
                 },
                 "report": closure_report,
             }
+        checks["pde_context_diagnostics"] = {
+            "required": False,
+            "status": "warning",
+            "label": "algebraic_only",
+            "reason": (
+                "multi-row GeneratorFamily validation in v0.27 reports algebraic diagnostics only; "
+                "no finite multi-generator transform or residual-preservation check was configured."
+            ),
+        }
 
     return summarize_generator_family(generator), checks
-
 
 def _validate_invariant_map_scope(spec: InvariantMapSpec) -> float:
     if spec.construction_method != "uniform_translation":
@@ -464,6 +492,7 @@ def validate_symmetry_candidate(
     reference_generator: GeneratorFamily | Mapping[str, Any] | None = None,
     finite_transform_epsilons: Any | None = None,
     source_candidate_id: Any | None = None,
+    closure_required: bool = True,
 ) -> dict[str, Any]:
     """Validate an externally supplied symmetry candidate under configured empirical checks."""
 
@@ -471,6 +500,7 @@ def validate_symmetry_candidate(
     if not isinstance(residual_evaluator, ResidualEvaluator):
         raise SchemaValidationError("residual_evaluator must be a ResidualEvaluator.")
     epsilons = _validate_epsilon_values(finite_transform_epsilons)
+    closure_required = _require_bool(closure_required, name="closure_required")
     normalized_source_id = _validate_json_compatible(source_candidate_id, name="source_candidate_id")
     normalized_reference = _coerce_reference_generator(reference_generator)
     candidate_kind, normalized_candidate = _coerce_candidate(candidate)
@@ -483,6 +513,7 @@ def validate_symmetry_candidate(
             residual_evaluator=residual_evaluator,
             reference_generator=normalized_reference,
             finite_transform_epsilons=epsilons,
+            closure_required=closure_required,
         )
     elif candidate_kind == "invariant_map_spec":
         assert isinstance(normalized_candidate, InvariantMapSpec)
@@ -523,6 +554,7 @@ def validate_symmetry_candidate(
                 "closure": _CLOSURE_TOLERANCE,
                 "formula_reciprocal_denominator_floor": _FORMULA_RECIPROCAL_DENOMINATOR_FLOOR,
             },
+            "closure_required": closure_required,
             "candidate_summary": candidate_summary,
             "configured_validation_checks": list(checks.keys()),
             "check_reports": checks,

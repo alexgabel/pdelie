@@ -93,6 +93,36 @@ def _closed_two_generator_family() -> GeneratorFamily:
     )
 
 
+def _nonclosed_two_generator_family() -> GeneratorFamily:
+    return GeneratorFamily(
+        parameterization="algebraic_fixture",
+        coefficients=np.asarray([[1.0, 0.0], [0.0, 1.0]], dtype=float),
+        basis_spec={
+            "variables": ["x"],
+            "component_names": ["xi"],
+            "basis_terms": [
+                {"label": "1", "powers": [0]},
+                {"label": "x^2", "powers": [2]},
+            ],
+            "component_ordering": ["xi"],
+            "term_ordering": ["1", "x^2"],
+            "layout": "component_major",
+        },
+        normalization="runtime_fixture",
+        diagnostics={},
+    )
+
+
+def _rank_deficient_two_generator_family() -> GeneratorFamily:
+    return GeneratorFamily(
+        parameterization="algebraic_fixture",
+        coefficients=np.asarray([[1.0, 0.0], [2.0, 0.0]], dtype=float),
+        basis_spec=_x_basis_spec(),
+        normalization="runtime_fixture",
+        diagnostics={},
+    )
+
+
 def _assert_json_plain(value: object) -> None:
     assert not isinstance(value, (np.ndarray, np.generic))
     if isinstance(value, dict):
@@ -199,10 +229,50 @@ def test_validate_symmetry_candidate_runs_closure_for_multi_generator_family_onl
     )
 
     assert report["candidate_kind"] == "generator_family"
-    assert report["conclusion"] == "validated"
+    assert report["conclusion"] == "partially_validated"
     assert "closure_diagnostics" in report["check_reports"]
     assert report["check_reports"]["closure_diagnostics"]["status"] == "passed"
+    assert report["check_reports"]["pde_context_diagnostics"]["label"] == "algebraic_only"
     assert "finite_transform_verification" not in report["check_reports"]
+
+
+def test_validate_symmetry_candidate_closure_required_controls_nonclosed_family_status() -> None:
+    field = generate_heat_1d_field_batch(batch_size=3, num_times=9, num_points=32, seed=1613)
+
+    required = validate_symmetry_candidate(
+        field,
+        _nonclosed_two_generator_family(),
+        residual_evaluator=HeatResidualEvaluator(),
+    )
+    optional = validate_symmetry_candidate(
+        field,
+        _nonclosed_two_generator_family(),
+        residual_evaluator=HeatResidualEvaluator(),
+        closure_required=False,
+    )
+
+    assert required["conclusion"] == "failed"
+    assert required["check_reports"]["closure_diagnostics"]["status"] == "failed"
+    assert required["check_reports"]["closure_diagnostics"]["required"] is True
+    assert optional["conclusion"] == "partially_validated"
+    assert optional["check_reports"]["closure_diagnostics"]["status"] == "warning"
+    assert optional["check_reports"]["closure_diagnostics"]["required"] is False
+
+
+def test_validate_symmetry_candidate_reports_rank_deficient_family_as_diagnostic_failure() -> None:
+    field = generate_heat_1d_field_batch(batch_size=3, num_times=9, num_points=32, seed=1614)
+
+    report = validate_symmetry_candidate(
+        field,
+        _rank_deficient_two_generator_family(),
+        residual_evaluator=HeatResidualEvaluator(),
+    )
+
+    assert report["conclusion"] == "failed"
+    closure = report["check_reports"]["closure_diagnostics"]
+    assert closure["status"] == "failed"
+    assert closure["report"]["family_rank_status"] == "rank_deficient"
+    assert closure["report"]["structure_constants"]["status"] == "unavailable"
 
 
 def test_validate_symmetry_candidate_accepts_invariant_map_spec_object_and_payload() -> None:

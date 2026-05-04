@@ -24,7 +24,7 @@ Planning docs are release-management records. They do not override the specs.
 - [`releases/PUBLISHING.md`](releases/PUBLISHING.md) - publishing and tag policy
 - `releases/V0_*_RELEASE_READINESS.md` - release closeout records and local validation checklists
 
-Current `v0.x` releases, including `v0.26.0`, are Git-tag-only. PyPI/TestPyPI publishing remains deferred until `v1.0` or later.
+Current `v0.x` releases, including `v0.27.0`, are Git-tag-only. PyPI/TestPyPI publishing remains deferred until `v1.0` or later.
 
 ## Strategy Notes
 
