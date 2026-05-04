@@ -65,8 +65,6 @@ def _run_ks_case(
     generator = fit_translation_generator(training, residual_evaluator, epsilon=float(epsilon))
     verification = verify_translation_generator(heldout, generator, residual_evaluator)
     fit_summary = summarize_generator_fit_diagnostics(generator)
-    residual_summary = summarize_residual_batch(residual)
-    verification_summary = summarize_verification_report(verification)
 
     selected_span_distance = float(translation_span_distance(generator.coefficients))
     svd_span_distance = fit_summary["svd_span_distance"]
@@ -103,6 +101,8 @@ def _run_ks_case(
         "fit_diagnostics": fit_summary,
     }
     if include_confidence:
+        residual_summary = summarize_residual_batch(residual)
+        verification_summary = summarize_verification_report(verification)
         report["confidence"] = summarize_generator_confidence(
             residual=residual_summary,
             generator=generator,

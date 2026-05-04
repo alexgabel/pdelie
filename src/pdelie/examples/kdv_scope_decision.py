@@ -78,10 +78,11 @@ def run_kdv_scope_decision_example() -> dict[str, object]:
         residual_evaluator=evaluator,
         expected_equation="kdv_normalized",
     )
+    fit_diagnostics = summarize_generator_fit_diagnostics(generator)
     confidence = summarize_generator_confidence(
         residual=residual,
         generator=generator,
-        fit_diagnostics=summarize_generator_fit_diagnostics(generator),
+        fit_diagnostics=fit_diagnostics,
         verification=verification,
         candidate_validation=candidate_validation,
         thresholds={
@@ -106,7 +107,7 @@ def run_kdv_scope_decision_example() -> dict[str, object]:
         "current_frozen_path": {
             "readiness": readiness,
             "residual": summarize_residual_batch(residual),
-            "fit_diagnostics": summarize_generator_fit_diagnostics(generator),
+            "fit_diagnostics": fit_diagnostics,
             "verification": summarize_verification_report(verification),
             "candidate_validation": candidate_validation,
             "confidence": confidence,
