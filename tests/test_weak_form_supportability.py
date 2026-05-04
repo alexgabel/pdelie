@@ -110,6 +110,32 @@ def test_summarize_weak_form_supportability_reports_diagnostic_only_for_internal
     assert summary["component_statuses"]["feasibility"]["status"] == "warning"
 
 
+def test_summarize_weak_form_supportability_contract_only_is_insufficient_evidence() -> None:
+    summary = summarize_weak_form_supportability(
+        weak_contract={
+            "schema_version": "0.1",
+            "equation": "heat_1d",
+            "equation_form": "nonconservative",
+            "test_function_family": "separable_quartic_bump_beta",
+            "test_function_order": 4,
+            "operator_order_supported": 2,
+            "integration_by_parts_depth": 2,
+            "boundary_vanishing_order": 1,
+            "patch_shape": [5, 9],
+            "patch_stride": [1, 1],
+            "quadrature_rule": "composite_tensor_product_trapezoidal_native_window",
+            "normalization": "none",
+            "valid_window_policy": "interior_time_periodic_x_wrapped",
+            "row_count": 8,
+            "skipped_patch_count": 0,
+            "finite_value_policy": "finite_window_residuals_required",
+        },
+    )
+
+    assert summary["supportability_label"] == "insufficient_evidence"
+    assert summary["component_statuses"]["weak_contract"]["status"] == "passed"
+
+
 def test_summarize_weak_form_supportability_fails_configured_weak_metric() -> None:
     summary = summarize_weak_form_supportability(
         weak_report=_heat_weak_report(),

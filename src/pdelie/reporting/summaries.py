@@ -1376,14 +1376,19 @@ def _weak_supportability_label(
     if any(status == "failed" for status in statuses):
         return "failed"
 
-    weak_evidence_present = weak_summary is not None or weak_contract is not None or feasibility is not None
-    if not weak_evidence_present:
-        return "insufficient_evidence"
-
     public_weak_report = weak_summary is not None and weak_summary.get("equation") in _FROZEN_PUBLIC_WEAK_EQUATIONS
-    if not public_weak_report:
+    if public_weak_report:
+        return "supported_existing_slice"
+
+    internal_diagnostic_feasibility = (
+        isinstance(feasibility, Mapping) and feasibility.get("visibility") == "internal_diagnostic_only"
+    )
+    if internal_diagnostic_feasibility:
         return "diagnostic_only"
-    return "supported_existing_slice"
+
+    if weak_summary is not None or feasibility is not None:
+        return "diagnostic_only"
+    return "insufficient_evidence"
 
 
 def summarize_weak_form_supportability(
