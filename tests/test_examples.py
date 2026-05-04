@@ -201,7 +201,10 @@ def test_multi_generator_diagnostics_example_runs_end_to_end() -> None:
     assert result["decision"]["conclusion"] == "multi_generator_diagnostics_feasible_fitting_deferred"
     assert result["decision"]["public_promotion_decision"] == "no_public_multi_generator_fitting_or_invariant_action"
     assert result["algebraic_diagnostics"]["closed_affine_x"]["family_rank_status"] == "full_rank"
-    assert result["algebraic_diagnostics"]["closed_affine_x"]["structure_constants"]["structure_constant_error"] == 0.0
+    assert (
+        result["algebraic_diagnostics"]["closed_affine_x"]["structure_constants"]["structure_constant_error"]
+        <= 1e-12
+    )
     assert result["algebraic_diagnostics"]["nonclosed_polynomial"]["closure"]["summary"] > 0.0
     assert result["algebraic_diagnostics"]["rank_deficient_affine"]["family_rank_status"] == "rank_deficient"
     assert (

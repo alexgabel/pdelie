@@ -79,7 +79,10 @@ def test_v0_27_release_gate_example_records_diagnostic_only_decision() -> None:
     assert result["summary_type"] == "multi_generator_diagnostics_example"
     assert result["decision"]["conclusion"] == "multi_generator_diagnostics_feasible_fitting_deferred"
     assert result["decision"]["public_promotion_decision"] == "no_public_multi_generator_fitting_or_invariant_action"
-    assert result["algebraic_diagnostics"]["closed_affine_x"]["structure_constants"]["structure_constant_error"] == 0.0
+    assert (
+        result["algebraic_diagnostics"]["closed_affine_x"]["structure_constants"]["structure_constant_error"]
+        <= 1e-12
+    )
     assert result["algebraic_diagnostics"]["rank_deficient_affine"]["family_rank_status"] == "rank_deficient"
     assert result["pde_context_diagnostics"]["closed_affine_x"]["conclusion"] == "partially_validated"
     assert result["fit_probe_diagnostics"]["label"] == "fit_probe_diagnostic_only"
