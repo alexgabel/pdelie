@@ -905,14 +905,19 @@ def _dataset_var_diagnostics(dataset: object, *, mask_var: str | None) -> list[d
         if dims not in _XARRAY_DATASET_ACCEPTED_LAYOUTS:
             failures.append("unsupported_layout")
         try:
-            values = np.asarray(data_array.values, dtype=float)
+            raw_values = np.asarray(data_array.values)
+            boolean_mask_like = bool(np.issubdtype(raw_values.dtype, np.bool_))
+            values = np.asarray(raw_values, dtype=float)
             numeric = True
             finite = bool(np.all(np.isfinite(values)))
         except (TypeError, ValueError):
             values = None
+            boolean_mask_like = False
             numeric = False
             finite = False
             failures.append("not_numeric")
+        if boolean_mask_like:
+            failures.append("boolean_mask_like")
         if values is not None and values.ndim != len(dims):
             failures.append("rank_dims_mismatch")
         if values is not None and "var" in dims and values.shape[dims.index("var")] != 1:
@@ -927,6 +932,7 @@ def _dataset_var_diagnostics(dataset: object, *, mask_var: str | None) -> list[d
                 "dtype": str(data_array.dtype),
                 "numeric": numeric,
                 "finite": finite,
+                "boolean_mask_like": boolean_mask_like,
                 "mask_candidate": is_mask_candidate,
                 "compatible": not failures and not is_mask_candidate,
                 "failures": failures,
@@ -1090,7 +1096,13 @@ def summarize_xarray_dataset_readiness(
     _require_xarray_dataset(dataset)
     if expected_equation is not None and (not isinstance(expected_equation, str) or not expected_equation):
         raise SchemaValidationError("expected_equation must be a non-empty string or None.")
-    dataset_attrs = _validate_strict_json_compatible(dict(dataset.attrs), name="dataset.attrs")
+    dataset_attr_keys = sorted(str(key) for key in dataset.attrs)
+    try:
+        _validate_strict_json_compatible(list(dataset.attrs.values()), name="dataset.attrs values")
+    except SchemaValidationError:
+        dataset_attrs_values_json_compatible = False
+    else:
+        dataset_attrs_values_json_compatible = True
     normalized_mask_var = None if mask_var is None else _require_mapping({"mask_var": mask_var}, name="mask_var container")["mask_var"]
     if normalized_mask_var is not None and (not isinstance(normalized_mask_var, str) or not normalized_mask_var):
         raise SchemaValidationError("mask_var must be a non-empty string or None.")
@@ -1149,7 +1161,7 @@ def summarize_xarray_dataset_readiness(
     suggestions = {
         "compatible_data_vars": compatible_names,
         "selected_data_var": selected_data_var,
-        "dataset_attr_keys": sorted(str(key) for key in dataset_attrs),
+        "dataset_attr_keys": dataset_attr_keys,
         "grid_type": "rectilinear",
         "grid_regularity": "uniform",
         "coordinate_system": "cartesian",
@@ -1208,7 +1220,8 @@ def summarize_xarray_dataset_readiness(
         "dataset": {
             "data_vars": [str(name) for name in dataset.data_vars],
             "dims": {str(name): int(length) for name, length in dataset.sizes.items()},
-            "attrs_keys": sorted(str(key) for key in dataset_attrs),
+            "attrs_keys": dataset_attr_keys,
+            "attrs_values_json_compatible": dataset_attrs_values_json_compatible,
         },
         "selected_data_var": selected_data_var,
         "candidate_variables": candidate_variables,

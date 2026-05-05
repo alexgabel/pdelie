@@ -31,11 +31,11 @@ _ACCEPTED_LAYOUTS = frozenset(
 )
 
 
-def _require_xarray():
+def _require_xarray(*, caller: str = "pdelie.data.from_xarray"):
     try:
         return importlib.import_module("xarray")
     except ModuleNotFoundError as exc:
-        raise ImportError("xarray is required for pdelie.data.from_xarray; install pdelie[xarray].") from exc
+        raise ImportError(f"xarray is required for {caller}; install pdelie[xarray].") from exc
 
 
 def _normalize_dims(dims: object) -> tuple[str, ...]:
@@ -182,6 +182,9 @@ def _validate_dataset_var_name(value: object, *, name: str) -> str:
 def _is_dataset_data_var_candidate(data_array: object) -> bool:
     try:
         normalized_dims = _normalize_dims(data_array.dims)
+        raw_values = np.asarray(data_array.values)
+        if np.issubdtype(raw_values.dtype, np.bool_):
+            return False
         values_array = _to_float_array(data_array.values, name="data_var.values")
     except (SchemaValidationError, ScopeValidationError, ShapeValidationError):
         return False
@@ -207,6 +210,10 @@ def _resolve_dataset_data_var(dataset: object, *, data_var: str | None, mask_var
             raise SchemaValidationError(f"data_var {selected!r} is not present in the xarray.Dataset.")
         if selected == mask_var:
             raise SchemaValidationError("data_var and mask_var must refer to different Dataset variables.")
+        if not _is_dataset_data_var_candidate(dataset.data_vars[selected]):
+            raise SchemaValidationError(
+                f"data_var {selected!r} is not a compatible numeric scalar data variable in the frozen Dataset slice."
+            )
         return selected
 
     candidates = _compatible_dataset_data_vars(dataset, mask_var=mask_var)
@@ -242,7 +249,7 @@ def from_xarray(
     mask: object | None = None,
     preprocess_log: Sequence[Mapping[str, Any]] | None = None,
 ) -> FieldBatch:
-    xr = _require_xarray()
+    xr = _require_xarray(caller="pdelie.data.from_xarray")
 
     if isinstance(data_array, xr.Dataset):
         raise ScopeValidationError("from_xarray only supports xarray.DataArray in the frozen V0.7 stable slice.")
@@ -325,7 +332,7 @@ def from_xarray_dataset(
     mask_var: str | None = None,
     preprocess_log: Sequence[Mapping[str, Any]] | None = None,
 ) -> FieldBatch:
-    xr = _require_xarray()
+    xr = _require_xarray(caller="pdelie.data.from_xarray_dataset")
 
     if isinstance(dataset, xr.DataArray):
         raise ScopeValidationError("from_xarray_dataset only supports xarray.Dataset; use from_xarray for DataArray inputs.")

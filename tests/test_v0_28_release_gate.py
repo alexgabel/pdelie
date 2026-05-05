@@ -8,15 +8,12 @@ from copy import deepcopy
 from pathlib import Path
 
 import numpy as np
-import pytest
+import xarray as xr
 
 import pdelie
 from pdelie.data import from_xarray, from_xarray_dataset, generate_heat_1d_field_batch
 from pdelie.examples import run_data_ecosystem_feasibility_example
 from pdelie.reporting import summarize_field_batch_readiness, summarize_xarray_dataset_readiness
-
-
-xr = pytest.importorskip("xarray", reason="xarray is required for v0.28 Dataset release gate")
 
 
 def _repo_text(path: str) -> str:
@@ -50,6 +47,10 @@ def test_v0_28_release_gate_metadata_docs_and_ci_are_aligned() -> None:
     assert pyproject["project"]["version"] == "0.28.0"
     assert release_gate_jobs == ["v0_28-release-gate"]
     assert "python -m pytest tests/test_v0_28_release_gate.py" in workflow
+    assert "docs-build:" in workflow
+    assert "sphinx-build -b html -W --keep-going docs docs/_build/html" in workflow
+    assert 'pdelie[xarray] @ ${wheel_uri}' in workflow
+    assert "python -m pdelie.examples.data_ecosystem_feasibility" in workflow
     assert "v0_27-release-gate" not in workflow
 
     assert "## 0.28.0" in changelog

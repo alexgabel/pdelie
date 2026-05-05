@@ -2,15 +2,24 @@ from __future__ import annotations
 
 import json
 from copy import deepcopy
-
-import xarray as xr
+import importlib
 
 from pdelie.data import from_xarray_dataset, generate_heat_1d_field_batch
 from pdelie.reporting import summarize_field_batch_readiness, summarize_xarray_dataset_readiness
 from pdelie.residuals import HeatResidualEvaluator
 
 
+def _require_xarray_for_example():
+    try:
+        return importlib.import_module("xarray")
+    except ModuleNotFoundError as exc:
+        raise ImportError(
+            "xarray is required for pdelie.examples.data_ecosystem_feasibility; install pdelie[xarray]."
+        ) from exc
+
+
 def run_data_ecosystem_feasibility_example() -> dict[str, object]:
+    xr = _require_xarray_for_example()
     source = generate_heat_1d_field_batch(batch_size=2, num_times=17, num_points=32, seed=28028)
     metadata = deepcopy(source.metadata)
     metadata["parameter_tags"]["equation"] = "heat_1d"

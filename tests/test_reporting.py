@@ -468,11 +468,19 @@ def test_summarize_xarray_dataset_readiness_expected_equation_mask_and_strict_js
     assert mismatch["readiness_label"] == "not_ready"
     assert mismatch["component_statuses"]["mask_variable"]["status"] == "passed"
     assert mismatch["component_statuses"]["expected_equation"]["status"] == "failed"
+    assert mismatch["candidate_variables"][1]["boolean_mask_like"] is True
+    assert "boolean_mask_like" in mismatch["candidate_variables"][1]["failures"]
+
+    auto_selected = summarize_xarray_dataset_readiness(dataset, metadata=source.metadata)
+    assert auto_selected["selected_data_var"] == "u"
+    assert auto_selected["component_statuses"]["data_variable"]["status"] == "passed"
 
     dataset_with_bad_attrs = dataset.copy()
     dataset_with_bad_attrs.attrs["bad"] = float("nan")
-    with pytest.raises(SchemaValidationError, match="dataset.attrs"):
-        summarize_xarray_dataset_readiness(dataset_with_bad_attrs, metadata=source.metadata)
+    attrs_summary = summarize_xarray_dataset_readiness(dataset_with_bad_attrs, data_var="u", metadata=source.metadata)
+    assert attrs_summary["readiness_label"] == "ready"
+    assert attrs_summary["dataset"]["attrs_keys"] == ["bad"]
+    assert attrs_summary["dataset"]["attrs_values_json_compatible"] is False
     bad_metadata = copy.deepcopy(source.metadata)
     bad_metadata["parameter_tags"]["bad"] = float("nan")
     with pytest.raises(SchemaValidationError, match="metadata"):

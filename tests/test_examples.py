@@ -602,6 +602,24 @@ def test_data_ecosystem_feasibility_example_runs_end_to_end() -> None:
     assert not hasattr(pdelie, "run_data_ecosystem_feasibility_example")
 
 
+def test_data_ecosystem_feasibility_example_uses_targeted_xarray_import_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import pdelie.examples.data_ecosystem_feasibility as example_module
+
+    original_import_module = example_module.importlib.import_module
+
+    def _fake_import_module(name: str, package: str | None = None):
+        if name == "xarray":
+            raise ModuleNotFoundError("No module named 'xarray'", name="xarray")
+        return original_import_module(name, package)
+
+    monkeypatch.setattr(example_module.importlib, "import_module", _fake_import_module)
+
+    with pytest.raises(ImportError, match=r"pdelie.examples.data_ecosystem_feasibility; install pdelie\[xarray\]"):
+        example_module.run_data_ecosystem_feasibility_example()
+
+
 def test_data_ecosystem_feasibility_module_prints_json_only() -> None:
     pytest.importorskip("xarray", reason="xarray is required for data ecosystem example")
 

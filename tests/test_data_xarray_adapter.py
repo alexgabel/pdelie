@@ -426,6 +426,7 @@ def test_from_xarray_dataset_auto_selects_single_compatible_data_var_and_matches
         {
             "u": (("time", "x"), values),
             "label": (("time",), np.asarray(["a", "b", "c", "d"], dtype=object)),
+            "quality_mask": (("time", "x"), np.zeros((4, 8), dtype=bool)),
         },
         coords={"time": _time(), "x": _x()},
     )
@@ -437,6 +438,9 @@ def test_from_xarray_dataset_auto_selects_single_compatible_data_var_and_matches
     np.testing.assert_allclose(from_dataset.coords["time"], from_dataarray.coords["time"])
     np.testing.assert_allclose(from_dataset.coords["x"], from_dataarray.coords["x"])
     assert from_dataset.metadata == from_dataarray.metadata
+
+    with pytest.raises(SchemaValidationError, match="compatible numeric scalar data variable"):
+        from_xarray_dataset(dataset, data_var="quality_mask", metadata=_metadata())
 
 
 def test_from_xarray_dataset_rejects_ambiguous_or_missing_data_var() -> None:
@@ -490,6 +494,8 @@ def test_from_xarray_lazy_import_failure(monkeypatch: pytest.MonkeyPatch) -> Non
 
     with pytest.raises(ImportError, match=r"install pdelie\[xarray\]"):
         xarray_adapter.from_xarray(object(), metadata=_metadata())
+    with pytest.raises(ImportError, match="from_xarray_dataset"):
+        xarray_adapter.from_xarray_dataset(object(), metadata=_metadata())
 
 
 def test_root_package_does_not_export_from_xarray() -> None:
