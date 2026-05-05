@@ -33,7 +33,7 @@ jobs:
       - name: Check dependencies
         run: python -m pip check
       - name: Run V0.29 release gate
-        run: python -m pytest tests/test_v0_29_release_gate.py
+        run: python -m pytest tests/test_current_release_gate.py tests/test_v0_29_release_gate.py
   docs-build:
     runs-on: ubuntu-latest
     steps:

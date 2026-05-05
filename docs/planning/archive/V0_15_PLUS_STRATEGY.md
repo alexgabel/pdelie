@@ -1,3 +1,7 @@
+# Historical V0.15+ Strategy
+
+> Historical strategy note, superseded by `../ROADMAP.md`. Some forward-looking version numbers in this file are intentionally stale and should be read as historical planning context, not current scope.
+
 # V0.15+ Strategy
 
 This document records the staged post-`v0.14` direction.

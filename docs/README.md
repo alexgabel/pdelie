@@ -26,6 +26,7 @@ Use these when changing runtime behavior or public interfaces:
 - [`planning/ROADMAP.md`](planning/ROADMAP.md) - authoritative release roadmap
 - [`planning/PLAN.md`](planning/PLAN.md) - current or most recent execution plan
 - `planning/V0_*_SCOPE.md` - frozen release scopes
+- [`planning/archive/`](planning/archive/index.rst) - historical planning detail and superseded strategy notes
 
 Planning docs are release-management records. They do not override the specs.
 
@@ -33,6 +34,7 @@ Planning docs are release-management records. They do not override the specs.
 
 - [`releases/PUBLISHING.md`](releases/PUBLISHING.md) - publishing and tag policy
 - `releases/V0_*_RELEASE_READINESS.md` - release closeout records and local validation checklists
+- [`releases/archive/`](releases/archive/index.rst) - older release readiness records kept out of the primary sidebar
 
 Current `v0.x` releases, including `v0.29.0`, are Git-tag-only. PyPI/TestPyPI publishing remains deferred until `v1.0` or later.
 

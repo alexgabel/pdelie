@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import importlib
-import re
 from pathlib import Path
 
 import pdelie
@@ -89,14 +88,3 @@ def test_v0_10_release_gate_no_new_numerical_or_deferred_public_surface() -> Non
     for module in modules:
         for name in sorted(_DEFERRED_OR_FORBIDDEN_NAMES):
             assert not hasattr(module, name), f"{module.__name__}.{name}"
-
-
-def test_v0_10_release_gate_ci_uses_single_current_release_gate_job() -> None:
-    workflow = _repo_text(".github/workflows/ci.yml")
-    release_gate_jobs = re.findall(r"^  (v0_\d+-release-gate):", workflow, flags=re.MULTILINE)
-
-    assert release_gate_jobs == ["v0_29-release-gate"]
-    assert "python -m pytest tests/test_v0_29_release_gate.py" in workflow
-    assert "run: python -m pytest\n" in workflow
-    for historical_job in range(4, 21):
-        assert f"v0_{historical_job}-release-gate:" not in workflow

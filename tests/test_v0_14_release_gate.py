@@ -17,40 +17,6 @@ from pdelie.residuals import HeatResidualEvaluator
 
 def _repo_text(path: str) -> str:
     return (Path(__file__).resolve().parents[1] / path).read_text(encoding="utf-8")
-
-
-def test_v0_14_release_gate_metadata_docs_and_ci_are_aligned() -> None:
-    pyproject = tomllib.loads(_repo_text("pyproject.toml"))
-    workflow = _repo_text(".github/workflows/ci.yml")
-    readiness = _repo_text("docs/releases/V0_29_RELEASE_READINESS.md")
-    readme = _repo_text("README.md")
-    support_matrix = _repo_text("docs/specs/SUPPORT_MATRIX.md")
-    changelog = _repo_text("CHANGELOG.md")
-    publishing = _repo_text("docs/releases/PUBLISHING.md")
-    plan = _repo_text("docs/planning/PLAN.md")
-    scope = _repo_text("docs/planning/V0_14_SCOPE.md")
-    roadmap = _repo_text("docs/planning/ROADMAP.md")
-    release_gate_jobs = re.findall(r"^  (v0_\d+-release-gate):", workflow, flags=re.MULTILINE)
-
-    assert pyproject["project"]["version"] == "0.29.0"
-    assert release_gate_jobs == ["v0_29-release-gate"]
-    assert "python -m pytest tests/test_v0_29_release_gate.py" in workflow
-    assert "v0_13-release-gate" not in workflow
-
-    assert "## 0.14.0" in changelog
-    assert "V0.29" in readme
-    assert "summarize_invariant_workflow" in support_matrix
-    assert "summarize_uniform_translation_orbit" in support_matrix
-    assert "package version: `0.29.0`" in readiness
-    assert "git tag: `v0.29.0`" in readiness
-    assert "Do not publish to TestPyPI or PyPI for `v0.29.0`" in readiness
-    assert "including `v0.29.0`" in publishing
-    assert "Milestone 6: COMPLETE" in plan
-    assert "Milestone 6: COMPLETE" in scope
-    assert "`v0.14` - Invariant workflow summaries and read-only orbit reports" in roadmap
-    assert "**Status:** Completed" in roadmap
-
-
 def test_v0_14_release_gate_new_helpers_are_documented_and_submodule_only() -> None:
     api_stability = _repo_text("docs/specs/API_STABILITY.md")
     invariants_module = importlib.import_module("pdelie.invariants")
