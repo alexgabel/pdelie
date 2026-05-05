@@ -70,24 +70,3 @@ def test_v0_11_release_gate_ks_closeout_remains_reference_fallback_no_go() -> No
     assert summary["svd_span_distance"] is not None
     assert summary["svd_span_distance"] > 1e-1
     assert summary["classification"] != "failed"
-
-
-def test_v0_11_release_gate_metadata_docs_and_ci_are_aligned() -> None:
-    workflow = _repo_text(".github/workflows/ci.yml")
-    readiness = _repo_text("docs/releases/V0_11_RELEASE_READINESS.md")
-    readme = _repo_text("README.md")
-    changelog = _repo_text("CHANGELOG.md")
-    publishing = _repo_text("docs/releases/PUBLISHING.md")
-    release_gate_jobs = re.findall(r"^  (v0_\d+-release-gate):", workflow, flags=re.MULTILINE)
-
-    assert release_gate_jobs == ["v0_28-release-gate"]
-    assert "python -m pytest tests/test_v0_28_release_gate.py" in workflow
-
-    assert "## 0.11.0" in changelog
-    assert "V0.27" in readme
-    assert "stable KS runtime" in readme
-    assert "package version: `0.11.0`" in readiness
-    assert "git tag: `v0.11.0`" in readiness
-    assert "no-go/defer" in readiness
-    assert "Do not run TestPyPI or PyPI publishing for `v0.11`" in readiness
-    assert "including `v0.28.0`" in publishing

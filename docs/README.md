@@ -18,6 +18,7 @@ Use these when changing runtime behavior or public interfaces:
 - [`specs/SPEC.md`](specs/SPEC.md) - project scope, canonical pipeline, and stable/experimental boundaries
 - [`specs/CONTRACTS_AND_DEFAULTS.md`](specs/CONTRACTS_AND_DEFAULTS.md) - executable object contracts and validation conventions
 - [`specs/API_STABILITY.md`](specs/API_STABILITY.md) - stable public surface by release slice
+- [`specs/SUPPORT_MATRIX.md`](specs/SUPPORT_MATRIX.md) - compact workflow, PDE, and helper support matrix
 - [`specs/ARCHITECTURE.md`](specs/ARCHITECTURE.md) - module responsibilities and layering
 
 ## Planning Docs
@@ -25,6 +26,7 @@ Use these when changing runtime behavior or public interfaces:
 - [`planning/ROADMAP.md`](planning/ROADMAP.md) - authoritative release roadmap
 - [`planning/PLAN.md`](planning/PLAN.md) - current or most recent execution plan
 - `planning/V0_*_SCOPE.md` - frozen release scopes
+- [`planning/archive/`](planning/archive/index.rst) - historical planning detail and superseded strategy notes
 
 Planning docs are release-management records. They do not override the specs.
 
@@ -32,11 +34,13 @@ Planning docs are release-management records. They do not override the specs.
 
 - [`releases/PUBLISHING.md`](releases/PUBLISHING.md) - publishing and tag policy
 - `releases/V0_*_RELEASE_READINESS.md` - release closeout records and local validation checklists
+- [`releases/archive/`](releases/archive/index.rst) - older release readiness records kept out of the primary sidebar
 
-Current `v0.x` releases, including `v0.28.0`, are Git-tag-only. PyPI/TestPyPI publishing remains deferred until `v1.0` or later.
+Current `v0.x` releases, including `v0.29.0`, are Git-tag-only. PyPI/TestPyPI publishing remains deferred until `v1.0` or later.
 
 ## Strategy Notes
 
+- [`strategy/SCIENTIFIC_POSITIONING.md`](strategy/SCIENTIFIC_POSITIONING.md) - compact references and positioning for the evidence claims PDELie makes
 - [`strategy/INTEROPERABILITY_AND_BENCHMARKING.md`](strategy/INTEROPERABILITY_AND_BENCHMARKING.md) - non-authoritative research and interoperability notes
 
 Strategy docs may describe future directions, but they do not commit a feature to a release.
@@ -49,6 +53,16 @@ Tutorial notebooks live outside this directory:
 - [`tutorials/index.rst`](tutorials/index.rst) - Sphinx links that render the notebooks as documentation pages
 
 They are the recommended user entry point. Notebook outputs are runtime summaries, not API contracts or canonical artifact schemas.
+
+## Workflow Recipes
+
+The public V0.29 workflow pages live under `docs/workflows/`.
+
+- [`workflows/data_readiness.md`](workflows/data_readiness.md) - external data to canonical readiness checks
+- [`workflows/candidate_validation.md`](workflows/candidate_validation.md) - supplied candidate validation and confidence interpretation
+- [`workflows/downstream_export_provenance.md`](workflows/downstream_export_provenance.md) - downstream bridge/result/provenance reporting
+- [`workflows/end_to_end_dataset_to_downstream.md`](workflows/end_to_end_dataset_to_downstream.md) - Dataset to downstream summary recipe
+- [`workflows/candidate_to_split_provenance.md`](workflows/candidate_to_split_provenance.md) - candidate validation to split-risk diagnostics
 
 ## Contributor Guidance
 

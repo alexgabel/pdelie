@@ -210,6 +210,7 @@ def test_root_package_does_not_export_runtime_invariant_applier() -> None:
     assert not hasattr(pdelie, "summarize_leakage_prevention")
     assert not hasattr(pdelie, "summarize_orbit_coverage")
     assert not hasattr(pdelie, "summarize_orbit_coverage_feasibility")
+    assert not hasattr(pdelie, "summarize_workflow_readiness")
     assert not hasattr(pdelie, "summarize_residual_batch")
     assert not hasattr(pdelie, "summarize_split_leakage_provenance")
     assert not hasattr(pdelie, "summarize_verification_report")
@@ -378,6 +379,7 @@ def test_reporting_package_runtime_api_matches_frozen_m2_surface() -> None:
     assert hasattr(reporting_module, "summarize_weak_residual_report")
     assert hasattr(reporting_module, "summarize_xarray_dataset_readiness")
     assert not hasattr(reporting_module, "summarize_metadata_inference")
+    assert not hasattr(reporting_module, "summarize_workflow_readiness")
 
 
 def test_examples_package_runtime_api_matches_current_frozen_surface() -> None:

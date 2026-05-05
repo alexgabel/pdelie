@@ -130,6 +130,7 @@ _DEFERRED_OR_PRIVATE_NAMES = {
     "summarize_generator_confidence_score",
     "summarize_field_batch_readiness_score",
     "summarize_leakage_prevention",
+    "summarize_workflow_readiness",
     "summarize_orbit_coverage",
     "summarize_orbit_coverage_feasibility",
     "train_test_translation_orbit_split",
@@ -492,7 +493,7 @@ def test_deferred_and_private_names_are_not_public_submodule_exports() -> None:
 
 def test_v0_22_planning_docs_record_downstream_discovery_contracts_and_non_goals() -> None:
     scope = _repo_text("docs/planning/V0_22_SCOPE.md")
-    roadmap = _repo_text("docs/planning/ROADMAP.md")
+    roadmap = _repo_text("docs/planning/archive/ROADMAP_HISTORY.md")
 
     assert "Downstream Discovery Contracts" in scope
     assert "pdelie.discovery.summarize_discovery_bridge_output" in scope
@@ -514,7 +515,7 @@ def test_v0_22_planning_docs_record_downstream_discovery_contracts_and_non_goals
 
 def test_v0_23_planning_docs_record_split_provenance_and_non_goals() -> None:
     scope = _repo_text("docs/planning/V0_23_SCOPE.md")
-    roadmap = _repo_text("docs/planning/ROADMAP.md")
+    roadmap = _repo_text("docs/planning/archive/ROADMAP_HISTORY.md")
 
     assert "Split / Leakage Provenance Diagnostics" in scope
     assert "pdelie.reporting.summarize_split_leakage_provenance" in scope
@@ -534,7 +535,7 @@ def test_v0_23_planning_docs_record_split_provenance_and_non_goals() -> None:
 
 def test_v0_24_planning_docs_record_weak_supportability_and_non_goals() -> None:
     scope = _repo_text("docs/planning/V0_24_SCOPE.md")
-    roadmap = _repo_text("docs/planning/ROADMAP.md")
+    roadmap = _repo_text("docs/planning/archive/ROADMAP_HISTORY.md")
 
     assert "Weak-Form Supportability Reset" in scope
     assert "pdelie.reporting.summarize_weak_form_supportability" in scope
@@ -554,7 +555,7 @@ def test_v0_24_planning_docs_record_weak_supportability_and_non_goals() -> None:
 
 def test_v0_25_planning_docs_record_kdv_scope_decision_and_non_goals() -> None:
     scope = _repo_text("docs/planning/V0_25_SCOPE.md")
-    roadmap = _repo_text("docs/planning/ROADMAP.md")
+    roadmap = _repo_text("docs/planning/archive/ROADMAP_HISTORY.md")
 
     assert "KdV Scope Decision" in scope
     assert "current_frozen_supported" in scope
@@ -573,7 +574,7 @@ def test_v0_25_planning_docs_record_kdv_scope_decision_and_non_goals() -> None:
 def test_v0_26_planning_docs_record_ks_revisit_decision_and_non_goals() -> None:
     plan = _repo_text("docs/planning/PLAN.md")
     scope = _repo_text("docs/planning/V0_26_SCOPE.md")
-    roadmap = _repo_text("docs/planning/ROADMAP.md")
+    roadmap = _repo_text("docs/planning/archive/ROADMAP_HISTORY.md")
     api_stability = _api_stability_text()
 
     assert "KS Revisit Decision" in scope
@@ -594,7 +595,7 @@ def test_v0_26_planning_docs_record_ks_revisit_decision_and_non_goals() -> None:
 
 def test_v0_27_planning_docs_record_multi_generator_diagnostics_decision_and_non_goals() -> None:
     scope = _repo_text("docs/planning/V0_27_SCOPE.md")
-    roadmap = _repo_text("docs/planning/ROADMAP.md")
+    roadmap = _repo_text("docs/planning/archive/ROADMAP_HISTORY.md")
     api_stability = _api_stability_text()
 
     assert "Multi-Generator Diagnostics Decision" in scope
@@ -616,16 +617,9 @@ def test_v0_27_planning_docs_record_multi_generator_diagnostics_decision_and_non
 
 
 def test_v0_28_planning_docs_record_data_ecosystem_feasibility_and_non_goals() -> None:
-    plan = _repo_text("docs/planning/PLAN.md")
     scope = _repo_text("docs/planning/V0_28_SCOPE.md")
-    roadmap = _repo_text("docs/planning/ROADMAP.md")
+    roadmap = _repo_text("docs/planning/archive/ROADMAP_HISTORY.md")
     api_stability = _api_stability_text()
-
-    assert "**Status:** COMPLETE" in plan
-    assert "narrow xarray Dataset ingestion" in plan
-    assert "xarray_dataset_scalar_slice_supported_file_loaders_deferred" in plan
-    assert "no `load_field_batch`, NetCDF/Zarr loader" in plan
-    assert "- Milestone 6: COMPLETE" in plan
 
     assert "Narrow xarray Dataset Ingestion" in scope
     assert "pdelie.data.from_xarray_dataset" in scope
@@ -641,3 +635,35 @@ def test_v0_28_planning_docs_record_data_ecosystem_feasibility_and_non_goals() -
     assert "Runtime public API for the frozen `v0.28`" in api_stability
     assert "pdelie.data.from_xarray_dataset" in api_stability
     assert "summary_type = \"xarray_dataset_readiness\"" in api_stability
+
+
+def test_v0_29_planning_docs_record_workflow_recipes_support_matrix_and_non_goals() -> None:
+    plan = _repo_text("docs/planning/PLAN.md")
+    scope = _repo_text("docs/planning/V0_29_SCOPE.md")
+    roadmap = _repo_text("docs/planning/ROADMAP.md")
+    api_stability = _api_stability_text()
+    support_matrix = _repo_text("docs/specs/SUPPORT_MATRIX.md")
+
+    assert "Workflow Recipes and Support Matrix" in scope
+    assert "workflow_recipes_and_support_matrix_complete_no_new_numerical_scope" in scope
+    assert "docs/workflows/" in scope
+    assert "support_matrix.v0_29.json" in scope
+    assert "no `pdelie.reporting.summarize_workflow_readiness(...)`" in scope
+    assert "no new numerical scope" in scope
+    assert "no runtime helper" in scope
+    assert "- Milestone 4: COMPLETE" in scope
+    assert "- Milestone 5: COMPLETE" in scope
+    assert "- Milestone 6: COMPLETE" in scope
+
+    assert "V0.29 is complete" in plan
+    assert "workflow_recipes_and_support_matrix_complete_no_new_numerical_scope" in plan
+    assert "docs/workflows/" in plan
+    assert "support_matrix.v0_29.json" in plan
+
+    assert "`v0.29` | Completed | Workflow recipes and support matrix" in roadmap
+    assert "no new numerical scope" in roadmap
+    assert "runtime helper" in roadmap
+    assert "Decision-only note for the frozen `v0.29`" in api_stability
+    assert "docs/specs/support_matrix.v0_29.json" in api_stability
+    assert "does not add `pdelie.reporting.summarize_workflow_readiness(...)`" in api_stability
+    assert "PDE Support Matrix" in support_matrix

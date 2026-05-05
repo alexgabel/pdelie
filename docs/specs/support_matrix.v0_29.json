@@ -1,0 +1,80 @@
+{
+  "summary_schema_version": "0.1",
+  "summary_type": "pdelie_support_matrix",
+  "release": "0.29.0",
+  "release_decision": "workflow_recipes_and_support_matrix_complete_no_new_numerical_scope",
+  "columns": [
+    "pde",
+    "generator",
+    "residual",
+    "vertical_slice",
+    "candidate_validation",
+    "weak_support",
+    "external_data_readiness"
+  ],
+  "pdes": [
+    {
+      "pde": "Heat",
+      "generator": "yes",
+      "residual": "yes",
+      "vertical_slice": "yes",
+      "candidate_validation": "yes",
+      "weak_support": "frozen weak slice",
+      "external_data_readiness": "yes"
+    },
+    {
+      "pde": "Burgers",
+      "generator": "yes",
+      "residual": "yes",
+      "vertical_slice": "yes",
+      "candidate_validation": "yes",
+      "weak_support": "frozen weak slice",
+      "external_data_readiness": "yes"
+    },
+    {
+      "pde": "KdV",
+      "generator": "normalized short-horizon only",
+      "residual": "yes",
+      "vertical_slice": "yes",
+      "candidate_validation": "yes",
+      "weak_support": "no",
+      "external_data_readiness": "yes"
+    },
+    {
+      "pde": "Fisher-KPP",
+      "generator": "yes",
+      "residual": "yes",
+      "vertical_slice": "yes",
+      "candidate_validation": "yes",
+      "weak_support": "internal weak diagnostic only",
+      "external_data_readiness": "yes"
+    },
+    {
+      "pde": "Advection-diffusion",
+      "generator": "yes",
+      "residual": "yes",
+      "vertical_slice": "yes",
+      "candidate_validation": "yes",
+      "weak_support": "no",
+      "external_data_readiness": "yes"
+    },
+    {
+      "pde": "KS",
+      "generator": "no public runtime",
+      "residual": "no",
+      "vertical_slice": "no",
+      "candidate_validation": "diagnostic/no-go",
+      "weak_support": "no",
+      "external_data_readiness": "no"
+    }
+  ],
+  "deferred": [
+    "new numerical scope",
+    "summarize_workflow_readiness",
+    "file loaders",
+    "broad adapters",
+    "multidimensional grids",
+    "nonuniform grids",
+    "public KS runtime APIs"
+  ]
+}

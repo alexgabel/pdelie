@@ -1,0 +1,11 @@
+# Scientific Positioning
+
+PDELie is positioned as a small public research library for empirical Lie-symmetry diagnostics on controlled PDE time-series workflows. Its reports combine residual checks, fitted or supplied generator evidence, configured validation, finite-transform verification, readiness diagnostics, and provenance summaries. These reports are evidence records, not mathematical proofs of symmetry and not a broad data-adapter or benchmark framework.
+
+The Lie-symmetry vocabulary follows the classical differential-equation literature: Olver's *Applications of Lie Groups to Differential Equations*, Hydon's *Symmetry Methods for Differential Equations*, and Bluman and Kumei's *Symmetries and Differential Equations*. PDELie currently uses this theory in a narrow computational setting: scalar 1D uniform periodic fields, polynomial generator families, residual-relative validation, and explicit finite-transform diagnostics.
+
+The numerical differentiation choices are closer to standard spectral-method practice, with Trefethen's *Spectral Methods in MATLAB* as the relevant reference point for periodic spectral differentiation. PDELie does not claim general-purpose numerical PDE solving, nonuniform-grid support, or weak-form derivative backends beyond the frozen weak-report slices documented in the API stability policy.
+
+For sparse discovery context, PDELie is adjacent to work such as Brunton, Proctor, and Kutz on sparse identification of nonlinear dynamical systems, and Rudy et al. on data-driven discovery of PDEs. PDELie's downstream utilities summarize bridge arrays, backend-native results, recovery evidence, and provenance; they do not define a benchmark policy or implement a broad discovery-backend framework.
+
+For symmetry-based augmentation context, PDELie is closer in spirit to the evidence discipline needed before LPSDA-style workflows such as Brandstetter et al.'s Lie point symmetry data augmentation for neural PDE solvers. PDELie does not learn symmetry groups, construct general augmentation orbits, or implement finite multi-generator group actions. It helps users record which empirical Lie-symmetry diagnostics were configured, what passed, what failed, and what remains outside the stable scope.

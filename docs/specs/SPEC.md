@@ -4,7 +4,7 @@
 
 `pdelie` is a modular system for:
 
-> Numerical discovery and exploitation of Lie symmetries in PDE data.
+> Empirical Lie-symmetry diagnostics and supportability workflows for PDE data.
 
 It is a **library**, not a project repo.
 
@@ -34,7 +34,7 @@ It is a **library**, not a project repo.
 - broad dataset adapters, file-based dataset loaders, implicit metadata inference, resampling, and broad Dataset-level ingestion
 - broad discovery-backend frameworks, split management, leakage prevention, and heldout-leakage policy
 - multidimensional, multivariable, and nonuniform-grid stable expansion
-- operator-level symmetry discovery
+- operator-level symmetry methods
 - public multi-generator PDE fitting
 - multi-generator invariant charts, finite flows, BCH composition, and multi-parameter orbit atlases
 

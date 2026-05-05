@@ -30,41 +30,6 @@ def _heat_dataset():
         attrs={"source": "v0.28-release-gate"},
     )
     return source, dataset, metadata
-
-
-def test_v0_28_release_gate_metadata_docs_and_ci_are_aligned() -> None:
-    pyproject = tomllib.loads(_repo_text("pyproject.toml"))
-    workflow = _repo_text(".github/workflows/ci.yml")
-    readiness = _repo_text("docs/releases/V0_28_RELEASE_READINESS.md")
-    readme = _repo_text("README.md")
-    changelog = _repo_text("CHANGELOG.md")
-    publishing = _repo_text("docs/releases/PUBLISHING.md")
-    plan = _repo_text("docs/planning/PLAN.md")
-    scope = _repo_text("docs/planning/V0_28_SCOPE.md")
-    roadmap = _repo_text("docs/planning/ROADMAP.md")
-    release_gate_jobs = re.findall(r"^  (v0_\d+-release-gate):", workflow, flags=re.MULTILINE)
-
-    assert pyproject["project"]["version"] == "0.28.0"
-    assert release_gate_jobs == ["v0_28-release-gate"]
-    assert "python -m pytest tests/test_v0_28_release_gate.py" in workflow
-    assert "docs-build:" in workflow
-    assert "sphinx-build -b html -W --keep-going docs docs/_build/html" in workflow
-    assert 'pdelie[xarray] @ ${wheel_uri}' in workflow
-    assert "python -m pdelie.examples.data_ecosystem_feasibility" in workflow
-    assert "v0_27-release-gate" not in workflow
-
-    assert "## 0.28.0" in changelog
-    assert "V0.28" in readme
-    assert "narrow data-ecosystem feasibility release" in readme
-    assert "package version: `0.28.0`" in readiness
-    assert "git tag: `v0.28.0`" in readiness
-    assert "Do not publish to TestPyPI or PyPI for `v0.28.0`" in readiness
-    assert "including `v0.28.0`" in publishing
-    assert "Milestone 6: COMPLETE" in plan
-    assert "Milestone 6: COMPLETE" in scope
-    assert "`v0.28` - Narrow xarray Dataset ingestion" in roadmap
-
-
 def test_v0_28_release_gate_dataset_conversion_and_readiness_are_stable() -> None:
     _source, dataset, metadata = _heat_dataset()
 

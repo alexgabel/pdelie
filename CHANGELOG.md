@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.29.0
+
+First final release for the frozen V0.29 workflow recipes and support matrix slice.
+
+- adds public Read the Docs workflow recipes for data readiness, candidate validation, downstream/export provenance, Dataset-to-downstream, and candidate-to-split-provenance paths
+- adds `docs/specs/support_matrix.v0_29.json` as a strict machine-readable support matrix
+- updates `docs/specs/SUPPORT_MATRIX.md` as the human-readable support matrix and selected helper inventory
+- adds rendered tutorial notebooks `12_dataset_to_downstream_workflow.ipynb` and `13_candidate_to_split_provenance_workflow.ipynb`
+- records the release decision `workflow_recipes_and_support_matrix_complete_no_new_numerical_scope`
+- preserves the retained V0.28 scalar `xarray.Dataset` ingestion surface, confidence reports, readiness reports, downstream discovery contracts, split provenance, weak supportability, multi-generator diagnostics, and stable PDE strong paths
+
+Explicitly deferred for this final release:
+
+- new numerical scope
+- new runtime APIs, including `pdelie.reporting.summarize_workflow_readiness(...)`
+- new PDE support
+- file loaders or broad adapter frameworks
+- metadata inference engines
+- multidimensional, multivariable, or nonuniform-grid support
+- train/test split management or leakage prevention
+- public KS runtime APIs
+- neural, callable, or operator-facing APIs
+- root export expansion
+- PyPI and TestPyPI publication; package-index publishing is deferred to `v1.0` or later
+
 ## 0.28.0
 
 First final release for the frozen V0.28 narrow xarray Dataset ingestion and data-ecosystem feasibility slice.
