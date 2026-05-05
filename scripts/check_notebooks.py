@@ -45,6 +45,17 @@ def _first_markdown_title(notebook: dict[str, object]) -> str | None:
     return None
 
 
+def _code_cells(notebook: dict[str, object]) -> list[dict[str, object]]:
+    cells = notebook.get("cells", [])
+    if not isinstance(cells, list):
+        raise AssertionError("notebook cells must be a list")
+    return [
+        cell
+        for cell in cells
+        if isinstance(cell, dict) and cell.get("cell_type") == "code"
+    ]
+
+
 def main() -> None:
     failures: list[str] = []
     notebooks = sorted(NOTEBOOK_DIR.glob("*.ipynb"))
@@ -73,6 +84,32 @@ def main() -> None:
         for marker in STALE_MARKERS:
             if marker in text:
                 failures.append(f"{path}: stale marker '{marker}'")
+
+        code_cells = _code_cells(notebook)
+        if not code_cells:
+            failures.append(f"{path}: missing code cells")
+            continue
+        unexecuted = [
+            index
+            for index, cell in enumerate(code_cells)
+            if cell.get("execution_count") is None
+        ]
+        if unexecuted:
+            failures.append(f"{path}: code cells without execution counts: {unexecuted}")
+        output_count = 0
+        error_cells: list[int] = []
+        for index, cell in enumerate(code_cells):
+            outputs = cell.get("outputs", [])
+            if not isinstance(outputs, list):
+                failures.append(f"{path}: code cell {index} outputs must be a list")
+                continue
+            output_count += len(outputs)
+            if any(isinstance(output, dict) and output.get("output_type") == "error" for output in outputs):
+                error_cells.append(index)
+        if output_count == 0:
+            failures.append(f"{path}: missing saved cell outputs for GitHub rendering")
+        if error_cells:
+            failures.append(f"{path}: saved error outputs in code cells: {error_cells}")
 
     if failures:
         print("\n".join(failures))
