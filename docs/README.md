@@ -18,6 +18,7 @@ Use these when changing runtime behavior or public interfaces:
 - [`specs/SPEC.md`](specs/SPEC.md) - project scope, canonical pipeline, and stable/experimental boundaries
 - [`specs/CONTRACTS_AND_DEFAULTS.md`](specs/CONTRACTS_AND_DEFAULTS.md) - executable object contracts and validation conventions
 - [`specs/API_STABILITY.md`](specs/API_STABILITY.md) - stable public surface by release slice
+- [`specs/SUPPORT_MATRIX.md`](specs/SUPPORT_MATRIX.md) - compact workflow, PDE, and helper support matrix
 - [`specs/ARCHITECTURE.md`](specs/ARCHITECTURE.md) - module responsibilities and layering
 
 ## Planning Docs
@@ -37,6 +38,7 @@ Current `v0.x` releases, including `v0.28.0`, are Git-tag-only. PyPI/TestPyPI pu
 
 ## Strategy Notes
 
+- [`strategy/SCIENTIFIC_POSITIONING.md`](strategy/SCIENTIFIC_POSITIONING.md) - compact references and positioning for the evidence claims PDELie makes
 - [`strategy/INTEROPERABILITY_AND_BENCHMARKING.md`](strategy/INTEROPERABILITY_AND_BENCHMARKING.md) - non-authoritative research and interoperability notes
 
 Strategy docs may describe future directions, but they do not commit a feature to a release.

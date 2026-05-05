@@ -1754,7 +1754,7 @@ Candidate scope:
 
 `v1.0` should be a stabilization milestone, not a scope-expansion milestone.
 
-### Later / Experimental - Operator-facing symmetry discovery
+### Later / Experimental - Operator-facing symmetry diagnostics
 **Status:** Experimental / Deferred
 
 Operator-facing symmetry work remains a later or separate track.
@@ -1852,4 +1852,4 @@ It should **not** be edited every time a new idea appears.
 - `v0.30` = planned orbit/action scope decision
 - `v0.31` = planned `v1.0` readiness hardening
 - `v1.0` = stable public engine
-- later / experimental = operator-facing symmetry discovery
+- later / experimental = operator-facing symmetry diagnostics

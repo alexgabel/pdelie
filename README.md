@@ -1,15 +1,26 @@
 # PDELie
 
 [![CI](https://github.com/alexgabel/pdelie/actions/workflows/ci.yml/badge.svg)](https://github.com/alexgabel/pdelie/actions/workflows/ci.yml)
+[![Documentation Status](https://readthedocs.org/projects/pdelie/badge/?version=latest)](https://pdelie.readthedocs.io/en/latest/?badge=latest)
 ![Python](https://img.shields.io/badge/python-%3E%3D3.11-blue)
 ![Version](https://img.shields.io/badge/version-0.28.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-PDELie is a research library for empirical Lie-symmetry workflows on controlled PDE time-series data. It turns canonical scalar 1D periodic fields into residuals, generator candidates, verification reports, confidence summaries, invariant/orbit diagnostics, and downstream discovery reports.
+PDELie is a research library for empirical Lie-symmetry diagnostics on controlled PDE time-series data. It turns canonical scalar 1D periodic fields into residuals, generator candidates, configured validation, finite-transform verification, confidence summaries, supportability reports, invariant/orbit diagnostics, and downstream discovery reports.
+
+Hosted documentation: <https://pdelie.readthedocs.io/en/latest/>
 
 ![PDELie pipeline](docs/assets/pdelie_pipeline.svg)
 
 The current stable release is `v0.28.0` / **V0.28**: a narrow data-ecosystem feasibility release. PDELie now imports explicit scalar `xarray.Dataset` variables through `from_xarray_dataset(...)` and reports Dataset readiness through `summarize_xarray_dataset_readiness(...)`, while file loaders, broad adapters, metadata inference engines, resampling, multidimensional grids, and root exports remain deferred. The V0.27 multi-generator diagnostics decision remains part of the retained stable diagnostics surface.
+
+## Choose Your Workflow
+
+- **I have PDE data.** Start with Dataset or `FieldBatch` readiness, then run residual preflight before trusting downstream evidence: `summarize_xarray_dataset_readiness(...)`, `from_xarray_dataset(...)`, and `summarize_field_batch_readiness(...)`.
+- **I have a candidate generator or transform.** Use configured validation and finite-transform verification rather than an unqualified symmetry claim: `validate_symmetry_candidate(...)`, `verify_translation_generator(...)`, and `summarize_generator_confidence(...)`.
+- **I want downstream/export provenance.** Summarize bridge arrays, discovery outputs, orbit provenance, and user-supplied partitions before handing data to sparse discovery or ML workflows: `summarize_discovery_bridge_output(...)`, `summarize_downstream_discovery_workflow(...)`, and `summarize_split_leakage_provenance(...)`.
+
+For the full stable surface and PDE support matrix, see [`docs/specs/API_STABILITY.md`](docs/specs/API_STABILITY.md) and [`docs/specs/SUPPORT_MATRIX.md`](docs/specs/SUPPORT_MATRIX.md).
 
 ## Install
 
@@ -100,25 +111,7 @@ PDELie is intentionally conservative. The stable `v0.x` surface currently covers
 - narrow optional downstream support through PySINDy bridge utilities and backend-neutral discovery reports
 
 The authoritative public surface is documented in [`docs/specs/API_STABILITY.md`](docs/specs/API_STABILITY.md).
-
-Selected runtime helpers include:
-
-- `pdelie.reporting.summarize_generator_fit_diagnostics`
-- `pdelie.invariants.compute_periodic_window_coverage`
-- `pdelie.invariants.diagnose_uniform_translation_consistency`
-- `pdelie.reporting.summarize_invariant_workflow`
-- `pdelie.invariants.summarize_uniform_translation_orbit`
-- `pdelie.invariants.build_uniform_translation_orbit_batch`
-- `pdelie.invariants.OrbitBatchResult`
-- `pdelie.symmetry.validate_symmetry_candidate`
-- `pdelie.symmetry.FormulaGeneratorFamily`
-- `pdelie.reporting.summarize_generator_confidence`
-- `pdelie.reporting.summarize_field_batch_readiness`
-- `pdelie.discovery.summarize_discovery_bridge_output`
-- `pdelie.reporting.summarize_downstream_discovery_workflow`
-- `pdelie.reporting.summarize_split_leakage_provenance`
-- `pdelie.reporting.summarize_weak_form_supportability`
-- `pdelie.reporting.summarize_xarray_dataset_readiness`
+The compact support matrix and selected helper inventory live in [`docs/specs/SUPPORT_MATRIX.md`](docs/specs/SUPPORT_MATRIX.md).
 
 ## What PDELie Is Not
 
@@ -185,6 +178,7 @@ The docs site renders committed notebook outputs and does not execute notebooks 
 
 ## Documentation
 
+- Hosted docs: <https://pdelie.readthedocs.io/en/latest/>
 - Docs index: [`docs/README.md`](docs/README.md)
 - Read the Docs config: [`.readthedocs.yaml`](.readthedocs.yaml)
 - Contracts and specs: [`docs/specs/`](docs/specs/)

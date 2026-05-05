@@ -36,7 +36,7 @@ dependencies = [
 Homepage = "https://github.com/alexgabel/pdelie"
 Repository = "https://github.com/alexgabel/pdelie"
 Issues = "https://github.com/alexgabel/pdelie/issues"
-Documentation = "https://github.com/alexgabel/pdelie/tree/main/docs"
+Documentation = "https://pdelie.readthedocs.io/en/latest/"
 
 # Optional downstream bridge path is currently validated on the
 # PySINDy 1.x / scikit-learn 1.2.x line only.

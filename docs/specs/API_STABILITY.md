@@ -1,5 +1,7 @@
 # API Stability Policy
 
+For a compact user-facing map of stable PDE surfaces, workflows, and selected runtime helpers, see `docs/specs/SUPPORT_MATRIX.md`.
+
 ## Stable API (v0.x)
 
 - FieldBatch

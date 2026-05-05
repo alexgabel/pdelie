@@ -49,6 +49,8 @@ html_theme_options = {
     "navbar_align": "left",
 }
 
+latex_engine = "xelatex"
+
 myst_enable_extensions = [
     "colon_fence",
 ]

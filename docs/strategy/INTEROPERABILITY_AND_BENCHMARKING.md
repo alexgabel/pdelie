@@ -215,7 +215,7 @@ Therefore:
 
 Preprocessing is a transformation and MUST be tracked.
 
-### Allowed before symmetry discovery
+### Allowed before configured symmetry diagnostics
 
 - dtype conversion
 - coordinate harmonization

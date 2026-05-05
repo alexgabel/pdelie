@@ -10,4 +10,4 @@ Normative docs for runtime behavior, canonical objects, and public API policy.
    CONTRACTS_AND_DEFAULTS
    ARCHITECTURE
    API_STABILITY
-
+   SUPPORT_MATRIX
