@@ -347,6 +347,16 @@ Runtime public API for the frozen `v0.28` data-ecosystem feasibility slice:
 - this release does not add file loaders, NetCDF/Zarr readers, PDEBench/The Well adapters, broad adapter registries, implicit metadata inference, resampling APIs, multidimensional or nonuniform stable support, multivariable `FieldBatch` support, train/test policy, neural/callable generators, operator-facing APIs, or root exports
 - these APIs have no root `pdelie` exports
 
+Decision-only note for the frozen `v0.29` workflow recipes and support matrix release:
+
+- `v0.29` adds no new runtime public API
+- `v0.29` records the release decision `workflow_recipes_and_support_matrix_complete_no_new_numerical_scope`
+- `docs/workflows/` provides public documentation recipes for data readiness, candidate validation, downstream/export provenance, Dataset-to-downstream, and candidate-to-split-provenance paths
+- `docs/specs/support_matrix.v0_29.json` is a machine-readable docs/spec artifact, not a package runtime API
+- `docs/specs/SUPPORT_MATRIX.md` is the human-readable support matrix and selected helper inventory
+- `v0.29` adds rendered tutorial notebooks for the two complete workflow recipes
+- this decision does not add `pdelie.reporting.summarize_workflow_readiness(...)`, new PDEs, file loaders, broad adapters, multidimensional or nonuniform stable support, public KS runtime APIs, train/test policy, neural/callable generators, operator-facing APIs, or root exports
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 

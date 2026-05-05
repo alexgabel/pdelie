@@ -20,6 +20,7 @@ and API stability pages when changing runtime behavior or public interfaces.
    :caption: Reference
 
    README
+   workflows/index
    specs/index
    planning/index
    releases/index

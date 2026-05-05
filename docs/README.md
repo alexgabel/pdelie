@@ -34,7 +34,7 @@ Planning docs are release-management records. They do not override the specs.
 - [`releases/PUBLISHING.md`](releases/PUBLISHING.md) - publishing and tag policy
 - `releases/V0_*_RELEASE_READINESS.md` - release closeout records and local validation checklists
 
-Current `v0.x` releases, including `v0.28.0`, are Git-tag-only. PyPI/TestPyPI publishing remains deferred until `v1.0` or later.
+Current `v0.x` releases, including `v0.29.0`, are Git-tag-only. PyPI/TestPyPI publishing remains deferred until `v1.0` or later.
 
 ## Strategy Notes
 
@@ -51,6 +51,16 @@ Tutorial notebooks live outside this directory:
 - [`tutorials/index.rst`](tutorials/index.rst) - Sphinx links that render the notebooks as documentation pages
 
 They are the recommended user entry point. Notebook outputs are runtime summaries, not API contracts or canonical artifact schemas.
+
+## Workflow Recipes
+
+The public V0.29 workflow pages live under `docs/workflows/`.
+
+- [`workflows/data_readiness.md`](workflows/data_readiness.md) - external data to canonical readiness checks
+- [`workflows/candidate_validation.md`](workflows/candidate_validation.md) - supplied candidate validation and confidence interpretation
+- [`workflows/downstream_export_provenance.md`](workflows/downstream_export_provenance.md) - downstream bridge/result/provenance reporting
+- [`workflows/end_to_end_dataset_to_downstream.md`](workflows/end_to_end_dataset_to_downstream.md) - Dataset to downstream summary recipe
+- [`workflows/candidate_to_split_provenance.md`](workflows/candidate_to_split_provenance.md) - candidate validation to split-risk diagnostics
 
 ## Contributor Guidance
 

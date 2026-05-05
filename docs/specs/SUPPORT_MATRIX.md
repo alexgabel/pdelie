@@ -2,6 +2,8 @@
 
 This page is a compact map of the stable `v0.x` user-facing surface. It is a navigation aid, not a replacement for `API_STABILITY.md`.
 
+The machine-readable version for the `v0.29` recipe release is `support_matrix.v0_29.json`.
+
 ## Core Workflows
 
 | Workflow | First APIs | Defensible output |
@@ -12,14 +14,14 @@ This page is a compact map of the stable `v0.x` user-facing surface. It is a nav
 
 ## PDE Support Matrix
 
-| PDE surface | Generator/data path | Residual evaluator | Vertical slice | Candidate validation | Weak support | External-data readiness |
+| PDE | Generator | Residual | Vertical slice | Candidate validation | Weak support | External-data readiness |
 | --- | --- | --- | --- | --- | --- | --- |
-| Heat | Stable scalar 1D periodic synthetic path | Yes | Yes | Yes, configured validation | Frozen Heat weak report slice | Yes |
-| Burgers | Stable scalar 1D periodic synthetic path | Yes | Yes | Yes, configured validation | Frozen Burgers weak report slice | Yes |
-| KdV | Normalized scalar 1D periodic short-horizon path only | Yes, normalized form only | Yes | Yes, within frozen regime | No public weak KdV | Yes |
-| Fisher-KPP reaction-diffusion | Stable scalar 1D periodic synthetic path | Yes | Yes | Yes, configured validation | Internal diagnostic feasibility only | Yes |
-| Constant-coefficient advection-diffusion | Stable scalar 1D periodic synthetic path | Yes | Yes | Yes, configured validation | No public weak path | Yes |
-| Kuramoto-Sivashinsky | No public runtime path | No public evaluator | No public slice | Internal no-go/decision evidence only | No public weak KS | No public KS readiness path |
+| Heat | yes | yes | yes | yes | frozen weak slice | yes |
+| Burgers | yes | yes | yes | yes | frozen weak slice | yes |
+| KdV | normalized short-horizon only | yes | yes | yes | no | yes |
+| Fisher-KPP | yes | yes | yes | yes | internal weak diagnostic only | yes |
+| Advection-diffusion | yes | yes | yes | yes | no | yes |
+| KS | no public runtime | no | no | diagnostic/no-go | no | no |
 
 ## Selected Runtime Helpers
 

@@ -21,8 +21,9 @@ def _repo_text(path: str) -> str:
 def test_v0_13_release_gate_metadata_docs_and_ci_are_aligned() -> None:
     pyproject = tomllib.loads(_repo_text("pyproject.toml"))
     workflow = _repo_text(".github/workflows/ci.yml")
-    readiness = _repo_text("docs/releases/V0_28_RELEASE_READINESS.md")
+    readiness = _repo_text("docs/releases/V0_29_RELEASE_READINESS.md")
     readme = _repo_text("README.md")
+    support_matrix = _repo_text("docs/specs/SUPPORT_MATRIX.md")
     changelog = _repo_text("CHANGELOG.md")
     publishing = _repo_text("docs/releases/PUBLISHING.md")
     plan = _repo_text("docs/planning/PLAN.md")
@@ -30,20 +31,20 @@ def test_v0_13_release_gate_metadata_docs_and_ci_are_aligned() -> None:
     roadmap = _repo_text("docs/planning/ROADMAP.md")
     release_gate_jobs = re.findall(r"^  (v0_\d+-release-gate):", workflow, flags=re.MULTILINE)
 
-    assert pyproject["project"]["version"] == "0.28.0"
-    assert release_gate_jobs == ["v0_28-release-gate"]
-    assert "python -m pytest tests/test_v0_28_release_gate.py" in workflow
+    assert pyproject["project"]["version"] == "0.29.0"
+    assert release_gate_jobs == ["v0_29-release-gate"]
+    assert "python -m pytest tests/test_v0_29_release_gate.py" in workflow
     assert "v0_13-release-gate" not in workflow
 
     assert "## 0.13.0" in changelog
-    assert "V0.27" in readme
-    assert "compute_periodic_window_coverage" in readme
-    assert "diagnose_uniform_translation_consistency" in readme
-    assert "package version: `0.28.0`" in readiness
-    assert "git tag: `v0.28.0`" in readiness
-    assert "Do not publish to TestPyPI or PyPI for `v0.28.0`" in readiness
-    assert "including `v0.28.0`" in publishing
-    assert "V0.28 is complete" in plan
+    assert "V0.29" in readme
+    assert "compute_periodic_window_coverage" in support_matrix
+    assert "diagnose_uniform_translation_consistency" in support_matrix
+    assert "package version: `0.29.0`" in readiness
+    assert "git tag: `v0.29.0`" in readiness
+    assert "Do not publish to TestPyPI or PyPI for `v0.29.0`" in readiness
+    assert "including `v0.29.0`" in publishing
+    assert "V0.29 is complete" in plan
     assert "Milestone 6: COMPLETE" in scope
     assert "`v0.13` - Public orbit and coverage diagnostics" in roadmap
     assert "**Status:** Completed" in roadmap

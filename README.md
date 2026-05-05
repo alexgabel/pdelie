@@ -3,7 +3,7 @@
 [![CI](https://github.com/alexgabel/pdelie/actions/workflows/ci.yml/badge.svg)](https://github.com/alexgabel/pdelie/actions/workflows/ci.yml)
 [![Documentation Status](https://readthedocs.org/projects/pdelie/badge/?version=latest)](https://pdelie.readthedocs.io/en/latest/?badge=latest)
 ![Python](https://img.shields.io/badge/python-%3E%3D3.11-blue)
-![Version](https://img.shields.io/badge/version-0.28.0-blue)
+![Version](https://img.shields.io/badge/version-0.29.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 PDELie is a research library for empirical Lie-symmetry diagnostics on controlled PDE time-series data. It turns canonical scalar 1D periodic fields into residuals, generator candidates, configured validation, finite-transform verification, confidence summaries, supportability reports, invariant/orbit diagnostics, and downstream discovery reports.
@@ -12,7 +12,7 @@ Hosted documentation: <https://pdelie.readthedocs.io/en/latest/>
 
 ![PDELie pipeline](docs/assets/pdelie_pipeline.svg)
 
-The current stable release is `v0.28.0` / **V0.28**: a narrow data-ecosystem feasibility release. PDELie now imports explicit scalar `xarray.Dataset` variables through `from_xarray_dataset(...)` and reports Dataset readiness through `summarize_xarray_dataset_readiness(...)`, while file loaders, broad adapters, metadata inference engines, resampling, multidimensional grids, and root exports remain deferred. The V0.27 multi-generator diagnostics decision remains part of the retained stable diagnostics surface.
+The current stable release is `v0.29.0` / **V0.29**: a workflow-recipes and support-matrix release. It adds public RTD workflow pages, a machine-readable support matrix, and two rendered tutorial notebooks for the core user paths, while numerical scope, runtime APIs, file loaders, broad adapters, multidimensional grids, and root exports remain unchanged. The V0.28 narrow scalar `xarray.Dataset` path remains part of the retained stable data surface.
 
 ## Choose Your Workflow
 
@@ -90,7 +90,8 @@ New users should start with `notebooks/`. The recommended first pass is:
 2. `notebooks/09_xarray_dataset_ingestion.ipynb` - V0.28 Dataset readiness and scalar-variable ingestion.
 3. `notebooks/02_robustness_sweeps.ipynb` - residual, fit, span, and verification diagnostics under perturbation.
 4. `notebooks/06_orbit_coverage_diagnostics.ipynb` - invariant coverage, consistency, read-only orbit reports, and materialized orbit batches.
-5. `notebooks/10_scope_decisions_and_weak_supportability.ipynb` and `notebooks/11_multi_generator_diagnostics.ipynb` - supportability, no-go, and multi-generator diagnostic boundaries.
+5. `notebooks/12_dataset_to_downstream_workflow.ipynb` and `notebooks/13_candidate_to_split_provenance_workflow.ipynb` - V0.29 end-to-end workflow recipes.
+6. `notebooks/10_scope_decisions_and_weak_supportability.ipynb` and `notebooks/11_multi_generator_diagnostics.ipynb` - supportability, no-go, and multi-generator diagnostic boundaries.
 
 The notebooks are tutorials, not API contracts. They do not define train/test policy, leakage safety, threshold policy, or manuscript success criteria.
 
@@ -158,7 +159,7 @@ These are smoke/reporting examples, not canonical artifact schemas.
 
 The current release is validated by:
 
-- the explicit `v0_28-release-gate` CI job
+- the explicit `v0_29-release-gate` CI job
 - full editable `python -m pytest`
 - built-wheel package smoke
 - packaged example smoke

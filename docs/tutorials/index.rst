@@ -21,4 +21,5 @@ than executing during documentation builds.
    09_xarray_dataset_ingestion
    10_scope_decisions_and_weak_supportability
    11_multi_generator_diagnostics
-
+   12_dataset_to_downstream_workflow
+   13_candidate_to_split_provenance_workflow

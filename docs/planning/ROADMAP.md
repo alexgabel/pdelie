@@ -25,8 +25,8 @@ Execution state belongs in:
 
 ## Current State
 
-- Current completed release: `v0.28.0`
-- Current theme: narrow `xarray.Dataset` ingestion and data-ecosystem feasibility with file loaders deferred
+- Current completed release: `v0.29.0`
+- Current theme: workflow recipes and support matrix, with no new numerical scope or runtime API
 - Next planned release: not frozen; `v0.26b` remains reserved for KS promotion only if a separate scope freeze accepts direct-SVD/no-fallback evidence
 - Public package docs start at the repository-root `README.md` and `docs/README.md`
 - Durable contributor guidance lives in the repository-root `CONTRIBUTING.md`
@@ -463,6 +463,66 @@ The authoritative `v0.12` scope freeze belongs in:
 
 ## Current Completed Release
 
+### `v0.29` - Workflow recipes and support matrix
+**Status:** Completed
+
+`v0.29` is the completed consolidation release after the `v0.28` narrow Dataset ingestion release.
+
+Its purpose is:
+
+> make the existing `v0.19-v0.28` surface easier to use through explicit workflows and a machine-readable support matrix, without adding numerical scope or runtime APIs.
+
+Completed release definition:
+
+`existing stable APIs -> workflow recipe pages -> rendered tutorial notebooks -> machine-readable support matrix`
+
+Completed scope:
+
+- public `docs/workflows/` section rendered by Sphinx/Read the Docs
+- `docs/specs/support_matrix.v0_29.json`
+- updated `docs/specs/SUPPORT_MATRIX.md`
+- rendered tutorial notebook `notebooks/12_dataset_to_downstream_workflow.ipynb`
+- rendered tutorial notebook `notebooks/13_candidate_to_split_provenance_workflow.ipynb`
+- release decision: `workflow_recipes_and_support_matrix_complete_no_new_numerical_scope`
+- compact current `v0_29-release-gate` readiness
+
+Release interpretation:
+
+- the release is documentation and supportability consolidation only
+- the support matrix is a docs/spec artifact, not a package runtime API
+- `v0.29.0` is a Git-tag-only release; PyPI and TestPyPI publication are deferred to `v1.0` or later
+
+Explicit non-goals:
+
+- no `pdelie.reporting.summarize_workflow_readiness(...)`
+- no new numerical scope
+- no runtime helper or public API
+- no file loader, broad adapter, or metadata inference engine
+- no multidimensional, multivariable, or nonuniform stable support
+- no train/test policy or leakage prevention
+- no KS runtime promotion
+- no neural/callable/operator APIs
+- no root export expansion
+
+The authoritative `v0.29` scope freeze belongs in:
+
+- `V0_29_SCOPE.md`
+
+### Release Gate for `v0.29`
+
+`v0.29` is complete only if:
+
+- workflow pages are included in Sphinx navigation
+- the JSON support matrix is strict JSON-compatible and matches the human-readable table
+- the two new rendered notebooks are tracked, executed, and linked into RTD
+- no new runtime helper, public API, numerical scope, or root export appears
+- CI uses one compact current release gate plus full editable tests and package smoke
+- package/readiness docs preserve the `v1.0` package-index publishing deferral
+
+---
+
+## Recent Completed Release
+
 ### `v0.28` - Narrow xarray Dataset ingestion
 **Status:** Completed
 
@@ -518,10 +578,6 @@ The authoritative `v0.28` scope freeze belongs in:
 - file loaders, broad adapters, metadata inference engines, resampling, multidimensional/nonuniform support, and root exports remain absent
 - CI uses one compact current release gate plus full editable tests and package smoke
 - package/readiness docs preserve the `v1.0` package-index publishing deferral
-
----
-
-## Recent Completed Release
 
 ### `v0.27` - Multi-generator diagnostics decision
 **Status:** Completed
@@ -1685,7 +1741,7 @@ Deferred after completion:
 - broad adapter framework
 - implicit alias-based loaders
 
-### `v0.29` - Grid-domain feasibility
+### `v0.30` - Grid-domain feasibility
 **Status:** Planned
 
 Purpose:
@@ -1703,7 +1759,7 @@ Default stance:
 
 - unsupported until a dedicated scope freeze proves the contracts.
 
-### `v0.30` - Orbit/action scope decision
+### `v0.31` - Orbit/action scope decision
 **Status:** Planned
 
 Purpose:
@@ -1722,7 +1778,7 @@ Boundary:
 - reporting helpers remain report-only
 - transformed collections belong in explicit data/invariant APIs, not reporting APIs
 
-### `v0.31` - `v1.0` readiness hardening
+### `v0.32` - `v1.0` readiness hardening
 **Status:** Planned
 
 Purpose:
@@ -1848,8 +1904,9 @@ It should **not** be edited every time a new idea appears.
 - `v0.26b` = planned KS promotion decision, only after a separate scope freeze
 - `v0.27` = completed multi-generator diagnostics decision; fitting remains deferred
 - `v0.28` = completed narrow xarray Dataset ingestion; file loaders remain deferred
-- `v0.29` = planned grid-domain feasibility
-- `v0.30` = planned orbit/action scope decision
-- `v0.31` = planned `v1.0` readiness hardening
+- `v0.29` = completed workflow recipes and support matrix; no new numerical scope
+- `v0.30` = planned grid-domain feasibility
+- `v0.31` = planned orbit/action scope decision
+- `v0.32` = planned `v1.0` readiness hardening
 - `v1.0` = stable public engine
 - later / experimental = operator-facing symmetry diagnostics

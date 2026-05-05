@@ -1,30 +1,28 @@
-# PDELie - Execution Plan (V0.28)
+# PDELie - Execution Plan (V0.29)
 
 **Status:** COMPLETE
 
-**V0.28 is complete as the narrow xarray Dataset ingestion and data-ecosystem feasibility release**
+**V0.29 is complete as the workflow recipes and support matrix release**
 
-This file is the completed execution record for the `v0.28` release series.
+This file is the completed execution record for the `v0.29` release series.
 
 ## Release Theme
 
-`v0.28` adds one explicit scalar `xarray.Dataset` ingestion path and a Dataset readiness report without promoting file loaders, broad adapter machinery, metadata inference, resampling, multidimensional grids, or root exports.
+`v0.29` consolidates the existing `v0.19-v0.28` surface into explicit user workflows and a machine-readable support matrix. It adds no numerical scope, no runtime helper, no new public API, and no root export.
 
 Decision label:
 
 ```text
-xarray_dataset_scalar_slice_supported_file_loaders_deferred
+workflow_recipes_and_support_matrix_complete_no_new_numerical_scope
 ```
 
-Stable path:
+## Implemented Surfaces
 
-```text
-xarray.Dataset
--> dataset readiness report
--> explicit scalar data variable + explicit metadata
--> canonical scalar 1D periodic FieldBatch
--> existing readiness / residual / confidence workflows
-```
+- `docs/workflows/` with recipe pages for data readiness, candidate validation, downstream/export provenance, Dataset-to-downstream, and candidate-to-split-provenance workflows
+- `docs/specs/support_matrix.v0_29.json` as the machine-readable support matrix
+- `docs/specs/SUPPORT_MATRIX.md` as the human-readable support matrix
+- `notebooks/12_dataset_to_downstream_workflow.ipynb`
+- `notebooks/13_candidate_to_split_provenance_workflow.ipynb`
 
 ## Milestone Status
 
@@ -38,68 +36,23 @@ xarray.Dataset
 
 Authoritative scope:
 
-- `docs/planning/V0_28_SCOPE.md`
+- `docs/planning/V0_29_SCOPE.md`
 
-## Milestone 0 - Scope Freeze
-
-Closeout:
-
-- added `docs/planning/V0_28_SCOPE.md`
-- reset `PLAN.md` as the active `v0.28` execution record
-- updated `ROADMAP.md` to record `v0.28` as the current completed release
-- explicitly deferred file loaders, broad adapters, metadata inference engines, resampling, multidimensional/nonuniform support, and root exports
-
-## Milestone 1 - Semantics Freeze
-
-Frozen semantics:
-
-- `from_xarray_dataset(...)` accepts `xarray.Dataset` only
-- conversion imports exactly one scalar data variable
-- omitted `data_var` auto-selects only when exactly one compatible numeric non-mask variable exists
-- `mask_var`, when supplied, must match the selected data variable dims and shape
-- conversion delegates to existing `from_xarray(...)`
-- metadata is required for conversion and Dataset attrs are report-only
-
-## Milestone 2 - Dataset Adapter
-
-Implemented:
-
-- `pdelie.data.from_xarray_dataset(...)`
-- submodule-only export from `pdelie.data`
-- parity coverage against direct `from_xarray(dataset[data_var], ...)`
-- provenance entry `from_xarray_dataset` before the delegated `from_xarray` entry
-
-## Milestone 3 - Dataset Readiness Reporting
-
-Implemented:
-
-- `pdelie.reporting.summarize_xarray_dataset_readiness(...)`
-- strict JSON-compatible `summary_type = "xarray_dataset_readiness"` reports
-- selected/candidate variable diagnostics
-- coordinate, mask, metadata, expected-equation, and conversion-preflight diagnostics
-- conservative report-only metadata suggestions
-
-## Milestone 4 - Example and Docs
-
-Implemented:
-
-- `pdelie.examples.run_data_ecosystem_feasibility_example(...)`
-- `python -m pdelie.examples.data_ecosystem_feasibility`
-- README, docs index, changelog, API stability, spec, publishing, roadmap, and release-readiness updates
-
-## Milestone 5 - API / Public-Surface Audit
+## Public-Surface Audit
 
 Confirmed:
 
-- new APIs are submodule-only
-- root `pdelie` remains unchanged
-- no `load_field_batch`, NetCDF/Zarr loader, PDEBench/The Well adapter, adapter registry, metadata inference engine, resampling API, multidimensional/nonuniform API, train/test policy, KS runtime API, neural/callable API, or operator API landed
+- no `pdelie.reporting.summarize_workflow_readiness(...)`
+- no new runtime API
+- no new root export
+- no new PDE or numerical regime
+- no file loader, broad adapter, metadata inference engine, resampling API, multidimensional/nonuniform API, train/test policy, KS runtime API, neural/callable API, or operator API landed
 
-## Milestone 6 - Release Gate and Readiness
+## Release Gate and Readiness
 
 Implemented:
 
-- `tests/test_v0_28_release_gate.py`
-- CI `v0_28-release-gate`
-- package metadata bump to `0.28.0`
+- `tests/test_v0_29_release_gate.py`
+- CI `v0_29-release-gate`
+- package metadata bump to `0.29.0`
 - Git-tag-only release-readiness docs; PyPI/TestPyPI remain deferred until `v1.0` or later

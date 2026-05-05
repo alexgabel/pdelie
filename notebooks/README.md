@@ -1,6 +1,6 @@
 # PDELie Tutorial Notebooks
 
-This directory is the recommended entry point for new PDELie users on the shipped `v0.28` surface.
+This directory is the recommended entry point for new PDELie users on the shipped `v0.29` surface.
 
 Tutorial promise:
 
@@ -13,6 +13,7 @@ PDE time series
 -> optional orbit materialization
 -> optional downstream sparse-discovery task
 -> optional external-data readiness and Dataset ingestion checks
+-> optional workflow recipes and support-matrix interpretation
 ```
 
 These notebooks are tutorials, not API contracts. Example outputs are runtime summaries, not canonical paper artifacts.
@@ -47,7 +48,7 @@ These notebooks are tutorials, not API contracts. Example outputs are runtime su
 - Not a train/test split manager, split creator, or leakage-prevention system.
 - Not an operator-learning framework.
 - Not a paper-specific experiment pipeline.
-- Not a general nonuniform, multidimensional, or multivariable PDE framework in `v0.28`.
+- Not a general nonuniform, multidimensional, or multivariable PDE framework in `v0.29`.
 - Not a WSINDy implementation, weak design-matrix builder, weak sparse-recovery engine, or public weak derivative backend.
 - Not a public KS runtime API surface.
 - Not a multi-generator finite-flow, BCH-composition, group-action, or orbit-atlas engine.
@@ -84,10 +85,12 @@ Jupyter itself is not a core runtime dependency. Install notebook tooling in you
 2. `09_xarray_dataset_ingestion.ipynb` - bring one scalar `xarray.Dataset` variable into the canonical pipeline.
 3. `02_robustness_sweeps.ipynb` - confidence diagnostics under perturbation.
 4. `06_orbit_coverage_diagnostics.ipynb` - invariant/orbit reports and materialized orbit batches.
-5. `08_downstream_task_template.ipynb` - downstream discovery contracts, split provenance, and user-owned policy.
-6. `07_external_symmetry_candidates.ipynb` - external and formula-backed candidate validation.
-7. `10_scope_decisions_and_weak_supportability.ipynb` - careful supportability and no-go decision reports.
-8. `11_multi_generator_diagnostics.ipynb` - supplied multi-generator diagnostics without fitting promotion.
+5. `12_dataset_to_downstream_workflow.ipynb` - V0.29 end-to-end Dataset-to-downstream workflow recipe.
+6. `13_candidate_to_split_provenance_workflow.ipynb` - V0.29 supplied-candidate to split-provenance workflow recipe.
+7. `08_downstream_task_template.ipynb` - downstream discovery contracts, split provenance, and user-owned policy.
+8. `07_external_symmetry_candidates.ipynb` - external and formula-backed candidate validation.
+9. `10_scope_decisions_and_weak_supportability.ipynb` - careful supportability and no-go decision reports.
+10. `11_multi_generator_diagnostics.ipynb` - supplied multi-generator diagnostics without fitting promotion.
 
 ## Notebook Index
 
@@ -105,6 +108,8 @@ Jupyter itself is not a core runtime dependency. Install notebook tooling in you
 | `09_xarray_dataset_ingestion.ipynb` | V0.28 Dataset readiness and scalar-variable conversion | `.[xarray]` or `.[test]`; `.[viz]` for plots | <1 min | `summarize_xarray_dataset_readiness`, `from_xarray_dataset` | no file loaders, no metadata inference engine |
 | `10_scope_decisions_and_weak_supportability.ipynb` | Weak supportability, KdV frozen scope, KS no-go marker | `.[viz]` optional | 1-2 min | weak supportability and decision examples | no WSINDy, no weak KdV/KS, no public KS |
 | `11_multi_generator_diagnostics.ipynb` | Supplied multi-generator algebra/PDE-context diagnostics | `.[viz]` optional | <1 min | closure/span/candidate/confidence diagnostics | no multi-generator fitting or finite group actions |
+| `12_dataset_to_downstream_workflow.ipynb` | V0.29 Dataset-to-downstream recipe | `.[test]` | <1 min | Dataset readiness, FieldBatch readiness, confidence, discovery workflow summaries | no new API, no file loaders |
+| `13_candidate_to_split_provenance_workflow.ipynb` | V0.29 candidate-validation to split-provenance recipe | `.[test]` | <1 min | candidate validation, confidence, orbit batch, split provenance | no split management or leakage prevention |
 
 ## Running From VS Code Or Jupyter
 
