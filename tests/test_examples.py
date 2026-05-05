@@ -5,10 +5,12 @@ import subprocess
 import sys
 
 import numpy as np
+import pytest
 
 import pdelie
 from pdelie.examples import (
     run_advection_diffusion_vertical_slice_example,
+    run_data_ecosystem_feasibility_example,
     run_downstream_discovery_contracts_example,
     run_external_data_readiness_example,
     run_formula_generator_validation_example,
@@ -580,6 +582,33 @@ def test_split_leakage_provenance_module_prints_json_only() -> None:
 
     assert parsed["summary_type"] == "split_leakage_provenance_example"
     assert parsed["traceable_overlap"]["risk_label"] == "traceable_overlap"
+
+
+def test_data_ecosystem_feasibility_example_runs_end_to_end() -> None:
+    pytest.importorskip("xarray", reason="xarray is required for data ecosystem example")
+
+    result = run_data_ecosystem_feasibility_example()
+
+    assert json.loads(json.dumps(result, allow_nan=False)) == result
+    assert result["summary_schema_version"] == "0.1"
+    assert result["summary_type"] == "data_ecosystem_feasibility_example"
+    assert result["release_decision"] == "xarray_dataset_scalar_slice_supported_file_loaders_deferred"
+    assert result["dataset_readiness"]["summary_type"] == "xarray_dataset_readiness"
+    assert result["dataset_readiness"]["readiness_label"] == "ready"
+    assert result["field_readiness"]["summary_type"] == "field_batch_readiness"
+    assert result["field_readiness"]["readiness_label"] == "ready"
+    assert "from_xarray_dataset" in result["imported_field"]["preprocess_operations"]
+    assert result["deferred_scope"]["file_loaders"] is False
+    assert not hasattr(pdelie, "run_data_ecosystem_feasibility_example")
+
+
+def test_data_ecosystem_feasibility_module_prints_json_only() -> None:
+    pytest.importorskip("xarray", reason="xarray is required for data ecosystem example")
+
+    parsed = _run_module_json("pdelie.examples.data_ecosystem_feasibility")
+
+    assert parsed["summary_type"] == "data_ecosystem_feasibility_example"
+    assert parsed["dataset_readiness"]["summary_type"] == "xarray_dataset_readiness"
 
 
 def test_weak_form_supportability_example_runs_end_to_end() -> None:

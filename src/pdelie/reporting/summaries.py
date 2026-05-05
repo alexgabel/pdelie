@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib
 import json
 from collections.abc import Mapping, Sequence
 from itertools import combinations
@@ -106,6 +107,14 @@ _WEAK_CONTRACT_FIELDS = (
     "finite_value_policy",
 )
 _FROZEN_PUBLIC_WEAK_EQUATIONS = frozenset({"heat_1d", "burgers_1d"})
+_XARRAY_DATASET_ACCEPTED_LAYOUTS = frozenset(
+    {
+        ("time", "x"),
+        ("batch", "time", "x"),
+        ("time", "x", "var"),
+        ("batch", "time", "x", "var"),
+    }
+)
 
 def _json_safe(value: Any) -> Any:
     if isinstance(value, np.ndarray):
@@ -869,6 +878,353 @@ def summarize_field_batch_readiness(
             "grid_regularity": "uniform",
         },
     )
+
+
+def _require_xarray_dataset(value: object):
+    try:
+        xr = importlib.import_module("xarray")
+    except ModuleNotFoundError as exc:
+        raise ImportError(
+            "xarray is required for summarize_xarray_dataset_readiness; install pdelie[xarray]."
+        ) from exc
+    if isinstance(value, xr.DataArray):
+        raise ScopeValidationError("summarize_xarray_dataset_readiness requires an xarray.Dataset, not a DataArray.")
+    if not isinstance(value, xr.Dataset):
+        raise SchemaValidationError("summarize_xarray_dataset_readiness requires an xarray.Dataset.")
+    return xr
+
+
+def _dataset_var_diagnostics(dataset: object, *, mask_var: str | None) -> list[dict[str, Any]]:
+    reports: list[dict[str, Any]] = []
+    for name, data_array in dataset.data_vars.items():
+        normalized_name = str(name)
+        dims = tuple(str(dim) for dim in data_array.dims)
+        shape = list(data_array.shape)
+        is_mask_candidate = normalized_name == mask_var
+        failures: list[str] = []
+        if dims not in _XARRAY_DATASET_ACCEPTED_LAYOUTS:
+            failures.append("unsupported_layout")
+        try:
+            values = np.asarray(data_array.values, dtype=float)
+            numeric = True
+            finite = bool(np.all(np.isfinite(values)))
+        except (TypeError, ValueError):
+            values = None
+            numeric = False
+            finite = False
+            failures.append("not_numeric")
+        if values is not None and values.ndim != len(dims):
+            failures.append("rank_dims_mismatch")
+        if values is not None and "var" in dims and values.shape[dims.index("var")] != 1:
+            failures.append("non_singleton_var_axis")
+        if values is not None and not finite:
+            failures.append("nonfinite_values")
+        reports.append(
+            {
+                "name": normalized_name,
+                "dims": list(dims),
+                "shape": shape,
+                "dtype": str(data_array.dtype),
+                "numeric": numeric,
+                "finite": finite,
+                "mask_candidate": is_mask_candidate,
+                "compatible": not failures and not is_mask_candidate,
+                "failures": failures,
+            }
+        )
+    return reports
+
+
+def _dataset_coord_diagnostics(data_array: object | None, metadata: Mapping[str, Any] | None) -> tuple[dict[str, Any], dict[str, Any]]:
+    diagnostics: dict[str, Any] = {}
+    statuses: list[dict[str, Any]] = []
+    for name, minimum_points in (("time", 3), ("x", 4)):
+        if data_array is None:
+            diagnostics[name] = {"present": False}
+            statuses.append(_component_status("unavailable", reason=f"{name}_coordinate_unavailable"))
+            continue
+        if name not in data_array.coords:
+            diagnostics[name] = {"present": False}
+            statuses.append(_component_status("failed", reason=f"{name}_coordinate_missing"))
+            continue
+        coord, coord_error = _safe_array(data_array.coords[name].values, name=f"coords['{name}']")
+        if coord is None:
+            diagnostics[name] = {"present": True, **(coord_error or {})}
+            statuses.append(_component_status("failed", reason=f"{name}_coordinate_not_numeric"))
+            continue
+        finite = bool(np.all(np.isfinite(coord)))
+        increasing = _strictly_increasing(coord)
+        diffs = np.diff(coord) if coord.ndim == 1 and coord.size >= 2 else np.asarray([], dtype=float)
+        uniform = bool(
+            coord.ndim == 1
+            and (
+                coord.size <= 2
+                or (
+                    coord.size > 2
+                    and diffs.size > 0
+                    and np.allclose(diffs, float(diffs[0]), atol=1e-10, rtol=0.0)
+                )
+            )
+        )
+        spacing = float(diffs[0]) if finite and increasing and uniform and diffs.size > 0 else None
+        failures: list[str] = []
+        if coord.ndim != 1:
+            failures.append("not_one_dimensional")
+        if coord.ndim == 1 and coord.shape[0] < minimum_points:
+            failures.append("too_few_points")
+        if not finite:
+            failures.append("nonfinite")
+        if not increasing:
+            failures.append("not_strictly_increasing")
+        if not uniform:
+            failures.append("not_uniform")
+        details: dict[str, Any] = {
+            "present": True,
+            "length": int(coord.shape[0]) if coord.ndim == 1 else None,
+            "finite": finite,
+            "strictly_increasing": increasing,
+            "uniform": uniform,
+            "spacing": spacing,
+        }
+        if name == "x" and spacing is not None:
+            inferred_domain_length = float(coord.shape[0] * spacing)
+            parameter_tags = metadata.get("parameter_tags", {}) if isinstance(metadata, Mapping) else {}
+            domain_length_tag = (
+                _finite_metadata_float(parameter_tags.get("domain_length"))
+                if isinstance(parameter_tags, Mapping)
+                else None
+            )
+            details.update(
+                {
+                    "inferred_domain_length": inferred_domain_length,
+                    "observed_span": float(coord[-1] - coord[0]),
+                    "domain_length_tag": domain_length_tag,
+                }
+            )
+        diagnostics[name] = details
+        if failures:
+            statuses.append(_component_status("failed", reason=f"{name}_coordinate_not_ready", details={"failures": failures}))
+        else:
+            statuses.append(_component_status("passed", reason=f"{name}_coordinate_ready"))
+    return _combine_statuses(statuses, unavailable_reason="coordinates_unavailable"), diagnostics
+
+
+def _dataset_metadata_status(
+    metadata: Mapping[str, Any] | None,
+    *,
+    expected_equation: str | None,
+    suggestions: Mapping[str, Any],
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]]:
+    if metadata is None:
+        diagnostics = {
+            "metadata_provided": False,
+            "required_keys": list(REQUIRED_METADATA_KEYS),
+            "missing_keys": list(REQUIRED_METADATA_KEYS),
+        }
+        equation_status = (
+            _component_status("failed", reason="expected_equation_without_metadata")
+            if expected_equation is not None
+            else _component_status("not_configured", reason="expected_equation_not_configured")
+        )
+        return _component_status("failed", reason="metadata_required_for_conversion"), equation_status, diagnostics, dict(suggestions)
+    if not isinstance(metadata, Mapping):
+        raise SchemaValidationError("metadata must be a mapping or None.")
+    normalized_metadata = _validate_strict_json_compatible(dict(metadata), name="metadata")
+    missing = [key for key in REQUIRED_METADATA_KEYS if key not in normalized_metadata]
+    boundary_conditions = normalized_metadata.get("boundary_conditions")
+    parameter_tags = normalized_metadata.get("parameter_tags")
+    diagnostics = {
+        "metadata_provided": True,
+        "required_keys": list(REQUIRED_METADATA_KEYS),
+        "missing_keys": missing,
+        "boundary_conditions": boundary_conditions if isinstance(boundary_conditions, Mapping) else None,
+        "grid_type": normalized_metadata.get("grid_type"),
+        "grid_regularity": normalized_metadata.get("grid_regularity"),
+        "coordinate_system": normalized_metadata.get("coordinate_system"),
+        "parameter_tags": parameter_tags if isinstance(parameter_tags, Mapping) else None,
+        "equation": parameter_tags.get("equation") if isinstance(parameter_tags, Mapping) else None,
+    }
+    failures: list[str] = []
+    if missing:
+        failures.append("missing_required_metadata")
+    if not isinstance(boundary_conditions, Mapping):
+        failures.append("boundary_conditions_not_mapping")
+    elif boundary_conditions.get("x") != "periodic":
+        failures.append("x_boundary_not_periodic")
+    if normalized_metadata.get("grid_type") != "rectilinear":
+        failures.append("grid_type_not_rectilinear")
+    if normalized_metadata.get("grid_regularity") != "uniform":
+        failures.append("grid_regularity_not_uniform")
+    if normalized_metadata.get("coordinate_system") != "cartesian":
+        failures.append("coordinate_system_not_cartesian")
+    if not isinstance(parameter_tags, Mapping):
+        failures.append("parameter_tags_not_mapping")
+    metadata_status = (
+        _component_status("failed", reason="metadata_not_ready", details={"failures": failures})
+        if failures
+        else _component_status("passed", reason="metadata_ready")
+    )
+    if expected_equation is None:
+        equation_status = _component_status("not_configured", reason="expected_equation_not_configured")
+    elif not isinstance(expected_equation, str) or not expected_equation:
+        raise SchemaValidationError("expected_equation must be a non-empty string or None.")
+    elif not isinstance(parameter_tags, Mapping) or parameter_tags.get("equation") != expected_equation:
+        equation_status = _component_status(
+            "failed",
+            reason="expected_equation_mismatch",
+            details={"expected": expected_equation, "observed": diagnostics["equation"]},
+        )
+    else:
+        equation_status = _component_status("passed", reason="expected_equation_matched")
+    return metadata_status, equation_status, diagnostics, dict(suggestions)
+
+
+def summarize_xarray_dataset_readiness(
+    dataset: object,
+    *,
+    data_var: str | None = None,
+    metadata: Mapping[str, Any] | None = None,
+    mask_var: str | None = None,
+    expected_equation: str | None = None,
+) -> dict[str, Any]:
+    _require_xarray_dataset(dataset)
+    if expected_equation is not None and (not isinstance(expected_equation, str) or not expected_equation):
+        raise SchemaValidationError("expected_equation must be a non-empty string or None.")
+    dataset_attrs = _validate_strict_json_compatible(dict(dataset.attrs), name="dataset.attrs")
+    normalized_mask_var = None if mask_var is None else _require_mapping({"mask_var": mask_var}, name="mask_var container")["mask_var"]
+    if normalized_mask_var is not None and (not isinstance(normalized_mask_var, str) or not normalized_mask_var):
+        raise SchemaValidationError("mask_var must be a non-empty string or None.")
+    if data_var is not None and (not isinstance(data_var, str) or not data_var):
+        raise SchemaValidationError("data_var must be a non-empty string or None.")
+
+    candidate_variables = _dataset_var_diagnostics(dataset, mask_var=normalized_mask_var)
+    compatible_names = [report["name"] for report in candidate_variables if report["compatible"]]
+    selected_data_var: str | None = None
+    data_var_failures: list[str] = []
+    if data_var is not None:
+        if data_var not in dataset.data_vars:
+            data_var_failures.append("data_var_missing")
+        elif data_var == normalized_mask_var:
+            data_var_failures.append("data_var_equals_mask_var")
+        else:
+            selected_data_var = data_var
+            selected_report = next(report for report in candidate_variables if report["name"] == data_var)
+            if not selected_report["compatible"]:
+                data_var_failures.extend(str(item) for item in selected_report["failures"])
+    elif len(compatible_names) == 1:
+        selected_data_var = compatible_names[0]
+    elif not compatible_names:
+        data_var_failures.append("no_compatible_data_var")
+    else:
+        data_var_failures.append("ambiguous_data_var")
+
+    data_var_status = (
+        _component_status("failed", reason="dataset_data_var_not_ready", details={"failures": data_var_failures})
+        if data_var_failures
+        else _component_status("passed", reason="dataset_data_var_ready")
+    )
+    selected_array = None if selected_data_var is None else dataset.data_vars[selected_data_var]
+
+    mask_failures: list[str] = []
+    if normalized_mask_var is None:
+        mask_status = _component_status("not_configured", reason="mask_var_not_configured")
+    elif normalized_mask_var not in dataset.data_vars:
+        mask_status = _component_status("failed", reason="mask_var_missing")
+        mask_failures.append("mask_var_missing")
+    elif selected_array is None:
+        mask_status = _component_status("unavailable", reason="mask_var_unchecked_without_data_var")
+    else:
+        mask_array = dataset.data_vars[normalized_mask_var]
+        if tuple(str(dim) for dim in mask_array.dims) != tuple(str(dim) for dim in selected_array.dims):
+            mask_failures.append("mask_dims_mismatch")
+        if tuple(mask_array.shape) != tuple(selected_array.shape):
+            mask_failures.append("mask_shape_mismatch")
+        mask_status = (
+            _component_status("failed", reason="mask_var_not_ready", details={"failures": mask_failures})
+            if mask_failures
+            else _component_status("passed", reason="mask_var_ready")
+        )
+
+    coordinate_status, coordinate_diagnostics = _dataset_coord_diagnostics(selected_array, metadata)
+    suggestions = {
+        "compatible_data_vars": compatible_names,
+        "selected_data_var": selected_data_var,
+        "dataset_attr_keys": sorted(str(key) for key in dataset_attrs),
+        "grid_type": "rectilinear",
+        "grid_regularity": "uniform",
+        "coordinate_system": "cartesian",
+        "boundary_conditions": {"x": "periodic"},
+    }
+    if coordinate_diagnostics.get("x", {}).get("inferred_domain_length") is not None:
+        suggestions["parameter_tags"] = {"domain_length": coordinate_diagnostics["x"]["inferred_domain_length"]}
+    metadata_status, equation_status, metadata_diagnostics, metadata_suggestions = _dataset_metadata_status(
+        metadata,
+        expected_equation=expected_equation,
+        suggestions=suggestions,
+    )
+
+    conversion_status: dict[str, Any]
+    conversion_preflight: dict[str, Any]
+    if selected_data_var is None or metadata is None:
+        conversion_status = _component_status("unavailable", reason="conversion_preflight_not_available")
+        conversion_preflight = {"configured": False, "field_readiness": None, "error": None}
+    else:
+        try:
+            from pdelie.data import from_xarray_dataset
+
+            field = from_xarray_dataset(
+                dataset,
+                data_var=selected_data_var,
+                metadata=metadata,
+                mask_var=normalized_mask_var,
+            )
+            field_readiness = summarize_field_batch_readiness(field, expected_equation=expected_equation)
+        except PDELieValidationError as exc:
+            conversion_status = _component_status("failed", reason="conversion_preflight_validation_failed")
+            conversion_preflight = {
+                "configured": True,
+                "field_readiness": None,
+                "error": {"error_type": type(exc).__name__, "message": str(exc)},
+            }
+        else:
+            conversion_status = _component_status("passed", reason="conversion_preflight_passed")
+            conversion_preflight = {"configured": True, "field_readiness": field_readiness, "error": None}
+
+    component_statuses = {
+        "dataset": _component_status("passed", reason="dataset_object_ready"),
+        "data_variable": data_var_status,
+        "mask_variable": mask_status,
+        "coordinates": coordinate_status,
+        "metadata": metadata_status,
+        "expected_equation": equation_status,
+        "conversion_preflight": conversion_status,
+    }
+    label = _readiness_label(component_statuses)
+    payload = {
+        "summary_schema_version": _SUMMARY_SCHEMA_VERSION,
+        "summary_type": "xarray_dataset_readiness",
+        "readiness_label": label,
+        "component_statuses": component_statuses,
+        "dataset": {
+            "data_vars": [str(name) for name in dataset.data_vars],
+            "dims": {str(name): int(length) for name, length in dataset.sizes.items()},
+            "attrs_keys": sorted(str(key) for key in dataset_attrs),
+        },
+        "selected_data_var": selected_data_var,
+        "candidate_variables": candidate_variables,
+        "mask": {"mask_var": normalized_mask_var, "failures": mask_failures},
+        "coordinate_diagnostics": coordinate_diagnostics,
+        "metadata_diagnostics": metadata_diagnostics,
+        "metadata_suggestions": metadata_suggestions,
+        "conversion_preflight": conversion_preflight,
+        "stable_scope": {
+            "dataset_input": True,
+            "scalar_1d_periodic": True,
+            "file_loaders": False,
+            "metadata_inference": "report_only_conservative",
+        },
+    }
+    return _validate_strict_json_compatible(payload, name="xarray_dataset_readiness summary")
 
 
 def summarize_residual_batch(residual: ResidualBatch) -> dict[str, Any]:

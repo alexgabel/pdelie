@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  v0_27-release-gate:
+  v0_28-release-gate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -32,8 +32,8 @@ jobs:
           retry 3 python -m pip install -e .[test]
       - name: Check dependencies
         run: python -m pip check
-      - name: Run V0.27 release gate
-        run: python -m pytest tests/test_v0_27_release_gate.py
+      - name: Run V0.28 release gate
+        run: python -m pytest tests/test_v0_28_release_gate.py
   editable-tests:
     runs-on: ubuntu-latest
     steps:
@@ -69,6 +69,7 @@ jobs:
           python -m pdelie.examples.kdv_vertical_slice
           python -m pdelie.examples.kdv_scope_decision
           python -m pdelie.examples.multi_generator_diagnostics
+          python -m pdelie.examples.data_ecosystem_feasibility
           python -m pdelie.examples.reaction_diffusion_vertical_slice
           python -m pdelie.examples.advection_diffusion_vertical_slice
           python -m pdelie.examples.orbit_coverage_diagnostics
@@ -136,11 +137,13 @@ jobs:
 
           from pdelie import FieldBatch, DerivativeBatch, ResidualBatch, ResidualEvaluator, GeneratorFamily, VerificationReport
           from pdelie.data import (
+              from_xarray_dataset,
               generate_advection_diffusion_1d_field_batch,
               generate_reaction_diffusion_1d_field_batch,
           )
           from pdelie.examples import (
               run_advection_diffusion_vertical_slice_example,
+              run_data_ecosystem_feasibility_example,
               run_downstream_discovery_contracts_example,
               run_external_data_readiness_example,
               run_kdv_scope_decision_example,
@@ -171,6 +174,7 @@ jobs:
               summarize_vertical_slice,
               summarize_weak_form_supportability,
               summarize_weak_residual_report,
+              summarize_xarray_dataset_readiness,
           )
           from pdelie.symmetry import FormulaGeneratorFamily, validate_symmetry_candidate
           from pdelie.residuals import AdvectionDiffusionResidualEvaluator, ReactionDiffusionResidualEvaluator
@@ -201,11 +205,14 @@ jobs:
           assert summarize_vertical_slice is not None
           assert summarize_weak_form_supportability is not None
           assert summarize_weak_residual_report is not None
+          assert summarize_xarray_dataset_readiness is not None
+          assert from_xarray_dataset is not None
           assert validate_symmetry_candidate is not None
           assert FormulaGeneratorFamily is not None
           assert generate_advection_diffusion_1d_field_batch is not None
           assert AdvectionDiffusionResidualEvaluator is not None
           assert run_advection_diffusion_vertical_slice_example is not None
+          assert run_data_ecosystem_feasibility_example is not None
           assert run_downstream_discovery_contracts_example is not None
           assert run_external_data_readiness_example is not None
           assert run_kdv_scope_decision_example is not None
@@ -221,6 +228,8 @@ jobs:
           assert not hasattr(pdelie, "summarize_downstream_discovery_workflow")
           assert not hasattr(pdelie, "summarize_split_leakage_provenance")
           assert not hasattr(pdelie, "summarize_weak_form_supportability")
+          assert not hasattr(pdelie, "summarize_xarray_dataset_readiness")
+          assert not hasattr(pdelie, "from_xarray_dataset")
           assert not hasattr(pdelie, "summarize_generator_fit_diagnostics")
           assert not hasattr(pdelie, "summarize_vertical_slice")
           assert not hasattr(pdelie, "compute_periodic_window_coverage")
@@ -235,6 +244,7 @@ jobs:
           assert not hasattr(pdelie, "generate_advection_diffusion_1d_field_batch")
           assert not hasattr(pdelie, "AdvectionDiffusionResidualEvaluator")
           assert not hasattr(pdelie, "run_advection_diffusion_vertical_slice_example")
+          assert not hasattr(pdelie, "run_data_ecosystem_feasibility_example")
           assert not hasattr(pdelie, "run_downstream_discovery_contracts_example")
           assert not hasattr(pdelie, "run_external_data_readiness_example")
           assert not hasattr(pdelie, "run_kdv_scope_decision_example")

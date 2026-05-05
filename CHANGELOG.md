@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.28.0
+
+First final release for the frozen V0.28 narrow xarray Dataset ingestion and data-ecosystem feasibility slice.
+
+- adds `pdelie.data.from_xarray_dataset(...)` for explicit scalar `xarray.Dataset` variable conversion into canonical `FieldBatch`
+- adds `pdelie.reporting.summarize_xarray_dataset_readiness(...)` for strict JSON-compatible Dataset readiness reports
+- adds `python -m pdelie.examples.data_ecosystem_feasibility` and `pdelie.examples.run_data_ecosystem_feasibility_example(...)`
+- records the release decision `xarray_dataset_scalar_slice_supported_file_loaders_deferred`
+- delegates Dataset conversion to the existing `from_xarray(...)` DataArray path after variable/mask selection, preserving the frozen scalar 1D periodic contract
+- keeps metadata explicit for conversion; Dataset attrs are reported but never silently promoted into canonical metadata
+- adds conservative report-only metadata suggestions for observed dims, coordinates, compatible variables, and domain length
+- preserves existing `from_numpy(...)`, `from_xarray(...)`, field-readiness, confidence, downstream, split-provenance, weak-supportability, multi-generator diagnostics, and PDE strong paths
+
+Explicitly deferred for this final release:
+
+- file loaders such as NetCDF or Zarr readers
+- PDEBench / The Well adapters
+- broad dataset adapter registry
+- implicit metadata inference or PDE identity inference
+- resampling, multidimensional support, nonuniform-grid support, and multivariable `FieldBatch` support
+- train/test policy or leakage prevention
+- KS runtime promotion
+- neural/callable/operator APIs
+- root export expansion
+- PyPI and TestPyPI publication; package-index publishing is deferred to `v1.0` or later
+
 ## 0.27.0
 
 First final release for the frozen V0.27 multi-generator diagnostics decision.

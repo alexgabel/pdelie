@@ -22,6 +22,7 @@ It is a **library**, not a project repo.
 - frozen invariant, reporting, uniform-translation orbit, and materialized-orbit utilities
 - runtime-only downstream discovery bridge/result/workflow reports
 - runtime-only split/leakage provenance diagnostics over user-supplied partitions
+- narrow `xarray.Dataset` scalar-variable ingestion and readiness reporting that still requires explicit metadata
 - synthetic + small benchmark PDEs, currently including Heat, Burgers, normalized short-horizon KdV, frozen scalar 1D Fisher-KPP reaction-diffusion, and frozen scalar 1D constant-coefficient advection-diffusion strong paths
 
 ## Experimental
@@ -30,7 +31,7 @@ It is a **library**, not a project repo.
 - Python-callable generators and executable formula strings
 - weak-form derivatives and weak-form extensions beyond the frozen `v0.8` weak residual report slice and `v0.24` supportability reporting layer
 - custom KdV initial conditions, configurable KdV coefficients, general KdV regimes outside the frozen normalized short-horizon path, and weak KdV
-- broad dataset adapters, file-based dataset loaders, and Dataset-level ingestion
+- broad dataset adapters, file-based dataset loaders, implicit metadata inference, resampling, and broad Dataset-level ingestion
 - broad discovery-backend frameworks, split management, leakage prevention, and heldout-leakage policy
 - multidimensional, multivariable, and nonuniform-grid stable expansion
 - operator-level symmetry discovery

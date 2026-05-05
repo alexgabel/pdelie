@@ -14,12 +14,13 @@ from pdelie.data.robustness import (
     subsample_time,
     subsample_x,
 )
-from pdelie.data.xarray_adapter import from_xarray
+from pdelie.data.xarray_adapter import from_xarray, from_xarray_dataset
 
 __all__ = [
     "add_gaussian_noise",
     "from_numpy",
     "from_xarray",
+    "from_xarray_dataset",
     "generate_advection_diffusion_1d_field_batch",
     "generate_burgers_1d_field_batch",
     "generate_kdv_1d_field_batch",

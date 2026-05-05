@@ -30,6 +30,7 @@ from pdelie.reporting import (
     summarize_vertical_slice,
     summarize_weak_form_supportability,
     summarize_weak_residual_report,
+    summarize_xarray_dataset_readiness,
 )
 from pdelie.symmetry import FormulaGeneratorFamily
 from pdelie.residuals import (
@@ -111,6 +112,19 @@ _FIELD_BATCH_READINESS_SUMMARY_KEYS = _SUMMARY_PREFIX_KEYS | {
     "metadata_diagnostics",
     "metadata_suggestions",
     "residual_preflight",
+    "stable_scope",
+}
+_XARRAY_DATASET_READINESS_SUMMARY_KEYS = _SUMMARY_PREFIX_KEYS | {
+    "readiness_label",
+    "component_statuses",
+    "dataset",
+    "selected_data_var",
+    "candidate_variables",
+    "mask",
+    "coordinate_diagnostics",
+    "metadata_diagnostics",
+    "metadata_suggestions",
+    "conversion_preflight",
     "stable_scope",
 }
 _WEAK_FORM_SUPPORTABILITY_SUMMARY_KEYS = _SUMMARY_PREFIX_KEYS | {
@@ -380,6 +394,95 @@ def test_summarize_field_batch_readiness_does_not_mutate_input() -> None:
         np.testing.assert_array_equal(field.coords[name], coord)
     assert field.metadata == before_metadata
     assert field.preprocess_log == before_preprocess
+
+
+def test_summarize_xarray_dataset_readiness_reports_ready_and_preflight() -> None:
+    xr = pytest.importorskip("xarray", reason="xarray is required for Dataset readiness coverage")
+    source = generate_heat_1d_field_batch(batch_size=1, num_times=9, num_points=16, seed=2160)
+    dataset = xr.Dataset(
+        {"u": (source.dims, source.values)},
+        coords={"time": source.coords["time"], "x": source.coords["x"]},
+        attrs={"source": "unit-test"},
+    )
+    metadata = copy.deepcopy(source.metadata)
+    metadata["parameter_tags"]["equation"] = "heat_1d"
+
+    summary = summarize_xarray_dataset_readiness(
+        dataset,
+        metadata=metadata,
+        expected_equation="heat_1d",
+    )
+
+    assert set(summary) == _XARRAY_DATASET_READINESS_SUMMARY_KEYS
+    assert summary["summary_type"] == "xarray_dataset_readiness"
+    assert summary["readiness_label"] == "ready"
+    assert summary["selected_data_var"] == "u"
+    assert summary["component_statuses"]["data_variable"]["status"] == "passed"
+    assert summary["component_statuses"]["conversion_preflight"]["status"] == "passed"
+    assert summary["conversion_preflight"]["field_readiness"]["summary_type"] == "field_batch_readiness"
+    _assert_json_serializable(summary)
+
+
+def test_summarize_xarray_dataset_readiness_reports_missing_metadata_and_ambiguity() -> None:
+    xr = pytest.importorskip("xarray", reason="xarray is required for Dataset readiness coverage")
+    source = generate_heat_1d_field_batch(batch_size=1, num_times=9, num_points=16, seed=2161)
+    dataset = xr.Dataset(
+        {
+            "u": (source.dims, source.values),
+            "v": (source.dims, source.values),
+        },
+        coords={"time": source.coords["time"], "x": source.coords["x"]},
+    )
+
+    ambiguous = summarize_xarray_dataset_readiness(dataset, metadata=source.metadata)
+    missing_metadata = summarize_xarray_dataset_readiness(dataset[["u"]])
+
+    assert ambiguous["readiness_label"] == "not_ready"
+    assert ambiguous["component_statuses"]["data_variable"]["status"] == "failed"
+    assert "ambiguous_data_var" in ambiguous["component_statuses"]["data_variable"]["details"]["failures"]
+    assert missing_metadata["readiness_label"] == "not_ready"
+    assert missing_metadata["component_statuses"]["metadata"]["status"] == "failed"
+    assert missing_metadata["metadata_suggestions"]["compatible_data_vars"] == ["u"]
+    _assert_json_serializable(ambiguous)
+    _assert_json_serializable(missing_metadata)
+
+
+def test_summarize_xarray_dataset_readiness_expected_equation_mask_and_strict_json() -> None:
+    xr = pytest.importorskip("xarray", reason="xarray is required for Dataset readiness coverage")
+    source = generate_heat_1d_field_batch(batch_size=1, num_times=9, num_points=16, seed=2162)
+    dataset = xr.Dataset(
+        {
+            "u": (source.dims, source.values),
+            "quality_mask": (source.dims, np.zeros_like(source.values, dtype=bool)),
+        },
+        coords={"time": source.coords["time"], "x": source.coords["x"]},
+    )
+
+    mismatch = summarize_xarray_dataset_readiness(
+        dataset,
+        data_var="u",
+        mask_var="quality_mask",
+        metadata=source.metadata,
+        expected_equation="kdv_normalized",
+    )
+    assert mismatch["readiness_label"] == "not_ready"
+    assert mismatch["component_statuses"]["mask_variable"]["status"] == "passed"
+    assert mismatch["component_statuses"]["expected_equation"]["status"] == "failed"
+
+    dataset_with_bad_attrs = dataset.copy()
+    dataset_with_bad_attrs.attrs["bad"] = float("nan")
+    with pytest.raises(SchemaValidationError, match="dataset.attrs"):
+        summarize_xarray_dataset_readiness(dataset_with_bad_attrs, metadata=source.metadata)
+    bad_metadata = copy.deepcopy(source.metadata)
+    bad_metadata["parameter_tags"]["bad"] = float("nan")
+    with pytest.raises(SchemaValidationError, match="metadata"):
+        summarize_xarray_dataset_readiness(dataset, data_var="u", metadata=bad_metadata)
+
+    nonfinite = dataset.copy(deep=True)
+    nonfinite["u"].values[0, 0, 0, 0] = np.nan
+    nonfinite_summary = summarize_xarray_dataset_readiness(nonfinite, data_var="u", metadata=source.metadata)
+    assert nonfinite_summary["readiness_label"] == "not_ready"
+    assert "nonfinite_values" in nonfinite_summary["component_statuses"]["data_variable"]["details"]["failures"]
 
 
 def test_summarize_residual_batch_returns_frozen_json_summary(heat_artifacts: dict[str, object]) -> None:

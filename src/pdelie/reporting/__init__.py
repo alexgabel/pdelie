@@ -12,6 +12,7 @@ from pdelie.reporting.summaries import (
     summarize_vertical_slice,
     summarize_weak_form_supportability,
     summarize_weak_residual_report,
+    summarize_xarray_dataset_readiness,
 )
 
 __all__ = [
@@ -28,4 +29,5 @@ __all__ = [
     "summarize_vertical_slice",
     "summarize_weak_form_supportability",
     "summarize_weak_residual_report",
+    "summarize_xarray_dataset_readiness",
 ]
