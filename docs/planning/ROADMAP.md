@@ -28,8 +28,8 @@ Execution state belongs in:
 - Current completed release: `v0.28.0`
 - Current theme: narrow `xarray.Dataset` ingestion and data-ecosystem feasibility with file loaders deferred
 - Next planned release: not frozen; `v0.26b` remains reserved for KS promotion only if a separate scope freeze accepts direct-SVD/no-fallback evidence
-- Public package docs start at [`../../README.md`](../../README.md) and [`../README.md`](../README.md)
-- Durable contributor guidance lives in [`../../CONTRIBUTING.md`](../../CONTRIBUTING.md)
+- Public package docs start at the repository-root `README.md` and `docs/README.md`
+- Durable contributor guidance lives in the repository-root `CONTRIBUTING.md`
 
 ---
 

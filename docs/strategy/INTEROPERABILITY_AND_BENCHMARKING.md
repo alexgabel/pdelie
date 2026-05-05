@@ -231,7 +231,7 @@ Preprocessing is a transformation and MUST be tracked.
 
 ## REQUIRED: preprocessing log
 
-```json
+```text
 {
   "transform_type”: "...",
   “parameters”: {...},

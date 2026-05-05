@@ -2,6 +2,15 @@
 
 This directory contains the tracked source of truth for PDELie contracts, planning, release history, and strategy notes.
 
+The Sphinx/Read the Docs source also lives here. Build it locally with:
+
+```bash
+python -m pip install -r docs/requirements.txt
+sphinx-build -b html -W --keep-going docs docs/_build/html
+```
+
+Notebook pages render committed outputs through `nbsphinx`; the docs build does not execute notebook code.
+
 ## Normative Docs
 
 Use these when changing runtime behavior or public interfaces:
@@ -36,12 +45,13 @@ Strategy docs may describe future directions, but they do not commit a feature t
 
 Tutorial notebooks live outside this directory:
 
-- [`../notebooks/README.md`](../notebooks/README.md)
+- `notebooks/README.md` in the repository root
+- [`tutorials/index.rst`](tutorials/index.rst) - Sphinx links that render the notebooks as documentation pages
 
 They are the recommended user entry point. Notebook outputs are runtime summaries, not API contracts or canonical artifact schemas.
 
 ## Contributor Guidance
 
-- [`../CONTRIBUTING.md`](../CONTRIBUTING.md)
+- `CONTRIBUTING.md` in the repository root
 
 Local agent/context files are intentionally untracked. Durable contributor guidance belongs in tracked docs, not local tool-context files.

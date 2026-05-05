@@ -174,9 +174,19 @@ The current release is validated by:
 
 Package-index publishing is deferred until `v1.0` or later. Current `v0.x` releases are Git-tag-only.
 
+Build the documentation site locally with:
+
+```bash
+python -m pip install -r docs/requirements.txt
+sphinx-build -b html -W --keep-going docs docs/_build/html
+```
+
+The docs site renders committed notebook outputs and does not execute notebooks during the build.
+
 ## Documentation
 
 - Docs index: [`docs/README.md`](docs/README.md)
+- Read the Docs config: [`.readthedocs.yaml`](.readthedocs.yaml)
 - Contracts and specs: [`docs/specs/`](docs/specs/)
 - Public API stability: [`docs/specs/API_STABILITY.md`](docs/specs/API_STABILITY.md)
 - Roadmap and planning: [`docs/planning/`](docs/planning/)
