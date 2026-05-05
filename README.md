@@ -16,9 +16,11 @@ The current stable release is `v0.29.0` / **V0.29**: a workflow-recipes and supp
 
 ## Choose Your Workflow
 
-- **I have PDE data.** Start with Dataset or `FieldBatch` readiness, then run residual preflight before trusting downstream evidence: `summarize_xarray_dataset_readiness(...)`, `from_xarray_dataset(...)`, and `summarize_field_batch_readiness(...)`.
-- **I have a candidate generator or transform.** Use configured validation and finite-transform verification rather than an unqualified symmetry claim: `validate_symmetry_candidate(...)`, `verify_translation_generator(...)`, and `summarize_generator_confidence(...)`.
-- **I want downstream/export provenance.** Summarize bridge arrays, discovery outputs, orbit provenance, and user-supplied partitions before handing data to sparse discovery or ML workflows: `summarize_discovery_bridge_output(...)`, `summarize_downstream_discovery_workflow(...)`, and `summarize_split_leakage_provenance(...)`.
+Helpers below are imported from their documented submodules, not from root `pdelie`.
+
+- **I have PDE data.** Start with Dataset or `FieldBatch` readiness, then run residual preflight before trusting downstream evidence: `pdelie.reporting.summarize_xarray_dataset_readiness(...)`, `pdelie.data.from_xarray_dataset(...)`, and `pdelie.reporting.summarize_field_batch_readiness(...)`.
+- **I have a candidate generator or transform.** Use configured validation and finite-transform verification rather than an unqualified symmetry claim: `pdelie.symmetry.validate_symmetry_candidate(...)`, `pdelie.verification.verify_translation_generator(...)`, and `pdelie.reporting.summarize_generator_confidence(...)`.
+- **I want downstream/export provenance.** Summarize bridge arrays, discovery outputs, orbit provenance, and user-supplied partitions before handing data to sparse discovery or ML workflows: `pdelie.discovery.summarize_discovery_bridge_output(...)`, `pdelie.reporting.summarize_downstream_discovery_workflow(...)`, and `pdelie.reporting.summarize_split_leakage_provenance(...)`.
 
 For the full stable surface and PDE support matrix, see [`docs/specs/API_STABILITY.md`](docs/specs/API_STABILITY.md) and [`docs/specs/SUPPORT_MATRIX.md`](docs/specs/SUPPORT_MATRIX.md).
 

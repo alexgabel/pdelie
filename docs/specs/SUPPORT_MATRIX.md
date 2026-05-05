@@ -8,9 +8,9 @@ The machine-readable version for the `v0.29` recipe release is `support_matrix.v
 
 | Workflow | First APIs | Defensible output |
 | --- | --- | --- |
-| Data readiness | `from_numpy(...)`, `from_xarray(...)`, `from_xarray_dataset(...)`, `summarize_xarray_dataset_readiness(...)`, `summarize_field_batch_readiness(...)` | report-only compatibility checks for canonical scalar 1D periodic `FieldBatch` workflows |
-| Candidate validation | `validate_symmetry_candidate(...)`, `verify_translation_generator(...)`, `summarize_generator_confidence(...)` | configured validation and finite-transform verification evidence |
-| Downstream/export provenance | `to_pysindy_trajectories(...)`, `summarize_discovery_bridge_output(...)`, `summarize_discovery_result(...)`, `summarize_downstream_discovery_workflow(...)`, `summarize_split_leakage_provenance(...)` | backend-neutral runtime summaries, provenance traceability, and split-risk diagnostics |
+| Data readiness | `pdelie.data.from_numpy(...)`, `pdelie.data.from_xarray(...)`, `pdelie.data.from_xarray_dataset(...)`, `pdelie.reporting.summarize_xarray_dataset_readiness(...)`, `pdelie.reporting.summarize_field_batch_readiness(...)` | report-only compatibility checks for canonical scalar 1D periodic `FieldBatch` workflows |
+| Candidate validation | `pdelie.symmetry.validate_symmetry_candidate(...)`, `pdelie.verification.verify_translation_generator(...)`, `pdelie.reporting.summarize_generator_confidence(...)` | configured validation and finite-transform verification evidence |
+| Downstream/export provenance | `pdelie.discovery.to_pysindy_trajectories(...)`, `pdelie.discovery.summarize_discovery_bridge_output(...)`, `pdelie.discovery.summarize_discovery_result(...)`, `pdelie.reporting.summarize_downstream_discovery_workflow(...)`, `pdelie.reporting.summarize_split_leakage_provenance(...)` | backend-neutral runtime summaries, provenance traceability, and split-risk diagnostics |
 
 ## PDE Support Matrix
 
