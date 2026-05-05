@@ -2,14 +2,14 @@
 
 [![CI](https://github.com/alexgabel/pdelie/actions/workflows/ci.yml/badge.svg)](https://github.com/alexgabel/pdelie/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-%3E%3D3.11-blue)
-![Version](https://img.shields.io/badge/version-0.27.0-blue)
+![Version](https://img.shields.io/badge/version-0.28.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 PDELie is a research library for empirical Lie-symmetry workflows on controlled PDE time-series data. It turns canonical scalar 1D periodic fields into residuals, generator candidates, verification reports, confidence summaries, invariant/orbit diagnostics, and downstream discovery reports.
 
 ![PDELie pipeline](docs/assets/pdelie_pipeline.svg)
 
-The current stable release is `v0.27.0` / **V0.27**: a multi-generator diagnostics decision release. PDELie now diagnoses supplied multi-row `GeneratorFamily` objects with rank, span, closure, bracket, and structure-constant evidence while keeping PDE-context validation and fit recoverability explicitly separate. Public multi-generator fitting, finite multi-generator flows, BCH composition, invariant charts, and root exports remain deferred.
+The current stable release is `v0.28.0` / **V0.28**: a narrow data-ecosystem feasibility release. PDELie now imports explicit scalar `xarray.Dataset` variables through `from_xarray_dataset(...)` and reports Dataset readiness through `summarize_xarray_dataset_readiness(...)`, while file loaders, broad adapters, metadata inference engines, resampling, multidimensional grids, and root exports remain deferred. The V0.27 multi-generator diagnostics decision remains part of the retained stable diagnostics surface.
 
 ## Install
 
@@ -29,7 +29,7 @@ Focused optional extras:
 
 ```bash
 python -m pip install -e .[viz]         # Matplotlib plotting helpers
-python -m pip install -e .[xarray]      # xarray.DataArray ingestion
+python -m pip install -e .[xarray]      # xarray DataArray/Dataset ingestion
 python -m pip install -e .[downstream]  # narrow PySINDy bridge path
 ```
 
@@ -76,8 +76,10 @@ print(confidence["component_statuses"])
 New users should start with `notebooks/`. The recommended first pass is:
 
 1. `notebooks/00_pde_timeseries_to_generators.ipynb` - PDE time series to generator evidence.
-2. `notebooks/02_robustness_sweeps.ipynb` - residual, fit, span, and verification diagnostics under perturbation.
-3. `notebooks/06_orbit_coverage_diagnostics.ipynb` - invariant coverage, consistency, read-only orbit reports, and materialized orbit batches.
+2. `notebooks/09_xarray_dataset_ingestion.ipynb` - V0.28 Dataset readiness and scalar-variable ingestion.
+3. `notebooks/02_robustness_sweeps.ipynb` - residual, fit, span, and verification diagnostics under perturbation.
+4. `notebooks/06_orbit_coverage_diagnostics.ipynb` - invariant coverage, consistency, read-only orbit reports, and materialized orbit batches.
+5. `notebooks/10_scope_decisions_and_weak_supportability.ipynb` and `notebooks/11_multi_generator_diagnostics.ipynb` - supportability, no-go, and multi-generator diagnostic boundaries.
 
 The notebooks are tutorials, not API contracts. They do not define train/test policy, leakage safety, threshold policy, or manuscript success criteria.
 
@@ -94,7 +96,7 @@ PDELie is intentionally conservative. The stable `v0.x` surface currently covers
 - algebraic span/closure diagnostics for supplied polynomial `GeneratorFamily` objects, including diagnostic handling of rank-deficient well-formed families
 - uniform `x`-translation coverage, consistency, read-only orbit reports, and materialized orbit batches
 - empirical validation of `GeneratorFamily`, `InvariantMapSpec`, and safe formula-backed `FormulaGeneratorFamily` candidates
-- narrow structured ingestion through `from_numpy(...)` and optional `from_xarray(...)`
+- narrow structured ingestion through `from_numpy(...)`, optional `from_xarray(...)`, and optional scalar `from_xarray_dataset(...)`
 - narrow optional downstream support through PySINDy bridge utilities and backend-neutral discovery reports
 
 The authoritative public surface is documented in [`docs/specs/API_STABILITY.md`](docs/specs/API_STABILITY.md).
@@ -116,6 +118,7 @@ Selected runtime helpers include:
 - `pdelie.reporting.summarize_downstream_discovery_workflow`
 - `pdelie.reporting.summarize_split_leakage_provenance`
 - `pdelie.reporting.summarize_weak_form_supportability`
+- `pdelie.reporting.summarize_xarray_dataset_readiness`
 
 ## What PDELie Is Not
 
@@ -124,6 +127,7 @@ PDELie is not:
 - a mathematical proof engine
 - a neural symmetry-detector training framework
 - a broad PDEBench/The Well adapter layer
+- a file-loader or broad data-adapter framework
 - a general nonuniform or multidimensional PDE framework
 - a split manager, leakage-prevention tool, or benchmark policy layer
 - an operator-learning framework
@@ -140,6 +144,7 @@ python -m pdelie.examples.heat_vertical_slice
 python -m pdelie.examples.kdv_vertical_slice
 python -m pdelie.examples.kdv_scope_decision
 python -m pdelie.examples.multi_generator_diagnostics
+python -m pdelie.examples.data_ecosystem_feasibility
 python -m pdelie.examples.reaction_diffusion_vertical_slice
 python -m pdelie.examples.advection_diffusion_vertical_slice
 python -m pdelie.examples.orbit_coverage_diagnostics
@@ -160,7 +165,7 @@ These are smoke/reporting examples, not canonical artifact schemas.
 
 The current release is validated by:
 
-- the explicit `v0_27-release-gate` CI job
+- the explicit `v0_28-release-gate` CI job
 - full editable `python -m pytest`
 - built-wheel package smoke
 - packaged example smoke
@@ -169,9 +174,19 @@ The current release is validated by:
 
 Package-index publishing is deferred until `v1.0` or later. Current `v0.x` releases are Git-tag-only.
 
+Build the documentation site locally with:
+
+```bash
+python -m pip install -r docs/requirements.txt
+sphinx-build -b html -W --keep-going docs docs/_build/html
+```
+
+The docs site renders committed notebook outputs and does not execute notebooks during the build.
+
 ## Documentation
 
 - Docs index: [`docs/README.md`](docs/README.md)
+- Read the Docs config: [`.readthedocs.yaml`](.readthedocs.yaml)
 - Contracts and specs: [`docs/specs/`](docs/specs/)
 - Public API stability: [`docs/specs/API_STABILITY.md`](docs/specs/API_STABILITY.md)
 - Roadmap and planning: [`docs/planning/`](docs/planning/)

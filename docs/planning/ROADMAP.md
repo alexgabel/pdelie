@@ -25,11 +25,11 @@ Execution state belongs in:
 
 ## Current State
 
-- Current completed release: `v0.27.0`
-- Current theme: multi-generator diagnostics decision with fitting and invariant-action promotion deferred
+- Current completed release: `v0.28.0`
+- Current theme: narrow `xarray.Dataset` ingestion and data-ecosystem feasibility with file loaders deferred
 - Next planned release: not frozen; `v0.26b` remains reserved for KS promotion only if a separate scope freeze accepts direct-SVD/no-fallback evidence
-- Public package docs start at [`../../README.md`](../../README.md) and [`../README.md`](../README.md)
-- Durable contributor guidance lives in [`../../CONTRIBUTING.md`](../../CONTRIBUTING.md)
+- Public package docs start at the repository-root `README.md` and `docs/README.md`
+- Durable contributor guidance lives in the repository-root `CONTRIBUTING.md`
 
 ---
 
@@ -462,6 +462,66 @@ The authoritative `v0.12` scope freeze belongs in:
 ---
 
 ## Current Completed Release
+
+### `v0.28` - Narrow xarray Dataset ingestion
+**Status:** Completed
+
+`v0.28` is the completed data-ecosystem feasibility release after the `v0.27` multi-generator diagnostics decision.
+
+Its purpose is:
+
+> support one explicit scalar `xarray.Dataset` ingestion path without promoting file loaders, broad adapters, metadata inference, or grid-domain expansion.
+
+Completed release definition:
+
+`xarray.Dataset -> dataset readiness report -> explicit scalar data variable + explicit metadata -> canonical scalar 1D periodic FieldBatch`
+
+Completed scope:
+
+- `pdelie.data.from_xarray_dataset(...)`
+- `pdelie.reporting.summarize_xarray_dataset_readiness(...)`
+- `pdelie.examples.run_data_ecosystem_feasibility_example(...)`
+- `python -m pdelie.examples.data_ecosystem_feasibility`
+- frozen report type: `xarray_dataset_readiness`
+- release decision: `xarray_dataset_scalar_slice_supported_file_loaders_deferred`
+- compact current `v0_28-release-gate` readiness
+
+Release interpretation:
+
+- Dataset conversion delegates to the existing `from_xarray(...)` DataArray path after explicit variable/mask selection
+- metadata remains explicit; Dataset attrs are reported but not promoted into canonical metadata
+- `v0.28.0` is a Git-tag-only release; PyPI and TestPyPI publication are deferred to `v1.0` or later
+
+Explicit non-goals:
+
+- no file loaders or NetCDF/Zarr readers
+- no PDEBench or The Well adapters
+- no broad adapter registry
+- no metadata inference engine or PDE identity inference
+- no resampling API
+- no multidimensional, multivariable, or nonuniform stable support
+- no train/test policy or leakage prevention
+- no KS runtime promotion
+- no neural/callable/operator APIs
+- no root export expansion
+
+The authoritative `v0.28` scope freeze belongs in:
+
+- `V0_28_SCOPE.md`
+
+### Release Gate for `v0.28`
+
+`v0.28` is complete only if:
+
+- Dataset conversion preserves parity with selecting the same DataArray and calling `from_xarray(...)`
+- Dataset readiness reports are strict JSON-compatible and report conservative metadata suggestions
+- file loaders, broad adapters, metadata inference engines, resampling, multidimensional/nonuniform support, and root exports remain absent
+- CI uses one compact current release gate plus full editable tests and package smoke
+- package/readiness docs preserve the `v1.0` package-index publishing deferral
+
+---
+
+## Recent Completed Release
 
 ### `v0.27` - Multi-generator diagnostics decision
 **Status:** Completed
@@ -1605,21 +1665,22 @@ High-risk boundary:
 - this may alter core assumptions and should not be mixed with a PDE or adapter release.
 
 ### `v0.28` - Data ecosystem feasibility
-**Status:** Planned
+**Status:** Completed
 
 Purpose:
 
 > decide whether external data ecosystem support can be widened without weakening canonical contracts.
 
-Candidate scope:
+Completed narrow scope:
 
 - `xarray.Dataset` support
+- Dataset readiness reports
+- explicit scalar variable and optional mask selection
+- conservative metadata suggestions
+
+Deferred after completion:
+
 - file-based dataset loaders
-- narrow adapter feasibility
-- metadata inference expansion
-
-Deferred unless scope is frozen:
-
 - PDEBench / The Well as stable APIs
 - broad adapter framework
 - implicit alias-based loaders
@@ -1785,8 +1846,8 @@ It should **not** be edited every time a new idea appears.
 - `v0.25` = completed KdV scope decision; public KdV remains frozen
 - `v0.26` = completed KS revisit decision; public KS remains deferred
 - `v0.26b` = planned KS promotion decision, only after a separate scope freeze
-- `v0.27` = planned multi-generator feasibility
-- `v0.28` = planned data ecosystem feasibility
+- `v0.27` = completed multi-generator diagnostics decision; fitting remains deferred
+- `v0.28` = completed narrow xarray Dataset ingestion; file loaders remain deferred
 - `v0.29` = planned grid-domain feasibility
 - `v0.30` = planned orbit/action scope decision
 - `v0.31` = planned `v1.0` readiness hardening

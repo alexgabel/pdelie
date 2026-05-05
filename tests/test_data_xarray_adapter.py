@@ -8,7 +8,7 @@ xr = pytest.importorskip("xarray", reason="xarray is required for from_xarray ad
 
 import pdelie
 from pdelie import FieldBatch, SchemaValidationError, ScopeValidationError, ShapeValidationError
-from pdelie.data import from_xarray
+from pdelie.data import from_xarray, from_xarray_dataset
 from pdelie.data import xarray_adapter
 
 
@@ -374,6 +374,114 @@ def test_from_xarray_ignores_attrs_for_metadata() -> None:
     field = from_xarray(conflicting, metadata=_metadata())
     assert field.metadata["boundary_conditions"]["x"] == "periodic"
 
+
+@pytest.mark.parametrize(
+    ("dims", "shape", "expected_shape"),
+    [
+        (("time", "x"), (4, 8), (1, 4, 8, 1)),
+        (("batch", "time", "x"), (2, 4, 8), (2, 4, 8, 1)),
+        (("time", "x", "var"), (4, 8, 1), (1, 4, 8, 1)),
+        (("batch", "time", "x", "var"), (2, 4, 8, 1), (2, 4, 8, 1)),
+    ],
+)
+def test_from_xarray_dataset_accepts_frozen_scalar_layouts(
+    dims: tuple[str, ...],
+    shape: tuple[int, ...],
+    expected_shape: tuple[int, ...],
+) -> None:
+    values = np.arange(np.prod(shape), dtype=float).reshape(shape)
+    coords: dict[str, object] = {"time": _time(), "x": _x()}
+    if "batch" in dims:
+        coords["batch"] = np.arange(shape[dims.index("batch")], dtype=int)
+    if "var" in dims:
+        coords["var"] = ["u"]
+    dataset = xr.Dataset(
+        {"u": (dims, values), "quality_mask": (dims, np.zeros(shape, dtype=bool))},
+        coords=coords,
+        attrs={"source": "unit-test"},
+    )
+    preprocess_log = [{"operation": "source"}]
+
+    field = from_xarray_dataset(
+        dataset,
+        data_var="u",
+        metadata=_metadata(),
+        mask_var="quality_mask",
+        preprocess_log=preprocess_log,
+    )
+
+    assert field.values.shape == expected_shape
+    assert field.var_names == ["u"]
+    assert field.mask is not None
+    assert field.preprocess_log[0] == {"operation": "source"}
+    assert field.preprocess_log[-2]["operation"] == "from_xarray_dataset"
+    assert field.preprocess_log[-2]["parameters"]["selected_data_var"] == "u"
+    assert field.preprocess_log[-2]["parameters"]["selected_mask_var"] == "quality_mask"
+    assert field.preprocess_log[-1]["operation"] == "from_xarray"
+
+
+def test_from_xarray_dataset_auto_selects_single_compatible_data_var_and_matches_dataarray_path() -> None:
+    values = np.arange(32, dtype=float).reshape(4, 8)
+    dataset = xr.Dataset(
+        {
+            "u": (("time", "x"), values),
+            "label": (("time",), np.asarray(["a", "b", "c", "d"], dtype=object)),
+            "quality_mask": (("time", "x"), np.zeros((4, 8), dtype=bool)),
+        },
+        coords={"time": _time(), "x": _x()},
+    )
+
+    from_dataset = from_xarray_dataset(dataset, metadata=_metadata())
+    from_dataarray = from_xarray(dataset["u"], var_name="u", metadata=_metadata())
+
+    np.testing.assert_allclose(from_dataset.values, from_dataarray.values)
+    np.testing.assert_allclose(from_dataset.coords["time"], from_dataarray.coords["time"])
+    np.testing.assert_allclose(from_dataset.coords["x"], from_dataarray.coords["x"])
+    assert from_dataset.metadata == from_dataarray.metadata
+
+    with pytest.raises(SchemaValidationError, match="compatible numeric scalar data variable"):
+        from_xarray_dataset(dataset, data_var="quality_mask", metadata=_metadata())
+
+
+def test_from_xarray_dataset_rejects_ambiguous_or_missing_data_var() -> None:
+    dataset = xr.Dataset(
+        {
+            "u": (("time", "x"), np.zeros((4, 8), dtype=float)),
+            "v": (("time", "x"), np.ones((4, 8), dtype=float)),
+        },
+        coords={"time": _time(), "x": _x()},
+    )
+
+    with pytest.raises(SchemaValidationError, match="explicit data_var"):
+        from_xarray_dataset(dataset, metadata=_metadata())
+    with pytest.raises(SchemaValidationError, match="not present"):
+        from_xarray_dataset(dataset, data_var="missing", metadata=_metadata())
+
+
+def test_from_xarray_dataset_rejects_bad_mask_and_preserves_explicit_var_name() -> None:
+    dataset = xr.Dataset(
+        {
+            "u": (("time", "x"), np.zeros((4, 8), dtype=float)),
+            "mask": (("x", "time"), np.zeros((8, 4), dtype=bool)),
+        },
+        coords={"time": _time(), "x": _x()},
+    )
+
+    with pytest.raises(ShapeValidationError, match="mask_var dims"):
+        from_xarray_dataset(dataset, data_var="u", metadata=_metadata(), mask_var="mask")
+
+    field = from_xarray_dataset(dataset.drop_vars("mask"), data_var="u", var_name="custom_u", metadata=_metadata())
+    assert field.var_names == ["custom_u"]
+
+
+def test_from_xarray_dataset_keeps_dataarray_and_file_loader_boundaries() -> None:
+    data_array = xr.DataArray(np.zeros((4, 8), dtype=float), dims=("time", "x"), coords={"time": _time(), "x": _x()})
+
+    with pytest.raises(ScopeValidationError, match="use from_xarray"):
+        from_xarray_dataset(data_array, metadata=_metadata())
+
+    assert not hasattr(pdelie, "from_xarray_dataset")
+
 def test_from_xarray_lazy_import_failure(monkeypatch: pytest.MonkeyPatch) -> None:
     original_import_module = xarray_adapter.importlib.import_module
 
@@ -386,6 +494,8 @@ def test_from_xarray_lazy_import_failure(monkeypatch: pytest.MonkeyPatch) -> Non
 
     with pytest.raises(ImportError, match=r"install pdelie\[xarray\]"):
         xarray_adapter.from_xarray(object(), metadata=_metadata())
+    with pytest.raises(ImportError, match="from_xarray_dataset"):
+        xarray_adapter.from_xarray_dataset(object(), metadata=_metadata())
 
 
 def test_root_package_does_not_export_from_xarray() -> None:

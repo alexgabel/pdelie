@@ -29,6 +29,7 @@ _ROOT_RUNTIME_NAMES = {
     "FormulaGeneratorFamily",
     "from_numpy",
     "from_xarray",
+    "from_xarray_dataset",
     "generate_advection_diffusion_1d_field_batch",
     "generate_burgers_1d_field_batch",
     "generate_heat_1d_field_batch",
@@ -43,6 +44,7 @@ _ROOT_RUNTIME_NAMES = {
     "render_generator_family",
     "run_heat_vertical_slice_example",
     "run_advection_diffusion_vertical_slice_example",
+    "run_data_ecosystem_feasibility_example",
     "run_kdv_scope_decision_example",
     "run_multi_generator_diagnostics_example",
     "run_formula_generator_validation_example",
@@ -76,6 +78,7 @@ _ROOT_RUNTIME_NAMES = {
     "summarize_vertical_slice",
     "summarize_weak_residual_report",
     "summarize_weak_form_supportability",
+    "summarize_xarray_dataset_readiness",
     "summarize_uniform_translation_orbit",
     "to_pysindy_trajectories",
     "to_sympy_component_expressions",
@@ -102,8 +105,10 @@ _DEFERRED_OR_PRIVATE_NAMES = {
     "evaluate_weak_ks_residual",
     "evaluate_weak_reaction_diffusion_residual",
     "from_pdebench",
-    "from_xarray_dataset",
     "from_the_well",
+    "from_netcdf",
+    "from_zarr",
+    "infer_field_metadata",
     "load_dataset",
     "load_field_batch",
     "generate_ks_1d_field_batch",
@@ -115,6 +120,8 @@ _DEFERRED_OR_PRIVATE_NAMES = {
     "generate_variable_coefficient_advection_diffusion_1d_field_batch",
     "load_pdebench",
     "load_the_well",
+    "register_dataset_adapter",
+    "resample_field_batch",
     "materialize_uniform_translation_orbit",
     "sample_kdv_mode_coefficients",
     "ConfigurableKdVResidualEvaluator",
@@ -140,8 +147,10 @@ _DEFERRED_API_STABILITY_NAMES = {
     "pdelie.data.build_translation_orbit_views",
     "pdelie.data.compute_coverage_diagnostics",
     "pdelie.data.from_pdebench",
-    "pdelie.data.from_xarray_dataset",
+    "pdelie.data.from_netcdf",
+    "pdelie.data.from_zarr",
     "pdelie.data.from_the_well",
+    "pdelie.data.infer_field_metadata",
     "pdelie.data.load_dataset",
     "pdelie.data.load_field_batch",
     "pdelie.data.generate_configurable_kdv_1d_field_batch",
@@ -152,6 +161,9 @@ _DEFERRED_API_STABILITY_NAMES = {
     "pdelie.data.generate_variable_coefficient_advection_diffusion_1d_field_batch",
     "pdelie.data.load_pdebench",
     "pdelie.data.load_the_well",
+    "pdelie.data.register_dataset_adapter",
+    "pdelie.data.resample_field_batch",
+    "pdelie.reporting.summarize_metadata_inference",
     "pdelie.reporting.summarize_generator_confidence_score",
     "pdelie.reporting.summarize_field_batch_readiness_score",
     "pdelie.reporting.summarize_leakage_prevention",
@@ -278,6 +290,13 @@ _V0_27_MULTI_GENERATOR_DIAGNOSTICS_APIS = {
     "closure_required=True|False",
     "multi_generator_diagnostics_feasible_fitting_deferred",
 }
+_V0_28_DATA_ECOSYSTEM_APIS = {
+    "pdelie.data.from_xarray_dataset",
+    "pdelie.reporting.summarize_xarray_dataset_readiness",
+    "pdelie.examples.run_data_ecosystem_feasibility_example",
+    "summary_type = \"xarray_dataset_readiness\"",
+    "xarray_dataset_scalar_slice_supported_file_loaders_deferred",
+}
 
 
 def _api_stability_text() -> str:
@@ -311,6 +330,7 @@ def test_api_stability_doc_covers_current_stable_runtime_surface() -> None:
         | _V0_24_WEAK_SUPPORTABILITY_APIS
         | _V0_25_KDV_SCOPE_DECISION_APIS
         | _V0_27_MULTI_GENERATOR_DIAGNOSTICS_APIS
+        | _V0_28_DATA_ECOSYSTEM_APIS
     ):
         assert api_name in text
 
@@ -332,8 +352,6 @@ def test_api_stability_doc_does_not_promote_deferred_v0_13_surfaces() -> None:
     for api_name in sorted(_DEFERRED_API_STABILITY_NAMES):
         assert api_name not in text
 
-    assert "PDEBench" not in text
-    assert "The Well" not in text
     assert "multidimensional grids" not in text
     assert "nonuniform grids" not in text
     assert "augment_translation_orbit" not in text
@@ -355,6 +373,7 @@ def test_required_runtime_submodule_apis_remain_importable() -> None:
             "add_gaussian_noise",
             "from_numpy",
             "from_xarray",
+            "from_xarray_dataset",
             "generate_burgers_1d_field_batch",
             "generate_heat_1d_field_batch",
             "generate_advection_diffusion_1d_field_batch",
@@ -375,6 +394,7 @@ def test_required_runtime_submodule_apis_remain_importable() -> None:
             "to_pysindy_trajectories",
         },
         "pdelie.examples": {
+            "run_data_ecosystem_feasibility_example",
             "run_formula_generator_validation_example",
             "run_generator_confidence_report_example",
             "run_downstream_discovery_contracts_example",
@@ -418,6 +438,7 @@ def test_required_runtime_submodule_apis_remain_importable() -> None:
             "summarize_vertical_slice",
             "summarize_weak_residual_report",
             "summarize_weak_form_supportability",
+            "summarize_xarray_dataset_readiness",
         },
         "pdelie.residuals": {
             "AdvectionDiffusionResidualEvaluator",
@@ -572,16 +593,9 @@ def test_v0_26_planning_docs_record_ks_revisit_decision_and_non_goals() -> None:
 
 
 def test_v0_27_planning_docs_record_multi_generator_diagnostics_decision_and_non_goals() -> None:
-    plan = _repo_text("docs/planning/PLAN.md")
     scope = _repo_text("docs/planning/V0_27_SCOPE.md")
     roadmap = _repo_text("docs/planning/ROADMAP.md")
     api_stability = _api_stability_text()
-
-    assert "**Status:** COMPLETE" in plan
-    assert "multi-generator diagnostics decision" in plan
-    assert "multi_generator_diagnostics_feasible_fitting_deferred" in plan
-    assert "no public multi-generator fitting API" in plan
-    assert "- Milestone 6: COMPLETE" in plan
 
     assert "Multi-Generator Diagnostics Decision" in scope
     assert "bracket convention" in scope
@@ -599,3 +613,31 @@ def test_v0_27_planning_docs_record_multi_generator_diagnostics_decision_and_non
     assert "Runtime public API and behavior updates for the frozen `v0.27`" in api_stability
     assert "pdelie.examples.run_multi_generator_diagnostics_example" in api_stability
     assert "multi_generator_diagnostics_feasible_fitting_deferred" in api_stability
+
+
+def test_v0_28_planning_docs_record_data_ecosystem_feasibility_and_non_goals() -> None:
+    plan = _repo_text("docs/planning/PLAN.md")
+    scope = _repo_text("docs/planning/V0_28_SCOPE.md")
+    roadmap = _repo_text("docs/planning/ROADMAP.md")
+    api_stability = _api_stability_text()
+
+    assert "**Status:** COMPLETE" in plan
+    assert "narrow xarray Dataset ingestion" in plan
+    assert "xarray_dataset_scalar_slice_supported_file_loaders_deferred" in plan
+    assert "no `load_field_batch`, NetCDF/Zarr loader" in plan
+    assert "- Milestone 6: COMPLETE" in plan
+
+    assert "Narrow xarray Dataset Ingestion" in scope
+    assert "pdelie.data.from_xarray_dataset" in scope
+    assert "pdelie.reporting.summarize_xarray_dataset_readiness" in scope
+    assert "no NetCDF or Zarr readers" in scope
+    assert "no implicit metadata inference" in scope
+    assert "- Milestone 4: COMPLETE" in scope
+    assert "- Milestone 5: COMPLETE" in scope
+    assert "- Milestone 6: COMPLETE" in scope
+
+    assert "`v0.28` - Narrow xarray Dataset ingestion" in roadmap
+    assert "file loaders, broad adapters, metadata inference engines" in roadmap
+    assert "Runtime public API for the frozen `v0.28`" in api_stability
+    assert "pdelie.data.from_xarray_dataset" in api_stability
+    assert "summary_type = \"xarray_dataset_readiness\"" in api_stability

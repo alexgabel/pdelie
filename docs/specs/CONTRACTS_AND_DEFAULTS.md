@@ -308,7 +308,7 @@ Raw curves MUST always be reported.
 
 All generators MUST satisfy:
 
-~~~python
+~~~text
 ||X||₂ = 1
 ~~~
 

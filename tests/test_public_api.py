@@ -33,6 +33,7 @@ def test_runtime_package_api_is_importable() -> None:
         add_gaussian_noise,
         from_numpy,
         from_xarray,
+        from_xarray_dataset,
         generate_advection_diffusion_1d_field_batch,
         generate_kdv_1d_field_batch,
         generate_reaction_diffusion_1d_field_batch,
@@ -83,6 +84,7 @@ def test_runtime_package_api_is_importable() -> None:
         summarize_vertical_slice,
         summarize_weak_form_supportability,
         summarize_weak_residual_report,
+        summarize_xarray_dataset_readiness,
     )
     from pdelie.symmetry import (
         FormulaGeneratorFamily,
@@ -103,6 +105,7 @@ def test_runtime_package_api_is_importable() -> None:
     assert add_gaussian_noise is not None
     assert from_numpy is not None
     assert from_xarray is not None
+    assert from_xarray_dataset is not None
     assert generate_advection_diffusion_1d_field_batch is not None
     assert generate_kdv_1d_field_batch is not None
     assert generate_reaction_diffusion_1d_field_batch is not None
@@ -133,6 +136,7 @@ def test_runtime_package_api_is_importable() -> None:
     assert summarize_vertical_slice is not None
     assert summarize_weak_form_supportability is not None
     assert summarize_weak_residual_report is not None
+    assert summarize_xarray_dataset_readiness is not None
     assert build_translation_canonical_discovery_inputs is not None
     assert evaluate_discovery_recovery is not None
     assert fit_pysindy_discovery is not None
@@ -184,6 +188,13 @@ def test_root_package_does_not_export_runtime_invariant_applier() -> None:
     assert not hasattr(pdelie, "from_numpy")
     assert not hasattr(pdelie, "from_the_well")
     assert not hasattr(pdelie, "from_xarray")
+    assert not hasattr(pdelie, "from_xarray_dataset")
+    assert not hasattr(pdelie, "from_netcdf")
+    assert not hasattr(pdelie, "from_zarr")
+    assert not hasattr(pdelie, "load_field_batch")
+    assert not hasattr(pdelie, "register_dataset_adapter")
+    assert not hasattr(pdelie, "infer_field_metadata")
+    assert not hasattr(pdelie, "resample_field_batch")
     assert not hasattr(pdelie, "FormulaGeneratorFamily")
     assert not hasattr(pdelie, "split_batch_train_heldout")
     assert not hasattr(pdelie, "subsample_time")
@@ -205,6 +216,7 @@ def test_root_package_does_not_export_runtime_invariant_applier() -> None:
     assert not hasattr(pdelie, "summarize_vertical_slice")
     assert not hasattr(pdelie, "summarize_weak_form_supportability")
     assert not hasattr(pdelie, "summarize_weak_residual_report")
+    assert not hasattr(pdelie, "summarize_xarray_dataset_readiness")
     assert not hasattr(pdelie, "to_pysindy_trajectories")
     assert not hasattr(pdelie, "coerce_generator_family")
     assert not hasattr(pdelie, "export_generator_family_manifest")
@@ -232,6 +244,7 @@ def test_root_package_does_not_export_runtime_invariant_applier() -> None:
     assert not hasattr(pdelie, "run_generator_confidence_report_example")
     assert not hasattr(pdelie, "run_external_data_readiness_example")
     assert not hasattr(pdelie, "run_downstream_discovery_contracts_example")
+    assert not hasattr(pdelie, "run_data_ecosystem_feasibility_example")
     assert not hasattr(pdelie, "run_kdv_scope_decision_example")
     assert not hasattr(pdelie, "run_kdv_vertical_slice_example")
     assert not hasattr(pdelie, "run_multi_generator_diagnostics_example")
@@ -290,6 +303,7 @@ def test_data_package_runtime_api_matches_current_frozen_surface() -> None:
     assert hasattr(data_module, "add_gaussian_noise")
     assert hasattr(data_module, "from_numpy")
     assert hasattr(data_module, "from_xarray")
+    assert hasattr(data_module, "from_xarray_dataset")
     assert hasattr(data_module, "generate_advection_diffusion_1d_field_batch")
     assert hasattr(data_module, "generate_kdv_1d_field_batch")
     assert hasattr(data_module, "generate_reaction_diffusion_1d_field_batch")
@@ -301,12 +315,15 @@ def test_data_package_runtime_api_matches_current_frozen_surface() -> None:
     assert not hasattr(data_module, "compute_coverage_diagnostics")
     assert not hasattr(data_module, "from_pdebench")
     assert not hasattr(data_module, "from_the_well")
+    assert not hasattr(data_module, "from_netcdf")
+    assert not hasattr(data_module, "from_zarr")
     assert not hasattr(data_module, "generate_configurable_kdv_1d_field_batch")
     assert not hasattr(data_module, "generate_general_kdv_1d_field_batch")
     assert not hasattr(data_module, "generate_kdv_1d_field_batch_from_initial_condition")
     assert not hasattr(data_module, "generate_ks_1d_field_batch")
     assert not hasattr(data_module, "generate_ks_feasibility_field_batch")
     assert not hasattr(data_module, "load_pdebench")
+    assert not hasattr(data_module, "load_field_batch")
     assert not hasattr(data_module, "load_the_well")
     assert not hasattr(data_module, "sample_kdv_mode_coefficients")
 
@@ -359,12 +376,15 @@ def test_reporting_package_runtime_api_matches_frozen_m2_surface() -> None:
     assert hasattr(reporting_module, "summarize_vertical_slice")
     assert hasattr(reporting_module, "summarize_weak_form_supportability")
     assert hasattr(reporting_module, "summarize_weak_residual_report")
+    assert hasattr(reporting_module, "summarize_xarray_dataset_readiness")
+    assert not hasattr(reporting_module, "summarize_metadata_inference")
 
 
 def test_examples_package_runtime_api_matches_current_frozen_surface() -> None:
     examples_module = importlib.import_module("pdelie.examples")
 
     assert hasattr(examples_module, "run_advection_diffusion_vertical_slice_example")
+    assert hasattr(examples_module, "run_data_ecosystem_feasibility_example")
     assert hasattr(examples_module, "run_downstream_discovery_contracts_example")
     assert hasattr(examples_module, "run_external_data_readiness_example")
     assert hasattr(examples_module, "run_heat_vertical_slice_example")

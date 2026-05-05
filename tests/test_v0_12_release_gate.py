@@ -67,14 +67,14 @@ def test_v0_12_release_gate_current_ci_visibility_tracks_latest_release() -> Non
     plan = _repo_text("docs/planning/PLAN.md")
     release_gate_jobs = re.findall(r"^  (v0_\d+-release-gate):", workflow, flags=re.MULTILINE)
 
-    assert pyproject["project"]["version"] == "0.27.0"
-    assert release_gate_jobs == ["v0_27-release-gate"]
-    assert "python -m pytest tests/test_v0_27_release_gate.py" in workflow
+    assert pyproject["project"]["version"] == "0.28.0"
+    assert release_gate_jobs == ["v0_28-release-gate"]
+    assert "python -m pytest tests/test_v0_28_release_gate.py" in workflow
     assert "v0_12-release-gate" not in workflow
     assert "V0.27" in readme
     assert "summarize_generator_fit_diagnostics" in readme
-    assert "including `v0.27.0`" in publishing
-    assert "V0.27 is complete" in plan
+    assert "including `v0.28.0`" in publishing
+    assert "V0.28 is complete" in plan
 
 
 def test_v0_12_release_gate_fit_diagnostic_helper_is_documented_and_submodule_only() -> None:

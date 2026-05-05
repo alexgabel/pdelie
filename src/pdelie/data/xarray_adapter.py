@@ -31,11 +31,11 @@ _ACCEPTED_LAYOUTS = frozenset(
 )
 
 
-def _require_xarray():
+def _require_xarray(*, caller: str = "pdelie.data.from_xarray"):
     try:
         return importlib.import_module("xarray")
     except ModuleNotFoundError as exc:
-        raise ImportError("xarray is required for pdelie.data.from_xarray; install pdelie[xarray].") from exc
+        raise ImportError(f"xarray is required for {caller}; install pdelie[xarray].") from exc
 
 
 def _normalize_dims(dims: object) -> tuple[str, ...]:
@@ -173,6 +173,74 @@ def _validate_mask(mask: object, *, data_array: object, normalized_dims: tuple[s
     return normalized_mask
 
 
+def _validate_dataset_var_name(value: object, *, name: str) -> str:
+    if not isinstance(value, str) or not value:
+        raise SchemaValidationError(f"{name} must be a non-empty string.")
+    return value
+
+
+def _is_dataset_data_var_candidate(data_array: object) -> bool:
+    try:
+        normalized_dims = _normalize_dims(data_array.dims)
+        raw_values = np.asarray(data_array.values)
+        if np.issubdtype(raw_values.dtype, np.bool_):
+            return False
+        values_array = _to_float_array(data_array.values, name="data_var.values")
+    except (SchemaValidationError, ScopeValidationError, ShapeValidationError):
+        return False
+    if values_array.ndim != len(normalized_dims):
+        return False
+    if "var" in normalized_dims and values_array.shape[normalized_dims.index("var")] != 1:
+        return False
+    return True
+
+
+def _compatible_dataset_data_vars(dataset: object, *, mask_var: str | None) -> list[str]:
+    return [
+        str(name)
+        for name, data_array in dataset.data_vars.items()
+        if str(name) != mask_var and _is_dataset_data_var_candidate(data_array)
+    ]
+
+
+def _resolve_dataset_data_var(dataset: object, *, data_var: str | None, mask_var: str | None) -> str:
+    if data_var is not None:
+        selected = _validate_dataset_var_name(data_var, name="data_var")
+        if selected not in dataset.data_vars:
+            raise SchemaValidationError(f"data_var {selected!r} is not present in the xarray.Dataset.")
+        if selected == mask_var:
+            raise SchemaValidationError("data_var and mask_var must refer to different Dataset variables.")
+        if not _is_dataset_data_var_candidate(dataset.data_vars[selected]):
+            raise SchemaValidationError(
+                f"data_var {selected!r} is not a compatible numeric scalar data variable in the frozen Dataset slice."
+            )
+        return selected
+
+    candidates = _compatible_dataset_data_vars(dataset, mask_var=mask_var)
+    if not candidates:
+        raise SchemaValidationError("from_xarray_dataset could not find a compatible numeric scalar data variable.")
+    if len(candidates) > 1:
+        raise SchemaValidationError(
+            "from_xarray_dataset requires explicit data_var when multiple compatible variables are present: "
+            f"{candidates}."
+        )
+    return candidates[0]
+
+
+def _resolve_dataset_mask(dataset: object, *, mask_var: str | None, data_array: object) -> object | None:
+    if mask_var is None:
+        return None
+    selected = _validate_dataset_var_name(mask_var, name="mask_var")
+    if selected not in dataset.data_vars:
+        raise SchemaValidationError(f"mask_var {selected!r} is not present in the xarray.Dataset.")
+    mask = dataset.data_vars[selected]
+    if tuple(str(dim) for dim in mask.dims) != tuple(str(dim) for dim in data_array.dims):
+        raise ShapeValidationError("mask_var dims must exactly match the selected data variable dims.")
+    if tuple(mask.shape) != tuple(data_array.shape):
+        raise ShapeValidationError("mask_var shape must exactly match the selected data variable shape.")
+    return mask
+
+
 def from_xarray(
     data_array: object,
     *,
@@ -181,7 +249,7 @@ def from_xarray(
     mask: object | None = None,
     preprocess_log: Sequence[Mapping[str, Any]] | None = None,
 ) -> FieldBatch:
-    xr = _require_xarray()
+    xr = _require_xarray(caller="pdelie.data.from_xarray")
 
     if isinstance(data_array, xr.Dataset):
         raise ScopeValidationError("from_xarray only supports xarray.DataArray in the frozen V0.7 stable slice.")
@@ -255,4 +323,46 @@ def from_xarray(
     )
 
 
-__all__ = ["from_xarray"]
+def from_xarray_dataset(
+    dataset: object,
+    *,
+    data_var: str | None = None,
+    var_name: str | None = None,
+    metadata: Mapping[str, Any],
+    mask_var: str | None = None,
+    preprocess_log: Sequence[Mapping[str, Any]] | None = None,
+) -> FieldBatch:
+    xr = _require_xarray(caller="pdelie.data.from_xarray_dataset")
+
+    if isinstance(dataset, xr.DataArray):
+        raise ScopeValidationError("from_xarray_dataset only supports xarray.Dataset; use from_xarray for DataArray inputs.")
+    if not isinstance(dataset, xr.Dataset):
+        raise SchemaValidationError("dataset must be an xarray.Dataset.")
+
+    normalized_mask_var = None if mask_var is None else _validate_dataset_var_name(mask_var, name="mask_var")
+    selected_data_var = _resolve_dataset_data_var(dataset, data_var=data_var, mask_var=normalized_mask_var)
+    data_array = dataset.data_vars[selected_data_var]
+    mask = _resolve_dataset_mask(dataset, mask_var=normalized_mask_var, data_array=data_array)
+    resolved_var_name = _validate_string(var_name, name="var_name") if var_name is not None else selected_data_var
+    normalized_preprocess_log = _validate_preprocess_log(preprocess_log)
+
+    dataset_entry = {
+        "operation": "from_xarray_dataset",
+        "parameters": {
+            "selected_data_var": selected_data_var,
+            "selected_mask_var": normalized_mask_var,
+            "dataset_data_vars": [str(name) for name in dataset.data_vars],
+            "source_layout": [str(dim) for dim in data_array.dims],
+            "imported_shape": list(data_array.shape),
+        },
+    }
+    return from_xarray(
+        data_array,
+        var_name=resolved_var_name,
+        metadata=metadata,
+        mask=mask,
+        preprocess_log=[*normalized_preprocess_log, dataset_entry],
+    )
+
+
+__all__ = ["from_xarray", "from_xarray_dataset"]

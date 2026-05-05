@@ -194,3 +194,88 @@ def plot_coverage_counts(coverage: Mapping[str, Any], *, title: str = "coverage"
     ax.set_ylabel("coverage count")
     ax.grid(True, alpha=0.3)
     plt.show()
+
+
+def plot_component_statuses(report: Mapping[str, Any], *, title: str = "component statuses") -> None:
+    """Plot reporting component statuses as a compact horizontal status strip."""
+    import matplotlib.pyplot as plt
+
+    statuses = report.get("component_statuses", {})
+    if not isinstance(statuses, Mapping) or not statuses:
+        print("No component_statuses found.")
+        return
+
+    palette = {
+        "passed": "#2a9d8f",
+        "warning": "#e9c46a",
+        "failed": "#e76f51",
+        "not_configured": "#8d99ae",
+        "unavailable": "#adb5bd",
+    }
+    names = list(statuses)
+    values = [str(statuses[name].get("status", "unavailable")) for name in names]
+    colors = [palette.get(value, "#adb5bd") for value in values]
+
+    fig, ax = plt.subplots(figsize=(max(6, 0.75 * len(names)), 2.4))
+    ax.bar(np.arange(len(names)), np.ones(len(names)), color=colors)
+    ax.set_xticks(np.arange(len(names)), names, rotation=35, ha="right")
+    ax.set_yticks([])
+    ax.set_ylim(0, 1.25)
+    ax.set_title(title)
+    for index, value in enumerate(values):
+        ax.text(index, 0.5, value.replace("_", "\n"), ha="center", va="center", fontsize=8)
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_named_metrics(metrics: Mapping[str, float], *, title: str = "metrics", log: bool = False) -> None:
+    """Plot a small named metric dictionary as a bar chart."""
+    import matplotlib.pyplot as plt
+
+    names = list(metrics)
+    values = np.asarray([float(metrics[name]) for name in names], dtype=float)
+    fig, ax = plt.subplots(figsize=(max(5, 0.85 * len(names)), 3))
+    ax.bar(np.arange(len(names)), values, color="#457b9d")
+    ax.set_xticks(np.arange(len(names)), names, rotation=25, ha="right")
+    if log:
+        ax.set_yscale("log")
+    ax.set_title(title)
+    ax.grid(True, axis="y", alpha=0.3)
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_label_strip(labels: Mapping[str, str], *, title: str = "labels") -> None:
+    """Plot named categorical labels as a quick visual dashboard."""
+    import matplotlib.pyplot as plt
+
+    palette = {
+        "ready": "#2a9d8f",
+        "strong": "#2a9d8f",
+        "validated": "#2a9d8f",
+        "supported_existing_slice": "#2a9d8f",
+        "current_frozen_supported": "#2a9d8f",
+        "multi_generator_diagnostics_feasible_fitting_deferred": "#2a9d8f",
+        "needs_attention": "#e9c46a",
+        "qualified": "#e9c46a",
+        "partially_validated": "#e9c46a",
+        "diagnostic_only": "#e9c46a",
+        "current_no_go_reference_fallback": "#e76f51",
+        "not_ready": "#e76f51",
+        "failed": "#e76f51",
+        "insufficient_evidence": "#8d99ae",
+    }
+    names = list(labels)
+    values = [str(labels[name]) for name in names]
+    colors = [palette.get(value, "#adb5bd") for value in values]
+
+    fig, ax = plt.subplots(figsize=(max(6, 1.15 * len(names)), 2.6))
+    ax.bar(np.arange(len(names)), np.ones(len(names)), color=colors)
+    ax.set_xticks(np.arange(len(names)), names, rotation=25, ha="right")
+    ax.set_yticks([])
+    ax.set_ylim(0, 1.3)
+    ax.set_title(title)
+    for index, value in enumerate(values):
+        ax.text(index, 0.52, value.replace("_", "\n"), ha="center", va="center", fontsize=8)
+    plt.tight_layout()
+    plt.show()

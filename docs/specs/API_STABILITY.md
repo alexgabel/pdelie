@@ -333,6 +333,18 @@ Runtime public API and behavior updates for the frozen `v0.27` multi-generator d
 - this release does not add public multi-generator PDE fitting, finite multi-generator flows, BCH composition, exponential-map integration, invariant charts, multi-parameter orbit charts, group-action atlases, operator APIs, neural/callable generator APIs, or root exports
 - these APIs have no root `pdelie` exports
 
+Runtime public API for the frozen `v0.28` data-ecosystem feasibility slice:
+
+- `pdelie.data.from_xarray_dataset` for strict runtime conversion of one explicit scalar `xarray.Dataset` data variable into canonical scalar 1D uniform periodic `FieldBatch`
+- `pdelie.reporting.summarize_xarray_dataset_readiness` for strict JSON-compatible runtime readiness reports over `xarray.Dataset` inputs before conversion
+- Dataset readiness reports use `summary_type = "xarray_dataset_readiness"` and `summary_schema_version = "0.1"`
+- `pdelie.examples.run_data_ecosystem_feasibility_example` for a compact JSON-only runtime smoke example demonstrating Dataset readiness, Dataset-to-FieldBatch conversion, and existing FieldBatch readiness
+- the recorded `v0.28` decision is `xarray_dataset_scalar_slice_supported_file_loaders_deferred`
+- Dataset conversion delegates to the existing `from_xarray(...)` DataArray path after data-variable and optional mask-variable selection; all frozen scalar 1D periodic layout, coordinate, metadata, mask, and singleton-var rules remain in force
+- metadata remains explicit for conversion; Dataset attrs are report metadata only and are never silently promoted into canonical `FieldBatch.metadata`
+- this release does not add file loaders, NetCDF/Zarr readers, PDEBench/The Well adapters, broad adapter registries, implicit metadata inference, resampling APIs, multidimensional or nonuniform stable support, multivariable `FieldBatch` support, train/test policy, neural/callable generators, operator-facing APIs, or root exports
+- these APIs have no root `pdelie` exports
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 
@@ -346,6 +358,7 @@ These must not change without version bump.
 - weak-form derivatives and weak-form methods beyond the frozen `v0.8` weak residual report slice and the `v0.24` weak supportability reporting layer
 - operator symmetry
 - advanced invariant maps
+- broad dataset adapters, file loaders, metadata inference engines, resampling APIs, and broad Dataset-level ingestion
 - multi-generator invariant machinery, finite flows, BCH composition, and public multi-generator PDE fitting
 
 These may change without warning.
