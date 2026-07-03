@@ -112,6 +112,7 @@ _FIELD_BATCH_READINESS_SUMMARY_KEYS = _SUMMARY_PREFIX_KEYS | {
     "metadata_diagnostics",
     "metadata_suggestions",
     "residual_preflight",
+    "boundary_condition_warnings",  # v0.30c
     "stable_scope",
 }
 _XARRAY_DATASET_READINESS_SUMMARY_KEYS = _SUMMARY_PREFIX_KEYS | {
@@ -125,6 +126,7 @@ _XARRAY_DATASET_READINESS_SUMMARY_KEYS = _SUMMARY_PREFIX_KEYS | {
     "metadata_diagnostics",
     "metadata_suggestions",
     "conversion_preflight",
+    "boundary_condition_warnings",  # v0.30c
     "stable_scope",
 }
 _WEAK_FORM_SUPPORTABILITY_SUMMARY_KEYS = _SUMMARY_PREFIX_KEYS | {
@@ -322,12 +324,23 @@ def test_summarize_field_batch_readiness_reports_attention_and_not_ready_cases()
     assert multivariable_summary["readiness_label"] == "not_ready"
     assert multivariable_summary["component_statuses"]["field"]["status"] == "failed"
 
+    # v0.30c: nonperiodic is no longer a metadata failure; it's flagged via
+    # boundary_condition_warnings, which downgrades a would-be "ready" label
+    # to "needs_attention". Metadata status itself passes.
     nonperiodic = _copy_field(field)
     nonperiodic.metadata = copy.deepcopy(nonperiodic.metadata)
     nonperiodic.metadata["boundary_conditions"] = {"x": "dirichlet"}
     nonperiodic_summary = summarize_field_batch_readiness(nonperiodic)
-    assert nonperiodic_summary["readiness_label"] == "not_ready"
-    assert nonperiodic_summary["component_statuses"]["metadata"]["status"] == "failed"
+    assert nonperiodic_summary["readiness_label"] == "needs_attention"
+    assert nonperiodic_summary["component_statuses"]["metadata"]["status"] == "passed"
+    assert (
+        "x_boundary_dirichlet_unspecified"
+        in nonperiodic_summary["boundary_condition_warnings"]
+    )
+    assert (
+        "x_boundary_legacy_string_under_schema_0_2"
+        in nonperiodic_summary["boundary_condition_warnings"]
+    )
 
 
 def test_summarize_field_batch_readiness_reports_coordinate_failures() -> None:
@@ -505,8 +518,10 @@ def test_summarize_residual_batch_returns_frozen_json_summary(heat_artifacts: di
         "normalization",
         "max_abs_residual",
         "rms_residual",
+        "residual_domain_policy",  # v0.30c
         "diagnostics",
     }
+    assert summary["residual_domain_policy"] == "not_configured"
     assert summary["summary_schema_version"] == "0.1"
     assert summary["summary_type"] == "residual_batch"
     assert summary["residual_shape"] == list(residual.residual.shape)
