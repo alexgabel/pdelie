@@ -103,7 +103,12 @@ def test_advection_diffusion_residual_uses_explicit_parameters_when_supplied() -
         {"parameter_tags": {"equation": "advection_diffusion_constant_coefficient", "nu": 0.05}},
         {"parameter_tags": {"equation": "advection_diffusion_constant_coefficient", "c": 0.75}},
         {"parameter_tags": {"equation": "advection_diffusion_constant_coefficient", "c": 0.75, "nu": 0.0}},
-        {"boundary_conditions": {"x": "dirichlet"}},
+        # v0.30d: {"boundary_conditions": {"x": "dirichlet"}} no longer belongs here.
+        # After v0.30d, advection-diffusion routes through compute_derivatives(backend="auto"),
+        # so Dirichlet-tagged data is a legitimate FD path. Tampering the BC on a periodic-
+        # generated field silently succeeds numerically (with interior-only diagnostics);
+        # exercising the positive nonperiodic path lives in tests/test_finite_difference_backend.py
+        # and tests/test_manufactured_nonperiodic_residuals.py.
     ],
 )
 def test_advection_diffusion_residual_rejects_wrong_metadata(metadata_update: dict[str, object]) -> None:

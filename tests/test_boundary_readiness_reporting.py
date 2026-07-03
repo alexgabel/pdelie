@@ -148,9 +148,26 @@ def test_field_batch_readiness_summary_is_strict_json_compatible() -> None:
 # --- summarize_residual_batch.residual_domain_policy -----------------------
 
 
-def test_residual_batch_summary_records_not_configured_when_policy_absent() -> None:
+def test_residual_batch_summary_records_full_grid_for_periodic_heat_after_v0_30d() -> None:
+    """v0.30d: HeatResidualEvaluator now routes through compute_derivatives(backend='auto')
+    and emits residual_domain_policy = 'full_grid' for periodic data."""
     field = generate_heat_1d_field_batch(batch_size=1, num_times=9, num_points=16, seed=2)
     residual = HeatResidualEvaluator().evaluate(field)
+    summary = summarize_residual_batch(residual)
+    assert summary["residual_domain_policy"] == "full_grid"
+
+
+def test_residual_batch_summary_falls_back_to_not_configured_for_raw_residual_batches() -> None:
+    """The 'not_configured' fallback still applies when a caller constructs a raw
+    ResidualBatch whose diagnostics omit residual_domain_policy."""
+    from pdelie import ResidualBatch
+
+    residual = ResidualBatch(
+        residual=np.zeros((1, 4, 8, 1), dtype=float),
+        definition_type="analytic",
+        normalization="none",
+        diagnostics={"backend": "spectral_fd"},
+    )
     summary = summarize_residual_batch(residual)
     assert summary["residual_domain_policy"] == "not_configured"
 

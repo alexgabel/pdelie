@@ -1,6 +1,6 @@
 # Derivative Backend Policy — Design Document
 
-**Status:** DESIGN-FROZEN in v0.30a; **`finite_difference` v1 IMPLEMENTED in v0.30c** along with the `compute_derivatives(backend="auto")` dispatcher. Boundary-aware readiness warnings and the `residual_domain_policy` reporting field also land in v0.30c. Residual evaluator auto-dispatch is deferred to v0.30d.
+**Status:** DESIGN-FROZEN in v0.30a; **`finite_difference` v1 IMPLEMENTED in v0.30c** along with the `compute_derivatives(backend="auto")` dispatcher. Boundary-aware readiness warnings and the `residual_domain_policy` reporting field also land in v0.30c. **Residual evaluator auto-dispatch and interior-only diagnostics landed in v0.30d**: Heat, Burgers, advection-diffusion, and reaction-diffusion evaluators now route through `compute_derivatives(backend="auto")` and consume `recommended_residual_domain_policy` / `recommended_boundary_trim_width` from the `DerivativeBatch.config`. KdV and the weak evaluators remain periodic-only per v0.30 scope.
 
 This document defines the policies governing PDELie's derivative backends after v0.30. The runtime in v0.30a is unchanged.
 

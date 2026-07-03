@@ -370,6 +370,16 @@ Decision-only note for the frozen `v0.30a` scope-freeze sub-release:
 - `v0.30a` records that `u_xxx` and `u_xxxx` on nonperiodic data remain deferred from the stable `v0.30` surface
 - `v0.30a` records that finite-transform verification for nonperiodic translations is deferred to the `v0.31.5` orbit/action scope decision
 
+Decision-only note for the frozen `v0.30d` residual-evaluator auto-dispatch sub-release:
+
+- `v0.30d` adds no new runtime public API and no new root `pdelie` export
+- `v0.30d` records the design decision `strong_residual_evaluator_auto_dispatch_and_interior_only_diagnostics`
+- `HeatResidualEvaluator`, `BurgersResidualEvaluator`, `AdvectionDiffusionResidualEvaluator`, and `ReactionDiffusionResidualEvaluator` now route through `compute_derivatives(backend="auto")` when derivatives are omitted; supplied derivatives take precedence and are used as-is
+- their diagnostics gain `residual_domain_policy` (`"full_grid"` on periodic data via `spectral_fd`; `"interior_only"` on supported nonperiodic BCs via `finite_difference`), `rms_residual` (Heat and Burgers previously omitted this), `boundary_trim_width` (interior-only paths), and a nested `full_grid_diagnostic` block (interior-only paths)
+- `KdVResidualEvaluator`, `evaluate_weak_heat_residual`, `evaluate_weak_burgers_residual`, and the translation finite-transform verifier remain periodic-only per the v0.30 scope
+- `v0.30d` does not add ruff / mypy / coverage configuration, a symmetry-method registry, any external symmetry-method port, any file loader, any PDEBench or The Well adapter, any KS runtime API, any weak nonperiodic surface, or any new PDE
+- `v0.30d` does not bump `pyproject.toml`; the version bump is reserved for the v0.30 release close
+
 Decision-only note for the frozen `v0.30b` BoundaryConditionSpec runtime and FieldBatch 0.2 migration sub-release:
 
 - `v0.30b` adds no new runtime public API and no new root `pdelie` export

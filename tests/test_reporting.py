@@ -521,7 +521,9 @@ def test_summarize_residual_batch_returns_frozen_json_summary(heat_artifacts: di
         "residual_domain_policy",  # v0.30c
         "diagnostics",
     }
-    assert summary["residual_domain_policy"] == "not_configured"
+    # v0.30d: HeatResidualEvaluator now emits residual_domain_policy = "full_grid" for
+    # periodic data (was "not_configured" before v0.30d rerouted through compute_derivatives).
+    assert summary["residual_domain_policy"] == "full_grid"
     assert summary["summary_schema_version"] == "0.1"
     assert summary["summary_type"] == "residual_batch"
     assert summary["residual_shape"] == list(residual.residual.shape)

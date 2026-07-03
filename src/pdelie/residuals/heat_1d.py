@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-import numpy as np
-
 from pdelie.contracts import DerivativeBatch, FieldBatch, ResidualBatch
-from pdelie.derivatives import compute_spectral_fd_derivatives
+from pdelie.derivatives import compute_derivatives
 from pdelie.errors import SchemaValidationError
-from pdelie.residuals.base import ResidualEvaluator
+from pdelie.residuals.base import (
+    ResidualEvaluator,
+    build_residual_diagnostics_from_derivatives,
+)
 
 
 class HeatResidualEvaluator(ResidualEvaluator):
@@ -19,7 +20,7 @@ class HeatResidualEvaluator(ResidualEvaluator):
     ) -> ResidualBatch:
         field.validate()
         if derivatives is None:
-            derivatives = compute_spectral_fd_derivatives(field)
+            derivatives = compute_derivatives(field, backend="auto")
         derivatives.validate_against(field)
 
         for name in ("u_t", "u_xx"):
@@ -35,12 +36,9 @@ class HeatResidualEvaluator(ResidualEvaluator):
             residual=residual,
             definition_type="analytic",
             normalization="none",
-            diagnostics={
-                "backend": derivatives.backend,
-                "nu": diffusivity,
-                "max_abs_residual": float(np.max(np.abs(residual))),
-            },
+            diagnostics=build_residual_diagnostics_from_derivatives(
+                residual, field, derivatives, extra={"nu": diffusivity}
+            ),
         )
         batch.validate_against(field)
         return batch
-

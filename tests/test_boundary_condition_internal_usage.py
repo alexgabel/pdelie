@@ -103,13 +103,19 @@ def test_weak_heat_residual_still_rejects_nonperiodic() -> None:
         evaluate_weak_heat_residual(field)
 
 
-def test_heat_residual_evaluator_still_rejects_nonperiodic_derivative_path() -> None:
-    """HeatResidualEvaluator computes derivatives via spectral_fd by default;
-    spectral_fd's periodic check propagates."""
+def test_heat_residual_evaluator_now_handles_nonperiodic_via_fd_dispatch() -> None:
+    """v0.30d: HeatResidualEvaluator routes through compute_derivatives(backend='auto').
+
+    Dirichlet-tagged data now flows through the finite_difference backend, and the
+    ResidualBatch diagnostics record interior-only domain policy. This test asserts
+    the v0.30d behavior explicitly to guard against regressions.
+    """
     field = _make_nonperiodic_field("dirichlet")
-    evaluator = HeatResidualEvaluator(diffusivity=0.1)
-    with pytest.raises(ScopeValidationError, match="periodic"):
-        evaluator.evaluate(field)
+    residual = HeatResidualEvaluator(diffusivity=0.1).evaluate(field)
+    assert residual.diagnostics["backend"] == "finite_difference"
+    assert residual.diagnostics["residual_domain_policy"] == "interior_only"
+    assert residual.diagnostics["boundary_trim_width"] >= 0
+    assert "full_grid_diagnostic" in residual.diagnostics
 
 
 def test_finite_transform_verification_still_rejects_nonperiodic() -> None:
@@ -225,8 +231,10 @@ def test_boundary_helper_module_is_imported_by_all_runtime_consumers() -> None:
         _SRC_ROOT / "derivatives" / "__init__.py",  # v0.30c dispatcher
         _SRC_ROOT / "residuals" / "weak_1d.py",
         _SRC_ROOT / "residuals" / "kdv_1d.py",
-        _SRC_ROOT / "residuals" / "reaction_diffusion_1d.py",
-        _SRC_ROOT / "residuals" / "advection_diffusion_1d.py",
+        # v0.30d: advection_diffusion_1d.py and reaction_diffusion_1d.py no longer need
+        # is_x_periodic — their BC gate is delegated to compute_derivatives(backend="auto").
+        # They still route through the boundary helper transitively via the derivatives
+        # dispatcher, but no direct is_x_periodic import remains.
         _SRC_ROOT / "discovery" / "translation_canonical.py",
         _SRC_ROOT / "discovery" / "pysindy_bridge.py",
         _SRC_ROOT / "invariants" / "diagnostics.py",
