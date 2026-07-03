@@ -4,6 +4,7 @@ from collections.abc import Mapping
 
 import numpy as np
 
+from pdelie._boundary import is_x_periodic
 from pdelie.contracts import DerivativeBatch, FieldBatch, ResidualBatch
 from pdelie.data.advection_diffusion_1d import DEFAULT_ADVECTION_DIFFUSION_EQUATION
 from pdelie.derivatives import compute_spectral_fd_derivatives
@@ -48,8 +49,7 @@ def _validate_advection_diffusion_field(field: FieldBatch) -> Mapping[str, objec
     if not np.all(np.isfinite(field.values)):
         raise ScopeValidationError("AdvectionDiffusionResidualEvaluator requires finite field values.")
 
-    boundary_conditions = field.metadata.get("boundary_conditions")
-    if not isinstance(boundary_conditions, Mapping) or boundary_conditions.get("x") != "periodic":
+    if not is_x_periodic(field):
         raise ScopeValidationError("AdvectionDiffusionResidualEvaluator requires periodic boundary conditions in x.")
 
     parameter_tags = field.metadata.get("parameter_tags")

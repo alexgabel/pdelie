@@ -350,11 +350,31 @@ def test_from_xarray_rejects_missing_or_invalid_metadata(
         from_xarray(data_array, metadata=metadata)
 
 
-def test_from_xarray_rejects_non_periodic_x_boundary_condition() -> None:
-    data_array = xr.DataArray(np.zeros((4, 8), dtype=float), dims=("time", "x"), coords={"time": _time(), "x": _x()}, name="u")
+def test_from_xarray_accepts_supported_non_periodic_x_boundary_conditions() -> None:
+    """v0.30b: from_xarray accepts dirichlet/neumann/open_unknown BC inputs.
 
-    with pytest.raises(ScopeValidationError, match="periodic x boundary conditions"):
-        from_xarray(data_array, metadata=_metadata(x_boundary="dirichlet"))
+    Downstream consumers still reject nonperiodic; v0.30b only loosens ingestion.
+    """
+    data_array = xr.DataArray(
+        np.zeros((4, 8), dtype=float),
+        dims=("time", "x"),
+        coords={"time": _time(), "x": _x()},
+        name="u",
+    )
+    for x_boundary in ("dirichlet", "neumann", "open_unknown"):
+        field = from_xarray(data_array, metadata=_metadata(x_boundary=x_boundary))
+        assert field.metadata["boundary_conditions"]["x"] == x_boundary
+
+
+def test_from_xarray_rejects_unsupported_x_boundary_string() -> None:
+    data_array = xr.DataArray(
+        np.zeros((4, 8), dtype=float),
+        dims=("time", "x"),
+        coords={"time": _time(), "x": _x()},
+        name="u",
+    )
+    with pytest.raises(ScopeValidationError, match="Unsupported x boundary string"):
+        from_xarray(data_array, metadata=_metadata(x_boundary="insulating"))
 
 
 def test_from_xarray_ignores_attrs_for_metadata() -> None:

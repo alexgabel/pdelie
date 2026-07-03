@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 
+from pdelie._boundary import is_x_periodic
 from pdelie.contracts import FieldBatch, GeneratorFamily, VerificationReport
 from pdelie.errors import ScopeValidationError
 from pdelie.residuals.base import ResidualEvaluator
@@ -19,7 +20,7 @@ DEFAULT_RELATIVE_L2_NORM = "relative_l2"
 
 
 def _apply_uniform_translation(field: FieldBatch, shift: float) -> FieldBatch:
-    if field.metadata["boundary_conditions"].get("x") != "periodic":
+    if not is_x_periodic(field):
         raise ScopeValidationError("Uniform translation requires periodic boundary conditions in x.")
     x = field.coords["x"]
     dx = float(x[1] - x[0])

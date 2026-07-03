@@ -4,6 +4,7 @@ from typing import Any
 
 import numpy as np
 
+from pdelie._boundary import is_x_periodic
 from pdelie.contracts import FieldBatch, GeneratorFamily, InvariantMapSpec
 from pdelie.discovery.pysindy_bridge import to_pysindy_trajectories
 from pdelie.errors import SchemaValidationError, ScopeValidationError
@@ -39,7 +40,7 @@ def _validate_supported_field(field: FieldBatch) -> None:
         raise ScopeValidationError(
             "build_translation_canonical_discovery_inputs only supports a single scalar variable in V0.6 Milestone 3."
         )
-    if field.metadata["boundary_conditions"].get("x") != "periodic":
+    if not is_x_periodic(field):
         raise ScopeValidationError(
             "build_translation_canonical_discovery_inputs requires periodic boundary conditions in x."
         )

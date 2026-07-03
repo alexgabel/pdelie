@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 
+from pdelie._boundary import is_x_periodic
 from pdelie.contracts import FieldBatch
 from pdelie.errors import ScopeValidationError, ShapeValidationError
 
@@ -31,7 +32,7 @@ def build_translation_basis(field: FieldBatch) -> dict[str, np.ndarray]:
         raise ScopeValidationError("The stable translation basis only supports dims ('batch', 'time', 'x', 'var').")
     if len(field.var_names) != 1:
         raise ScopeValidationError("The stable translation basis only supports a single scalar variable.")
-    if field.metadata["boundary_conditions"].get("x") != "periodic":
+    if not is_x_periodic(field):
         raise ScopeValidationError("The stable translation basis requires periodic boundary conditions in x.")
 
     ones = np.ones_like(field.values)
@@ -79,7 +80,7 @@ def apply_pointwise_translation(field: FieldBatch, xi: np.ndarray, epsilon: floa
     xi = np.asarray(xi, dtype=float)
     if xi.shape != field.values.shape:
         raise ScopeValidationError("Pointwise translation xi must match the FieldBatch shape.")
-    if field.metadata["boundary_conditions"].get("x") != "periodic":
+    if not is_x_periodic(field):
         raise ScopeValidationError("Pointwise translation requires periodic boundary conditions in x.")
 
     x = field.coords["x"]

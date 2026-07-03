@@ -6,6 +6,7 @@ from typing import Any, Mapping, Sequence
 
 import numpy as np
 
+from pdelie._boundary import get_x_boundary_type
 from pdelie.contracts import FieldBatch, REQUIRED_METADATA_KEYS, _is_uniform
 from pdelie.data.numpy_adapter import (
     _CANONICAL_DIMS,
@@ -111,8 +112,11 @@ def _validate_metadata(value: object) -> dict[str, Any]:
         raise ScopeValidationError("from_xarray only supports uniform rectilinear grids.")
     if metadata["coordinate_system"] != "cartesian":
         raise ScopeValidationError("from_xarray only supports cartesian coordinates.")
-    if boundary_conditions["x"] != "periodic":
-        raise ScopeValidationError("from_xarray only supports periodic x boundary conditions.")
+    # Accept any supported boundary type (periodic, dirichlet, neumann, open_unknown).
+    # Unsupported strings or malformed structured specs are rejected by the helper.
+    # Derivative and residual support for non-periodic data is deferred to a later v0.30 milestone;
+    # the adapter constructs FieldBatch objects but downstream consumers still reject nonperiodic.
+    get_x_boundary_type({"boundary_conditions": boundary_conditions})
 
     return metadata
 

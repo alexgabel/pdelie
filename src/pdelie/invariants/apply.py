@@ -4,6 +4,7 @@ from typing import Any
 
 import numpy as np
 
+from pdelie._boundary import is_x_periodic
 from pdelie.contracts import FieldBatch, InvariantMapSpec
 from pdelie.errors import SchemaValidationError, ScopeValidationError
 
@@ -13,7 +14,7 @@ def _validate_supported_field(field: FieldBatch) -> None:
         raise ScopeValidationError("InvariantApplier only supports dims ('batch', 'time', 'x', 'var') in V0.3 Milestone 1.")
     if len(field.var_names) != 1:
         raise ScopeValidationError("InvariantApplier only supports a single scalar variable in V0.3 Milestone 1.")
-    if field.metadata["boundary_conditions"].get("x") != "periodic":
+    if not is_x_periodic(field):
         raise ScopeValidationError("InvariantApplier requires periodic boundary conditions in x.")
 
 

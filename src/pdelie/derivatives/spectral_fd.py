@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 
+from pdelie._boundary import is_x_periodic
 from pdelie.contracts import DerivativeBatch, FieldBatch
 from pdelie.errors import ScopeValidationError
 
@@ -29,7 +30,7 @@ def compute_spectral_fd_derivatives(field: FieldBatch, *, max_spatial_order: int
         raise ScopeValidationError("spectral_fd only supports dims ('batch', 'time', 'x', 'var') in V0.1.")
     if len(field.var_names) != 1:
         raise ScopeValidationError("spectral_fd only supports a single variable in V0.1.")
-    if field.metadata["boundary_conditions"].get("x") != "periodic":
+    if not is_x_periodic(field):
         raise ScopeValidationError("spectral_fd requires periodic boundary conditions in x.")
 
     x = field.coords["x"]
