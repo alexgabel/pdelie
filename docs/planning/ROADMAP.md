@@ -25,17 +25,26 @@ Long historical release detail is archived in `archive/ROADMAP_HISTORY.md`.
 
 ## Next Planned Work
 
-No next release is frozen until a scope file is accepted.
+The next release `v0.30` is design-frozen by the `v0.30a` sub-release (audit-only, no runtime change, no version bump). Runtime implementation lands in `v0.30` proper.
 
 Planned direction:
 
 | Target | Theme | Status | Notes |
 | --- | --- | --- | --- |
 | `v0.26b` | KS promotion | Reserved | Only if a separate scope freeze accepts direct-SVD/no-fallback KS evidence. |
-| `v0.30` | Grid-domain feasibility | Planned | Decide whether any grid-domain extension is ready without broad nonuniform/multidimensional promotion. |
-| `v0.31` | Orbit/action scope decision | Planned | Decide whether finite-transform/orbit action machinery can be promoted beyond current diagnostics. |
-| `v0.32` | `v1.0` readiness hardening | Planned | Stabilize contracts, docs, error policy, optional dependencies, release gates, and publishing policy. |
-| `v1.0` | Stable public engine | Planned | Stabilization milestone, not a scope-expansion milestone. |
+| `v0.30a` | Scope freeze + design contracts | Completed | Audit-only sub-release. No runtime change, no version bump. Froze BoundaryConditionSpec and derivative-backend policy. |
+| `v0.30b` | BoundaryConditionSpec runtime + FieldBatch 0.2 migration | Completed | Implemented the structured boundary spec, `FieldBatch.from_dict` 0.1->0.2 migration, and the `is_x_periodic` helper centralization. Adapters accept structured nonperiodic specs; downstream consumers stay strict-periodic. |
+| `v0.30c` | Finite-difference derivative backend (low-order) + boundary-aware reporting | In progress | Implements `compute_finite_difference_derivatives` (`u_t`, `u_x`, `u_xx` only), the `compute_derivatives(backend="auto")` dispatcher, `boundary_condition_warnings` on readiness summaries, and the `residual_domain_policy` field on residual summaries. Residual evaluator auto-dispatch deferred to v0.30d. No version bump. |
+| `v0.30d` | Residual evaluator auto-dispatch + hygiene phase 1 | Planned | Nonperiodic Heat/Burgers/advection-diffusion residual preflight via the dispatcher; interior-only residual domain policy; ruff/mypy/coverage non-blocking CI. |
+| `v0.30` | Release close: Nonperiodic readiness + low-order FD diagnostics + hygiene preparation | Planned | Final v0.30 release; bumps `pyproject.toml` version to `0.30.0` and tags. |
+| `v0.30.1` | Submodule-only SymmetryMethod registry MVP | Planned | One built-in adapter (`polynomial_translation_svd`). No root API. No external method ports. |
+| `v0.31` | Downstream discovery task bridge | Planned | Unlock PySINDy `PDELibrary` config, add `WeakPDELibrary` diagnostic wrapper. Tasks live under `pdelie.tasks.discovery`, not under the symmetry registry. |
+| `v0.31.5` | Nonperiodic orbit/action scope decision | Planned | Overlap-crop design for nonperiodic translation; decision on whether finite-transform/orbit action machinery can be promoted beyond diagnostics. |
+| `v0.32` | External dataset readiness cookbooks | Planned | One scalar 1D PDEBench slice readiness and, if feasible, one scalar 1D The Well slice readiness. No recovery benchmark claim. |
+| `v0.33` | First external symmetry candidate-generator method | Planned | Ko-style sparse generator behind an experimental flag. LieGAN/LaLiGAN as a later optional stochastic extra. |
+| `v0.34` | Multi-channel / 2D contract widening scope decision | Planned | Required for any meaningful The Well coverage. Relaxes `var_names` length-1 and the canonical `('batch','time','x','var')` dim layout. |
+| `v0.35` | Trained-model extraction layer | Planned | `TrainedModelArtifact` contract; LieGG-style extraction adapter. Distinct API path from `fit(field, residual_evaluator=...)`. |
+| `v1.0` | Stable public engine; PyPI publish; optional root-entry decision | Planned | Stabilization milestone. Reopens the root one-call API question explicitly rather than pre-banning it. |
 
 ## Planning Labels
 
@@ -120,6 +129,10 @@ The following remain deferred unless explicitly frozen in a later scope:
 - neural/callable generator APIs and operator symmetry
 - split creation, split optimization, benchmark policy, and leakage-prevention enforcement
 - root export expansion for runtime helpers
+- high-order finite-difference derivatives on nonperiodic data (no `u_xxx`, `u_xxxx` in the stable `v0.30` surface)
+- finite-transform verification on nonperiodic translations (deferred to `v0.31.5` overlap-crop design)
+- weak-form derivatives or weak residuals on nonperiodic data
+- root-level one-call symmetry-discovery API (deferred to `v1.0` scope decision)
 
 ## Historical Detail
 

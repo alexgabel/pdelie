@@ -1,0 +1,125 @@
+{
+  "summary_schema_version": "0.1",
+  "summary_type": "pdelie_release_scope",
+  "release": "0.30a",
+  "status": "in_progress",
+  "parent_release": "0.30",
+  "decision_label": "nonperiodic_readiness_and_low_order_finite_difference_diagnostics_design_only",
+  "scope_in": [
+    "scalar 1D nonperiodic readiness design",
+    "low-order finite-difference derivative backend design (u_t, u_x, u_xx only)",
+    "BoundaryConditionSpec structured schema design",
+    "derivative backend dispatch policy design",
+    "residual domain policy design",
+    "cross-cutting hygiene audit",
+    "release-gate consolidation proposal"
+  ],
+  "scope_out": [
+    "PDEBench support claim",
+    "The Well support claim",
+    "file loaders or broad adapter framework",
+    "KdV nonperiodic",
+    "KS nonperiodic",
+    "KS runtime API",
+    "weak nonperiodic",
+    "public weak derivative backend",
+    "high-order nonperiodic finite differences (u_xxx, u_xxxx)",
+    "finite-transform verification for nonperiodic translations",
+    "symmetry-method registry",
+    "root pdelie.discover_symmetries",
+    "external symmetry-method ports",
+    "neural or callable generator APIs",
+    "train/test policy or leakage prevention",
+    "PyPI or TestPyPI publication",
+    "version bump"
+  ],
+  "forbidden_root_attributes": [
+    "discover_symmetries",
+    "from_pdebench",
+    "from_the_well",
+    "from_netcdf",
+    "from_zarr",
+    "compute_finite_difference_derivatives",
+    "compute_derivatives",
+    "SymmetryMethod",
+    "SymmetryCandidate",
+    "SymmetryMethodResult",
+    "register_symmetry_method"
+  ],
+  "forbidden_submodule_attributes": {
+    "pdelie.data": [
+      "from_pdebench",
+      "from_the_well",
+      "from_netcdf",
+      "from_zarr"
+    ],
+    "pdelie.symmetry": [
+      "SymmetryMethod",
+      "SymmetryCandidate",
+      "SymmetryMethodResult",
+      "register_symmetry_method",
+      "get_symmetry_method",
+      "list_symmetry_methods"
+    ]
+  },
+  "required_design_documents": [
+    "docs/planning/V0_30_SCOPE.md",
+    "docs/design/BOUNDARY_CONDITION_SPEC.md",
+    "docs/design/DERIVATIVE_BACKEND_POLICY.md",
+    "docs/design/V0_30_HYGIENE_AUDIT.md"
+  ],
+  "required_phrases_in_scope_doc": [
+    "nonperiodic_readiness_and_low_order_finite_difference_diagnostics_design_only",
+    "scalar 1D",
+    "u_t, u_x, u_xx",
+    "no KdV nonperiodic",
+    "no KS nonperiodic",
+    "no weak nonperiodic",
+    "no PDEBench support claim",
+    "no The Well support claim",
+    "no symmetry-method registry",
+    "no root `pdelie.discover_symmetries`",
+    "no finite-transform verification for nonperiodic translations",
+    "no high-order nonperiodic finite differences"
+  ],
+  "required_phrases_in_roadmap": [
+    "v0.30a",
+    "Scope freeze + design contracts"
+  ],
+  "required_phrases_in_plan": [
+    "nonperiodic_readiness_and_low_order_finite_difference_diagnostics_design_only",
+    "V0.30a"
+  ],
+  "required_phrases_in_api_stability": [
+    "Decision-only note for the frozen `v0.30a`"
+  ],
+  "planned_schema_migration": {
+    "field": "FieldBatch.SCHEMA_VERSION",
+    "from_version": "0.1",
+    "to_version": "0.2",
+    "reason": "structured BoundaryConditionSpec",
+    "implements_in_release": "0.30",
+    "backwards_compatible_loader": true
+  },
+  "guard_no_version_bump": "0.29.0",
+  "guard_no_premature_pyproject_sections": [
+    "tool.ruff",
+    "tool.mypy",
+    "tool.coverage",
+    "tool.black",
+    "tool.flake8"
+  ],
+  "guard_no_premature_ci_jobs": [
+    "lint",
+    "typecheck",
+    "coverage",
+    "mypy",
+    "ruff"
+  ],
+  "expected_ci_jobs": [
+    "v0_29-release-gate",
+    "docs-build",
+    "editable-tests",
+    "package-smoke"
+  ]
+}
