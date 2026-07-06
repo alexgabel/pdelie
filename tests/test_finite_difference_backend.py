@@ -13,7 +13,7 @@ import numpy as np
 import pytest
 
 from pdelie._boundary import normalize_x_boundary_condition
-from pdelie.contracts import ALLOWED_DERIVATIVE_BACKENDS, DerivativeBatch
+from pdelie.contracts import ALLOWED_DERIVATIVE_BACKENDS
 from pdelie.data import from_numpy
 from pdelie.derivatives import compute_finite_difference_derivatives
 from pdelie.errors import ScopeValidationError
@@ -159,10 +159,9 @@ def test_rejects_bool_max_spatial_order() -> None:
 
 
 def test_rejects_nonuniform_x_grid() -> None:
-    n_t, n_x = 17, 9
+    n_t = 17
     t = np.linspace(0.0, 1.0, n_t, dtype=float)
     x = np.array([0.0, 0.2, 0.5, 0.9, 1.3, 1.6, 1.7, 1.8, 2.0], dtype=float)
-    values = np.zeros((1, n_t, n_x, 1), dtype=float)
     # from_numpy rejects nonuniform x at ingestion. Build FieldBatch directly to
     # exercise the backend's uniform-x check.
     # Actually from_numpy checks _is_uniform; we can satisfy the FieldBatch contract

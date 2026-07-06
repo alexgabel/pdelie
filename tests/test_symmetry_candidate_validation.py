@@ -13,7 +13,6 @@ from pdelie.errors import SchemaValidationError, ScopeValidationError
 from pdelie.residuals import HeatResidualEvaluator, KdVResidualEvaluator
 from pdelie.symmetry import FormulaGeneratorFamily, validate_symmetry_candidate
 
-
 DOMAIN_LENGTH = 2.0 * np.pi
 
 

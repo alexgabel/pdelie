@@ -21,7 +21,6 @@ from pdelie.residuals import (
     evaluate_weak_heat_residual,
 )
 
-
 _WEAK_FORM_SUPPORTABILITY_KEYS = {
     "summary_schema_version",
     "summary_type",

@@ -13,7 +13,6 @@ from pdelie.residuals.base import (
     build_residual_diagnostics_from_derivatives,
 )
 
-
 _REACTION_DIFFUSION_EQUATION = "u_t - nu*u_xx - rho*u*(1-u) = 0"
 _REQUIRED_DERIVATIVES = ("u_t", "u_xx")
 

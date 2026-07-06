@@ -6,7 +6,6 @@ from pdelie._boundary import is_x_periodic
 from pdelie.contracts import FieldBatch
 from pdelie.errors import ScopeValidationError, ShapeValidationError
 
-
 POLYNOMIAL_TRANSLATION_BASIS = ("1", "t", "x", "u")
 DEFAULT_TRANSLATION_SPAN_TOLERANCE = 5e-2
 
@@ -71,7 +70,7 @@ def evaluate_translation_xi(field: FieldBatch, coefficients: np.ndarray) -> np.n
     coefficients = normalize_translation_coefficients(coefficients)
     basis = build_translation_basis(field)
     xi = np.zeros_like(field.values, dtype=float)
-    for weight, name in zip(coefficients, POLYNOMIAL_TRANSLATION_BASIS):
+    for weight, name in zip(coefficients, POLYNOMIAL_TRANSLATION_BASIS, strict=False):
         xi += weight * basis[name]
     return xi
 

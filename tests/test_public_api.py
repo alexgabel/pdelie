@@ -63,20 +63,13 @@ def test_runtime_package_api_is_importable() -> None:
         export_generator_family_manifest,
         import_generator_family_manifest,
     )
-    from pdelie.residuals import (
-        AdvectionDiffusionResidualEvaluator,
-        KdVResidualEvaluator,
-        ReactionDiffusionResidualEvaluator,
-        evaluate_weak_burgers_residual,
-        evaluate_weak_heat_residual,
-    )
     from pdelie.reporting import (
         summarize_downstream_discovery_workflow,
         summarize_field_batch_readiness,
         summarize_formula_generator_family,
         summarize_generator_confidence,
-        summarize_generator_fit_diagnostics,
         summarize_generator_family,
+        summarize_generator_fit_diagnostics,
         summarize_invariant_workflow,
         summarize_residual_batch,
         summarize_split_leakage_provenance,
@@ -85,6 +78,13 @@ def test_runtime_package_api_is_importable() -> None:
         summarize_weak_form_supportability,
         summarize_weak_residual_report,
         summarize_xarray_dataset_readiness,
+    )
+    from pdelie.residuals import (
+        AdvectionDiffusionResidualEvaluator,
+        KdVResidualEvaluator,
+        ReactionDiffusionResidualEvaluator,
+        evaluate_weak_burgers_residual,
+        evaluate_weak_heat_residual,
     )
     from pdelie.symmetry import (
         FormulaGeneratorFamily,

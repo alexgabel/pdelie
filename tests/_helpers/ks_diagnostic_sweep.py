@@ -18,7 +18,6 @@ from tests._helpers.ks_feasibility import (
     generate_ks_feasibility_field_batch,
 )
 
-
 KS_SWEEP_EPSILONS = (1e-5, 3e-5, 1e-4, 3e-4, 1e-3)
 KS_SWEEP_VARIANTS: tuple[dict[str, object], ...] = (
     {"variant_name": "default", "generator_kwargs": {}},

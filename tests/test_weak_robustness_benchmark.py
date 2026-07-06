@@ -17,7 +17,6 @@ from tests._helpers.weak_robustness_benchmark import (
     run_native_weak_robustness_benchmark,
 )
 
-
 _SUMMARY_KEYS = set(PATH_SUMMARY_STRUCTURAL_KEYS) | set(PATH_SUMMARY_FLOAT_KEYS)
 _IMPORTED_CASES = (("heat", "noisy"), ("burgers", "coarse"))
 

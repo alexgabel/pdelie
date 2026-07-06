@@ -1,6 +1,89 @@
-# PDELie - Execution Plan (V0.30d)
+# PDELie - Execution Plan (V0.30e)
 
 **Status:** IN_PROGRESS
+
+`v0.30e` lands cross-cutting hygiene phase 1 as spec'd in `docs/design/V0_30_HYGIENE_AUDIT.md`: `[tool.ruff]`, `[tool.mypy]` (strict scope narrowed), `[tool.coverage.*]` in `pyproject.toml`, plus three non-blocking CI jobs (`lint`, `typecheck`, `coverage`). No runtime behavior change. No package version bump. No new optional dependency in runtime extras (only test extras).
+
+Decision label:
+
+```text
+hygiene_phase_1_non_blocking_ruff_mypy_coverage
+```
+
+## Implemented Surfaces
+
+- `pyproject.toml`:
+  - `[tool.ruff]` with `target-version = "py311"`, `line-length = 120`, `extend-select = ["E", "W", "F", "B", "I", "UP", "RUF", "NPY"]`, `extend-exclude = ["notebooks/*.ipynb"]`.
+  - `[tool.ruff.lint.per-file-ignores]` with targeted, documented ignores. Test files carry a broad ignore for advisory patterns (B905, RUF043, RUF012) plus per-file E501/E402 for legitimate long-fixture files. Src files carry per-file E501 ignores where breaking long lines in status-return statements hurts readability.
+  - `[tool.mypy]` with `python_version = "3.11"`, `warn_unused_configs`, `warn_unreachable`, `warn_redundant_casts`, `show_error_codes`, plus a `strict = true` override for `pdelie.contracts`, `pdelie._boundary`, `pdelie.derivatives.*`. Data and residuals modules are outside strict scope for v0.30e — NumPy strict-typing pain (missing type-args on ndarray without stubs) makes them impractical at strict mode without significant clutter for no correctness benefit. Broaden in v0.30.1 or later.
+  - `[tool.coverage.run]` with `source = ["src/pdelie"]`, `branch = true`, `omit = ["*/tests/*", "*/__init__.py"]`.
+  - `[tool.coverage.report]` with `show_missing = true`, `fail_under = 80`, standard `exclude_lines`.
+  - `[project.optional-dependencies].test` gains `ruff>=0.6`, `mypy>=1.11`, `pytest-cov>=5.0`.
+
+- `.github/workflows/ci.yml`: three new jobs on `ubuntu-latest` / Python 3.11, all `continue-on-error: true`:
+  - `lint` — `python -m ruff check .`
+  - `typecheck` — `python -m mypy src/pdelie`
+  - `coverage` — `python -m pytest --cov=src/pdelie --cov-report=xml --cov-report=term-missing`, plus artifact upload of `coverage.xml`.
+
+- Src fixes applied to make the strict-scope mypy clean and the ruff rule set green:
+  - Docstring reordered above `from __future__ import annotations` in 5 src files (`symmetry/{closure,symbolic,span}.py`, `symmetry/_polynomial_metric.py`, `discovery/pysindy_bridge.py`) — required to satisfy E402 without weakening the module docstring convention.
+  - 5 `zip(...)` calls in src gained `strict=False` (behavior-preserving; documents the fixture-pairing invariant).
+  - 1 unused loop variable renamed to `_index` in `discovery/pysindy_adapter.py`.
+  - `contracts.py`: every `np.ndarray` annotation updated to `np.ndarray[Any, Any]` (mypy strict scope requirement). One `# type: ignore[unreachable]` added to `GeneratorFamily.__post_init__`'s `if self.diagnostics is None: ...` branch, which mypy narrows away based on the declared dataclass type but which is runtime-reachable because the field default is `None`.
+  - `derivatives/spectral_fd.py` and `derivatives/finite_difference.py`: `typing.Any` import + `np.ndarray[Any, Any]` on the one internal helper each.
+  - 2 unused local variables removed (`values` in `test_finite_difference_backend.py` and `plan` in `test_api_stability_audit.py`).
+
+## Observed Metrics at v0.30e HEAD
+
+- ruff: **442 baseline errors → 0** (192 auto-fixed via `ruff check --fix`; 8 manual fixes to src; per-file-ignores added for a documented list of files, each with a rule + reason).
+- mypy strict scope (`pdelie.contracts`, `pdelie._boundary`, `pdelie.derivatives.*`): **0 errors**, 5 source files checked.
+- mypy full-tree (advisory, non-blocking): 311 errors across 44 files, dominated by `[type-arg]` on `np.ndarray` in `data/*` and `residuals/*`. These would each need `[Any, Any]` annotations or numpy stubs to clear. Not blocking, not shipping — captured here as a v0.30.1 or later stretch.
+- coverage on `src/pdelie/`: **86%** (line + branch), well above the 80% floor.
+- pytest: **1028 passed, 2 skipped** (unchanged from v0.30d).
+
+## Tests Added
+
+- `tests/test_v0_30e_hygiene_config.py` — asserts the ruff/mypy/coverage sections exist with the expected shape, test extras include the three new tools, numpy/Python/version guards are unchanged, and the three new CI jobs exist AND are non-blocking. Also guards that v0.30f's release-gate consolidation has not preempted.
+
+## Tests Updated
+
+- `tests/test_v0_30_hygiene_audit.py`:
+  - `test_v0_30_no_premature_pyproject_changes` inverted to `test_v0_30e_pyproject_now_configures_ruff_mypy_coverage` (checks presence, still guards numpy cap + Python floor + version).
+  - `test_v0_30_no_premature_ci_changes` inverted to `test_v0_30e_ci_workflow_now_has_lint_typecheck_coverage_jobs_nonblocking` (checks presence + non-blocking property + no v0.30f preemption).
+  - The 26-release-gate-file count assertion, strict-JSON, and lazy-optional-import documentation checks all stay unchanged.
+
+## Public-Surface Audit
+
+Confirmed in `v0.30e`:
+
+- no new `pdelie` root export
+- no new submodule runtime API
+- no new *runtime* optional dependency (only test extras: ruff, mypy, pytest-cov)
+- no new PDE, no KdV/KS nonperiodic, no weak nonperiodic
+- no PDEBench / The Well support claim
+- no symmetry-method registry
+- no `pyproject.toml` version bump — still `0.29.0`
+- no CI job becomes blocking (all three new jobs are `continue-on-error: true`)
+- no numpy cap change (still `<2`)
+- no Python matrix expansion (still 3.11-only)
+
+## v0.30e Sub-Release Gate
+
+`v0.30e` is complete when:
+
+- `[tool.ruff]`, `[tool.mypy]`, `[tool.coverage.*]` are configured in `pyproject.toml` with the exact shape spec'd in `V0_30_HYGIENE_AUDIT.md`.
+- The three CI jobs (`lint`, `typecheck`, `coverage`) exist and are non-blocking.
+- Strict-scope mypy passes cleanly (0 errors).
+- `ruff check .` passes cleanly (0 errors under the configured rule set + per-file-ignores).
+- Coverage clears the 80% floor.
+- The full test suite still passes.
+- `git diff --check` reports no whitespace damage.
+
+---
+
+# PDELie - Execution Plan (V0.30d)
+
+**Status:** COMPLETE
 
 `v0.30d` routes the Heat, Burgers, advection-diffusion, and reaction-diffusion residual evaluators through `compute_derivatives(backend="auto")` and consumes the interior-only residual-domain policy that v0.30c's finite-difference backend recommends. KdV and the weak evaluators remain periodic-only per v0.30 scope. No new optional dependency, no CI change, no version bump. Hygiene phase 1 (ruff/mypy/coverage) is deferred to v0.30e.
 

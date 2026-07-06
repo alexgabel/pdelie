@@ -24,16 +24,13 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-import pdelie
 from pdelie._boundary import normalize_x_boundary_condition
 from pdelie.data import from_numpy, generate_heat_1d_field_batch
-from pdelie.data.numpy_adapter import from_numpy as from_numpy_module_level
 from pdelie.derivatives import compute_spectral_fd_derivatives
 from pdelie.errors import ScopeValidationError
 from pdelie.residuals import HeatResidualEvaluator, evaluate_weak_heat_residual
 from pdelie.symmetry.parameterization.polynomial_translation import build_translation_basis
 from pdelie.verification import verify_translation_generator
-
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 _SRC_ROOT = _REPO_ROOT / "src" / "pdelie"

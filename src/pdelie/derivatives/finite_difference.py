@@ -13,12 +13,13 @@ go through ``compute_spectral_fd_derivatives``; the
 """
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 
 from pdelie._boundary import get_x_boundary_type
 from pdelie.contracts import DerivativeBatch, FieldBatch
 from pdelie.errors import ScopeValidationError
-
 
 _SUPPORTED_X_BOUNDARY_TYPES = frozenset({"dirichlet", "neumann", "open_unknown"})
 _RECOMMENDED_RESIDUAL_DOMAIN_POLICY = "interior_only"
@@ -114,7 +115,7 @@ def compute_finite_difference_derivatives(
     u_t = np.gradient(values, dt, axis=t_axis, edge_order=2)
     u_x = np.gradient(values, dx, axis=x_axis, edge_order=2)
 
-    derivative_arrays: dict[str, np.ndarray] = {
+    derivative_arrays: dict[str, np.ndarray[Any, Any]] = {
         "u_t": np.asarray(u_t, dtype=float),
         "u_x": np.asarray(u_x, dtype=float),
     }

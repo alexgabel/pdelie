@@ -9,7 +9,6 @@ from pdelie import FieldBatch, SchemaValidationError, ScopeValidationError
 from pdelie.data import generate_burgers_1d_field_batch, generate_heat_1d_field_batch
 from pdelie.residuals import evaluate_weak_burgers_residual, evaluate_weak_heat_residual
 
-
 _EXPECTED_REPORT_KEYS = {
     "equation",
     "equation_form",

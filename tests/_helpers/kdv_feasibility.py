@@ -7,7 +7,6 @@ from pdelie.data import generate_kdv_1d_field_batch as _runtime_generate_kdv_1d_
 from pdelie.data.heat_1d import DEFAULT_DOMAIN_LENGTH
 from pdelie.errors import ShapeValidationError
 
-
 KDV_FEASIBILITY_CONFIG: dict[str, object] = {
     "batch_size": 2,
     "num_times": 17,

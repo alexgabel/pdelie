@@ -10,7 +10,6 @@ from pdelie.symmetry import FormulaGeneratorFamily, validate_symmetry_candidate
 from pdelie.symmetry.fitting import fit_translation_generator
 from pdelie.verification import verify_translation_generator
 
-
 _SUMMARY_SCHEMA_VERSION = "0.1"
 
 

@@ -9,7 +9,6 @@ import numpy as np
 from pdelie.discovery.evaluation import evaluate_discovery_recovery
 from pdelie.errors import SchemaValidationError
 
-
 _SUMMARY_SCHEMA_VERSION = "0.1"
 _RESULT_STATUSES = frozenset({"success", "failed"})
 

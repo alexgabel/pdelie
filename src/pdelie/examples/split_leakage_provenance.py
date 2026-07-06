@@ -11,7 +11,6 @@ from pdelie.reporting import (
     summarize_split_leakage_provenance,
 )
 
-
 _SUMMARY_SCHEMA_VERSION = "0.1"
 
 

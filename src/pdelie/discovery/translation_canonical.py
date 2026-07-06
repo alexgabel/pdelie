@@ -15,7 +15,6 @@ from pdelie.symmetry.parameterization.polynomial_translation import (
     translation_span_distance,
 )
 
-
 _ALIGNMENT_POLICY = {
     "kind": "heuristic_peak_alignment",
     "axis": "x",

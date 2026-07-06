@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Any, ClassVar, Mapping
+from typing import Any, ClassVar
 
 import numpy as np
 
@@ -15,7 +16,6 @@ from pdelie.errors import (
     ScopeValidationError,
     ShapeValidationError,
 )
-
 
 REQUIRED_METADATA_KEYS = (
     "boundary_conditions",
@@ -42,7 +42,7 @@ GENERATOR_FAMILY_REQUIRED_BASIS_SPEC_FIELDS = (
 )
 
 
-def _to_numpy(value: Any) -> np.ndarray:
+def _to_numpy(value: Any) -> np.ndarray[Any, Any]:
     return np.asarray(value, dtype=float)
 
 
@@ -58,7 +58,7 @@ def _json_safe(value: Any) -> Any:
     return value
 
 
-def _is_uniform(coord: np.ndarray, tol: float = 1e-10) -> bool:
+def _is_uniform(coord: np.ndarray[Any, Any], tol: float = 1e-10) -> bool:
     if coord.ndim != 1:
         return False
     if coord.size <= 2:
@@ -193,13 +193,13 @@ def _translation_generator_basis_spec() -> dict[str, Any]:
 @dataclass(slots=True)
 class FieldBatch:
     schema_version: str = "0.2"
-    values: np.ndarray = None  # type: ignore[assignment]
+    values: np.ndarray[Any, Any] = None  # type: ignore[assignment]
     dims: tuple[str, ...] = ()
-    coords: dict[str, np.ndarray] = None  # type: ignore[assignment]
+    coords: dict[str, np.ndarray[Any, Any]] = None  # type: ignore[assignment]
     var_names: list[str] = None  # type: ignore[assignment]
     metadata: dict[str, Any] = None  # type: ignore[assignment]
     preprocess_log: list[dict[str, Any]] = None  # type: ignore[assignment]
-    mask: np.ndarray | None = None
+    mask: np.ndarray[Any, Any] | None = None
 
     SCHEMA_VERSION: ClassVar[str] = "0.2"
     LEGACY_SCHEMA_VERSIONS: ClassVar[frozenset[str]] = frozenset({"0.1"})
@@ -282,7 +282,7 @@ class FieldBatch:
         }
 
     @classmethod
-    def from_dict(cls, payload: Mapping[str, Any]) -> "FieldBatch":
+    def from_dict(cls, payload: Mapping[str, Any]) -> FieldBatch:
         raw_schema_version = str(payload["schema_version"])
         if (
             raw_schema_version != cls.SCHEMA_VERSION
@@ -371,7 +371,7 @@ class FieldBatch:
 @dataclass(slots=True)
 class DerivativeBatch:
     schema_version: str = "0.1"
-    derivatives: dict[str, np.ndarray] = None  # type: ignore[assignment]
+    derivatives: dict[str, np.ndarray[Any, Any]] = None  # type: ignore[assignment]
     backend: str = ""
     config: dict[str, Any] = None  # type: ignore[assignment]
     boundary_assumptions: str = ""
@@ -435,7 +435,7 @@ class DerivativeBatch:
         }
 
     @classmethod
-    def from_dict(cls, payload: Mapping[str, Any]) -> "DerivativeBatch":
+    def from_dict(cls, payload: Mapping[str, Any]) -> DerivativeBatch:
         return cls(
             schema_version=str(payload["schema_version"]),
             derivatives={
@@ -451,7 +451,7 @@ class DerivativeBatch:
 @dataclass(slots=True)
 class ResidualBatch:
     schema_version: str = "0.1"
-    residual: np.ndarray = None  # type: ignore[assignment]
+    residual: np.ndarray[Any, Any] = None  # type: ignore[assignment]
     definition_type: str = ""
     normalization: str = ""
     diagnostics: dict[str, Any] = None  # type: ignore[assignment]
@@ -486,7 +486,7 @@ class ResidualBatch:
         }
 
     @classmethod
-    def from_dict(cls, payload: Mapping[str, Any]) -> "ResidualBatch":
+    def from_dict(cls, payload: Mapping[str, Any]) -> ResidualBatch:
         return cls(
             schema_version=str(payload["schema_version"]),
             residual=np.asarray(payload["residual"], dtype=float),
@@ -500,7 +500,7 @@ class ResidualBatch:
 class GeneratorFamily:
     schema_version: str = "0.2"
     parameterization: str = ""
-    coefficients: np.ndarray = None  # type: ignore[assignment]
+    coefficients: np.ndarray[Any, Any] = None  # type: ignore[assignment]
     basis_spec: dict[str, Any] = None  # type: ignore[assignment]
     normalization: str = ""
     generator_names: list[str] | None = None
@@ -516,7 +516,10 @@ class GeneratorFamily:
                 raise SchemaValidationError("generator_names must be a list of strings when provided.")
             self.generator_names = [str(name) for name in self.generator_names]
         if self.diagnostics is None:
-            self.diagnostics = {}
+            # Runtime: the None assignment path is real because the dataclass field
+            # default is None (see the assignment-ignore on the declaration); mypy
+            # narrows this away based on the declared type.
+            self.diagnostics = {}  # type: ignore[unreachable]
         else:
             self.diagnostics = dict(_validate_mapping(self.diagnostics, "diagnostics"))
         self.validate()
@@ -558,7 +561,7 @@ class GeneratorFamily:
         return payload
 
     @classmethod
-    def from_dict(cls, payload: Mapping[str, Any]) -> "GeneratorFamily":
+    def from_dict(cls, payload: Mapping[str, Any]) -> GeneratorFamily:
         schema_version = str(payload["schema_version"])
         parameterization = str(payload["parameterization"])
         coefficients = np.asarray(payload["coefficients"], dtype=float)
@@ -674,7 +677,7 @@ class InvariantMapSpec:
         }
 
     @classmethod
-    def from_dict(cls, payload: Mapping[str, Any]) -> "InvariantMapSpec":
+    def from_dict(cls, payload: Mapping[str, Any]) -> InvariantMapSpec:
         inverse_available = payload["inverse_available"]
         if not isinstance(inverse_available, bool):
             raise SchemaValidationError(
@@ -696,8 +699,8 @@ class InvariantMapSpec:
 class VerificationReport:
     schema_version: str = "0.1"
     norm: str = ""
-    epsilon_values: np.ndarray = None  # type: ignore[assignment]
-    error_curve: np.ndarray = None  # type: ignore[assignment]
+    epsilon_values: np.ndarray[Any, Any] = None  # type: ignore[assignment]
+    error_curve: np.ndarray[Any, Any] = None  # type: ignore[assignment]
     classification: str = ""
     diagnostics: dict[str, Any] = None  # type: ignore[assignment]
 
@@ -737,7 +740,7 @@ class VerificationReport:
         }
 
     @classmethod
-    def from_dict(cls, payload: Mapping[str, Any]) -> "VerificationReport":
+    def from_dict(cls, payload: Mapping[str, Any]) -> VerificationReport:
         return cls(
             schema_version=str(payload["schema_version"]),
             norm=str(payload["norm"]),

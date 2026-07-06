@@ -9,7 +9,7 @@ from typing import Any
 
 import numpy as np
 
-from pdelie._boundary import get_x_boundary_type, is_x_periodic
+from pdelie._boundary import get_x_boundary_type
 from pdelie.contracts import (
     REQUIRED_METADATA_KEYS,
     DerivativeBatch,
@@ -24,7 +24,6 @@ from pdelie.residuals.base import ResidualEvaluator
 from pdelie.symmetry.formula import FormulaGeneratorFamily
 from pdelie.symmetry.parameterization import translation_span_distance
 from pdelie.symmetry.parameterization.polynomial_translation import DEFAULT_TRANSLATION_SPAN_TOLERANCE
-
 
 _SUMMARY_SCHEMA_VERSION = "0.1"
 _FIT_EVIDENCE_LABELS = frozenset(

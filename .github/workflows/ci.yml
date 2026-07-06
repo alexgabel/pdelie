@@ -34,6 +34,103 @@ jobs:
         run: python -m pip check
       - name: Run V0.29 release gate
         run: python -m pytest tests/test_current_release_gate.py tests/test_v0_29_release_gate.py
+  # v0.30e hygiene phase 1: advisory / non-blocking lint, typecheck, coverage.
+  # These jobs report findings but do not gate merges. `continue-on-error: true`
+  # means a red run shows in the workflow summary without failing the workflow.
+  lint:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install package and test dependencies
+        shell: bash
+        run: |
+          retry() {
+            local attempts="$1"
+            shift
+            local count=1
+            until "$@"; do
+              if [ "${count}" -ge "${attempts}" ]; then
+                return 1
+              fi
+              count=$((count + 1))
+              echo "Retrying (${count}/${attempts}): $*"
+              sleep 5
+            done
+          }
+          retry 3 python -m pip install --upgrade pip
+          retry 3 python -m pip install -e .[test]
+      - name: Ruff lint (non-blocking)
+        continue-on-error: true
+        run: python -m ruff check .
+  typecheck:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install package and test dependencies
+        shell: bash
+        run: |
+          retry() {
+            local attempts="$1"
+            shift
+            local count=1
+            until "$@"; do
+              if [ "${count}" -ge "${attempts}" ]; then
+                return 1
+              fi
+              count=$((count + 1))
+              echo "Retrying (${count}/${attempts}): $*"
+              sleep 5
+            done
+          }
+          retry 3 python -m pip install --upgrade pip
+          retry 3 python -m pip install -e .[test]
+      - name: "Mypy (strict scope: contracts, _boundary, derivatives; lenient elsewhere)"
+        continue-on-error: true
+        run: python -m mypy src/pdelie
+  coverage:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install package and test dependencies
+        shell: bash
+        run: |
+          retry() {
+            local attempts="$1"
+            shift
+            local count=1
+            until "$@"; do
+              if [ "${count}" -ge "${attempts}" ]; then
+                return 1
+              fi
+              count=$((count + 1))
+              echo "Retrying (${count}/${attempts}): $*"
+              sleep 5
+            done
+          }
+          retry 3 python -m pip install --upgrade pip
+          retry 3 python -m pip install -e .[test]
+      - name: "pytest with coverage (non-blocking; floor 80%, current baseline ~86%)"
+        continue-on-error: true
+        run: python -m pytest --cov=src/pdelie --cov-report=xml --cov-report=term-missing
+      - name: Upload coverage.xml
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml
+          path: coverage.xml
+          if-no-files-found: ignore
   docs-build:
     runs-on: ubuntu-latest
     steps:

@@ -22,7 +22,6 @@ from pdelie.symmetry.parameterization.polynomial_translation import (
 from pdelie.symmetry.span import compare_generator_spans
 from pdelie.verification import DEFAULT_EPSILON_VALUES, verify_translation_generator
 
-
 _SUMMARY_SCHEMA_VERSION = "0.1"
 _RESIDUAL_ABSOLUTE_TOLERANCE = 1e-8
 _RESIDUAL_RELATIVE_TOLERANCE = 1e-6

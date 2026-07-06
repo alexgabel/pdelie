@@ -4,7 +4,6 @@ import importlib
 import json
 
 import pdelie
-
 from tests._helpers.weak_reaction_diffusion_feasibility import run_internal_fisher_kpp_weak_feasibility
 
 

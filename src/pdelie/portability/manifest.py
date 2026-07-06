@@ -9,7 +9,6 @@ from pdelie.contracts import GeneratorFamily
 from pdelie.errors import SchemaValidationError
 from pdelie.portability._validation import _validate_supported_external_family
 
-
 MANIFEST_SCHEMA_VERSION = "0.1"
 MANIFEST_TYPE = "pdelie.generator_family_export"
 _REQUIRED_MANIFEST_FIELDS = frozenset({"manifest_schema_version", "manifest_type", "generator_family"})

@@ -11,7 +11,6 @@ from pdelie.residuals import AdvectionDiffusionResidualEvaluator
 from pdelie.symmetry.fitting import fit_translation_generator
 from pdelie.verification import verify_translation_generator
 
-
 _GENERATOR_SEED = 19018
 _BATCH_SIZE = 5
 _TRAIN_SIZE = 2

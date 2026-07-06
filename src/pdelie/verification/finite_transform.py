@@ -14,7 +14,6 @@ from pdelie.symmetry.parameterization.polynomial_translation import (
     translation_span_distance,
 )
 
-
 DEFAULT_EPSILON_VALUES = np.logspace(-4, -1, 7)
 DEFAULT_RELATIVE_L2_NORM = "relative_l2"
 

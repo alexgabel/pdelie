@@ -6,7 +6,6 @@ import json
 import numpy as np
 import pytest
 
-import pdelie
 from pdelie import FieldBatch
 from pdelie._boundary import LEGACY_BOUNDARY_NORMALIZATION_OPERATION
 from pdelie.data import generate_heat_1d_field_batch

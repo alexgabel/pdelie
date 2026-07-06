@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import importlib
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 import numpy as np
 import pytest
@@ -16,7 +17,6 @@ from pdelie.discovery import to_pysindy_trajectories
 from pdelie.residuals import BurgersResidualEvaluator, HeatResidualEvaluator
 from pdelie.symmetry.fitting import fit_translation_generator
 from pdelie.verification import verify_translation_generator
-
 
 _TRAINING_KWARGS = {"batch_size": 4, "num_times": 17, "num_points": 16}
 _HELDOUT_KWARGS = {"batch_size": 3, "num_times": 17, "num_points": 16}

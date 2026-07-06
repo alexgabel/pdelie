@@ -10,7 +10,6 @@ from pdelie.data import generate_heat_1d_field_batch, generate_kdv_1d_field_batc
 from pdelie.residuals import HeatResidualEvaluator, KdVResidualEvaluator
 from pdelie.symmetry import validate_symmetry_candidate
 
-
 _SUMMARY_SCHEMA_VERSION = "0.1"
 _DOMAIN_LENGTH = 2.0 * np.pi
 

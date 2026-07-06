@@ -7,7 +7,6 @@ from pdelie.derivatives import compute_spectral_fd_derivatives
 from pdelie.errors import SchemaValidationError, ScopeValidationError, ShapeValidationError
 from pdelie.residuals.base import ResidualEvaluator
 
-
 KS_FEASIBILITY_CONFIG: dict[str, object] = {
     "batch_size": 5,
     "num_times": 33,

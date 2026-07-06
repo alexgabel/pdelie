@@ -17,7 +17,6 @@ from tests._helpers.weak_robustness_benchmark import (
     run_native_weak_robustness_benchmark,
 )
 
-
 _EXPECTED_REPORT_KEYS = {
     "equation",
     "equation_form",

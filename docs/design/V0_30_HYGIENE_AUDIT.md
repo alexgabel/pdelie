@@ -1,6 +1,6 @@
 # V0.30 Hygiene Audit
 
-**Status:** AUDIT-ONLY in v0.30a. No `pyproject.toml`, `.github/workflows/`, or CI behavior changes here. The audit records the current baseline; staged enforcement lands in v0.30 proper and beyond.
+**Status:** AUDIT-ONLY in v0.30a. **Phase 1 IMPLEMENTED in v0.30e**: ruff, mypy (strict scope narrowed to `pdelie.contracts`, `pdelie._boundary`, `pdelie.derivatives.*`), and pytest-cov are configured in `pyproject.toml` and wired into three new non-blocking CI jobs (`lint`, `typecheck`, `coverage`). Coverage baseline at v0.30e HEAD: **86%** on `src/pdelie/`. Non-blocking gates: a red run reports findings but does not fail the workflow. Numpy `<2` cap and Python 3.11-only matrix remain unchanged; broadening those is Phase 3+ work.
 
 This document audits the current state of cross-cutting code-quality infrastructure (lint, type-checking, coverage, Python matrix, NumPy upper bound, release-gate proliferation, optional-dependency import policy, JSON-strict reporting policy) and proposes staged enforcement.
 

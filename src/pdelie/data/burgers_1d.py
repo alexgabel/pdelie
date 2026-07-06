@@ -6,7 +6,6 @@ from pdelie.contracts import FieldBatch
 from pdelie.data.heat_1d import DEFAULT_DOMAIN_LENGTH
 from pdelie.errors import ShapeValidationError
 
-
 DEFAULT_BURGERS_DIFFUSIVITY = 0.1
 DEFAULT_BURGERS_AMPLITUDE = 0.15
 

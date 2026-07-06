@@ -6,7 +6,6 @@ from pdelie.contracts import FieldBatch
 from pdelie.data.heat_1d import DEFAULT_DOMAIN_LENGTH as _DEFAULT_DOMAIN_LENGTH
 from pdelie.errors import SchemaValidationError, ScopeValidationError, ShapeValidationError
 
-
 __all__ = ["generate_advection_diffusion_1d_field_batch"]
 
 

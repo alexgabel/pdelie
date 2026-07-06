@@ -370,6 +370,17 @@ Decision-only note for the frozen `v0.30a` scope-freeze sub-release:
 - `v0.30a` records that `u_xxx` and `u_xxxx` on nonperiodic data remain deferred from the stable `v0.30` surface
 - `v0.30a` records that finite-transform verification for nonperiodic translations is deferred to the `v0.31.5` orbit/action scope decision
 
+Decision-only note for the frozen `v0.30e` hygiene phase 1 sub-release:
+
+- `v0.30e` adds no new runtime public API and no new root `pdelie` export
+- `v0.30e` records the design decision `hygiene_phase_1_non_blocking_ruff_mypy_coverage`
+- `v0.30e` does not bump `pyproject.toml` (stays at `0.29.0`); the version bump is reserved for the v0.30 release close
+- `v0.30e` configures `[tool.ruff]` (target-version `py311`, line-length 120, extend-select `["E", "W", "F", "B", "I", "UP", "RUF", "NPY"]`), `[tool.mypy]` (strict scope narrowed to `pdelie.contracts`, `pdelie._boundary`, `pdelie.derivatives.*`; lenient elsewhere with `ignore_missing_imports` on optional-extras stubs), and `[tool.coverage.*]` (`source = ["src/pdelie"]`, `branch = true`, `fail_under = 80`) in `pyproject.toml`
+- `ruff`, `mypy`, `pytest-cov` are added to the `[project.optional-dependencies].test` group (not to any runtime extra)
+- three new CI jobs (`lint`, `typecheck`, `coverage`) run on Python 3.11 and are non-blocking (`continue-on-error: true`); a red run reports findings but does not gate merges
+- `v0.30e` does not lift the `numpy<2` cap and does not expand the Python matrix; both are Phase 3 items reserved for v0.32 or later
+- `v0.30e` does not add a symmetry-method registry, any external symmetry-method port, any file loader, any PDEBench / The Well adapter, any KS runtime API, any weak nonperiodic surface, any new PDE, or a v0.30f release-gate consolidation
+
 Decision-only note for the frozen `v0.30d` residual-evaluator auto-dispatch sub-release:
 
 - `v0.30d` adds no new runtime public API and no new root `pdelie` export

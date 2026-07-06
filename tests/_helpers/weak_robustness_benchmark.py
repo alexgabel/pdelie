@@ -34,7 +34,6 @@ from tests._helpers.weak_contract_integration import (
     verify_translation_generator_from_weak_reports,
 )
 
-
 WrongReportEvaluator = Callable[[FieldBatch], dict[str, object]]
 
 M4_BENCHMARK_CONFIG: dict[str, object] = {

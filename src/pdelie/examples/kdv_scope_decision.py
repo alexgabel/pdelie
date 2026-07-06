@@ -19,7 +19,6 @@ from pdelie.symmetry.fitting import fit_translation_generator
 from pdelie.symmetry.parameterization import translation_span_distance
 from pdelie.verification import verify_translation_generator
 
-
 _SUMMARY_SCHEMA_VERSION = "0.1"
 
 

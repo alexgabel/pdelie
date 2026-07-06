@@ -16,7 +16,6 @@ from pdelie._boundary import (
 )
 from pdelie.errors import SchemaValidationError, ScopeValidationError
 
-
 # --- normalize_x_boundary_condition --------------------------------------
 
 

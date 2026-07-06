@@ -7,7 +7,6 @@ from pathlib import Path
 
 import pdelie
 
-
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 _SCOPE_CONFIG_PATH = "configs/planning/v0_30_nonperiodic_readiness_scope.json"
 

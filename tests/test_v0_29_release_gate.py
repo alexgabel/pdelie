@@ -6,7 +6,6 @@ from pathlib import Path
 
 import pdelie
 
-
 EXPECTED_COLUMNS = [
     "pde",
     "generator",

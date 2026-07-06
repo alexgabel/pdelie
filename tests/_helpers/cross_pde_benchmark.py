@@ -4,12 +4,11 @@ from collections.abc import Callable
 
 import numpy as np
 
-from pdelie.contracts import FieldBatch, GeneratorFamily, VerificationReport
+from pdelie.contracts import FieldBatch
 from pdelie.data import generate_burgers_1d_field_batch, generate_heat_1d_field_batch
 from pdelie.residuals import BurgersResidualEvaluator, HeatResidualEvaluator
 from pdelie.symmetry.fitting import fit_translation_generator
 from pdelie.verification import DEFAULT_EPSILON_VALUES, DEFAULT_RELATIVE_L2_NORM, verify_translation_generator
-
 
 BenchmarkResult = dict[str, object]
 

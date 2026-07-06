@@ -10,7 +10,6 @@ from pdelie.invariants import build_uniform_translation_orbit_batch
 from pdelie.reporting import summarize_residual_batch
 from pdelie.residuals import HeatResidualEvaluator, KdVResidualEvaluator
 
-
 _SUMMARY_SCHEMA_VERSION = "0.1"
 _DOMAIN_LENGTH = 2.0 * np.pi
 _SHIFTS = (0.0, _DOMAIN_LENGTH / 32.0, _DOMAIN_LENGTH / 8.0, _DOMAIN_LENGTH / 8.0, _DOMAIN_LENGTH)

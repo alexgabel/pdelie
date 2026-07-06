@@ -4,7 +4,6 @@ import numpy as np
 import pytest
 
 from pdelie import GeneratorFamily, ScopeValidationError, VerificationReport
-from pdelie.contracts import _translation_generator_basis_spec
 from pdelie.symmetry import diagnose_generator_family_closure
 
 

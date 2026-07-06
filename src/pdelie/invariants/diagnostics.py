@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from copy import deepcopy
-from dataclasses import dataclass
 import json
 from collections.abc import Mapping, Sequence
+from copy import deepcopy
+from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
@@ -18,7 +18,6 @@ from pdelie.contracts import (
 from pdelie.errors import SchemaValidationError, ScopeValidationError
 from pdelie.invariants.apply import InvariantApplier
 from pdelie.residuals import ResidualEvaluator
-
 
 _SUMMARY_SCHEMA_VERSION = "0.1"
 _RELATIVE_L2_EPS = 1e-12

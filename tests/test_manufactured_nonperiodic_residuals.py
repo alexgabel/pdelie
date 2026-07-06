@@ -239,7 +239,7 @@ def test_reaction_diffusion_on_dirichlet_grid_records_interior_only_diagnostics(
 
 def test_periodic_evaluators_still_use_spectral_fd_and_full_grid_policy() -> None:
     """Regression: periodic data still routes to spectral_fd with full_grid residual policy."""
-    from pdelie.data import generate_heat_1d_field_batch, generate_burgers_1d_field_batch
+    from pdelie.data import generate_burgers_1d_field_batch, generate_heat_1d_field_batch
 
     heat = generate_heat_1d_field_batch(batch_size=1, num_times=9, num_points=16, seed=101)
     residual = HeatResidualEvaluator().evaluate(heat)

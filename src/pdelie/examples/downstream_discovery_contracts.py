@@ -21,7 +21,6 @@ from pdelie.residuals import HeatResidualEvaluator
 from pdelie.symmetry.fitting import fit_translation_generator
 from pdelie.verification import verify_translation_generator
 
-
 _SUMMARY_SCHEMA_VERSION = "0.1"
 _SHIFTS = (0.0, float(2.0 * np.pi), float(np.pi / 4.0))
 

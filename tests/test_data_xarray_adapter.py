@@ -4,12 +4,12 @@ from copy import deepcopy
 
 import numpy as np
 import pytest
+
 xr = pytest.importorskip("xarray", reason="xarray is required for from_xarray adapter tests")
 
 import pdelie
 from pdelie import FieldBatch, SchemaValidationError, ScopeValidationError, ShapeValidationError
-from pdelie.data import from_xarray, from_xarray_dataset
-from pdelie.data import xarray_adapter
+from pdelie.data import from_xarray, from_xarray_dataset, xarray_adapter
 
 
 def _metadata(*, x_boundary: str = "periodic") -> dict[str, object]:

@@ -1,11 +1,10 @@
-from __future__ import annotations
-
 """Runtime-only bridge helpers for narrow backend-specific downstream workflows.
 
 This module intentionally does not define PDELie canonical objects.
 The flattened trajectory format exposed here is a PySINDy bridge format only,
 not PDELie's canonical downstream or PDE-discovery representation.
 """
+from __future__ import annotations
 
 import importlib
 

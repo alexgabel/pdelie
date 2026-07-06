@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 
 from pdelie._boundary import is_x_periodic
@@ -7,7 +9,7 @@ from pdelie.contracts import DerivativeBatch, FieldBatch
 from pdelie.errors import ScopeValidationError
 
 
-def _reshape_for_axis(values: np.ndarray, axis: int, axis_size: int) -> tuple[int, ...]:
+def _reshape_for_axis(values: np.ndarray[Any, Any], axis: int, axis_size: int) -> tuple[int, ...]:
     shape = [1] * values.ndim
     shape[axis] = axis_size
     return tuple(shape)

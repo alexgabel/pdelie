@@ -5,7 +5,6 @@ import re
 import tomllib
 from pathlib import Path
 
-
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 _AUDIT_DOC_PATH = "docs/design/V0_30_HYGIENE_AUDIT.md"
 _SCOPE_CONFIG_PATH = "configs/planning/v0_30_nonperiodic_readiness_scope.json"
@@ -122,56 +121,78 @@ def test_v0_30_hygiene_audit_documents_staged_enforcement_phases() -> None:
     assert "numpy 2.x" in audit.lower() or "numpy 2" in audit.lower()
 
 
-def test_v0_30_no_premature_pyproject_changes() -> None:
-    """pyproject.toml must not yet contain lint/type/coverage sections in v0.30a."""
+def test_v0_30e_pyproject_now_configures_ruff_mypy_coverage() -> None:
+    """v0.30e ships the ruff/mypy/coverage config that v0.30a's scope had
+    left as an audit-only proposal. Inverted from the earlier
+    ``test_v0_30_no_premature_pyproject_changes`` guard.
+
+    numpy<2 and requires-python>=3.11 must not have changed.
+    """
     pyproject_text = _repo_text("pyproject.toml")
     pyproject = tomllib.loads(pyproject_text)
 
-    config = _repo_json(_SCOPE_CONFIG_PATH)
-    forbidden_sections = config["guard_no_premature_pyproject_sections"]
-
-    # Top-level [tool.*] sections must not include any forbidden one.
     tool_sections = pyproject.get("tool", {})
-    for forbidden in forbidden_sections:
-        # forbidden is e.g. "tool.ruff"; the leaf is "ruff"
-        leaf = forbidden.split(".", 1)[1]
-        assert leaf not in tool_sections, (
-            f"v0.30a must not configure [{forbidden}] in pyproject.toml"
+    # These three sections are now expected present under v0.30e.
+    for expected in ("ruff", "mypy", "coverage"):
+        assert expected in tool_sections, (
+            f"v0.30e must configure [tool.{expected}] in pyproject.toml"
         )
 
-    # numpy upper bound is still < 2
+    # numpy upper bound still <2 — v0.30e explicitly does not lift the cap.
     deps = pyproject["project"]["dependencies"]
     numpy_dep = next((dep for dep in deps if dep.lower().startswith("numpy")), None)
     assert numpy_dep is not None
-    assert "<2" in numpy_dep, f"numpy dep changed unexpectedly: {numpy_dep}"
+    assert "<2" in numpy_dep, f"numpy cap must remain <2 through v0.30e; got: {numpy_dep}"
 
-    # requires-python is still >=3.11
+    # requires-python is still >=3.11 — v0.30e does not expand matrix.
     requires_python = pyproject["project"]["requires-python"]
     assert ">=3.11" in requires_python
 
+    # And package version stays 0.29.0 (version bump reserved for v0.30 release close).
+    assert pyproject["project"]["version"] == "0.29.0"
 
-def test_v0_30_no_premature_ci_changes() -> None:
-    """CI workflow must retain exactly the four existing jobs and no premature additions."""
+
+def test_v0_30e_ci_workflow_now_has_lint_typecheck_coverage_jobs_nonblocking() -> None:
+    """v0.30e adds the lint/typecheck/coverage jobs as non-blocking. Inverted
+    from the earlier ``test_v0_30_no_premature_ci_changes`` guard.
+
+    The pre-existing four jobs must survive intact. v0.30e does not add a
+    v0_30* release-gate job — that comes with v0.30f.
+    """
     workflow = _repo_text(".github/workflows/ci.yml")
     config = _repo_json(_SCOPE_CONFIG_PATH)
 
-    expected_jobs = config["expected_ci_jobs"]
-    for job in expected_jobs:
-        assert f"{job}:" in workflow, f"expected CI job missing: {job}"
+    # Pre-existing jobs still present.
+    for job in config["expected_ci_jobs"]:
+        assert f"{job}:" in workflow, f"pre-existing CI job disappeared: {job}"
 
-    # No premature additions
-    for forbidden in config["guard_no_premature_ci_jobs"]:
-        # Match as a job-name header to avoid false positives on shell commands
-        # (job declarations sit at column 2 in this workflow file).
-        pattern = rf"^  {re.escape(forbidden)}:\s*$"
-        assert not re.search(pattern, workflow, flags=re.MULTILINE), (
-            f"v0.30a must not add CI job: {forbidden}"
+    # v0.30e's three new jobs are present and non-blocking.
+    for job in ("lint", "typecheck", "coverage"):
+        pattern = rf"^  {re.escape(job)}:\s*$"
+        assert re.search(pattern, workflow, flags=re.MULTILINE), (
+            f"v0.30e must add CI job: {job}"
+        )
+    # Non-blocking assertion: the workflow's YAML carries continue-on-error: true
+    # on the added jobs. Parse once to be robust to formatting.
+    import yaml  # local import: yaml is already a v0.30e test dep
+
+    parsed_jobs = yaml.safe_load(workflow)["jobs"]
+    for job in ("lint", "typecheck", "coverage"):
+        job_body = parsed_jobs[job]
+        job_level = job_body.get("continue-on-error") is True
+        step_level = any(
+            step.get("continue-on-error") is True
+            for step in job_body.get("steps", [])
+            if "run" in step
+        )
+        assert job_level or step_level, (
+            f"v0.30e CI job {job!r} must be non-blocking"
         )
 
-    # The existing single release-gate job is unchanged
-    release_gate_jobs = re.findall(r"^  (v0_\d+-release-gate):", workflow, flags=re.MULTILINE)
+    # The v0.30f release-gate consolidation has not landed yet.
+    release_gate_jobs = re.findall(r"^  (v0_\d+[a-z]?-release-gate):", workflow, flags=re.MULTILINE)
     assert release_gate_jobs == ["v0_29-release-gate"], (
-        f"v0.30a must not add a v0_30-release-gate job (got: {release_gate_jobs})"
+        f"v0.30e must not preempt v0.30f's release-gate consolidation; got: {release_gate_jobs}"
     )
 
 

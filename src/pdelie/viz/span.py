@@ -160,7 +160,7 @@ def plot_span_diagnostics(report: Mapping[str, object]) -> Figure:
                 zorder=3,
             )
         label_fontsize = _angle_label_fontsize(principal_angles_degrees.size)
-        for position, angle in zip(positions, principal_angles_degrees):
+        for position, angle in zip(positions, principal_angles_degrees, strict=False):
             y_value = max(float(angle), 0.0) + (2.0 if angle > _ZERO_ANGLE_TOL else 1.5)
             bars_axis.text(
                 float(position),

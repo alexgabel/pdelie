@@ -8,7 +8,6 @@ from pdelie._boundary import is_x_periodic
 from pdelie.contracts import FieldBatch
 from pdelie.errors import SchemaValidationError, ScopeValidationError
 
-
 _COORDINATE_UNIFORM_ABS_TOL = 1e-12
 _TIME_WINDOW_SIZE = 5
 _X_WINDOW_SIZE = 9
