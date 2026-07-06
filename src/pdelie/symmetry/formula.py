@@ -11,7 +11,6 @@ from pdelie._boundary import is_x_periodic
 from pdelie.contracts import FieldBatch, InvariantMapSpec
 from pdelie.errors import SchemaValidationError, ScopeValidationError
 
-
 _VARIABLES = ("t", "x", "u")
 _COMPONENT_NAMES = ("tau", "xi", "phi")
 _SUMMARY_SCHEMA_VERSION = "0.1"
@@ -332,7 +331,7 @@ class FormulaGeneratorFamily:
         return payload
 
     @classmethod
-    def from_dict(cls, payload: Mapping[str, Any]) -> "FormulaGeneratorFamily":
+    def from_dict(cls, payload: Mapping[str, Any]) -> FormulaGeneratorFamily:
         payload_mapping = dict(_mapping(payload, name="FormulaGeneratorFamily payload"))
         _reject_extra_keys(
             payload_mapping,

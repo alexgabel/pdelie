@@ -5,7 +5,6 @@ from pathlib import Path
 
 import pdelie
 
-
 _ROOT_RUNTIME_NAMES = {
     "AdvectionDiffusionResidualEvaluator",
     "InvariantApplier",
@@ -572,7 +571,6 @@ def test_v0_25_planning_docs_record_kdv_scope_decision_and_non_goals() -> None:
 
 
 def test_v0_26_planning_docs_record_ks_revisit_decision_and_non_goals() -> None:
-    plan = _repo_text("docs/planning/PLAN.md")
     scope = _repo_text("docs/planning/V0_26_SCOPE.md")
     roadmap = _repo_text("docs/planning/archive/ROADMAP_HISTORY.md")
     api_stability = _api_stability_text()

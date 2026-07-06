@@ -26,7 +26,6 @@ from tests._helpers.ks_feasibility import (
 )
 from tests._helpers.ks_vertical_slice import classify_translation_evidence
 
-
 KS_REVISIT_THRESHOLDS: dict[str, float] = {
     "residual_max_abs": 5e-2,
     "residual_rms": 1e-2,

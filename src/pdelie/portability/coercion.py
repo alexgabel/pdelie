@@ -5,8 +5,8 @@ from typing import Any
 
 from pdelie.contracts import GeneratorFamily
 from pdelie.errors import SchemaValidationError
-from pdelie.portability.manifest import import_generator_family_manifest
 from pdelie.portability._validation import _validate_supported_external_family
+from pdelie.portability.manifest import import_generator_family_manifest
 
 
 def coerce_generator_family(source: Any) -> GeneratorFamily:

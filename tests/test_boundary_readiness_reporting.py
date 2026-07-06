@@ -1,15 +1,13 @@
 """Tests for v0.30c boundary-aware readiness and reporting."""
 from __future__ import annotations
 
-import json
 import copy
+import json
 
 import numpy as np
-import pytest
 
 from pdelie._boundary import normalize_x_boundary_condition
 from pdelie.data import from_numpy, generate_heat_1d_field_batch
-from pdelie.errors import ScopeValidationError
 from pdelie.reporting import (
     summarize_field_batch_readiness,
     summarize_residual_batch,

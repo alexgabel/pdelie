@@ -1,15 +1,14 @@
+"""Runtime-only span diagnostics for canonical GeneratorFamily objects."""
 from __future__ import annotations
 
-"""Runtime-only span diagnostics for canonical GeneratorFamily objects."""
-
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 import numpy as np
 
 from pdelie.contracts import GeneratorFamily
 from pdelie.errors import SchemaValidationError, ShapeValidationError
 from pdelie.symmetry._polynomial_metric import _monomial_average_inner_product
-
 
 _SUPPORTED_INNER_PRODUCTS = frozenset({"normalized_polynomial_l2"})
 _RANK_TOL = 1e-10

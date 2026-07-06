@@ -12,7 +12,6 @@ from pdelie.residuals import BurgersResidualEvaluator, HeatResidualEvaluator
 from pdelie.symmetry.fitting import fit_translation_generator
 from pdelie.verification import verify_translation_generator
 
-
 _VERTICAL_SLICE_TRAINING_KWARGS = {"batch_size": 4, "num_times": 33, "num_points": 64}
 _VERTICAL_SLICE_HELDOUT_KWARGS = {"batch_size": 3, "num_times": 33, "num_points": 64}
 _DISCOVERY_KWARGS = {"batch_size": 2, "num_times": 17, "num_points": 16}

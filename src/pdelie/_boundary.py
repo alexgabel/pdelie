@@ -19,7 +19,6 @@ from typing import Any
 
 from pdelie.errors import SchemaValidationError, ScopeValidationError
 
-
 ALLOWED_X_BOUNDARY_TYPES = frozenset({"periodic", "dirichlet", "neumann", "open_unknown"})
 ALLOWED_BOUNDARY_FACE_SOURCES = frozenset({"user_supplied", "default", "inferred_unspecified"})
 
@@ -62,7 +61,7 @@ class BoundaryFace:
         }
 
     @classmethod
-    def from_dict(cls, value: object) -> "BoundaryFace":
+    def from_dict(cls, value: object) -> BoundaryFace:
         if not isinstance(value, Mapping):
             raise SchemaValidationError("BoundaryFace must be a mapping.")
         raw_value = value.get("value")
@@ -111,7 +110,7 @@ class BoundaryConditionSpec:
         }
 
     @classmethod
-    def from_dict(cls, value: object) -> "BoundaryConditionSpec":
+    def from_dict(cls, value: object) -> BoundaryConditionSpec:
         if not isinstance(value, Mapping):
             raise SchemaValidationError("BoundaryConditionSpec must be a mapping.")
         raw_type = value.get("type")
@@ -302,9 +301,9 @@ def _resolve_metadata(metadata_or_field: object) -> Mapping[str, Any]:
 __all__ = [
     "ALLOWED_BOUNDARY_FACE_SOURCES",
     "ALLOWED_X_BOUNDARY_TYPES",
+    "LEGACY_BOUNDARY_NORMALIZATION_OPERATION",
     "BoundaryConditionSpec",
     "BoundaryFace",
-    "LEGACY_BOUNDARY_NORMALIZATION_OPERATION",
     "get_x_boundary_type",
     "is_x_periodic",
     "normalize_x_boundary_condition",

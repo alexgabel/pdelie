@@ -1,6 +1,5 @@
-from __future__ import annotations
-
 """Runtime-only closure diagnostics for canonical GeneratorFamily objects."""
+from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from typing import Any
@@ -10,7 +9,6 @@ import numpy as np
 from pdelie.contracts import GeneratorFamily, VerificationReport
 from pdelie.errors import SchemaValidationError, ScopeValidationError, ShapeValidationError
 from pdelie.symmetry._polynomial_metric import _monomial_average_inner_product
-
 
 _SUPPORTED_INNER_PRODUCTS = frozenset({"normalized_polynomial_l2"})
 _SUPPORTED_COMPUTATION_MODES = frozenset({"auto", "exact_polynomial", "sampled_projection"})

@@ -13,7 +13,6 @@ from pdelie.errors import SchemaValidationError, ScopeValidationError
 from pdelie.invariants import OrbitBatchResult, build_uniform_translation_orbit_batch
 from pdelie.residuals import HeatResidualEvaluator, KdVResidualEvaluator
 
-
 DOMAIN_LENGTH = 2.0 * np.pi
 
 

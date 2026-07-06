@@ -10,7 +10,6 @@ from pdelie.reporting import summarize_generator_confidence
 from pdelie.residuals import HeatResidualEvaluator
 from pdelie.symmetry import compare_generator_spans, diagnose_generator_family_closure, validate_symmetry_candidate
 
-
 _SUMMARY_SCHEMA_VERSION = "0.1"
 
 
@@ -23,7 +22,7 @@ def _x_basis_spec(labels: list[str] | None = None, powers: list[list[int]] | Non
         "component_names": ["xi"],
         "basis_terms": [
             {"label": label, "powers": power}
-            for label, power in zip(labels, powers)
+            for label, power in zip(labels, powers, strict=False)
         ],
         "component_ordering": ["xi"],
         "term_ordering": list(labels),

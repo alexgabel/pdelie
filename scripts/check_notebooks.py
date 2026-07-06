@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-
 NOTEBOOK_DIR = Path(__file__).resolve().parents[1] / "notebooks"
 REQUIRED_PHRASES = (
     "What you will learn",

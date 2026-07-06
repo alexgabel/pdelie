@@ -1,14 +1,14 @@
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
 from copy import deepcopy
-from typing import Any, Mapping, Sequence
+from typing import Any
 
 import numpy as np
 
 from pdelie._boundary import get_x_boundary_type
-from pdelie.contracts import FieldBatch, REQUIRED_METADATA_KEYS, _is_uniform
+from pdelie.contracts import REQUIRED_METADATA_KEYS, FieldBatch, _is_uniform
 from pdelie.errors import SchemaValidationError, ScopeValidationError, ShapeValidationError
-
 
 _ACCEPTED_LAYOUTS = frozenset(
     {

@@ -6,7 +6,11 @@ import numpy as np
 import pytest
 
 from pdelie import GeneratorFamily, SchemaValidationError, ScopeValidationError
-from pdelie.portability import coerce_generator_family, export_generator_family_manifest, import_generator_family_manifest
+from pdelie.portability import (
+    coerce_generator_family,
+    export_generator_family_manifest,
+    import_generator_family_manifest,
+)
 from tests._helpers.portability_benchmark import run_portability_benchmark
 
 

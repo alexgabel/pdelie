@@ -7,7 +7,6 @@ import numpy as np
 
 from pdelie.errors import SchemaValidationError
 
-
 _REQUIRED_RECOVERY_NUMERIC_FIELDS = (
     "support_precision",
     "support_recall",

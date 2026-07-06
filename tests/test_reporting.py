@@ -18,12 +18,17 @@ from pdelie.data import (
 )
 from pdelie.derivatives import compute_spectral_fd_derivatives
 from pdelie.errors import SchemaValidationError, ScopeValidationError
+from pdelie.invariants import (
+    compute_periodic_window_coverage,
+    diagnose_uniform_translation_consistency,
+    summarize_uniform_translation_orbit,
+)
 from pdelie.reporting import (
     summarize_field_batch_readiness,
     summarize_formula_generator_family,
     summarize_generator_confidence,
-    summarize_generator_fit_diagnostics,
     summarize_generator_family,
+    summarize_generator_fit_diagnostics,
     summarize_invariant_workflow,
     summarize_residual_batch,
     summarize_verification_report,
@@ -32,7 +37,6 @@ from pdelie.reporting import (
     summarize_weak_residual_report,
     summarize_xarray_dataset_readiness,
 )
-from pdelie.symmetry import FormulaGeneratorFamily
 from pdelie.residuals import (
     AdvectionDiffusionResidualEvaluator,
     BurgersResidualEvaluator,
@@ -42,15 +46,10 @@ from pdelie.residuals import (
     evaluate_weak_burgers_residual,
     evaluate_weak_heat_residual,
 )
-from pdelie.invariants import (
-    compute_periodic_window_coverage,
-    diagnose_uniform_translation_consistency,
-    summarize_uniform_translation_orbit,
-)
+from pdelie.symmetry import FormulaGeneratorFamily
 from pdelie.symmetry.fitting import fit_translation_generator
 from pdelie.symmetry.parameterization import translation_span_distance
 from pdelie.verification import verify_translation_generator
-
 
 _SUMMARY_PREFIX_KEYS = {"summary_schema_version", "summary_type"}
 _FIT_DIAGNOSTIC_SUMMARY_KEYS = _SUMMARY_PREFIX_KEYS | {

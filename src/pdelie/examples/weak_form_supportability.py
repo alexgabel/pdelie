@@ -12,7 +12,6 @@ from pdelie.residuals import (
     evaluate_weak_heat_residual,
 )
 
-
 _SUMMARY_SCHEMA_VERSION = "0.1"
 
 

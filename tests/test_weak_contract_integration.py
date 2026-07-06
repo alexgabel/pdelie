@@ -21,7 +21,6 @@ from tests._helpers.weak_contract_integration import (
     verify_translation_generator_from_weak_reports,
 )
 
-
 _TRAINING_KWARGS = {"batch_size": 4, "num_times": 33, "num_points": 64}
 _HELDOUT_KWARGS = {"batch_size": 3, "num_times": 33, "num_points": 64}
 _EXPECTED_METHOD_FAMILY = "local_separable_quartic_bump_trapezoid_v1"

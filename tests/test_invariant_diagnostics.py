@@ -16,7 +16,6 @@ from pdelie.invariants import (
 )
 from pdelie.residuals import HeatResidualEvaluator, KdVResidualEvaluator
 
-
 DOMAIN_LENGTH = 2.0 * np.pi
 
 

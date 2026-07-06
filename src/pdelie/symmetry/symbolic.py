@@ -1,10 +1,9 @@
-from __future__ import annotations
-
 """Runtime-only symbolic display helpers for GeneratorFamily.
 
 This module intentionally operates on canonical GeneratorFamily objects without
 changing their stored coefficients or normalization semantics.
 """
+from __future__ import annotations
 
 import importlib
 from collections.abc import Mapping
@@ -13,7 +12,6 @@ import numpy as np
 
 from pdelie.contracts import GeneratorFamily
 from pdelie.errors import SchemaValidationError
-
 
 _DISPLAY_ZERO_TOL = 1e-12
 _DEFAULT_COMPONENT_DISPLAY_NAMES = {
@@ -181,7 +179,7 @@ def _sympy_coefficient(sympy_module, coefficient: float):
 
 def _sympy_term(sympy_module, symbols: list[object], powers: list[int]):
     term = sympy_module.Integer(1)
-    for symbol, power in zip(symbols, powers):
+    for symbol, power in zip(symbols, powers, strict=False):
         if power == 0:
             continue
         term *= symbol ** int(power)

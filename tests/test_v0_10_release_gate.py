@@ -6,7 +6,6 @@ from pathlib import Path
 import pdelie
 from pdelie.examples import run_heat_vertical_slice_example, run_kdv_vertical_slice_example
 
-
 _REPORTING_HELPERS = {
     "summarize_generator_family",
     "summarize_residual_batch",

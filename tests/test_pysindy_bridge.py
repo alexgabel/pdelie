@@ -6,9 +6,9 @@ import numpy as np
 import pytest
 
 from pdelie import FieldBatch, InvariantMapSpec, ScopeValidationError
-from pdelie.errors import SchemaValidationError
 from pdelie.data import generate_burgers_1d_field_batch, generate_heat_1d_field_batch
 from pdelie.discovery import to_pysindy_trajectories
+from pdelie.errors import SchemaValidationError
 from pdelie.invariants import InvariantApplier
 from pdelie.residuals import BurgersResidualEvaluator, HeatResidualEvaluator
 from pdelie.symmetry.fitting import fit_translation_generator

@@ -9,7 +9,6 @@ from pdelie.residuals import HeatResidualEvaluator
 from pdelie.symmetry.fitting import fit_translation_generator
 from pdelie.verification import verify_translation_generator
 
-
 _TRAINING_SEED = 100
 _HELDOUT_SEED = 101
 _TRAINING_BATCH_SIZE = 4

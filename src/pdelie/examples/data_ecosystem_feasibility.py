@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+import importlib
 import json
 from copy import deepcopy
-import importlib
 
 from pdelie.data import from_xarray_dataset, generate_heat_1d_field_batch
 from pdelie.reporting import summarize_field_batch_readiness, summarize_xarray_dataset_readiness

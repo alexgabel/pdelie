@@ -25,7 +25,6 @@ from pdelie.discovery import (
 )
 from pdelie.portability import coerce_generator_family, export_generator_family_manifest
 
-
 _DISCOVERY_KWARGS = {"batch_size": 2, "num_times": 17, "num_points": 16}
 _ROBUSTNESS_KWARGS = {"batch_size": 4, "num_times": 17, "num_points": 16}
 

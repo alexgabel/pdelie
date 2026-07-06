@@ -5,7 +5,6 @@ import numpy as np
 from pdelie.contracts import FieldBatch
 from pdelie.errors import ShapeValidationError
 
-
 DEFAULT_DOMAIN_LENGTH = 2.0 * np.pi
 
 

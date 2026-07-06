@@ -10,7 +10,6 @@ from pdelie.derivatives import compute_spectral_fd_derivatives
 from pdelie.errors import SchemaValidationError, ScopeValidationError
 from pdelie.residuals.base import ResidualEvaluator
 
-
 _KDV_EQUATION = "u_t + 6*u*u_x + u_xxx = 0"
 _REQUIRED_DERIVATIVES = ("u_t", "u_x", "u_xxx")
 

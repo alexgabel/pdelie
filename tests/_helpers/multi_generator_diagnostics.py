@@ -7,7 +7,6 @@ import numpy as np
 from pdelie import GeneratorFamily
 from pdelie.symmetry import compare_generator_spans
 
-
 _FIT_PROBE_SEEDS = (2701, 2702, 2703)
 
 

@@ -14,7 +14,6 @@ from pdelie.symmetry import (
     render_generator_family,
 )
 
-
 PORTABILITY_BENCHMARK_BRANCHES = ("in_memory", "canonical_payload", "manifest")
 PORTABILITY_BENCHMARK_CONFIG: dict[str, object] = {
     "heat_seed": 510,

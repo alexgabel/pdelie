@@ -26,7 +26,7 @@ def _validate_trajectories(trajectories: object) -> list[np.ndarray]:
 
     normalized: list[np.ndarray] = []
     expected_shape: tuple[int, int] | None = None
-    for index, trajectory in enumerate(trajectories):
+    for _index, trajectory in enumerate(trajectories):
         try:
             array = np.asarray(trajectory, dtype=float)
         except (TypeError, ValueError) as exc:
@@ -224,7 +224,7 @@ def fit_pysindy_discovery(
         )
         coefficients = np.asarray(model.coefficients(), dtype=float)
         library_feature_names = list(model.get_feature_names())
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         return _failed_result(
             feature_names=normalized_feature_names,
             fit_config=fit_config,

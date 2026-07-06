@@ -9,7 +9,6 @@ from pdelie import GeneratorFamily
 from pdelie.contracts import _translation_generator_basis_spec
 from pdelie.symmetry import render_generator_family, to_sympy_component_expressions
 
-
 PARTIAL_T = "\u2202t"
 PARTIAL_X = "\u2202x"
 PARTIAL_U = "\u2202u"

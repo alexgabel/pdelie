@@ -6,7 +6,6 @@ from pdelie.derivatives.finite_difference import compute_finite_difference_deriv
 from pdelie.derivatives.spectral_fd import compute_spectral_fd_derivatives
 from pdelie.errors import ScopeValidationError
 
-
 _ALLOWED_DERIVATIVE_BACKEND_NAMES = frozenset(
     {"auto", "spectral_fd", "finite_difference"}
 )

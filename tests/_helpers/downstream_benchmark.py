@@ -13,7 +13,6 @@ from pdelie.invariants import InvariantApplier
 from pdelie.residuals import BurgersResidualEvaluator, HeatResidualEvaluator
 from pdelie.symmetry.fitting import fit_translation_generator
 
-
 BenchmarkBranchResult = dict[str, object]
 BenchmarkResult = dict[str, object]
 

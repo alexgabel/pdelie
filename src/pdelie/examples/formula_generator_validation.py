@@ -10,7 +10,6 @@ from pdelie.data import generate_heat_1d_field_batch
 from pdelie.residuals import HeatResidualEvaluator
 from pdelie.symmetry import FormulaGeneratorFamily, validate_symmetry_candidate
 
-
 _SUMMARY_SCHEMA_VERSION = "0.1"
 _DOMAIN_LENGTH = 2.0 * np.pi
 

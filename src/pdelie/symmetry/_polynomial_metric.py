@@ -1,11 +1,10 @@
-from __future__ import annotations
-
 """Private polynomial metric helpers shared by runtime symmetry diagnostics."""
+from __future__ import annotations
 
 
 def _monomial_average_inner_product(powers_a: tuple[int, ...], powers_b: tuple[int, ...]) -> float:
     value = 1.0
-    for power_a, power_b in zip(powers_a, powers_b):
+    for power_a, power_b in zip(powers_a, powers_b, strict=False):
         total_power = int(power_a) + int(power_b)
         if total_power % 2 == 1:
             return 0.0

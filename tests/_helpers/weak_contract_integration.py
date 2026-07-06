@@ -21,7 +21,6 @@ from pdelie.symmetry.parameterization.polynomial_translation import (
 from pdelie.verification import DEFAULT_EPSILON_VALUES
 from pdelie.verification.finite_transform import _apply_uniform_translation
 
-
 ReportEvaluator = Callable[[FieldBatch], dict[str, object]]
 
 _EXPECTED_METHOD_FAMILY = "local_separable_quartic_bump_trapezoid_v1"
