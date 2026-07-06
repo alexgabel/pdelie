@@ -6,6 +6,7 @@ from typing import Any
 
 import numpy as np
 
+from pdelie._boundary import is_x_periodic
 from pdelie.contracts import FieldBatch, GeneratorFamily, InvariantMapSpec
 from pdelie.errors import PDELieValidationError, SchemaValidationError, ScopeValidationError
 from pdelie.invariants import InvariantApplier
@@ -67,7 +68,7 @@ def _validate_field(field: FieldBatch) -> None:
         raise ScopeValidationError("validate_symmetry_candidate requires dims ('batch', 'time', 'x', 'var').")
     if len(field.var_names) != 1:
         raise ScopeValidationError("validate_symmetry_candidate requires a scalar field.")
-    if field.metadata["boundary_conditions"].get("x") != "periodic":
+    if not is_x_periodic(field):
         raise ScopeValidationError("validate_symmetry_candidate requires periodic x boundary conditions.")
 
 

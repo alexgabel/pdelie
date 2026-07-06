@@ -11,6 +11,7 @@ import importlib
 
 import numpy as np
 
+from pdelie._boundary import is_x_periodic
 from pdelie.contracts import FieldBatch
 from pdelie.errors import ScopeValidationError
 
@@ -24,7 +25,7 @@ def _validate_supported_field(field: FieldBatch) -> None:
         raise ScopeValidationError(
             "to_pysindy_trajectories only supports a single scalar variable in V0.3 Milestone 2."
         )
-    if field.metadata["boundary_conditions"].get("x") != "periodic":
+    if not is_x_periodic(field):
         raise ScopeValidationError("to_pysindy_trajectories requires periodic boundary conditions in x.")
 
 

@@ -6,6 +6,10 @@ from typing import Any, ClassVar, Mapping
 
 import numpy as np
 
+from pdelie._boundary import (
+    LEGACY_BOUNDARY_NORMALIZATION_OPERATION,
+    normalize_x_boundary_condition,
+)
 from pdelie.errors import (
     SchemaValidationError,
     ScopeValidationError,
@@ -20,7 +24,9 @@ REQUIRED_METADATA_KEYS = (
     "grid_type",
     "parameter_tags",
 )
-ALLOWED_DERIVATIVE_BACKENDS = frozenset({"spectral_fd", "spectral", "finite", "weak"})
+ALLOWED_DERIVATIVE_BACKENDS = frozenset(
+    {"spectral_fd", "spectral", "finite", "finite_difference", "weak"}
+)
 ALLOWED_RESIDUAL_TYPES = frozenset({"analytic", "weak", "surrogate", "operator"})
 ALLOWED_CLASSIFICATIONS = frozenset({"exact", "approximate", "failed"})
 ALLOWED_DOMAIN_VALIDITIES = frozenset({"local", "global", "unknown"})
@@ -186,7 +192,7 @@ def _translation_generator_basis_spec() -> dict[str, Any]:
 
 @dataclass(slots=True)
 class FieldBatch:
-    schema_version: str = "0.1"
+    schema_version: str = "0.2"
     values: np.ndarray = None  # type: ignore[assignment]
     dims: tuple[str, ...] = ()
     coords: dict[str, np.ndarray] = None  # type: ignore[assignment]
@@ -195,7 +201,8 @@ class FieldBatch:
     preprocess_log: list[dict[str, Any]] = None  # type: ignore[assignment]
     mask: np.ndarray | None = None
 
-    SCHEMA_VERSION: ClassVar[str] = "0.1"
+    SCHEMA_VERSION: ClassVar[str] = "0.2"
+    LEGACY_SCHEMA_VERSIONS: ClassVar[frozenset[str]] = frozenset({"0.1"})
 
     def __post_init__(self) -> None:
         self.values = _to_numpy(self.values)
@@ -276,16 +283,89 @@ class FieldBatch:
 
     @classmethod
     def from_dict(cls, payload: Mapping[str, Any]) -> "FieldBatch":
+        raw_schema_version = str(payload["schema_version"])
+        if (
+            raw_schema_version != cls.SCHEMA_VERSION
+            and raw_schema_version not in cls.LEGACY_SCHEMA_VERSIONS
+        ):
+            raise SchemaValidationError(
+                f"Unsupported FieldBatch schema_version {raw_schema_version!r}; "
+                f"supported: {cls.SCHEMA_VERSION!r} or one of "
+                f"{sorted(cls.LEGACY_SCHEMA_VERSIONS)}."
+            )
+
+        metadata = dict(payload["metadata"])
+        preprocess_log = [dict(item) for item in payload["preprocess_log"]]
+
+        if raw_schema_version != cls.SCHEMA_VERSION:
+            metadata, migration_entry = cls._migrate_legacy_metadata(
+                metadata, from_schema_version=raw_schema_version
+            )
+            if migration_entry is not None:
+                preprocess_log.append(migration_entry)
+
         return cls(
-            schema_version=str(payload["schema_version"]),
+            schema_version=cls.SCHEMA_VERSION,
             values=np.asarray(payload["values"], dtype=float),
             dims=tuple(payload["dims"]),
             coords={str(name): np.asarray(coord, dtype=float) for name, coord in payload["coords"].items()},
             var_names=[str(name) for name in payload["var_names"]],
-            metadata=dict(payload["metadata"]),
-            preprocess_log=[dict(item) for item in payload["preprocess_log"]],
+            metadata=metadata,
+            preprocess_log=preprocess_log,
             mask=None if payload.get("mask") is None else np.asarray(payload["mask"], dtype=bool),
         )
+
+    @classmethod
+    def _migrate_legacy_metadata(
+        cls,
+        metadata: dict[str, Any],
+        *,
+        from_schema_version: str,
+    ) -> tuple[dict[str, Any], dict[str, Any] | None]:
+        """Normalize a legacy `boundary_conditions['x']` string into the structured 0.2 form.
+
+        Returns the (possibly mutated) metadata dict and a single migration
+        provenance entry to append to `preprocess_log`, or `None` if no
+        normalization was needed.
+        """
+        migration_parameters: dict[str, Any] = {
+            "from_schema_version": from_schema_version,
+            "to_schema_version": cls.SCHEMA_VERSION,
+        }
+
+        bcs_raw = metadata.get("boundary_conditions")
+        if bcs_raw is None:
+            # Defensive: very old 0.1 payloads written before validate() enforced this key
+            # default to periodic for backwards compatibility.
+            metadata["boundary_conditions"] = {
+                "x": normalize_x_boundary_condition("periodic")
+            }
+            migration_parameters["default_x_boundary_string"] = "periodic"
+            migration_parameters["reason"] = (
+                "boundary_conditions missing in legacy payload; defaulted to periodic"
+            )
+            return metadata, {
+                "operation": LEGACY_BOUNDARY_NORMALIZATION_OPERATION,
+                "parameters": migration_parameters,
+            }
+
+        if not isinstance(bcs_raw, Mapping):
+            # Leave malformed input to downstream validate(); no migration entry.
+            return metadata, None
+
+        bcs_copy = dict(bcs_raw)
+        x_bc = bcs_copy.get("x")
+        if isinstance(x_bc, str):
+            bcs_copy["x"] = normalize_x_boundary_condition(x_bc)
+            metadata["boundary_conditions"] = bcs_copy
+            migration_parameters["legacy_x_boundary_string"] = x_bc
+            return metadata, {
+                "operation": LEGACY_BOUNDARY_NORMALIZATION_OPERATION,
+                "parameters": migration_parameters,
+            }
+
+        # Already structured (e.g. forward-compatible 0.1 payload writers): nothing to do.
+        return metadata, None
 
 
 @dataclass(slots=True)

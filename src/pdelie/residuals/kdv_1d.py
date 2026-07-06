@@ -4,6 +4,7 @@ from collections.abc import Mapping
 
 import numpy as np
 
+from pdelie._boundary import is_x_periodic
 from pdelie.contracts import DerivativeBatch, FieldBatch, ResidualBatch
 from pdelie.derivatives import compute_spectral_fd_derivatives
 from pdelie.errors import SchemaValidationError, ScopeValidationError
@@ -26,8 +27,7 @@ def _validate_kdv_field(field: FieldBatch) -> None:
     if not np.all(np.isfinite(field.values)):
         raise ScopeValidationError("KdVResidualEvaluator requires finite field values.")
 
-    boundary_conditions = field.metadata.get("boundary_conditions")
-    if not isinstance(boundary_conditions, Mapping) or boundary_conditions.get("x") != "periodic":
+    if not is_x_periodic(field):
         raise ScopeValidationError("KdVResidualEvaluator requires periodic boundary conditions in x.")
 
     parameter_tags = field.metadata.get("parameter_tags")

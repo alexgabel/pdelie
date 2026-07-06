@@ -7,6 +7,7 @@ from typing import Any, ClassVar
 
 import numpy as np
 
+from pdelie._boundary import is_x_periodic
 from pdelie.contracts import FieldBatch, InvariantMapSpec
 from pdelie.errors import SchemaValidationError, ScopeValidationError
 
@@ -220,7 +221,7 @@ def _field_variables(field: FieldBatch) -> dict[str, np.ndarray]:
         raise ScopeValidationError("FormulaGeneratorFamily diagnostics require dims ('batch', 'time', 'x', 'var').")
     if len(field.var_names) != 1 or field.values.shape[-1] != 1:
         raise ScopeValidationError("FormulaGeneratorFamily diagnostics require a scalar field.")
-    if field.metadata["boundary_conditions"].get("x") != "periodic":
+    if not is_x_periodic(field):
         raise ScopeValidationError("FormulaGeneratorFamily diagnostics require periodic x boundary conditions.")
     if not np.all(np.isfinite(field.values)):
         raise ScopeValidationError("FormulaGeneratorFamily diagnostics require finite field values.")

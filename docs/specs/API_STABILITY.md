@@ -357,6 +357,57 @@ Decision-only note for the frozen `v0.29` workflow recipes and support matrix re
 - `v0.29` adds rendered tutorial notebooks for the two complete workflow recipes
 - this decision does not add `pdelie.reporting.summarize_workflow_readiness(...)`, new PDEs, file loaders, broad adapters, multidimensional or nonuniform stable support, public KS runtime APIs, train/test policy, neural/callable generators, operator-facing APIs, or root exports
 
+Decision-only note for the frozen `v0.30a` scope-freeze sub-release:
+
+- `v0.30a` adds no new runtime public API
+- `v0.30a` records the design decision `nonperiodic_readiness_and_low_order_finite_difference_diagnostics_design_only`
+- `v0.30a` does not change any existing public surface, does not bump `pyproject.toml`, does not change CI, and does not declare any new optional dependency
+- `v0.30a` freezes the design of structured `BoundaryConditionSpec`, the `finite_difference` derivative backend, the `compute_derivatives(backend="auto")` dispatcher, and the residual interior-vs-full-grid domain policy; the documents are at `docs/planning/V0_30_SCOPE.md`, `docs/design/BOUNDARY_CONDITION_SPEC.md`, `docs/design/DERIVATIVE_BACKEND_POLICY.md`, and `docs/design/V0_30_HYGIENE_AUDIT.md`
+- the runtime implementation lands in `v0.30` proper, not in `v0.30a`
+- the `v0.30` release will bump `FieldBatch.SCHEMA_VERSION` from `"0.1"` to `"0.2"` to carry the structured `BoundaryConditionSpec`; `FieldBatch.from_dict` will accept both `"0.1"` and `"0.2"` payloads under a backwards-compatible loader so external tooling can prepare
+- `v0.30` will add `pdelie.derivatives.compute_finite_difference_derivatives` and `pdelie.derivatives.compute_derivatives` under their submodules; neither becomes a root `pdelie` export
+- `v0.30a` does not add a `SymmetryMethod` registry, a `pdelie.discover_symmetries` root API, any external symmetry-method port, any file loader, any PDEBench or The Well adapter, any KS runtime API, any weak nonperiodic surface, or any new PDE generator/evaluator
+- `v0.30a` records that `u_xxx` and `u_xxxx` on nonperiodic data remain deferred from the stable `v0.30` surface
+- `v0.30a` records that finite-transform verification for nonperiodic translations is deferred to the `v0.31.5` orbit/action scope decision
+
+Decision-only note for the frozen `v0.30b` BoundaryConditionSpec runtime and FieldBatch 0.2 migration sub-release:
+
+- `v0.30b` adds no new runtime public API and no new root `pdelie` export
+- `v0.30b` records the design decision `boundary_condition_spec_runtime_and_field_batch_0_2_migration`
+- `v0.30b` does not bump the package version (`pyproject.toml` stays at `0.29.0`); the version bump lands at v0.30 release close
+- `v0.30b` bumps `FieldBatch.SCHEMA_VERSION` from `"0.1"` to `"0.2"`; `FieldBatch.from_dict` accepts both `"0.1"` and `"0.2"` payloads under a backwards-compatible loader
+- legacy `metadata["boundary_conditions"]["x"]` string values (`"periodic"`, `"dirichlet"`, `"neumann"`, `"open"`, `"open_unknown"`) are normalized to the structured `BoundaryConditionSpec` form on load and recorded in `preprocess_log` under operation `"schema_0_1_to_0_2_boundary_normalization"`
+- the helpers live in the internal `src/pdelie/_boundary.py` module; they are not promoted as a public submodule API
+- `from_numpy` and `from_xarray` accept structured nonperiodic specs and the supported legacy nonperiodic strings; unsupported strings raise `ScopeValidationError`
+- downstream consumers (`spectral_fd`, `HeatResidualEvaluator`, `BurgersResidualEvaluator`, `KdVResidualEvaluator`, `ReactionDiffusionResidualEvaluator`, `AdvectionDiffusionResidualEvaluator`, `evaluate_weak_heat_residual`, `evaluate_weak_burgers_residual`, translation basis, `InvariantApplier`, finite-transform verification, candidate validation, formula generators, downstream discovery bridge) remain strict-periodic; they now route through the `is_x_periodic` helper rather than direct string compares
+- `v0.30b` does not add `compute_finite_difference_derivatives`, `compute_derivatives`, any nonperiodic residual support, any nonperiodic translation/verification path, or any new PDE; those land in v0.30c and later
+- `v0.30b` does not add a symmetry-method registry, an external method port, a file loader, a PDEBench/The Well adapter, a KS runtime API, a weak nonperiodic surface, or any new optional dependency
+
+Runtime public API for the frozen `v0.30c` low-order finite-difference derivative slice:
+
+- `pdelie.derivatives.compute_finite_difference_derivatives(field, *, max_spatial_order=2)` for `u_t`, `u_x`, and optionally `u_xx` on scalar 1D nonperiodic (`dirichlet`, `neumann`, `open_unknown`) uniform-grid `FieldBatch` data. The backend uses ``numpy.gradient`` with ``edge_order=2`` for both axes. ``max_spatial_order`` is restricted to ``{1, 2}``; higher orders raise ``ScopeValidationError`` (no `u_xxx`/`u_xxxx` on nonperiodic data in the stable surface).
+- the backend rejects periodic data with an explicit `ScopeValidationError`; periodic users must call `compute_spectral_fd_derivatives` or the dispatcher.
+- returned `DerivativeBatch.config` carries the v0.30c keys: `spatial_method = "finite_difference_centered"`, `temporal_method = "finite_difference"`, `stencil_edge_order = 2`, `boundary_handling ∈ {"dirichlet", "neumann", "open_unknown"}`, `spatial_max_order ∈ {1, 2}`, `backend_selected_by_boundary_condition` (default `False`), `backend_selection_reason` (default `None`), `recommended_residual_domain_policy = "interior_only"`, and `recommended_boundary_trim_width = 4`.
+- `pdelie.derivatives.compute_derivatives(field, *, backend="auto", max_spatial_order=2)` dispatches between `spectral_fd` for periodic data and `finite_difference` for any supported nonperiodic boundary type. When `backend="auto"`, the resulting `DerivativeBatch.config` sets `backend_selected_by_boundary_condition = True` and a non-null `backend_selection_reason` (`"periodic_x_uses_spectral_fd"` or `"nonperiodic_x_uses_finite_difference"`); the selection is always auditable from the artifact itself. Explicit `backend="spectral_fd"` on nonperiodic data and explicit `backend="finite_difference"` on periodic data both raise `ScopeValidationError`; the dispatcher never silently falls back.
+- both APIs are submodule-only (no root `pdelie` export) and do not change any existing residual evaluator behavior. Residual evaluator auto-dispatch is deferred.
+- `pdelie.contracts.ALLOWED_DERIVATIVE_BACKENDS` now includes the canonical `"finite_difference"` name; the legacy `"finite"` entry is retained.
+
+Runtime public API update for the frozen `v0.30c` boundary-aware reporting slice:
+
+- `pdelie.reporting.summarize_field_batch_readiness` now emits an additive `boundary_condition_warnings: list[str]` field with the v0.30c vocabulary: `"x_boundary_legacy_string_under_schema_0_2"`, `"x_boundary_open_unknown"`, `"x_boundary_dirichlet_unspecified"`, `"x_boundary_neumann_unspecified"`. The list is empty for periodic (legacy or structured) FieldBatches and for fully-specified structured nonperiodic FieldBatches. A non-empty list downgrades the report's `readiness_label` from `"ready"` to `"needs_attention"`; harder failures (non-finite values, missing required metadata keys, non-uniform x or time coordinates) still route to `"not_ready"`.
+- `pdelie.reporting.summarize_xarray_dataset_readiness` exposes the same `boundary_condition_warnings` field with the same vocabulary and the same readiness-label downgrade rule.
+- `pdelie.reporting.summarize_residual_batch` now records `residual_domain_policy: str` sourced from `ResidualBatch.diagnostics["residual_domain_policy"]` when present; defaults to `"not_configured"` so the field is always present and strict-JSON serializable. No existing residual evaluator output is mutated.
+- the readiness reports now treat a non-periodic boundary as a warning rather than a metadata failure; the `"x_boundary_not_periodic"` failure key has been replaced by the new warning vocabulary. Unsupported BC strings (e.g. `"insulating"`) continue to route to a metadata failure under `"x_boundary_unsupported"`.
+
+Decision-only note for the frozen `v0.30c` low-order finite-difference and boundary-aware reporting sub-release:
+
+- `v0.30c` adds no new runtime root `pdelie` export and no new optional dependency
+- `v0.30c` records the design decision `low_order_finite_difference_backend_and_boundary_aware_readiness`
+- `v0.30c` does not bump the package version (`pyproject.toml` stays at `0.29.0`); the version bump lands at v0.30 release close
+- residual evaluator auto-dispatch, residual interior-trim policy enforcement, and finite-transform verification on nonperiodic data are explicitly deferred to v0.30d / v0.31.5
+- `u_xxx` and `u_xxxx` on nonperiodic data remain unsupported; no experimental flag is exposed in v0.30c
+- the `finite_difference` backend uses only `numpy.gradient(edge_order=2)`; higher-order one-sided stencils, Fornberg-style families, and weak/Galerkin formulations remain deferred
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 

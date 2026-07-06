@@ -4,6 +4,7 @@ from collections.abc import Callable, Mapping
 
 import numpy as np
 
+from pdelie._boundary import is_x_periodic
 from pdelie.contracts import FieldBatch
 from pdelie.errors import SchemaValidationError, ScopeValidationError
 
@@ -102,8 +103,7 @@ def _validate_supported_field(field: FieldBatch, *, function_name: str) -> tuple
     dt = _validate_strict_uniform_increasing_coordinate(time, name="time", function_name=function_name)
     dx = _validate_strict_uniform_increasing_coordinate(x, name="x", function_name=function_name)
 
-    boundary_conditions = field.metadata.get("boundary_conditions")
-    if not isinstance(boundary_conditions, Mapping) or boundary_conditions.get("x") != "periodic":
+    if not is_x_periodic(field):
         raise ScopeValidationError(f"{function_name} requires periodic boundary conditions in x.")
     return dt, dx
 

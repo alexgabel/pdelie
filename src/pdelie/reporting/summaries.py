@@ -9,6 +9,7 @@ from typing import Any
 
 import numpy as np
 
+from pdelie._boundary import get_x_boundary_type, is_x_periodic
 from pdelie.contracts import (
     REQUIRED_METADATA_KEYS,
     DerivativeBatch,
@@ -38,6 +39,62 @@ _FIT_EVIDENCE_LABELS = frozenset(
 _CONFIDENCE_LABELS = frozenset({"strong", "qualified", "failed", "insufficient_evidence"})
 _CONFIDENCE_COMPONENT_STATUSES = frozenset({"passed", "warning", "failed", "not_configured", "unavailable"})
 _READINESS_LABELS = frozenset({"ready", "needs_attention", "not_ready"})
+_BOUNDARY_CONDITION_WARNING_KEYS = frozenset(
+    {
+        "x_boundary_legacy_string_under_schema_0_2",
+        "x_boundary_open_unknown",
+        "x_boundary_dirichlet_unspecified",
+        "x_boundary_neumann_unspecified",
+    }
+)
+
+
+def _x_boundary_warnings(metadata: object) -> list[str]:
+    """Return the v0.30c boundary_condition_warnings list for a FieldBatch/Dataset metadata.
+
+    Warnings, not failures: nonperiodic boundaries are accepted but signal that
+    downstream derivative and residual support is still strict-periodic.
+
+    Empty for periodic (legacy string or structured). Empty for malformed/missing
+    boundary metadata (those cases are reported separately by the metadata
+    failures list).
+    """
+    if not isinstance(metadata, Mapping):
+        return []
+    bcs = metadata.get("boundary_conditions")
+    if not isinstance(bcs, Mapping):
+        return []
+    x_bc = bcs.get("x")
+    try:
+        canonical = get_x_boundary_type({"boundary_conditions": bcs})
+    except (ScopeValidationError, SchemaValidationError):
+        return []
+
+    warnings: list[str] = []
+    if isinstance(x_bc, str):
+        # Legacy 0.1 string form embedded in a 0.2 FieldBatch; recommend structured form
+        # for any nonperiodic type (the structured form is the only way to record
+        # `specified=True` for dirichlet/neumann).
+        if canonical != "periodic":
+            warnings.append("x_boundary_legacy_string_under_schema_0_2")
+            if canonical == "open_unknown":
+                warnings.append("x_boundary_open_unknown")
+            elif canonical in {"dirichlet", "neumann"}:
+                warnings.append(f"x_boundary_{canonical}_unspecified")
+        return warnings
+
+    # Structured dict form
+    if canonical == "periodic":
+        return warnings
+    if canonical == "open_unknown":
+        warnings.append("x_boundary_open_unknown")
+        return warnings
+    if canonical in {"dirichlet", "neumann"}:
+        specified = x_bc.get("specified") if isinstance(x_bc, Mapping) else None
+        if specified is not True:
+            warnings.append(f"x_boundary_{canonical}_unspecified")
+        return warnings
+    return warnings  # pragma: no cover — guarded by get_x_boundary_type allowlist
 _SPLIT_LEAKAGE_RISK_LABELS = frozenset(
     {
         "no_detected_overlap",
@@ -762,8 +819,11 @@ def _readiness_metadata_status(
         failures.append("missing_required_metadata")
     if not isinstance(boundary_conditions, Mapping):
         failures.append("boundary_conditions_not_mapping")
-    elif boundary_conditions.get("x") != "periodic":
-        failures.append("x_boundary_not_periodic")
+    else:
+        try:
+            get_x_boundary_type({"boundary_conditions": boundary_conditions})
+        except (ScopeValidationError, SchemaValidationError):
+            failures.append("x_boundary_unsupported")
     if metadata.get("grid_type") != "rectilinear":
         failures.append("grid_type_not_rectilinear")
     if metadata.get("grid_regularity") != "uniform":
@@ -860,6 +920,10 @@ def summarize_field_batch_readiness(
     if label not in _READINESS_LABELS:
         raise AssertionError(f"unsupported readiness label: {label}")
 
+    boundary_condition_warnings = _x_boundary_warnings(field.metadata)
+    if boundary_condition_warnings and label == "ready":
+        label = "needs_attention"
+
     return _summary_payload(
         "field_batch_readiness",
         readiness_label=label,
@@ -871,6 +935,7 @@ def summarize_field_batch_readiness(
         metadata_diagnostics=metadata_diagnostics,
         metadata_suggestions=metadata_suggestions,
         residual_preflight=residual_preflight,
+        boundary_condition_warnings=boundary_condition_warnings,
         stable_scope={
             "dims": ["batch", "time", "x", "var"],
             "scalar_1d_periodic": True,
@@ -1055,8 +1120,11 @@ def _dataset_metadata_status(
         failures.append("missing_required_metadata")
     if not isinstance(boundary_conditions, Mapping):
         failures.append("boundary_conditions_not_mapping")
-    elif boundary_conditions.get("x") != "periodic":
-        failures.append("x_boundary_not_periodic")
+    else:
+        try:
+            get_x_boundary_type({"boundary_conditions": boundary_conditions})
+        except (ScopeValidationError, SchemaValidationError):
+            failures.append("x_boundary_unsupported")
     if normalized_metadata.get("grid_type") != "rectilinear":
         failures.append("grid_type_not_rectilinear")
     if normalized_metadata.get("grid_regularity") != "uniform":
@@ -1212,6 +1280,9 @@ def summarize_xarray_dataset_readiness(
         "conversion_preflight": conversion_status,
     }
     label = _readiness_label(component_statuses)
+    boundary_condition_warnings = _x_boundary_warnings(metadata)
+    if boundary_condition_warnings and label == "ready":
+        label = "needs_attention"
     payload = {
         "summary_schema_version": _SUMMARY_SCHEMA_VERSION,
         "summary_type": "xarray_dataset_readiness",
@@ -1230,6 +1301,7 @@ def summarize_xarray_dataset_readiness(
         "metadata_diagnostics": metadata_diagnostics,
         "metadata_suggestions": metadata_suggestions,
         "conversion_preflight": conversion_preflight,
+        "boundary_condition_warnings": boundary_condition_warnings,
         "stable_scope": {
             "dataset_input": True,
             "scalar_1d_periodic": True,
@@ -1245,6 +1317,16 @@ def summarize_residual_batch(residual: ResidualBatch) -> dict[str, Any]:
         raise SchemaValidationError("summarize_residual_batch requires a ResidualBatch.")
 
     residual_values = _require_finite(residual.residual, name="ResidualBatch.residual")
+
+    # v0.30c additive: surface a residual_domain_policy field if the evaluator (or any
+    # caller-supplied diagnostics) records one. Default is "not_configured" so the
+    # field is always present and strict-JSON serializable.
+    diagnostics = residual.diagnostics if isinstance(residual.diagnostics, Mapping) else {}
+    raw_policy = diagnostics.get("residual_domain_policy")
+    residual_domain_policy = (
+        str(raw_policy) if isinstance(raw_policy, str) and raw_policy else "not_configured"
+    )
+
     return _summary_payload(
         "residual_batch",
         residual_shape=list(residual_values.shape),
@@ -1252,6 +1334,7 @@ def summarize_residual_batch(residual: ResidualBatch) -> dict[str, Any]:
         normalization=residual.normalization,
         max_abs_residual=float(np.max(np.abs(residual_values))),
         rms_residual=float(np.sqrt(np.mean(np.square(residual_values)))),
+        residual_domain_policy=residual_domain_policy,
         diagnostics=residual.diagnostics,
     )
 

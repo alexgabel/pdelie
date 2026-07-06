@@ -270,14 +270,32 @@ def test_from_numpy_rejects_missing_or_invalid_metadata(
         )
 
 
-def test_from_numpy_rejects_non_periodic_x_boundary_condition() -> None:
-    with pytest.raises(ScopeValidationError, match="periodic x boundary conditions"):
+def test_from_numpy_accepts_supported_non_periodic_x_boundary_conditions() -> None:
+    """v0.30b: from_numpy accepts dirichlet/neumann/open_unknown structured BC inputs.
+
+    Derivative/residual support for nonperiodic data lands in later v0.30 milestones;
+    downstream consumers (spectral_fd, residuals, weak_1d) still reject nonperiodic.
+    """
+    for x_boundary in ("dirichlet", "neumann", "open_unknown"):
+        field = from_numpy(
+            np.zeros((4, 8), dtype=float),
+            dims=("time", "x"),
+            coords={"time": _time(), "x": _x()},
+            var_name="u",
+            metadata=_metadata(x_boundary=x_boundary),
+        )
+        # The legacy string is preserved in metadata; consumers use the is_x_periodic helper.
+        assert field.metadata["boundary_conditions"]["x"] == x_boundary
+
+
+def test_from_numpy_rejects_unsupported_x_boundary_string() -> None:
+    with pytest.raises(ScopeValidationError, match="Unsupported x boundary string"):
         from_numpy(
             np.zeros((4, 8), dtype=float),
             dims=("time", "x"),
             coords={"time": _time(), "x": _x()},
             var_name="u",
-            metadata=_metadata(x_boundary="dirichlet"),
+            metadata=_metadata(x_boundary="insulating"),
         )
 
 
