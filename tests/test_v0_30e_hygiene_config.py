@@ -129,17 +129,25 @@ def test_lint_typecheck_coverage_jobs_are_non_blocking() -> None:
 
 
 def test_ci_workflow_preserves_existing_jobs() -> None:
+    """The non-release-gate jobs must survive intact.
+
+    v0.30f renames the single release-gate job from ``v0_29-release-gate``
+    to ``v0_30f-release-gate``, so this guard covers only the surrounding
+    jobs.
+    """
     jobs = _ci_workflow()["jobs"]
-    for job_name in ("v0_29-release-gate", "docs-build", "editable-tests", "package-smoke"):
+    for job_name in ("docs-build", "editable-tests", "package-smoke"):
         assert job_name in jobs, f"pre-existing job {job_name!r} disappeared"
 
 
-def test_ci_workflow_has_no_v0_30_release_gate_job_yet() -> None:
-    """v0.30f (release-gate consolidation) may introduce v0_30f-release-gate.
-    v0.30e must not preempt that.
+def test_ci_workflow_release_gate_job_matches_v0_30f() -> None:
+    """After v0.30f the CI workflow carries exactly one release-gate job.
+
+    Inverted from the v0.30e-era ``test_ci_workflow_has_no_v0_30_release_gate_job_yet``
+    guard, which asserted that v0.30e had not preempted v0.30f.
     """
     jobs = _ci_workflow()["jobs"]
-    for job_name in jobs:
-        assert not re.match(r"^v0_30[a-z]?-release-gate$", job_name), (
-            f"v0.30e must not add a v0.30* release-gate job (found {job_name!r})"
-        )
+    release_gate_jobs = [n for n in jobs if re.match(r"^v0_\d+[a-z]?-release-gate$", n)]
+    assert release_gate_jobs == ["v0_30f-release-gate"], (
+        f"v0.30f consolidates the release-gate job under a single name; got: {release_gate_jobs}"
+    )

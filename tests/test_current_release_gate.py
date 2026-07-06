@@ -25,15 +25,23 @@ def test_current_release_metadata_docs_and_ci_are_aligned() -> None:
     api_stability = _repo_text("docs/specs/API_STABILITY.md")
     planning_index = _repo_text("docs/planning/index.rst")
     releases_index = _repo_text("docs/releases/index.rst")
-    release_gate_jobs = re.findall(r"^  (v0_\d+-release-gate):", workflow, flags=re.MULTILINE)
+    release_gate_jobs = re.findall(r"^  (v0_\d+[a-z]?-release-gate):", workflow, flags=re.MULTILINE)
 
     assert pyproject["project"]["version"] == "0.29.0"
     assert 'release = "0.29.0"' in docs_conf
     assert 'version = "0.29"' in docs_conf
-    assert release_gate_jobs == ["v0_29-release-gate"]
-    assert "python -m pytest tests/test_current_release_gate.py tests/test_v0_29_release_gate.py" in workflow
+    assert release_gate_jobs == ["v0_30f-release-gate"]
+    for invocation_fragment in (
+        "tests/test_current_release_gate.py",
+        "tests/test_release_gates.py",
+        "tests/test_v0_29_release_gate.py",
+    ):
+        assert invocation_fragment in workflow, (
+            f"v0.30f release-gate CI job must invoke {invocation_fragment!r}"
+        )
     assert "docs-build:" in workflow
     assert "sphinx-build -b html -W --keep-going docs docs/_build/html" in workflow
+    assert "v0_29-release-gate:" not in workflow
     assert "v0_28-release-gate" not in workflow
 
     assert "## 0.29.0" in changelog

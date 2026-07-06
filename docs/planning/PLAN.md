@@ -1,6 +1,41 @@
-# PDELie - Execution Plan (V0.30e)
+# PDELie - Execution Plan (V0.30f)
 
 **Status:** IN_PROGRESS
+
+`v0.30f` lands the narrow declarative release-gate consolidation proposed in `docs/design/V0_30_HYGIENE_AUDIT.md`. A strict-JSON manifest at `configs/release_gate_manifest.json` encodes 18 release rows of declarative assertions; the parameterized `tests/test_release_gates.py` replays them. The CI release-gate job is renamed `v0_29-release-gate` → `v0_30f-release-gate` and its invocation extended to run the manifest test alongside every retained per-version file. No runtime behavior change. No package version bump. No new dependency. No `src/pdelie/` change. Zero files deleted — consolidation is by manifest addition, not by file removal.
+
+Decision label:
+
+```text
+narrow_declarative_release_gate_consolidation
+```
+
+## Files touched (v0.30f)
+
+- `configs/release_gate_manifest.json` — new. Strict JSON, `summary_type = "pdelie_declarative_release_gate_manifest"`, `release_count = 18`, plus `excluded_functional_release_gate_files` listing every file whose declarative content stays in-place (with per-file reason).
+- `tests/test_release_gates.py` — new. Loads the manifest, runs 4 meta-level tests (strict-JSON, release-count parity, only-supported-classes, job-name/CI-workflow alignment), and one parametrized test that dispatches to a per-class handler. Failure messages always start with `[v<release>][<assertion_class>]`.
+- `.github/workflows/ci.yml` — modified. Renames the release-gate job; extends its `run:` to invoke `tests/test_current_release_gate.py`, `tests/test_release_gates.py`, and every retained `tests/test_v0_NN_release_gate.py` (v0.4 through v0.29). No other job change.
+- `tests/test_current_release_gate.py` — modified. Expects `["v0_30f-release-gate"]`, requires the invocation to reference the new manifest test file, and gains a `"v0_29-release-gate:" not in workflow` regression guard.
+- `tests/test_v0_30_hygiene_audit.py` — modified. Adds `test_v0_30f_release_gate_consolidation_manifest_exists`, `test_v0_30f_all_release_gate_files_are_retained` (26 == 26), and `test_v0_30f_hygiene_audit_records_consolidation_landed`. Updates the release-gate-job regex check from `["v0_29-release-gate"]` to `["v0_30f-release-gate"]`.
+- `docs/design/V0_30_HYGIENE_AUDIT.md` — appended "Release-gate consolidation IMPLEMENTED narrowly in v0.30f" summary; rewrote the "Release-gate consolidation" section to describe what shipped, what is excluded, and why the "delete 26 files" outcome was scoped down.
+- `docs/planning/PLAN.md` — this file. Replaces v0.30e header with v0.30f header.
+- `docs/planning/ROADMAP.md` — `v0.30f` status flipped from `Planned` to `In progress` (or `Completed` on merge).
+- `docs/specs/API_STABILITY.md` — Decision-only note for the frozen `v0.30f` narrow declarative release-gate consolidation.
+
+## Explicit non-goals for v0.30f
+
+- No deletion of any `tests/test_v0_NN_release_gate.py` file. All 26 stay in place.
+- No modification of any assertion inside an existing release-gate file. The manifest replays declarative content; the source files remain unchanged.
+- No extension of the supported-assertion-class schema beyond the 11 classes listed above. Novel patterns (forbidden phrases in a doc, CHANGELOG/README/ROADMAP_HISTORY/SUPPORT_MATRIX phrase checks, disjunctive+forbidden per-page phrase rules, `required_json_fields` on manifests) are named as schema gaps in the manifest's `excluded_functional_release_gate_files` list and left in their source files. Extending the schema is separate future work.
+- No `src/pdelie/` change. No runtime API. No new root export. No new optional dependency.
+- No version bump (`pyproject.toml` stays at `0.29.0`).
+- No lift of the `numpy<2` cap. No Python matrix expansion. No promotion of v0.30e's `lint`/`typecheck`/`coverage` jobs from advisory to blocking.
+
+---
+
+# PDELie - Execution Plan (V0.30e)
+
+**Status:** COMPLETE (merged as PR #78)
 
 `v0.30e` lands cross-cutting hygiene phase 1 as spec'd in `docs/design/V0_30_HYGIENE_AUDIT.md`: `[tool.ruff]`, `[tool.mypy]` (strict scope narrowed), `[tool.coverage.*]` in `pyproject.toml`, plus three non-blocking CI jobs (`lint`, `typecheck`, `coverage`). No runtime behavior change. No package version bump. No new optional dependency in runtime extras (only test extras).
 

@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  v0_29-release-gate:
+  v0_30f-release-gate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -32,8 +32,36 @@ jobs:
           retry 3 python -m pip install -e .[test]
       - name: Check dependencies
         run: python -m pip check
-      - name: Run V0.29 release gate
-        run: python -m pytest tests/test_current_release_gate.py tests/test_v0_29_release_gate.py
+      - name: Run v0.30f release gate (declarative manifest + all retained per-version gates)
+        run: >
+          python -m pytest
+          tests/test_current_release_gate.py
+          tests/test_release_gates.py
+          tests/test_v0_4_release_gate.py
+          tests/test_v0_6_release_gate.py
+          tests/test_v0_7_release_gate.py
+          tests/test_v0_8_release_gate.py
+          tests/test_v0_9_release_gate.py
+          tests/test_v0_10_release_gate.py
+          tests/test_v0_11_release_gate.py
+          tests/test_v0_12_release_gate.py
+          tests/test_v0_13_release_gate.py
+          tests/test_v0_14_release_gate.py
+          tests/test_v0_15_release_gate.py
+          tests/test_v0_16_release_gate.py
+          tests/test_v0_17_release_gate.py
+          tests/test_v0_18_release_gate.py
+          tests/test_v0_19_release_gate.py
+          tests/test_v0_20_release_gate.py
+          tests/test_v0_21_release_gate.py
+          tests/test_v0_22_release_gate.py
+          tests/test_v0_23_release_gate.py
+          tests/test_v0_24_release_gate.py
+          tests/test_v0_25_release_gate.py
+          tests/test_v0_26_release_gate.py
+          tests/test_v0_27_release_gate.py
+          tests/test_v0_28_release_gate.py
+          tests/test_v0_29_release_gate.py
   # v0.30e hygiene phase 1: advisory / non-blocking lint, typecheck, coverage.
   # These jobs report findings but do not gate merges. `continue-on-error: true`
   # means a red run shows in the workflow summary without failing the workflow.

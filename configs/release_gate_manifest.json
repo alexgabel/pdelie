@@ -1,0 +1,1287 @@
+{
+  "summary_schema_version": "0.1",
+  "summary_type": "pdelie_declarative_release_gate_manifest",
+  "scope": "declarative_release_gate_checks_only",
+  "current_release_gate_job_name": "v0_30f-release-gate",
+  "release_count": 18,
+  "excluded_functional_release_gate_files": [
+    {
+      "file": "tests/test_v0_4_release_gate.py",
+      "classification": "functional_only",
+      "reason": "pure_numeric_vertical_slice"
+    },
+    {
+      "file": "tests/test_v0_6_release_gate.py",
+      "classification": "mixed",
+      "reason": "declarative_block_embedded_in_functional_test_tail"
+    },
+    {
+      "file": "tests/test_v0_7_release_gate.py",
+      "classification": "functional_only",
+      "reason": "pure_numeric_bridge_parity"
+    },
+    {
+      "file": "tests/test_v0_8_release_gate.py",
+      "classification": "mixed",
+      "reason": "schema_gap_forbidden_phrases_in_api_stability"
+    },
+    {
+      "file": "tests/test_v0_9_release_gate.py",
+      "classification": "mixed",
+      "reason": "schema_gap_forbidden_phrases_in_api_stability"
+    },
+    {
+      "file": "tests/test_v0_11_release_gate.py",
+      "classification": "mixed",
+      "reason": "interleaved_runtime_and_declarative_in_same_test"
+    },
+    {
+      "file": "tests/test_v0_12_release_gate.py",
+      "classification": "mixed",
+      "reason": "schema_gap_changelog_readme_roadmap_history_phrase_checks"
+    },
+    {
+      "file": "tests/test_v0_26_release_gate.py",
+      "classification": "mixed",
+      "reason": "schema_gap_forbidden_phrases_in_api_stability"
+    }
+  ],
+  "releases": [
+    {
+      "release": "0.10",
+      "source_file": "tests/test_v0_10_release_gate.py",
+      "required_submodule_attributes": [
+        {
+          "submodule": "pdelie.reporting",
+          "name": "summarize_generator_family"
+        },
+        {
+          "submodule": "pdelie.reporting",
+          "name": "summarize_residual_batch"
+        },
+        {
+          "submodule": "pdelie.reporting",
+          "name": "summarize_verification_report"
+        },
+        {
+          "submodule": "pdelie.reporting",
+          "name": "summarize_vertical_slice"
+        },
+        {
+          "submodule": "pdelie.reporting",
+          "name": "summarize_weak_residual_report"
+        }
+      ],
+      "forbidden_root_attributes": {
+        "names": [
+          "KSResidualEvaluator",
+          "KuramotoSivashinskyResidualEvaluator",
+          "OperatorSymmetry",
+          "WeakKdVResidualEvaluator",
+          "compute_weak_derivatives",
+          "evaluate_weak_kdv_residual",
+          "from_pdebench",
+          "from_the_well",
+          "generate_ks_1d_field_batch",
+          "generate_ks_feasibility_field_batch",
+          "load_pdebench",
+          "load_the_well",
+          "sample_kdv_mode_coefficients",
+          "summarize_generator_family",
+          "summarize_residual_batch",
+          "summarize_verification_report",
+          "summarize_vertical_slice",
+          "summarize_weak_residual_report"
+        ]
+      },
+      "forbidden_submodule_attributes": {
+        "submodules": [
+          "pdelie.data",
+          "pdelie.derivatives",
+          "pdelie.residuals",
+          "pdelie.reporting"
+        ],
+        "names": [
+          "KSResidualEvaluator",
+          "KuramotoSivashinskyResidualEvaluator",
+          "OperatorSymmetry",
+          "WeakKdVResidualEvaluator",
+          "compute_weak_derivatives",
+          "evaluate_weak_kdv_residual",
+          "from_pdebench",
+          "from_the_well",
+          "generate_ks_1d_field_batch",
+          "generate_ks_feasibility_field_batch",
+          "load_pdebench",
+          "load_the_well",
+          "sample_kdv_mode_coefficients"
+        ]
+      },
+      "required_phrases_in_api_stability": {
+        "doc_path": "docs/specs/API_STABILITY.md",
+        "phrases": [
+          "pdelie.reporting.summarize_generator_family",
+          "pdelie.reporting.summarize_residual_batch",
+          "pdelie.reporting.summarize_verification_report",
+          "pdelie.reporting.summarize_vertical_slice",
+          "pdelie.reporting.summarize_weak_residual_report",
+          "pdelie.residuals.evaluate_weak_heat_residual",
+          "pdelie.residuals.evaluate_weak_burgers_residual",
+          "pdelie.data.generate_kdv_1d_field_batch",
+          "pdelie.residuals.KdVResidualEvaluator",
+          "these APIs have no root `pdelie` exports",
+          "operator symmetry"
+        ]
+      }
+    },
+    {
+      "release": "0.13",
+      "source_file": "tests/test_v0_13_release_gate.py",
+      "required_submodule_attributes": [
+        {
+          "submodule": "pdelie.invariants",
+          "name": "compute_periodic_window_coverage"
+        },
+        {
+          "submodule": "pdelie.invariants",
+          "name": "diagnose_uniform_translation_consistency"
+        }
+      ],
+      "forbidden_root_attributes": {
+        "names": [
+          "KSResidualEvaluator",
+          "KuramotoSivashinskyResidualEvaluator",
+          "WeakKSResidualEvaluator",
+          "augment_translation_orbit",
+          "build_translation_orbit_views",
+          "compute_coverage_diagnostics",
+          "compute_periodic_window_coverage",
+          "compute_weak_derivatives",
+          "diagnose_uniform_translation_consistency",
+          "evaluate_weak_ks_residual",
+          "from_pdebench",
+          "from_the_well",
+          "generate_ks_1d_field_batch",
+          "generate_ks_feasibility_field_batch",
+          "load_pdebench",
+          "load_the_well",
+          "run_ks_vertical_slice_example"
+        ]
+      },
+      "forbidden_submodule_attributes": {
+        "submodules": [
+          "pdelie.data",
+          "pdelie.invariants",
+          "pdelie.residuals",
+          "pdelie.reporting",
+          "pdelie.examples",
+          "pdelie.discovery"
+        ],
+        "names": [
+          "KSResidualEvaluator",
+          "KuramotoSivashinskyResidualEvaluator",
+          "WeakKSResidualEvaluator",
+          "augment_translation_orbit",
+          "build_translation_orbit_views",
+          "compute_coverage_diagnostics",
+          "compute_weak_derivatives",
+          "evaluate_weak_ks_residual",
+          "from_pdebench",
+          "from_the_well",
+          "generate_ks_1d_field_batch",
+          "generate_ks_feasibility_field_batch",
+          "load_pdebench",
+          "load_the_well",
+          "run_ks_vertical_slice_example"
+        ]
+      },
+      "required_phrases_in_api_stability": {
+        "doc_path": "docs/specs/API_STABILITY.md",
+        "phrases": [
+          "pdelie.invariants.compute_periodic_window_coverage",
+          "pdelie.invariants.diagnose_uniform_translation_consistency",
+          "do not construct augmented datasets"
+        ]
+      }
+    },
+    {
+      "release": "0.14",
+      "source_file": "tests/test_v0_14_release_gate.py",
+      "required_submodule_attributes": [
+        {
+          "submodule": "pdelie.invariants",
+          "name": "summarize_uniform_translation_orbit"
+        },
+        {
+          "submodule": "pdelie.reporting",
+          "name": "summarize_invariant_workflow"
+        }
+      ],
+      "forbidden_root_attributes": {
+        "names": [
+          "KSResidualEvaluator",
+          "KuramotoSivashinskyResidualEvaluator",
+          "WeakKSResidualEvaluator",
+          "augment_translation_orbit",
+          "build_translation_orbit_dataset",
+          "build_translation_orbit_views",
+          "compute_coverage_diagnostics",
+          "compute_weak_derivatives",
+          "diagnose_time_translation_consistency",
+          "evaluate_weak_ks_residual",
+          "from_pdebench",
+          "from_the_well",
+          "generate_ks_1d_field_batch",
+          "generate_ks_feasibility_field_batch",
+          "load_pdebench",
+          "load_the_well",
+          "run_ks_vertical_slice_example",
+          "summarize_invariant_workflow",
+          "summarize_uniform_translation_orbit"
+        ]
+      },
+      "forbidden_submodule_attributes": {
+        "submodules": [
+          "pdelie.data",
+          "pdelie.invariants",
+          "pdelie.residuals",
+          "pdelie.reporting",
+          "pdelie.examples",
+          "pdelie.discovery"
+        ],
+        "names": [
+          "KSResidualEvaluator",
+          "KuramotoSivashinskyResidualEvaluator",
+          "WeakKSResidualEvaluator",
+          "augment_translation_orbit",
+          "build_translation_orbit_dataset",
+          "build_translation_orbit_views",
+          "compute_coverage_diagnostics",
+          "compute_weak_derivatives",
+          "diagnose_time_translation_consistency",
+          "evaluate_weak_ks_residual",
+          "from_pdebench",
+          "from_the_well",
+          "generate_ks_1d_field_batch",
+          "generate_ks_feasibility_field_batch",
+          "load_pdebench",
+          "load_the_well",
+          "run_ks_vertical_slice_example"
+        ]
+      },
+      "required_phrases_in_api_stability": {
+        "doc_path": "docs/specs/API_STABILITY.md",
+        "phrases": [
+          "pdelie.invariants.summarize_uniform_translation_orbit",
+          "pdelie.reporting.summarize_invariant_workflow",
+          "do not construct augmented datasets, orbit datasets, or transformed `FieldBatch` collections",
+          "time-translation diagnostics remain deferred"
+        ]
+      }
+    },
+    {
+      "release": "0.15",
+      "source_file": "tests/test_v0_15_release_gate.py",
+      "required_submodule_attributes": [
+        {
+          "submodule": "pdelie.invariants",
+          "name": "build_uniform_translation_orbit_batch"
+        },
+        {
+          "submodule": "pdelie.invariants",
+          "name": "OrbitBatchResult"
+        }
+      ],
+      "forbidden_root_attributes": {
+        "names": [
+          "KSResidualEvaluator",
+          "KuramotoSivashinskyResidualEvaluator",
+          "OrbitBatchResult",
+          "WeakKSResidualEvaluator",
+          "augment_translation_orbit",
+          "build_translation_orbit_dataset",
+          "build_translation_orbit_views",
+          "build_uniform_translation_orbit_batch",
+          "compute_coverage_diagnostics",
+          "compute_weak_derivatives",
+          "diagnose_time_translation_consistency",
+          "evaluate_weak_ks_residual",
+          "from_pdebench",
+          "from_the_well",
+          "generate_ks_1d_field_batch",
+          "generate_ks_feasibility_field_batch",
+          "load_pdebench",
+          "load_the_well",
+          "materialize_uniform_translation_orbit",
+          "run_ks_vertical_slice_example",
+          "split_orbit_train_heldout",
+          "train_test_translation_orbit_split"
+        ]
+      },
+      "forbidden_submodule_attributes": {
+        "submodules": [
+          "pdelie.data",
+          "pdelie.invariants",
+          "pdelie.residuals",
+          "pdelie.reporting",
+          "pdelie.examples",
+          "pdelie.discovery"
+        ],
+        "names": [
+          "KSResidualEvaluator",
+          "KuramotoSivashinskyResidualEvaluator",
+          "WeakKSResidualEvaluator",
+          "augment_translation_orbit",
+          "build_translation_orbit_dataset",
+          "build_translation_orbit_views",
+          "compute_coverage_diagnostics",
+          "compute_weak_derivatives",
+          "diagnose_time_translation_consistency",
+          "evaluate_weak_ks_residual",
+          "from_pdebench",
+          "from_the_well",
+          "generate_ks_1d_field_batch",
+          "generate_ks_feasibility_field_batch",
+          "load_pdebench",
+          "load_the_well",
+          "materialize_uniform_translation_orbit",
+          "run_ks_vertical_slice_example",
+          "split_orbit_train_heldout",
+          "train_test_translation_orbit_split"
+        ]
+      },
+      "required_phrases_in_api_stability": {
+        "doc_path": "docs/specs/API_STABILITY.md",
+        "phrases": [
+          "pdelie.invariants.build_uniform_translation_orbit_batch",
+          "pdelie.invariants.OrbitBatchResult",
+          "not a train/test splitter",
+          "these APIs have no root `pdelie` exports"
+        ]
+      }
+    },
+    {
+      "release": "0.16",
+      "source_file": "tests/test_v0_16_release_gate.py",
+      "required_submodule_attributes": [
+        {
+          "submodule": "pdelie.symmetry",
+          "name": "validate_symmetry_candidate"
+        }
+      ],
+      "forbidden_root_attributes": {
+        "names": [
+          "CallableGeneratorFamily",
+          "KSResidualEvaluator",
+          "KuramotoSivashinskyResidualEvaluator",
+          "WeakKSResidualEvaluator",
+          "augment_translation_orbit",
+          "build_translation_orbit_dataset",
+          "build_translation_orbit_views",
+          "compute_coverage_diagnostics",
+          "compute_weak_derivatives",
+          "diagnose_time_translation_consistency",
+          "evaluate_weak_ks_residual",
+          "from_pdebench",
+          "from_the_well",
+          "generate_ks_1d_field_batch",
+          "generate_ks_feasibility_field_batch",
+          "load_pdebench",
+          "load_the_well",
+          "materialize_uniform_translation_orbit",
+          "run_ks_vertical_slice_example",
+          "split_orbit_train_heldout",
+          "train_test_translation_orbit_split",
+          "validate_generator_candidate",
+          "validate_symmetry_candidate"
+        ]
+      },
+      "forbidden_submodule_attributes": {
+        "submodules": [
+          "pdelie.data",
+          "pdelie.invariants",
+          "pdelie.residuals",
+          "pdelie.reporting",
+          "pdelie.examples",
+          "pdelie.discovery",
+          "pdelie.symmetry"
+        ],
+        "names": [
+          "CallableGeneratorFamily",
+          "KSResidualEvaluator",
+          "KuramotoSivashinskyResidualEvaluator",
+          "WeakKSResidualEvaluator",
+          "augment_translation_orbit",
+          "build_translation_orbit_dataset",
+          "build_translation_orbit_views",
+          "compute_coverage_diagnostics",
+          "compute_weak_derivatives",
+          "diagnose_time_translation_consistency",
+          "evaluate_weak_ks_residual",
+          "from_pdebench",
+          "from_the_well",
+          "generate_ks_1d_field_batch",
+          "generate_ks_feasibility_field_batch",
+          "load_pdebench",
+          "load_the_well",
+          "materialize_uniform_translation_orbit",
+          "run_ks_vertical_slice_example",
+          "split_orbit_train_heldout",
+          "train_test_translation_orbit_split",
+          "validate_generator_candidate"
+        ]
+      },
+      "required_phrases_in_api_stability": {
+        "doc_path": "docs/specs/API_STABILITY.md",
+        "phrases": [
+          "pdelie.symmetry.validate_symmetry_candidate",
+          "candidate_kind = \"generator_family\"",
+          "candidate_kind = \"invariant_map_spec\"",
+          "not a mathematical proof of symmetry",
+          "this API has no root `pdelie` export"
+        ]
+      }
+    },
+    {
+      "release": "0.17",
+      "source_file": "tests/test_v0_17_release_gate.py",
+      "required_submodule_attributes": [
+        {
+          "submodule": "pdelie.symmetry",
+          "name": "FormulaGeneratorFamily"
+        },
+        {
+          "submodule": "pdelie.symmetry",
+          "name": "validate_symmetry_candidate"
+        },
+        {
+          "submodule": "pdelie.reporting",
+          "name": "summarize_formula_generator_family"
+        }
+      ],
+      "forbidden_root_attributes": {
+        "names": [
+          "CallableGeneratorFamily",
+          "FormulaGeneratorFamily",
+          "KSResidualEvaluator",
+          "KuramotoSivashinskyResidualEvaluator",
+          "WeakKSResidualEvaluator",
+          "augment_translation_orbit",
+          "build_translation_orbit_dataset",
+          "build_translation_orbit_views",
+          "compute_coverage_diagnostics",
+          "compute_weak_derivatives",
+          "diagnose_time_translation_consistency",
+          "evaluate_weak_ks_residual",
+          "from_pdebench",
+          "from_the_well",
+          "generate_ks_1d_field_batch",
+          "generate_ks_feasibility_field_batch",
+          "load_pdebench",
+          "load_the_well",
+          "materialize_uniform_translation_orbit",
+          "run_ks_vertical_slice_example",
+          "split_orbit_train_heldout",
+          "summarize_formula_generator_family",
+          "train_test_translation_orbit_split",
+          "validate_generator_candidate"
+        ]
+      },
+      "forbidden_submodule_attributes": {
+        "submodules": [
+          "pdelie.data",
+          "pdelie.invariants",
+          "pdelie.residuals",
+          "pdelie.reporting",
+          "pdelie.examples",
+          "pdelie.discovery",
+          "pdelie.symmetry"
+        ],
+        "names": [
+          "CallableGeneratorFamily",
+          "KSResidualEvaluator",
+          "KuramotoSivashinskyResidualEvaluator",
+          "WeakKSResidualEvaluator",
+          "augment_translation_orbit",
+          "build_translation_orbit_dataset",
+          "build_translation_orbit_views",
+          "compute_coverage_diagnostics",
+          "compute_weak_derivatives",
+          "diagnose_time_translation_consistency",
+          "evaluate_weak_ks_residual",
+          "from_pdebench",
+          "from_the_well",
+          "generate_ks_1d_field_batch",
+          "generate_ks_feasibility_field_batch",
+          "load_pdebench",
+          "load_the_well",
+          "materialize_uniform_translation_orbit",
+          "run_ks_vertical_slice_example",
+          "split_orbit_train_heldout",
+          "train_test_translation_orbit_split",
+          "validate_generator_candidate"
+        ]
+      },
+      "required_phrases_in_api_stability": {
+        "doc_path": "docs/specs/API_STABILITY.md",
+        "phrases": [
+          "pdelie.symmetry.FormulaGeneratorFamily",
+          "pdelie.reporting.summarize_formula_generator_family",
+          "candidate_kind = \"formula_generator_family\"",
+          "safe JSON AST",
+          "these APIs have no root `pdelie` exports"
+        ]
+      }
+    },
+    {
+      "release": "0.18",
+      "source_file": "tests/test_v0_18_release_gate.py",
+      "required_submodule_attributes": [
+        {
+          "submodule": "pdelie.data",
+          "name": "generate_reaction_diffusion_1d_field_batch"
+        },
+        {
+          "submodule": "pdelie.residuals",
+          "name": "ReactionDiffusionResidualEvaluator"
+        },
+        {
+          "submodule": "pdelie.examples",
+          "name": "run_reaction_diffusion_vertical_slice_example"
+        }
+      ],
+      "forbidden_root_attributes": {
+        "names": [
+          "CallableGeneratorFamily",
+          "KSResidualEvaluator",
+          "KuramotoSivashinskyResidualEvaluator",
+          "ReactionDiffusionResidualEvaluator",
+          "WeakKSResidualEvaluator",
+          "WeakReactionDiffusionResidualEvaluator",
+          "compute_weak_derivatives",
+          "evaluate_weak_ks_residual",
+          "evaluate_weak_reaction_diffusion_residual",
+          "from_pdebench",
+          "from_the_well",
+          "generate_ks_1d_field_batch",
+          "generate_ks_feasibility_field_batch",
+          "generate_reaction_diffusion_1d_field_batch",
+          "load_pdebench",
+          "load_the_well",
+          "run_reaction_diffusion_vertical_slice_example",
+          "sample_reaction_diffusion_initial_conditions"
+        ]
+      },
+      "forbidden_submodule_attributes": {
+        "submodules": [
+          "pdelie.data",
+          "pdelie.invariants",
+          "pdelie.residuals",
+          "pdelie.reporting",
+          "pdelie.examples",
+          "pdelie.discovery",
+          "pdelie.symmetry"
+        ],
+        "names": [
+          "CallableGeneratorFamily",
+          "KSResidualEvaluator",
+          "KuramotoSivashinskyResidualEvaluator",
+          "WeakKSResidualEvaluator",
+          "WeakReactionDiffusionResidualEvaluator",
+          "compute_weak_derivatives",
+          "evaluate_weak_ks_residual",
+          "evaluate_weak_reaction_diffusion_residual",
+          "from_pdebench",
+          "from_the_well",
+          "generate_ks_1d_field_batch",
+          "generate_ks_feasibility_field_batch",
+          "load_pdebench",
+          "load_the_well",
+          "sample_reaction_diffusion_initial_conditions"
+        ]
+      },
+      "required_phrases_in_api_stability": {
+        "doc_path": "docs/specs/API_STABILITY.md",
+        "phrases": [
+          "pdelie.data.generate_reaction_diffusion_1d_field_batch",
+          "pdelie.residuals.ReactionDiffusionResidualEvaluator",
+          "pdelie.examples.run_reaction_diffusion_vertical_slice_example",
+          "reaction_diffusion_fisher_kpp",
+          "these APIs have no root `pdelie` exports"
+        ]
+      }
+    },
+    {
+      "release": "0.19",
+      "source_file": "tests/test_v0_19_release_gate.py",
+      "required_submodule_attributes": [
+        {
+          "submodule": "pdelie.data",
+          "name": "generate_advection_diffusion_1d_field_batch"
+        },
+        {
+          "submodule": "pdelie.residuals",
+          "name": "AdvectionDiffusionResidualEvaluator"
+        },
+        {
+          "submodule": "pdelie.examples",
+          "name": "run_advection_diffusion_vertical_slice_example"
+        }
+      ],
+      "forbidden_root_attributes": {
+        "names": [
+          "AdvectionDiffusionResidualEvaluator",
+          "CallableGeneratorFamily",
+          "KSResidualEvaluator",
+          "KuramotoSivashinskyResidualEvaluator",
+          "WeakAdvectionDiffusionResidualEvaluator",
+          "WeakKSResidualEvaluator",
+          "WeakReactionDiffusionResidualEvaluator",
+          "compute_weak_derivatives",
+          "evaluate_weak_advection_diffusion_residual",
+          "evaluate_weak_ks_residual",
+          "evaluate_weak_reaction_diffusion_residual",
+          "from_pdebench",
+          "from_the_well",
+          "generate_advection_diffusion_1d_field_batch",
+          "generate_ks_1d_field_batch",
+          "generate_ks_feasibility_field_batch",
+          "generate_reaction_advection_diffusion_1d_field_batch",
+          "generate_variable_coefficient_advection_diffusion_1d_field_batch",
+          "load_pdebench",
+          "load_the_well",
+          "run_advection_diffusion_vertical_slice_example",
+          "sample_advection_diffusion_initial_conditions"
+        ]
+      },
+      "forbidden_submodule_attributes": {
+        "submodules": [
+          "pdelie.data",
+          "pdelie.invariants",
+          "pdelie.residuals",
+          "pdelie.reporting",
+          "pdelie.examples",
+          "pdelie.discovery",
+          "pdelie.symmetry"
+        ],
+        "names": [
+          "CallableGeneratorFamily",
+          "KSResidualEvaluator",
+          "KuramotoSivashinskyResidualEvaluator",
+          "WeakAdvectionDiffusionResidualEvaluator",
+          "WeakKSResidualEvaluator",
+          "WeakReactionDiffusionResidualEvaluator",
+          "compute_weak_derivatives",
+          "evaluate_weak_advection_diffusion_residual",
+          "evaluate_weak_ks_residual",
+          "evaluate_weak_reaction_diffusion_residual",
+          "from_pdebench",
+          "from_the_well",
+          "generate_ks_1d_field_batch",
+          "generate_ks_feasibility_field_batch",
+          "generate_reaction_advection_diffusion_1d_field_batch",
+          "generate_variable_coefficient_advection_diffusion_1d_field_batch",
+          "load_pdebench",
+          "load_the_well",
+          "sample_advection_diffusion_initial_conditions"
+        ]
+      },
+      "required_phrases_in_api_stability": {
+        "doc_path": "docs/specs/API_STABILITY.md",
+        "phrases": [
+          "pdelie.data.generate_advection_diffusion_1d_field_batch",
+          "pdelie.residuals.AdvectionDiffusionResidualEvaluator",
+          "pdelie.examples.run_advection_diffusion_vertical_slice_example",
+          "advection_diffusion_constant_coefficient",
+          "these APIs have no root `pdelie` exports"
+        ]
+      }
+    },
+    {
+      "release": "0.20",
+      "source_file": "tests/test_v0_20_release_gate.py",
+      "required_submodule_attributes": [
+        {
+          "submodule": "pdelie.reporting",
+          "name": "summarize_generator_confidence"
+        },
+        {
+          "submodule": "pdelie.examples",
+          "name": "run_generator_confidence_report_example"
+        }
+      ],
+      "forbidden_root_attributes": {
+        "names": [
+          "CallableGeneratorFamily",
+          "KSResidualEvaluator",
+          "KuramotoSivashinskyResidualEvaluator",
+          "WeakAdvectionDiffusionResidualEvaluator",
+          "WeakKSResidualEvaluator",
+          "WeakReactionDiffusionResidualEvaluator",
+          "compute_confidence_score",
+          "compute_weak_derivatives",
+          "evaluate_weak_advection_diffusion_residual",
+          "evaluate_weak_ks_residual",
+          "evaluate_weak_reaction_diffusion_residual",
+          "from_pdebench",
+          "from_the_well",
+          "generate_ks_1d_field_batch",
+          "generate_ks_feasibility_field_batch",
+          "load_pdebench",
+          "load_the_well",
+          "run_generator_confidence_report_example",
+          "split_orbit_train_heldout",
+          "summarize_generator_confidence",
+          "summarize_generator_confidence_score",
+          "train_test_translation_orbit_split"
+        ]
+      },
+      "forbidden_submodule_attributes": {
+        "submodules": [
+          "pdelie.data",
+          "pdelie.invariants",
+          "pdelie.residuals",
+          "pdelie.reporting",
+          "pdelie.examples",
+          "pdelie.discovery",
+          "pdelie.symmetry"
+        ],
+        "names": [
+          "CallableGeneratorFamily",
+          "KSResidualEvaluator",
+          "KuramotoSivashinskyResidualEvaluator",
+          "WeakAdvectionDiffusionResidualEvaluator",
+          "WeakKSResidualEvaluator",
+          "WeakReactionDiffusionResidualEvaluator",
+          "compute_confidence_score",
+          "compute_weak_derivatives",
+          "evaluate_weak_advection_diffusion_residual",
+          "evaluate_weak_ks_residual",
+          "evaluate_weak_reaction_diffusion_residual",
+          "from_pdebench",
+          "from_the_well",
+          "generate_ks_1d_field_batch",
+          "generate_ks_feasibility_field_batch",
+          "load_pdebench",
+          "load_the_well",
+          "split_orbit_train_heldout",
+          "summarize_generator_confidence_score",
+          "train_test_translation_orbit_split"
+        ]
+      },
+      "required_phrases_in_api_stability": {
+        "doc_path": "docs/specs/API_STABILITY.md",
+        "phrases": [
+          "pdelie.reporting.summarize_generator_confidence",
+          "summary_type = \"generator_confidence\"",
+          "strong",
+          "insufficient_evidence",
+          "no root `pdelie` exports"
+        ]
+      }
+    },
+    {
+      "release": "0.21",
+      "source_file": "tests/test_v0_21_release_gate.py",
+      "required_submodule_attributes": [
+        {
+          "submodule": "pdelie.reporting",
+          "name": "summarize_field_batch_readiness"
+        },
+        {
+          "submodule": "pdelie.examples",
+          "name": "run_external_data_readiness_example"
+        }
+      ],
+      "forbidden_root_attributes": {
+        "names": [
+          "KSResidualEvaluator",
+          "KuramotoSivashinskyResidualEvaluator",
+          "WeakAdvectionDiffusionResidualEvaluator",
+          "WeakKSResidualEvaluator",
+          "WeakReactionDiffusionResidualEvaluator",
+          "from_pdebench",
+          "from_the_well",
+          "generate_ks_1d_field_batch",
+          "generate_ks_feasibility_field_batch",
+          "load_field_batch",
+          "load_pdebench",
+          "load_the_well",
+          "resample_nonuniform_grid",
+          "run_external_data_readiness_example",
+          "split_orbit_train_heldout",
+          "summarize_field_batch_readiness",
+          "summarize_field_batch_readiness_score",
+          "train_test_translation_orbit_split"
+        ]
+      },
+      "forbidden_submodule_attributes": {
+        "submodules": [
+          "pdelie.data",
+          "pdelie.invariants",
+          "pdelie.residuals",
+          "pdelie.reporting",
+          "pdelie.examples",
+          "pdelie.discovery",
+          "pdelie.symmetry"
+        ],
+        "names": [
+          "KSResidualEvaluator",
+          "KuramotoSivashinskyResidualEvaluator",
+          "WeakAdvectionDiffusionResidualEvaluator",
+          "WeakKSResidualEvaluator",
+          "WeakReactionDiffusionResidualEvaluator",
+          "from_pdebench",
+          "from_the_well",
+          "generate_ks_1d_field_batch",
+          "generate_ks_feasibility_field_batch",
+          "load_field_batch",
+          "load_pdebench",
+          "load_the_well",
+          "resample_nonuniform_grid",
+          "split_orbit_train_heldout",
+          "summarize_field_batch_readiness_score",
+          "train_test_translation_orbit_split"
+        ]
+      },
+      "required_phrases_in_api_stability": {
+        "doc_path": "docs/specs/API_STABILITY.md",
+        "phrases": [
+          "pdelie.reporting.summarize_field_batch_readiness",
+          "summary_type = \"field_batch_readiness\"",
+          "ready",
+          "needs_attention",
+          "not_ready",
+          "no root `pdelie` exports"
+        ]
+      }
+    },
+    {
+      "release": "0.22",
+      "source_file": "tests/test_v0_22_release_gate.py",
+      "required_submodule_attributes": [
+        {
+          "submodule": "pdelie.discovery",
+          "name": "summarize_discovery_bridge_output"
+        },
+        {
+          "submodule": "pdelie.discovery",
+          "name": "summarize_discovery_result"
+        },
+        {
+          "submodule": "pdelie.reporting",
+          "name": "summarize_downstream_discovery_workflow"
+        },
+        {
+          "submodule": "pdelie.examples",
+          "name": "run_downstream_discovery_contracts_example"
+        }
+      ],
+      "forbidden_root_attributes": {
+        "names": [
+          "KSResidualEvaluator",
+          "WeakKSResidualEvaluator",
+          "from_pdebench",
+          "from_the_well",
+          "generate_ks_1d_field_batch",
+          "load_field_batch",
+          "load_pdebench",
+          "load_the_well",
+          "run_downstream_discovery_contracts_example",
+          "split_orbit_train_heldout",
+          "summarize_discovery_benchmark",
+          "summarize_discovery_bridge_output",
+          "summarize_discovery_result",
+          "summarize_downstream_discovery_workflow",
+          "train_test_translation_orbit_split"
+        ]
+      },
+      "forbidden_submodule_attributes": {
+        "submodules": [
+          "pdelie.data",
+          "pdelie.discovery",
+          "pdelie.invariants",
+          "pdelie.reporting",
+          "pdelie.residuals",
+          "pdelie.symmetry"
+        ],
+        "names": [
+          "KSResidualEvaluator",
+          "WeakKSResidualEvaluator",
+          "from_pdebench",
+          "from_the_well",
+          "generate_ks_1d_field_batch",
+          "load_field_batch",
+          "load_pdebench",
+          "load_the_well",
+          "split_orbit_train_heldout",
+          "summarize_discovery_benchmark",
+          "train_test_translation_orbit_split"
+        ]
+      },
+      "required_phrases_in_api_stability": {
+        "doc_path": "docs/specs/API_STABILITY.md",
+        "phrases": [
+          "pdelie.discovery.summarize_discovery_bridge_output",
+          "pdelie.discovery.summarize_discovery_result",
+          "pdelie.reporting.summarize_downstream_discovery_workflow",
+          "summary_type = \"discovery_bridge_output\"",
+          "summary_type = \"discovery_result\"",
+          "summary_type = \"downstream_discovery_workflow\"",
+          "no root `pdelie` exports"
+        ]
+      }
+    },
+    {
+      "release": "0.23",
+      "source_file": "tests/test_v0_23_release_gate.py",
+      "required_submodule_attributes": [
+        {
+          "submodule": "pdelie.reporting",
+          "name": "summarize_split_leakage_provenance"
+        },
+        {
+          "submodule": "pdelie.examples",
+          "name": "run_split_leakage_provenance_example"
+        }
+      ],
+      "forbidden_root_attributes": {
+        "names": [
+          "KSResidualEvaluator",
+          "WeakKSResidualEvaluator",
+          "from_pdebench",
+          "from_the_well",
+          "generate_ks_1d_field_batch",
+          "load_field_batch",
+          "load_pdebench",
+          "load_the_well",
+          "run_split_leakage_provenance_example",
+          "split_leakage_enforcer",
+          "split_orbit_train_heldout",
+          "summarize_leakage_prevention",
+          "summarize_split_leakage_provenance",
+          "train_test_translation_orbit_split"
+        ]
+      },
+      "forbidden_submodule_attributes": {
+        "submodules": [
+          "pdelie.data",
+          "pdelie.discovery",
+          "pdelie.invariants",
+          "pdelie.reporting",
+          "pdelie.residuals",
+          "pdelie.symmetry"
+        ],
+        "names": [
+          "KSResidualEvaluator",
+          "WeakKSResidualEvaluator",
+          "from_pdebench",
+          "from_the_well",
+          "generate_ks_1d_field_batch",
+          "load_field_batch",
+          "load_pdebench",
+          "load_the_well",
+          "split_leakage_enforcer",
+          "split_orbit_train_heldout",
+          "summarize_leakage_prevention",
+          "train_test_translation_orbit_split"
+        ]
+      },
+      "required_phrases_in_api_stability": {
+        "doc_path": "docs/specs/API_STABILITY.md",
+        "phrases": [
+          "pdelie.reporting.summarize_split_leakage_provenance",
+          "summary_type = \"split_leakage_provenance\"",
+          "no_detected_overlap",
+          "traceable_overlap",
+          "missing_provenance",
+          "inconclusive",
+          "these APIs have no root `pdelie` exports"
+        ]
+      }
+    },
+    {
+      "release": "0.24",
+      "source_file": "tests/test_v0_24_release_gate.py",
+      "required_submodule_attributes": [
+        {
+          "submodule": "pdelie.reporting",
+          "name": "summarize_weak_form_supportability"
+        },
+        {
+          "submodule": "pdelie.examples",
+          "name": "run_weak_form_supportability_example"
+        }
+      ],
+      "forbidden_root_attributes": {
+        "names": [
+          "WSINDyDesignMatrix",
+          "WeakKSResidualEvaluator",
+          "WeakKdVResidualEvaluator",
+          "WeakReactionDiffusionResidualEvaluator",
+          "compute_weak_derivatives",
+          "evaluate_weak_kdv_residual",
+          "evaluate_weak_ks_residual",
+          "evaluate_weak_reaction_diffusion_residual",
+          "run_weak_form_supportability_example",
+          "summarize_weak_form_supportability",
+          "summarize_weak_sparse_recovery",
+          "summarize_wsindy_design_matrix"
+        ]
+      },
+      "forbidden_submodule_attributes": {
+        "submodules": [
+          "pdelie.derivatives",
+          "pdelie.reporting",
+          "pdelie.residuals",
+          "pdelie.symmetry"
+        ],
+        "names": [
+          "WSINDyDesignMatrix",
+          "WeakKSResidualEvaluator",
+          "WeakKdVResidualEvaluator",
+          "WeakReactionDiffusionResidualEvaluator",
+          "compute_weak_derivatives",
+          "evaluate_weak_kdv_residual",
+          "evaluate_weak_ks_residual",
+          "evaluate_weak_reaction_diffusion_residual",
+          "summarize_weak_sparse_recovery",
+          "summarize_wsindy_design_matrix"
+        ]
+      },
+      "required_phrases_in_api_stability": {
+        "doc_path": "docs/specs/API_STABILITY.md",
+        "phrases": [
+          "pdelie.reporting.summarize_weak_form_supportability",
+          "summary_type = \"weak_form_supportability\"",
+          "supported_existing_slice",
+          "diagnostic_only",
+          "weak design matrices",
+          "these APIs have no root `pdelie` exports"
+        ]
+      }
+    },
+    {
+      "release": "0.25",
+      "source_file": "tests/test_v0_25_release_gate.py",
+      "required_submodule_attributes": [
+        {
+          "submodule": "pdelie.examples",
+          "name": "run_kdv_scope_decision_example"
+        }
+      ],
+      "forbidden_root_attributes": {
+        "names": [
+          "ConfigurableKdVResidualEvaluator",
+          "WeakKdVResidualEvaluator",
+          "compute_weak_derivatives",
+          "evaluate_weak_kdv_residual",
+          "generate_configurable_kdv_1d_field_batch",
+          "generate_general_kdv_1d_field_batch",
+          "generate_kdv_1d_field_batch_from_initial_condition",
+          "run_kdv_scope_decision_example",
+          "sample_kdv_mode_coefficients"
+        ]
+      },
+      "forbidden_submodule_attributes": {
+        "submodules": [
+          "pdelie.data",
+          "pdelie.derivatives",
+          "pdelie.residuals"
+        ],
+        "names": [
+          "ConfigurableKdVResidualEvaluator",
+          "WeakKdVResidualEvaluator",
+          "compute_weak_derivatives",
+          "evaluate_weak_kdv_residual",
+          "generate_configurable_kdv_1d_field_batch",
+          "generate_general_kdv_1d_field_batch",
+          "generate_kdv_1d_field_batch_from_initial_condition",
+          "sample_kdv_mode_coefficients"
+        ]
+      },
+      "required_phrases_in_api_stability": {
+        "doc_path": "docs/specs/API_STABILITY.md",
+        "phrases": [
+          "pdelie.examples.run_kdv_scope_decision_example",
+          "summary_type = \"kdv_scope_decision_example\"",
+          "current_frozen_supported",
+          "deferred_no_go",
+          "keep_public_kdv_surface_frozen",
+          "custom KdV initial conditions",
+          "weak KdV remain deferred",
+          "these APIs have no root `pdelie` exports"
+        ]
+      }
+    },
+    {
+      "release": "0.27",
+      "source_file": "tests/test_v0_27_release_gate.py",
+      "required_submodule_attributes": [
+        {
+          "submodule": "pdelie.examples",
+          "name": "run_multi_generator_diagnostics_example"
+        }
+      ],
+      "forbidden_root_attributes": {
+        "names": [
+          "MultiGeneratorInvariantChart",
+          "build_multi_generator_orbit",
+          "build_multi_parameter_orbit_chart",
+          "compose_bch",
+          "fit_generator_family_span",
+          "fit_multi_generator_family",
+          "integrate_generator_flow",
+          "run_multi_generator_diagnostics_example",
+          "run_multi_generator_feasibility_example"
+        ]
+      },
+      "forbidden_submodule_attributes": {
+        "submodules": [
+          "pdelie.discovery",
+          "pdelie.examples",
+          "pdelie.invariants",
+          "pdelie.reporting",
+          "pdelie.symmetry"
+        ],
+        "names": [
+          "MultiGeneratorInvariantChart",
+          "build_multi_generator_orbit",
+          "build_multi_parameter_orbit_chart",
+          "compose_bch",
+          "fit_generator_family_span",
+          "fit_multi_generator_family",
+          "integrate_generator_flow",
+          "run_multi_generator_feasibility_example"
+        ]
+      }
+    },
+    {
+      "release": "0.28",
+      "source_file": "tests/test_v0_28_release_gate.py",
+      "required_submodule_attributes": [
+        {
+          "submodule": "pdelie.data",
+          "name": "from_xarray_dataset"
+        },
+        {
+          "submodule": "pdelie.reporting",
+          "name": "summarize_xarray_dataset_readiness"
+        },
+        {
+          "submodule": "pdelie.examples",
+          "name": "run_data_ecosystem_feasibility_example"
+        }
+      ],
+      "forbidden_root_attributes": {
+        "names": [
+          "from_netcdf",
+          "from_pdebench",
+          "from_the_well",
+          "from_xarray_dataset",
+          "from_zarr",
+          "infer_field_metadata",
+          "load_field_batch",
+          "register_dataset_adapter",
+          "resample_field_batch",
+          "run_data_ecosystem_feasibility_example",
+          "summarize_xarray_dataset_readiness"
+        ]
+      },
+      "forbidden_submodule_attributes": {
+        "submodules": [
+          "pdelie.data"
+        ],
+        "names": [
+          "from_netcdf",
+          "from_pdebench",
+          "from_the_well",
+          "from_zarr",
+          "infer_field_metadata",
+          "load_field_batch",
+          "register_dataset_adapter",
+          "resample_field_batch"
+        ]
+      }
+    },
+    {
+      "release": "0.29",
+      "source_file": "tests/test_v0_29_release_gate.py",
+      "forbidden_root_attributes": {
+        "names": [
+          "KSResidualEvaluator",
+          "KuramotoSivashinskyResidualEvaluator",
+          "MultiGeneratorInvariantChart",
+          "fit_multi_generator_family",
+          "from_netcdf",
+          "from_pdebench",
+          "from_the_well",
+          "from_zarr",
+          "generate_ks_1d_field_batch",
+          "infer_field_metadata",
+          "load_field_batch",
+          "register_dataset_adapter",
+          "resample_field_batch",
+          "summarize_workflow_readiness"
+        ]
+      },
+      "forbidden_submodule_attributes": {
+        "submodules": [
+          "pdelie.reporting",
+          "pdelie.data",
+          "pdelie.residuals"
+        ],
+        "names": [
+          "KSResidualEvaluator",
+          "KuramotoSivashinskyResidualEvaluator",
+          "MultiGeneratorInvariantChart",
+          "fit_multi_generator_family",
+          "from_netcdf",
+          "from_pdebench",
+          "from_the_well",
+          "from_zarr",
+          "generate_ks_1d_field_batch",
+          "infer_field_metadata",
+          "load_field_batch",
+          "register_dataset_adapter",
+          "resample_field_batch",
+          "summarize_workflow_readiness"
+        ]
+      },
+      "strict_json_manifests": [
+        {
+          "path": "docs/specs/support_matrix.v0_29.json"
+        }
+      ]
+    },
+    {
+      "release": "0.30f",
+      "source_file": "tests/test_release_gates.py",
+      "required_phrases_in_plan": {
+        "doc_path": "docs/planning/PLAN.md",
+        "phrases": [
+          "narrow_declarative_release_gate_consolidation"
+        ]
+      },
+      "required_phrases_in_api_stability": {
+        "doc_path": "docs/specs/API_STABILITY.md",
+        "phrases": [
+          "Decision-only note for the frozen `v0.30f`",
+          "narrow_declarative_release_gate_consolidation"
+        ]
+      },
+      "required_phrases_in_roadmap": {
+        "doc_path": "docs/planning/ROADMAP.md",
+        "phrases": [
+          "`v0.30f`"
+        ]
+      },
+      "forbidden_root_attributes": {
+        "names": [
+          "load_release_gate_manifest",
+          "release_gate_manifest"
+        ]
+      }
+    }
+  ]
+}
