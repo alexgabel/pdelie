@@ -90,7 +90,8 @@ def test_reaction_diffusion_residual_uses_explicit_parameters_when_supplied() ->
         {"parameter_tags": {"equation": "heat_1d", "nu": 0.05, "rho": 1.0}},
         {"parameter_tags": {"equation": "reaction_diffusion_fisher_kpp", "rho": 1.0}},
         {"parameter_tags": {"equation": "reaction_diffusion_fisher_kpp", "nu": 0.05}},
-        {"boundary_conditions": {"x": "dirichlet"}},
+        # v0.30d: dirichlet-tagged data no longer belongs here. Reaction-diffusion routes
+        # through compute_derivatives(backend="auto") which handles supported nonperiodic BCs.
     ],
 )
 def test_reaction_diffusion_residual_rejects_wrong_metadata(metadata_update: dict[str, object]) -> None:

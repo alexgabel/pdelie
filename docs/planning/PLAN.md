@@ -1,6 +1,77 @@
-# PDELie - Execution Plan (V0.30c)
+# PDELie - Execution Plan (V0.30d)
 
 **Status:** IN_PROGRESS
+
+`v0.30d` routes the Heat, Burgers, advection-diffusion, and reaction-diffusion residual evaluators through `compute_derivatives(backend="auto")` and consumes the interior-only residual-domain policy that v0.30c's finite-difference backend recommends. KdV and the weak evaluators remain periodic-only per v0.30 scope. No new optional dependency, no CI change, no version bump. Hygiene phase 1 (ruff/mypy/coverage) is deferred to v0.30e.
+
+## Release Theme
+
+`v0.30d` closes the "nonperiodic residuals" loop for the four supported strong-form evaluators. Once complete, a user can pass a Dirichlet, Neumann, or `open_unknown` FieldBatch to any of {Heat, Burgers, advection-diffusion, reaction-diffusion} and receive a residual whose diagnostics honor the interior-only trim policy.
+
+Decision label:
+
+```text
+strong_residual_evaluator_auto_dispatch_and_interior_only_diagnostics
+```
+
+## Implemented Surfaces
+
+- `src/pdelie/residuals/base.py`: shared helper `build_residual_diagnostics_from_derivatives` that reads `recommended_residual_domain_policy` and `recommended_boundary_trim_width` from `DerivativeBatch.config`, computes interior-only max/RMS residuals when the recommended policy is `"interior_only"`, and nests a `full_grid_diagnostic` block for transparency.
+- `src/pdelie/residuals/heat_1d.py`: derivatives default now dispatch through `compute_derivatives(backend="auto")`; diagnostics use the shared helper (adds `residual_domain_policy` and `rms_residual` to Heat outputs).
+- `src/pdelie/residuals/burgers_1d.py`: same routing and shared-helper adoption.
+- `src/pdelie/residuals/advection_diffusion_1d.py`: same routing + shared helper; the direct `is_x_periodic` early-guard is dropped since `compute_derivatives(backend="auto")` decides the backend.
+- `src/pdelie/residuals/reaction_diffusion_1d.py`: same as advection-diffusion.
+
+## Explicitly Untouched
+
+- `src/pdelie/residuals/kdv_1d.py`: KdV remains periodic-only (`equation == "kdv_normalized"` tag + periodic-x check).
+- `src/pdelie/residuals/weak_1d.py`: weak Heat/Burgers residuals stay periodic-only.
+- `src/pdelie/verification/finite_transform.py`: translation finite-transform verification stays periodic-only. Nonperiodic overlap-crop design is a v0.31.5 topic.
+
+## Tests Added
+
+- `tests/test_manufactured_nonperiodic_residuals.py`: manufactured-analytic solutions on Dirichlet (Heat, Burgers) and `open_unknown` (advection-diffusion) plus a Fisher-KPP smoke on Dirichlet; O(h²) interior convergence for Heat; regression that periodic Heat/Burgers still route to spectral_fd with `full_grid` policy; regression that Heat/Burgers diagnostics gain `rms_residual`.
+
+## Tests Updated
+
+- `tests/test_advection_diffusion_residual.py`, `tests/test_reaction_diffusion_residual.py`: the "dirichlet-tagged data raises" parametrization is dropped — that case is now a legitimate nonperiodic residual path.
+- `tests/test_boundary_condition_internal_usage.py`:
+  - `test_heat_residual_evaluator_still_rejects_nonperiodic_derivative_path` replaced by `test_heat_residual_evaluator_now_handles_nonperiodic_via_fd_dispatch`.
+  - `must_import_helper` drops `advection_diffusion_1d.py` and `reaction_diffusion_1d.py`.
+- `tests/test_boundary_readiness_reporting.py`: the "not_configured" residual-domain-policy check now uses a directly constructed `ResidualBatch`; adds a positive test that periodic Heat emits `"full_grid"`.
+- `tests/test_reporting.py`: the frozen residual-summary policy field now expects `"full_grid"` for periodic Heat.
+
+## Public-Surface Audit
+
+Confirmed in `v0.30d`:
+
+- no new `pdelie` root export
+- no new submodule runtime API
+- no new optional dependency
+- no new PDE
+- no KdV nonperiodic, no KS nonperiodic, no weak nonperiodic
+- no PDEBench / The Well support claim
+- no symmetry-method registry
+- no `pyproject.toml` version bump (still `0.29.0`)
+- no CI workflow change
+- ruff / mypy / coverage configuration remains deferred to v0.30e
+
+## v0.30d Sub-Release Gate
+
+`v0.30d` is complete when:
+
+- Heat, Burgers, advection-diffusion, reaction-diffusion evaluators route through `compute_derivatives(backend="auto")` when derivatives are omitted
+- their diagnostics include `residual_domain_policy` (and, when interior-only, `boundary_trim_width` + `full_grid_diagnostic`)
+- KdV, weak, and translation verification remain periodic-only
+- manufactured-analytic tests pass with the expected tolerances
+- the full suite still passes
+- `git diff --check` reports no whitespace damage
+
+---
+
+# PDELie - Execution Plan (V0.30c)
+
+**Status:** COMPLETE
 
 `v0.30c` lands the second runtime step of the v0.30 sequence: the low-order finite-difference derivative backend, the `compute_derivatives(backend="auto")` dispatcher, boundary-aware readiness warnings, and the `residual_domain_policy` field on residual summaries. Residual evaluator auto-dispatch is deferred to v0.30d.
 

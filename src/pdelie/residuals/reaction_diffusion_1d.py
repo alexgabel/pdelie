@@ -4,12 +4,14 @@ from collections.abc import Mapping
 
 import numpy as np
 
-from pdelie._boundary import is_x_periodic
 from pdelie.contracts import DerivativeBatch, FieldBatch, ResidualBatch
 from pdelie.data.reaction_diffusion_1d import DEFAULT_REACTION_DIFFUSION_EQUATION
-from pdelie.derivatives import compute_spectral_fd_derivatives
+from pdelie.derivatives import compute_derivatives
 from pdelie.errors import SchemaValidationError, ScopeValidationError
-from pdelie.residuals.base import ResidualEvaluator
+from pdelie.residuals.base import (
+    ResidualEvaluator,
+    build_residual_diagnostics_from_derivatives,
+)
 
 
 _REACTION_DIFFUSION_EQUATION = "u_t - nu*u_xx - rho*u*(1-u) = 0"
@@ -42,8 +44,9 @@ def _validate_reaction_diffusion_field(field: FieldBatch) -> Mapping[str, object
     if not np.all(np.isfinite(field.values)):
         raise ScopeValidationError("ReactionDiffusionResidualEvaluator requires finite field values.")
 
-    if not is_x_periodic(field):
-        raise ScopeValidationError("ReactionDiffusionResidualEvaluator requires periodic boundary conditions in x.")
+    # v0.30d: BC gate deferred to the derivative backend via compute_derivatives(backend="auto").
+    # Periodic data routes to spectral_fd; supported nonperiodic BCs (dirichlet, neumann,
+    # open_unknown) route to finite_difference and receive interior-only residual diagnostics.
 
     parameter_tags = field.metadata.get("parameter_tags")
     if not isinstance(parameter_tags, Mapping):
@@ -83,7 +86,7 @@ class ReactionDiffusionResidualEvaluator(ResidualEvaluator):
         )
 
         if derivatives is None:
-            derivatives = compute_spectral_fd_derivatives(field)
+            derivatives = compute_derivatives(field, backend="auto")
         derivatives.validate_against(field)
 
         for name in _REQUIRED_DERIVATIVES:
@@ -100,14 +103,16 @@ class ReactionDiffusionResidualEvaluator(ResidualEvaluator):
             residual=residual,
             definition_type="analytic",
             normalization="none",
-            diagnostics={
-                "backend": derivatives.backend,
-                "equation": _REACTION_DIFFUSION_EQUATION,
-                "nu": diffusivity,
-                "rho": reaction_rate,
-                "max_abs_residual": float(np.max(np.abs(residual))),
-                "rms_residual": float(np.sqrt(np.mean(np.square(residual)))),
-            },
+            diagnostics=build_residual_diagnostics_from_derivatives(
+                residual,
+                field,
+                derivatives,
+                extra={
+                    "equation": _REACTION_DIFFUSION_EQUATION,
+                    "nu": diffusivity,
+                    "rho": reaction_rate,
+                },
+            ),
         )
         batch.validate_against(field)
         return batch
