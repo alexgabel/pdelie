@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  v0_30f-release-gate:
+  v0_30-release-gate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -32,7 +32,7 @@ jobs:
           retry 3 python -m pip install -e .[test]
       - name: Check dependencies
         run: python -m pip check
-      - name: Run v0.30f release gate (declarative manifest + all retained per-version gates)
+      - name: Run v0.30 release gate (declarative manifest + all retained per-version gates)
         run: >
           python -m pytest
           tests/test_current_release_gate.py

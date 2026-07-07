@@ -439,6 +439,39 @@ Decision-only note for the frozen `v0.30f` narrow declarative release-gate conso
 - `v0.30f` does not extend the supported-assertion-class schema beyond the 11 classes named in the manifest — files that use `forbidden_phrases_in_*`, CHANGELOG / README / ROADMAP_HISTORY phrase checks, disjunctive+forbidden per-page phrase rules, or `required_json_fields` on manifests are listed in `excluded_functional_release_gate_files` and their declarative content stays in the source file
 - `v0.30f` does not lift the `numpy<2` cap, does not expand the Python matrix, and does not promote the v0.30e advisory jobs (`lint`, `typecheck`, `coverage`) to blocking
 
+Stable public-surface note for the frozen `v0.30.0` release close:
+
+- `v0.30.0` records the release decision `nonperiodic_readiness_and_low_order_finite_difference_diagnostics`
+- `v0.30.0` bumps `pyproject.toml` from `0.29.0` to `0.30.0`; `numpy>=1.24,<2` and `requires-python >=3.11` are unchanged; CI matrix stays Python 3.11 only
+- `v0.30.0` adds **no** new root `pdelie` export
+- new public submodule surfaces (all stable, submodule-only):
+  - `pdelie.derivatives.compute_finite_difference_derivatives(field, *, max_spatial_order=2)` — supports `u_t`, `u_x`, `u_xx` on scalar 1D Dirichlet, Neumann, and `open_unknown` uniform-grid data; `max_spatial_order` is limited to `{1, 2}`; `u_xxx` and `u_xxxx` on nonperiodic data are **not** part of the stable v0.30 surface
+  - `pdelie.derivatives.compute_derivatives(field, *, backend="auto", max_spatial_order=2)` — dispatcher; `backend="auto"` routes periodic data to `spectral_fd` and nonperiodic data (Dirichlet, Neumann, `open_unknown`) to `finite_difference`; explicit-mismatch calls raise `ScopeValidationError`; the selection is recorded in `DerivativeBatch.config["backend_selected_by_boundary_condition"]` and `DerivativeBatch.config["backend_selection_reason"]`; there is no silent fallback
+  - `pdelie.reporting.summarize_field_batch_readiness` and `pdelie.reporting.summarize_xarray_dataset_readiness` now emit `boundary_condition_warnings: list[str]`; the `readiness_label` is downgraded from `"ready"` to `"needs_attention"` when warnings are present (behavior first shipped in v0.30c and stable now)
+  - `pdelie.reporting.summarize_residual_batch` now records a `residual_domain_policy` field sourced from `residual.diagnostics["residual_domain_policy"]`, defaulting to `"not_configured"` when absent; auto-dispatched nonperiodic residuals emit `"interior_only"` and periodic residuals emit `"full_grid"` (behavior first shipped in v0.30c/d and stable now)
+- schema migration confirmed stable in v0.30.0:
+  - `FieldBatch.SCHEMA_VERSION = "0.2"`
+  - `FieldBatch.LEGACY_SCHEMA_VERSIONS = frozenset({"0.1"})`
+  - `FieldBatch.from_dict` accepts both `"0.1"` and `"0.2"` payloads and normalizes legacy string `boundary_conditions["x"]` values via the internal `pdelie._boundary` helpers; migrated payloads carry a `schema_0_1_to_0_2_boundary_normalization` entry in `preprocess_log`
+- internal-only (not public API): `pdelie._boundary` (`BoundaryFace`, `BoundaryConditionSpec`, `normalize_x_boundary_condition`, `get_x_boundary_type`, `is_x_periodic`) — the module is intentionally underscore-prefixed and not re-exported from any submodule
+- cross-cutting hygiene phase 1 (`[tool.ruff]`, `[tool.mypy]` strict scope narrowed to `pdelie.contracts`, `pdelie._boundary`, `pdelie.derivatives.*`, and `[tool.coverage.*]`) is configured and wired to non-blocking CI jobs `lint`, `typecheck`, `coverage`; **promotion to blocking is not part of v0.30 and remains deferred to Phase 2**
+- narrow declarative release-gate consolidation shipped: `configs/release_gate_manifest.json` + `tests/test_release_gates.py` replay declarative content across 18 releases plus the v0.30 close row; the CI job is renamed to `v0_30-release-gate`; **zero release-gate files were deleted**; functional smoke tests intentionally remain explicit
+- deferred surfaces (not present, not planned in v0.30):
+  - root `pdelie.discover_symmetries` (deferred to `v1.0` scope decision)
+  - `pdelie.symmetry.SymmetryMethod` registry (deferred to `v0.30.1`)
+  - external symmetry-method ports (Ko, LieGAN, LaLiGAN — deferred to `v0.33`+)
+  - KdV nonperiodic; KS nonperiodic; public KS runtime API
+  - weak nonperiodic residuals; public weak derivative backend; WSINDy design matrices; weak sparse recovery
+  - `u_xxx` and `u_xxxx` on nonperiodic data
+  - finite-transform verification on nonperiodic translations (`pdelie.verification.verify_translation_generator` and `_apply_uniform_translation` remain periodic-only; overlap-crop is a `v0.31.5` topic)
+  - PDEBench and The Well loaders, `load_field_batch`, `from_pdebench`, `from_the_well`, `from_netcdf`, `from_zarr`, dataset-adapter registries (none of these are on `pdelie.data`)
+  - multi-generator fitting, finite multi-generator flows, BCH composition, orbit charts
+  - multi-channel or 2D contract widening (`v0.34` scope decision)
+  - neural or callable generator APIs; operator symmetry
+  - train/test policy, split enforcement, leakage prevention
+  - PyPI or TestPyPI publication (Git-tag-only for the `v0.x` series; deferred to `v1.0` or later)
+- `v0.30.0` is Git-tag-only. Do not publish to TestPyPI or PyPI for `v0.30.0`.
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 

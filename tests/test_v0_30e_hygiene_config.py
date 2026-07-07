@@ -97,8 +97,14 @@ def test_requires_python_is_still_gte_3_11() -> None:
     assert _pyproject()["project"]["requires-python"] == ">=3.11"
 
 
-def test_package_version_is_still_0_29_0() -> None:
-    assert _pyproject()["project"]["version"] == "0.29.0"
+def test_package_version_matches_v0_30_close() -> None:
+    """v0.30e held the version at 0.29.0; v0.30 close bumps it to 0.30.0.
+
+    Both are acceptable to keep this hygiene-config guard alive across the
+    release-close transition. numpy<2 and requires-python>=3.11 remain
+    unchanged either way (asserted by the sibling guards below).
+    """
+    assert _pyproject()["project"]["version"] in {"0.29.0", "0.30.0"}
 
 
 # --- CI workflow: lint / typecheck / coverage jobs ------------------------
@@ -132,7 +138,7 @@ def test_ci_workflow_preserves_existing_jobs() -> None:
     """The non-release-gate jobs must survive intact.
 
     v0.30f renames the single release-gate job from ``v0_29-release-gate``
-    to ``v0_30f-release-gate``, so this guard covers only the surrounding
+    to ``v0_30-release-gate``, so this guard covers only the surrounding
     jobs.
     """
     jobs = _ci_workflow()["jobs"]
@@ -148,6 +154,6 @@ def test_ci_workflow_release_gate_job_matches_v0_30f() -> None:
     """
     jobs = _ci_workflow()["jobs"]
     release_gate_jobs = [n for n in jobs if re.match(r"^v0_\d+[a-z]?-release-gate$", n)]
-    assert release_gate_jobs == ["v0_30f-release-gate"], (
+    assert release_gate_jobs == ["v0_30-release-gate"], (
         f"v0.30f consolidates the release-gate job under a single name; got: {release_gate_jobs}"
     )

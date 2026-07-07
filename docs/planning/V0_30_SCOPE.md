@@ -1,6 +1,6 @@
 # V0.30 Scope - Nonperiodic Readiness and Low-Order Finite-Difference Derivative Diagnostics
 
-**Status:** IN_PROGRESS
+**Status:** COMPLETE
 
 `v0.30` is the nonperiodic-readiness and low-order finite-difference derivative-diagnostics release.
 
@@ -122,28 +122,28 @@ Staged enforcement (no implementation in v0.30a, designed only):
 ## Milestone Status
 
 - Milestone 0: scope freeze and design documents - COMPLETE (in v0.30a)
-- Milestone 1: structured `BoundaryConditionSpec` runtime - DESIGN COMPLETE in v0.30a, IMPLEMENTATION DEFERRED to v0.30
-- Milestone 2: `compute_finite_difference_derivatives` and dispatcher - DESIGN COMPLETE in v0.30a, IMPLEMENTATION DEFERRED to v0.30
-- Milestone 3: residual domain policy uptake in summaries - DESIGN COMPLETE in v0.30a, IMPLEMENTATION DEFERRED to v0.30
-- Milestone 4: manufactured nonperiodic residual preflight tests - DESIGN COMPLETE in v0.30a, IMPLEMENTATION DEFERRED to v0.30
-- Milestone 5: ruff/mypy/coverage Phase 1 in `pyproject.toml` and CI - DESIGN COMPLETE in v0.30a, IMPLEMENTATION DEFERRED to v0.30
-- Milestone 6: release-gate consolidation - DESIGN COMPLETE in v0.30a, IMPLEMENTATION DEFERRED to v0.30
+- Milestone 1: structured `BoundaryConditionSpec` runtime - COMPLETE (in v0.30b)
+- Milestone 2: `compute_finite_difference_derivatives` and dispatcher - COMPLETE (in v0.30c)
+- Milestone 3: residual domain policy uptake in summaries - COMPLETE (in v0.30c) and residual evaluator auto-dispatch - COMPLETE (in v0.30d)
+- Milestone 4: manufactured nonperiodic residual preflight tests - COMPLETE (in v0.30c and v0.30d)
+- Milestone 5: ruff/mypy/coverage Phase 1 in `pyproject.toml` and CI - COMPLETE (in v0.30e, non-blocking)
+- Milestone 6: release-gate consolidation - COMPLETE narrowly (in v0.30f; manifest-driven, zero file deletions)
 
-## Release Gate (v0.30 proper, not v0.30a)
+## Release Gate (v0.30 close)
 
-`v0.30` is complete only if:
+`v0.30.0` shipped with the following criteria satisfied:
 
-- `FieldBatch.SCHEMA_VERSION` is `"0.2"` and `from_dict` accepts both `"0.1"` and `"0.2"` payloads
-- `compute_finite_difference_derivatives` is importable from `pdelie.derivatives` and supports `u_t`, `u_x`, `u_xx` on Dirichlet/Neumann/`open_unknown` data
-- `compute_derivatives(backend="auto")` is importable and records its selection explicitly
-- Heat, Burgers, and advection-diffusion residual evaluators accept nonperiodic structured BCs and route to the finite-difference backend by default
-- `summarize_residual_batch` and `summarize_field_batch_readiness` expose `residual_domain_policy` and `boundary_condition_warnings` respectively
-- `[tool.ruff]`, `[tool.mypy]`, `[tool.coverage]` are configured in `pyproject.toml`; non-blocking CI jobs run
-- The parameterized release-gate consolidation lands and the per-version `tests/test_v0_NN_release_gate.py` files (other than v0.30 itself) are removed
-- `tests/test_v0_30_release_gate.py` passes
-- the full test suite passes
-- package metadata is bumped to `0.30.0`
-- Git-tag-only; PyPI/TestPyPI remain deferred to `v1.0` or later
+- `FieldBatch.SCHEMA_VERSION` is `"0.2"` and `from_dict` accepts both `"0.1"` and `"0.2"` payloads — landed in `v0.30b`.
+- `compute_finite_difference_derivatives` is importable from `pdelie.derivatives` and supports `u_t`, `u_x`, `u_xx` on Dirichlet/Neumann/`open_unknown` data — landed in `v0.30c`.
+- `compute_derivatives(backend="auto")` is importable and records its selection explicitly in `DerivativeBatch.config` — landed in `v0.30c`.
+- Heat, Burgers, advection-diffusion, and reaction-diffusion residual evaluators route through `compute_derivatives(backend="auto")` when derivatives are omitted — landed in `v0.30d`.
+- `summarize_residual_batch` and `summarize_field_batch_readiness` expose `residual_domain_policy` and `boundary_condition_warnings` respectively — landed in `v0.30c`.
+- `[tool.ruff]`, `[tool.mypy]`, `[tool.coverage]` are configured in `pyproject.toml`; the `lint`, `typecheck`, and `coverage` CI jobs run as **advisory / non-blocking** — landed in `v0.30e`. Promotion to blocking is Phase 2 (post-v0.30).
+- The parameterized release-gate consolidation lands as `configs/release_gate_manifest.json` + `tests/test_release_gates.py`. **Narrowly**: no per-version `tests/test_v0_NN_release_gate.py` file is deleted; the consolidation is by manifest addition. Files that use assertion patterns outside the 11 supported classes stay in-place and are listed in `excluded_functional_release_gate_files` — landed in `v0.30f`.
+- The v0.30 declarative gate is a row in `configs/release_gate_manifest.json` replayed by `tests/test_release_gates.py`; a standalone `tests/test_v0_30_release_gate.py` file is intentionally not added.
+- The full test suite passes.
+- Package metadata is bumped to `0.30.0`; `numpy>=1.24,<2` and `requires-python >=3.11` are unchanged.
+- Git-tag-only; PyPI/TestPyPI remain deferred to `v1.0` or later.
 
 ## v0.30a Sub-Release Gate
 

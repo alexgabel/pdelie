@@ -12,7 +12,7 @@ Hosted documentation: <https://pdelie.readthedocs.io/en/latest/>
 
 ![PDELie pipeline](docs/assets/pdelie_pipeline.svg)
 
-The current stable release is `v0.29.0` / **V0.29**: a workflow-recipes and support-matrix release. It adds public RTD workflow pages, a machine-readable support matrix, and two rendered tutorial notebooks for the core user paths, while numerical scope, runtime APIs, file loaders, broad adapters, multidimensional grids, and root exports remain unchanged. The V0.28 narrow scalar `xarray.Dataset` path remains part of the retained stable data surface.
+The current stable release is `v0.30.0` / **V0.30**: nonperiodic-readiness and low-order finite-difference derivative diagnostics. It adds structured boundary-condition metadata (`FieldBatch.SCHEMA_VERSION` bump `0.1` → `0.2`), a `finite_difference` derivative backend for `u_t`, `u_x`, `u_xx` on scalar 1D nonperiodic uniform grids, a `compute_derivatives(backend="auto")` dispatcher, interior-only residual diagnostics for the Heat / Burgers / advection-diffusion / reaction-diffusion strong evaluators, non-blocking ruff / mypy / coverage hygiene, and a narrow declarative release-gate consolidation. KdV, weak evaluators, and translation finite-transform verification remain periodic-only. The V0.29 workflow recipes and support matrix are retained; the V0.28 narrow scalar `xarray.Dataset` path remains part of the stable data surface. No root API expansion; `numpy<2` and Python 3.11-only CI matrix unchanged.
 
 ## Choose Your Workflow
 
@@ -161,7 +161,7 @@ These are smoke/reporting examples, not canonical artifact schemas.
 
 The current release is validated by:
 
-- the explicit `v0_29-release-gate` CI job
+- the explicit `v0_30-release-gate` CI job
 - full editable `python -m pytest`
 - built-wheel package smoke
 - packaged example smoke
