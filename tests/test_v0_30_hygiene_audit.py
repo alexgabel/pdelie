@@ -97,13 +97,21 @@ def test_v0_30_hygiene_audit_documents_strict_json_policy() -> None:
 
 
 def test_v0_30_hygiene_audit_documents_release_gate_consolidation_proposal() -> None:
-    """The audit must explain the manifest-driven parameterized release-gate plan."""
+    """The audit must explain the manifest-driven parameterized release-gate plan.
+
+    v0.30a specified the consolidation contract; v0.30f implemented it narrowly
+    (manifest + parameterized test, zero file deletions). The audit must
+    describe both the contract and the shipping shape.
+    """
     audit = _audit_text()
     assert "parameterized" in audit.lower()
     assert "release_gate_manifest.json" in audit
-    # The proposal must be scoped to v0.30 proper, not v0.30a
-    assert "v0.30 proper" in audit
-    assert "not v0.30a" in audit or "not in v0.30a" in audit.lower()
+    # v0.30a specified the consolidation contract; the audit records this.
+    assert "v0.30a" in audit
+    # v0.30f is where the consolidation actually shipped — assert the doc
+    # records that landing rather than still calling it a proposal.
+    assert "v0.30f" in audit
+    assert "IMPLEMENTED" in audit or "implemented" in audit
 
 
 def test_v0_30_hygiene_audit_documents_staged_enforcement_phases() -> None:
@@ -189,10 +197,10 @@ def test_v0_30e_ci_workflow_now_has_lint_typecheck_coverage_jobs_nonblocking() -
             f"v0.30e CI job {job!r} must be non-blocking"
         )
 
-    # The v0.30f release-gate consolidation has not landed yet.
+    # After v0.30f, the single release-gate job is renamed accordingly.
     release_gate_jobs = re.findall(r"^  (v0_\d+[a-z]?-release-gate):", workflow, flags=re.MULTILINE)
-    assert release_gate_jobs == ["v0_29-release-gate"], (
-        f"v0.30e must not preempt v0.30f's release-gate consolidation; got: {release_gate_jobs}"
+    assert release_gate_jobs == ["v0_30f-release-gate"], (
+        f"v0.30f consolidates the release-gate job under a single name; got: {release_gate_jobs}"
     )
 
 
@@ -213,3 +221,75 @@ def test_v0_30_no_new_optional_dependency_added() -> None:
     assert set(optional.keys()) == expected_extras, (
         f"unexpected optional-dependency extras: {sorted(optional.keys())}"
     )
+
+
+_SUPPORTED_MANIFEST_CLASSES = frozenset({
+    "required_phrases_in_scope_doc",
+    "required_phrases_in_api_stability",
+    "required_phrases_in_roadmap",
+    "required_phrases_in_plan",
+    "required_phrases_in_readiness_doc",
+    "forbidden_root_attributes",
+    "forbidden_submodule_attributes",
+    "required_root_attributes",
+    "required_submodule_attributes",
+    "strict_json_manifests",
+    "notebook_structural_checks",
+})
+_MANIFEST_METADATA_KEYS = frozenset({"release", "source_file"})
+
+
+def test_v0_30f_release_gate_consolidation_manifest_exists() -> None:
+    """v0.30f ships a strict-JSON declarative release-gate manifest."""
+    manifest_path = _repo_path("configs/release_gate_manifest.json")
+    assert manifest_path.exists(), f"missing {manifest_path}"
+
+    manifest = _repo_json("configs/release_gate_manifest.json")
+    # strict-JSON: no NaN / infinity permitted.
+    assert json.loads(json.dumps(manifest, allow_nan=False)) == manifest
+
+    assert manifest["summary_type"] == "pdelie_declarative_release_gate_manifest"
+    assert manifest["scope"] == "declarative_release_gate_checks_only"
+    assert manifest["current_release_gate_job_name"] == "v0_30f-release-gate"
+    assert manifest["release_count"] == len(manifest["releases"])
+
+    for row in manifest["releases"]:
+        assert "release" in row
+        for key in row:
+            if key in _MANIFEST_METADATA_KEYS:
+                continue
+            assert key in _SUPPORTED_MANIFEST_CLASSES, (
+                f"release {row['release']!r} uses unsupported class {key!r}"
+            )
+
+
+def test_v0_30f_all_release_gate_files_are_retained() -> None:
+    """v0.30f consolidates by manifest addition, not by file deletion.
+
+    All 26 tests/test_v0_*_release_gate.py files (v0.4-v0.29 plus v0.30e's
+    hygiene-config test) stay in place. The parameterized replay in
+    tests/test_release_gates.py runs alongside them.
+    """
+    files = sorted((_REPO_ROOT / "tests").glob("test_v0_*_release_gate.py"))
+    assert len(files) == 26, (
+        f"expected 26 per-version release-gate files after v0.30f (no deletions); "
+        f"found {len(files)}"
+    )
+    assert (_REPO_ROOT / "tests" / "test_release_gates.py").exists(), (
+        "v0.30f must add tests/test_release_gates.py alongside the per-version files"
+    )
+
+
+def test_v0_30f_hygiene_audit_records_consolidation_landed() -> None:
+    """The hygiene audit must record that v0.30f delivered the manifest."""
+    audit = _audit_text()
+    assert "v0.30f" in audit, "hygiene audit must reference v0.30f"
+    assert "release_gate_manifest.json" in audit
+    # The audit must acknowledge that the per-version files are retained,
+    # not falsely claim they were all removed.
+    assert "retained" in audit.lower() or "kept" in audit.lower()
+    # The excluded functional/mixed files should be listed with reasons.
+    for excluded_release in ("v0.4", "v0.6", "v0.7", "v0.8", "v0.9", "v0.11", "v0.12", "v0.26"):
+        assert excluded_release in audit, (
+            f"hygiene audit must list excluded release-gate file for {excluded_release}"
+        )

@@ -1,6 +1,6 @@
 # V0.30 Hygiene Audit
 
-**Status:** AUDIT-ONLY in v0.30a. **Phase 1 IMPLEMENTED in v0.30e**: ruff, mypy (strict scope narrowed to `pdelie.contracts`, `pdelie._boundary`, `pdelie.derivatives.*`), and pytest-cov are configured in `pyproject.toml` and wired into three new non-blocking CI jobs (`lint`, `typecheck`, `coverage`). Coverage baseline at v0.30e HEAD: **86%** on `src/pdelie/`. Non-blocking gates: a red run reports findings but does not fail the workflow. Numpy `<2` cap and Python 3.11-only matrix remain unchanged; broadening those is Phase 3+ work.
+**Status:** AUDIT-ONLY in v0.30a. **Phase 1 IMPLEMENTED in v0.30e**: ruff, mypy (strict scope narrowed to `pdelie.contracts`, `pdelie._boundary`, `pdelie.derivatives.*`), and pytest-cov are configured in `pyproject.toml` and wired into three new non-blocking CI jobs (`lint`, `typecheck`, `coverage`). Coverage baseline at v0.30e HEAD: **86%** on `src/pdelie/`. Non-blocking gates: a red run reports findings but does not fail the workflow. Numpy `<2` cap and Python 3.11-only matrix remain unchanged; broadening those is Phase 3+ work. **Release-gate consolidation IMPLEMENTED narrowly in v0.30f**: `configs/release_gate_manifest.json` and the parameterized `tests/test_release_gates.py` replay declarative assertions for 18 releases; all 26 per-version files are retained (functional smoke tests intentionally remain explicit Python tests). See "Release-gate consolidation" below.
 
 This document audits the current state of cross-cutting code-quality infrastructure (lint, type-checking, coverage, Python matrix, NumPy upper bound, release-gate proliferation, optional-dependency import policy, JSON-strict reporting policy) and proposes staged enforcement.
 
@@ -143,21 +143,49 @@ Phase 1 is opt-in by CI: the existing `editable-tests`, `package-smoke`, `docs-b
 
 ## Release-gate consolidation
 
-Recommendation for v0.30 proper:
+**Landed in v0.30f — narrowly.** The consolidation is by manifest addition, not by file deletion. The design goal — one parameterized test driven by a JSON manifest — was implemented, but the "replace 26 files" outcome that v0.30a proposed is scoped down: only declarative assertions that fit the 11 supported classes migrate to the manifest. Functional smoke and numeric behavior tests continue as explicit Python tests. Files are retained regardless.
 
-Replace the 26 per-version release-gate test files with **one parameterized test** driven by a manifest file at `configs/release_gate_manifest.json`. The manifest lists, per past release:
+### What v0.30f ships
 
-- the file paths that must exist (`docs/planning/V0_NN_SCOPE.md`, `docs/releases/V0_NN_RELEASE_READINESS.md`)
-- the phrases that must appear in `docs/planning/V0_NN_SCOPE.md`, `docs/planning/ROADMAP.md`, `docs/specs/API_STABILITY.md`, and `docs/planning/PLAN.md` for the *current* release
-- the names that must not appear on `pdelie` or any submodule at the time of that release
+- `configs/release_gate_manifest.json` — strict-JSON manifest with `summary_type = "pdelie_declarative_release_gate_manifest"`. 18 release rows migrated, spanning `v0.10`, `v0.13`–`v0.25`, `v0.27`–`v0.29`, and a self-check row for `v0.30f`. `release_gate_manifest.json` is the sole source of truth for declarative assertions moving forward.
+- `tests/test_release_gates.py` — single parameterized test file that dispatches over the 11 supported assertion classes:
+  - `required_phrases_in_scope_doc`, `required_phrases_in_api_stability`, `required_phrases_in_roadmap`, `required_phrases_in_plan`, `required_phrases_in_readiness_doc`
+  - `forbidden_root_attributes`, `forbidden_submodule_attributes`, `required_root_attributes`, `required_submodule_attributes`
+  - `strict_json_manifests`, `notebook_structural_checks`
+- CI: the `v0_29-release-gate` job is renamed to `v0_30f-release-gate`. Its invocation invokes `tests/test_current_release_gate.py`, the new `tests/test_release_gates.py`, and every retained `tests/test_v0_NN_release_gate.py` (v0.4 through v0.29).
 
-The consolidated test reads the manifest and parameterizes its assertions over the listed releases. The existing `tests/test_v0_29_release_gate.py` is the template for the parameterized test body: helpers `_repo_path`, `_repo_text`, `_repo_json`; per-release assertions on file existence, phrase presence, forbidden-name absence, and JSON-strict manifest validation.
+### Classification (Explore audit, v0.30f)
 
-The current `tests/test_v0_NN_release_gate.py` files (for `NN ∈ {4..29}`) are removed in the same release that adds the consolidated test. The consolidated test must pass at parity with the removed files before deletion.
+- **`functional_only` (2 files):** `test_v0_4_release_gate.py`, `test_v0_7_release_gate.py`. No declarative content to replay; retained unchanged.
+- **`mixed` (23 files):** `test_v0_6_release_gate.py`, `test_v0_8_release_gate.py`, `test_v0_9_release_gate.py`, `test_v0_10_release_gate.py`, and every file `test_v0_11_release_gate.py` through `test_v0_29_release_gate.py`. Declarative content that fits the 11 supported classes is replayed via the manifest; functional/numeric assertions stay in the source file.
+- **`declarative_only`:** zero files. This is why no file is deleted in v0.30f.
 
-This change reduces 26 hand-maintained files to 1 parameterized test + 1 JSON manifest. The maintenance burden becomes editing the manifest, not adding a new test file per release.
+### Files excluded from the manifest and why
 
-**This consolidation is scoped to v0.30 proper, not v0.30a.** v0.30a only specifies the consolidation contract. The `tests/test_v0_30_hygiene_audit.py::test_v0_30_hygiene_audit_documents_release_gate_consolidation_proposal` test verifies this section contains the required text and that the consolidation lands in v0.30 proper, not v0.30a.
+Some `mixed` files use assertion patterns outside the 11 supported classes. The manifest does not partially convert these; their declarative content stays in the source file, and the file is listed under `excluded_functional_release_gate_files` in the manifest with a per-file reason. These are the excluded files:
+
+- `v0.4` (`tests/test_v0_4_release_gate.py`) — reason: `pure_numeric_vertical_slice`. No declarative content at all.
+- `v0.6` (`tests/test_v0_6_release_gate.py`) — reason: `declarative_block_embedded_in_functional_test_tail`. Declarative attribute checks are nested inside a functional pipeline test.
+- `v0.7` (`tests/test_v0_7_release_gate.py`) — reason: `pure_numeric_bridge_parity`. No declarative content at all.
+- `v0.8` (`tests/test_v0_8_release_gate.py`) — reason: `schema_gap_forbidden_phrases_in_api_stability`. Uses `... not in api_stability` on specific phrases; the manifest does not yet support `forbidden_phrases_in_*`.
+- `v0.9` (`tests/test_v0_9_release_gate.py`) — same reason as `v0.8`.
+- `v0.11` (`tests/test_v0_11_release_gate.py`) — reason: `interleaved_runtime_and_declarative_in_same_test`. Test 1 mixes `compute_spectral_fd_derivatives` calls with declarative assertions inside one function.
+- `v0.12` (`tests/test_v0_12_release_gate.py`) — reason: `schema_gap_changelog_readme_roadmap_history_phrase_checks`. Uses `CHANGELOG.md`, `README.md`, and `docs/planning/archive/ROADMAP_HISTORY.md` phrase checks; the manifest does not yet support those doc-path classes.
+- `v0.26` (`tests/test_v0_26_release_gate.py`) — same reason as `v0.8` and `v0.9`.
+
+### What did **not** get consolidated
+
+- 26 per-version `tests/test_v0_NN_release_gate.py` files. All retained. No file deleted in v0.30f.
+- Every `mixed` file's functional/numeric assertions. These remain explicit Python tests.
+- The v0.29 `SUPPORT_MATRIX.md` phrase checks, `docs/tutorials/*.nblink` link checks, `docs/workflows/*.md` disjunctive+forbidden per-page phrase rules, and `required_json_fields` structural checks on the support-matrix manifest — all schema gaps for the current 11-class manifest. They stay in `tests/test_v0_29_release_gate.py`.
+
+### Why this is still worth doing
+
+Even with zero deletions, v0.30f delivers a durable pattern:
+
+1. Future release gates (v0.30 proper, v0.31+) that fit the 11 classes can skip a Python file entirely — add a row to the manifest instead.
+2. The manifest is a strict-JSON, machine-readable audit surface: what phrases must appear in which docs, what attributes must (not) exist on which modules. Downstream tooling can consume it.
+3. Schema gaps are named explicitly (`excluded_functional_release_gate_files`), so future manifest-schema extensions (e.g. `forbidden_phrases_in_api_stability`, `required_phrases_in_readme`) can be planned rather than accidental.
 
 ## Summary table
 

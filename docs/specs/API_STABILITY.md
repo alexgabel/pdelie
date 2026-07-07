@@ -429,6 +429,16 @@ Decision-only note for the frozen `v0.30c` low-order finite-difference and bound
 - `u_xxx` and `u_xxxx` on nonperiodic data remain unsupported; no experimental flag is exposed in v0.30c
 - the `finite_difference` backend uses only `numpy.gradient(edge_order=2)`; higher-order one-sided stencils, Fornberg-style families, and weak/Galerkin formulations remain deferred
 
+Decision-only note for the frozen `v0.30f` narrow declarative release-gate consolidation sub-release:
+
+- `v0.30f` adds no new runtime public API and no new root `pdelie` export
+- `v0.30f` records the design decision `narrow_declarative_release_gate_consolidation`
+- `v0.30f` does not bump `pyproject.toml` (stays at `0.29.0`); the version bump is reserved for the v0.30 release close
+- `v0.30f` adds `configs/release_gate_manifest.json` (strict JSON, `summary_type = "pdelie_declarative_release_gate_manifest"`) and `tests/test_release_gates.py`; the CI release-gate job is renamed from `v0_29-release-gate` to `v0_30f-release-gate`
+- `v0.30f` deletes zero release-gate files. All 26 `tests/test_v0_NN_release_gate.py` files stay in place. Consolidation is by manifest addition, not by file removal.
+- `v0.30f` does not extend the supported-assertion-class schema beyond the 11 classes named in the manifest — files that use `forbidden_phrases_in_*`, CHANGELOG / README / ROADMAP_HISTORY phrase checks, disjunctive+forbidden per-page phrase rules, or `required_json_fields` on manifests are listed in `excluded_functional_release_gate_files` and their declarative content stays in the source file
+- `v0.30f` does not lift the `numpy<2` cap, does not expand the Python matrix, and does not promote the v0.30e advisory jobs (`lint`, `typecheck`, `coverage`) to blocking
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 
