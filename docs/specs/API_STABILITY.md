@@ -472,6 +472,15 @@ Stable public-surface note for the frozen `v0.30.0` release close:
   - PyPI or TestPyPI publication (Git-tag-only for the `v0.x` series; deferred to `v1.0` or later)
 - `v0.30.0` is Git-tag-only. Do not publish to TestPyPI or PyPI for `v0.30.0`.
 
+Planning note for `v0.30.1` (registry MVP + `SymmetryCandidate` contract):
+
+- `v0.30.1` will land the submodule-only `pdelie.symmetry.SymmetryMethod` registry MVP alongside a `pdelie.symmetry.SymmetryCandidate` discriminated-union wrapper contract.
+- `SymmetryCandidate` is the single input/output shape that every downstream release consumes: v0.31's discovery task bridge, v0.33's Ko-sparse external candidate-generator adapter, and v0.35a's LieGG-style extraction all take and return `SymmetryCandidate`.
+- `SymmetryCandidate` represents any of: existing `GeneratorFamily`, `FormulaGeneratorFamily`, `InvariantMapSpec`, matrix Lie-algebra generators, coordinate vector fields, finite-transform specs, and (later) latent generators from trained models. No release forces one shape onto another.
+- The built-in `polynomial_translation_svd` adapter must return `SymmetryCandidate`, not `GeneratorFamily` directly. This is what avoids the "SymmetryMethod outputs all coerced into GeneratorFamily" failure mode.
+- v0.30.1 remains submodule-only. No root `pdelie` export. No `pdelie.discover_symmetries`. No external-method port in v0.30.1 (Ko-sparse lands in v0.33 as a distinct experimental adapter).
+- v0.31 (discovery task bridge) is fenced against `SymmetryCandidate` inputs and outputs: v0.31 consumes only `FieldBatch` + `DerivativeBatch` + `ResidualBatch`, and its `TaskResult` schema records a `candidate_reference: dict | None` that becomes the `SymmetryCandidate` cross-link only after v0.30.1 lands and stabilizes.
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 
