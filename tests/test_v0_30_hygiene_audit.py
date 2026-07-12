@@ -197,10 +197,14 @@ def test_v0_30e_ci_workflow_now_has_lint_typecheck_coverage_jobs_nonblocking() -
             f"v0.30e CI job {job!r} must be non-blocking"
         )
 
-    # After v0.30f, the single release-gate job is renamed accordingly.
+    # Release-gate job name across the v0.30 arc:
+    # v0.29 shipped ``v0_29-release-gate``; v0.30f renamed it to
+    # ``v0_30f-release-gate``; the v0.30 release close renamed it to
+    # ``v0_30-release-gate``. This guard tracks the current final name.
     release_gate_jobs = re.findall(r"^  (v0_\d+[a-z]?-release-gate):", workflow, flags=re.MULTILINE)
     assert release_gate_jobs == ["v0_30-release-gate"], (
-        f"v0.30f consolidates the release-gate job under a single name; got: {release_gate_jobs}"
+        f"expected exactly one release-gate job named 'v0_30-release-gate' "
+        f"after the v0.30 release close; got: {release_gate_jobs}"
     )
 
 

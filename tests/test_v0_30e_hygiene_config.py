@@ -137,17 +137,28 @@ def test_lint_typecheck_coverage_jobs_are_non_blocking() -> None:
 def test_ci_workflow_preserves_existing_jobs() -> None:
     """The non-release-gate jobs must survive intact.
 
-    v0.30f renames the single release-gate job from ``v0_29-release-gate``
-    to ``v0_30-release-gate``, so this guard covers only the surrounding
-    jobs.
+    The release-gate job itself has been renamed twice in the v0.30 arc:
+    v0.30f renamed ``v0_29-release-gate`` to ``v0_30f-release-gate``, and
+    the v0.30 release close renamed ``v0_30f-release-gate`` to
+    ``v0_30-release-gate``. This guard covers only the surrounding jobs
+    (docs-build, editable-tests, package-smoke); the release-gate job is
+    audited separately below.
     """
     jobs = _ci_workflow()["jobs"]
     for job_name in ("docs-build", "editable-tests", "package-smoke"):
         assert job_name in jobs, f"pre-existing job {job_name!r} disappeared"
 
 
-def test_ci_workflow_release_gate_job_matches_v0_30f() -> None:
-    """After v0.30f the CI workflow carries exactly one release-gate job.
+def test_ci_workflow_release_gate_job_matches_v0_30_close() -> None:
+    """After the v0.30 release close the workflow carries exactly one
+    release-gate job, named ``v0_30-release-gate``.
+
+    Renaming timeline (all inside the v0.30 arc):
+
+    - v0.29 shipped ``v0_29-release-gate``.
+    - v0.30f renamed it to ``v0_30f-release-gate`` alongside the
+      manifest-driven narrow declarative consolidation.
+    - The v0.30 release close renamed it to the final ``v0_30-release-gate``.
 
     Inverted from the v0.30e-era ``test_ci_workflow_has_no_v0_30_release_gate_job_yet``
     guard, which asserted that v0.30e had not preempted v0.30f.
@@ -155,5 +166,6 @@ def test_ci_workflow_release_gate_job_matches_v0_30f() -> None:
     jobs = _ci_workflow()["jobs"]
     release_gate_jobs = [n for n in jobs if re.match(r"^v0_\d+[a-z]?-release-gate$", n)]
     assert release_gate_jobs == ["v0_30-release-gate"], (
-        f"v0.30f consolidates the release-gate job under a single name; got: {release_gate_jobs}"
+        f"expected exactly one release-gate job named 'v0_30-release-gate' "
+        f"after the v0.30 release close; got: {release_gate_jobs}"
     )
