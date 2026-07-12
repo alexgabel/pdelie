@@ -127,10 +127,19 @@ Audit-only. This document records the baseline. No `pyproject.toml` change, no C
 
 Phase 1 is opt-in by CI: the existing `editable-tests`, `package-smoke`, `docs-build`, and `v0_29-release-gate` (which becomes `v0_30-release-gate`) jobs continue unchanged and remain the merge gates.
 
-### Phase 2 — v0.30.1 or v0.31
+### Phase 2 — v0.30.1a through v0.30.1k (split per-axis)
 
-- Tighten `[tool.mypy].strict` across all of `src/pdelie/`. Address strictness violations site by site.
-- Promote `lint` and `typecheck` CI jobs to **blocking**.
+Phase 2 is split into small dedicated maintenance PRs, each promoting exactly one advisory job or broadening exactly one mypy strict scope. This is deliberately the opposite of "one big Phase 2 PR": each promotion is boring, mergeable in a day, and cannot fight rebase-hell against v0.31.
+
+- **v0.30.1a — lint promotion (this PR).** Removes `continue-on-error: true` from the `lint` CI job and its `Ruff lint` step. `python -m ruff check .` now gates merges. `typecheck` and `coverage` remain advisory.
+- **v0.30.1b — coverage promotion.** Removes `continue-on-error: true` from the `coverage` CI job and its `pytest --cov` step. Raises `[tool.coverage.report].fail_under` from `80` to `85`. Current baseline is `86%` on `src/pdelie/`; the raise-with-headroom prevents silent regression on new code that lands in v0.31+.
+- **v0.30.1c** through **v0.30.1k — mypy strict-scope broadening, one subpackage per PR.** Order: `pdelie.data.*` → `pdelie.residuals.*` → `pdelie.reporting.*` → `pdelie.discovery.*` → `pdelie.symmetry.*` → `pdelie.invariants.*` → `pdelie.portability.*` → `pdelie.verification.*` → `pdelie.viz.*`. After the last, promote the `typecheck` CI job to blocking.
+
+Rationale for the per-axis split (recorded in the workflow review that authored the v0.31 arc plan):
+
+- Phase 2 sits between two feature releases (v0.30 close and v0.31). Bundling it with either creates review noise and rebase risk.
+- A soak period without new code produces zero new signal — v0.30.0 introduced no code change since v0.30e already ran the advisory jobs. Ordering Phase 2 promotions **before** v0.31 exposes any regression at PR review time on v0.31 itself, rather than after merge.
+- Coverage regression masking is a live risk: `continue-on-error: true` on the coverage job plus `fail_under = 80` against an 86% baseline gives ~6 points of slack. New `pdelie.tasks.discovery` code with thin tests could silently drag coverage toward 80% while CI stays advisory-green. v0.30.1b closes that gap before v0.31a lands.
 
 ### Phase 3 — v0.32
 

@@ -62,12 +62,13 @@ jobs:
           tests/test_v0_27_release_gate.py
           tests/test_v0_28_release_gate.py
           tests/test_v0_29_release_gate.py
-  # v0.30e hygiene phase 1: advisory / non-blocking lint, typecheck, coverage.
-  # These jobs report findings but do not gate merges. `continue-on-error: true`
-  # means a red run shows in the workflow summary without failing the workflow.
+  # v0.30e hygiene phase 1 landed lint/typecheck/coverage as advisory.
+  # v0.30.1a hygiene phase 2 (this PR) promotes `lint` from advisory to
+  # blocking: a red run now fails the workflow. `typecheck` and `coverage`
+  # remain advisory (`continue-on-error: true`) and are promoted in
+  # v0.30.1b (coverage) and v0.30.1c-k (mypy strict-scope broadening).
   lint:
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -91,8 +92,7 @@ jobs:
           }
           retry 3 python -m pip install --upgrade pip
           retry 3 python -m pip install -e .[test]
-      - name: Ruff lint (non-blocking)
-        continue-on-error: true
+      - name: Ruff lint (blocking as of v0.30.1a)
         run: python -m ruff check .
   typecheck:
     runs-on: ubuntu-latest
