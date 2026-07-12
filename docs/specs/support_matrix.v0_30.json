@@ -1,0 +1,131 @@
+{
+  "summary_schema_version": "0.1",
+  "summary_type": "pdelie_support_matrix",
+  "release": "0.30.0",
+  "release_decision": "nonperiodic_readiness_and_low_order_finite_difference_diagnostics",
+  "columns": [
+    "pde",
+    "generator",
+    "residual",
+    "vertical_slice",
+    "candidate_validation",
+    "weak_support",
+    "external_data_readiness"
+  ],
+  "pdes": [
+    {
+      "pde": "Heat",
+      "generator": "yes",
+      "residual": "yes",
+      "vertical_slice": "yes",
+      "candidate_validation": "yes",
+      "weak_support": "frozen weak slice",
+      "external_data_readiness": "yes"
+    },
+    {
+      "pde": "Burgers",
+      "generator": "yes",
+      "residual": "yes",
+      "vertical_slice": "yes",
+      "candidate_validation": "yes",
+      "weak_support": "frozen weak slice",
+      "external_data_readiness": "yes"
+    },
+    {
+      "pde": "KdV",
+      "generator": "normalized short-horizon only",
+      "residual": "yes",
+      "vertical_slice": "yes",
+      "candidate_validation": "yes",
+      "weak_support": "no",
+      "external_data_readiness": "yes"
+    },
+    {
+      "pde": "Fisher-KPP",
+      "generator": "yes",
+      "residual": "yes",
+      "vertical_slice": "yes",
+      "candidate_validation": "yes",
+      "weak_support": "internal weak diagnostic only",
+      "external_data_readiness": "yes"
+    },
+    {
+      "pde": "Advection-diffusion",
+      "generator": "yes",
+      "residual": "yes",
+      "vertical_slice": "yes",
+      "candidate_validation": "yes",
+      "weak_support": "no",
+      "external_data_readiness": "yes"
+    },
+    {
+      "pde": "KS",
+      "generator": "no public runtime",
+      "residual": "no",
+      "vertical_slice": "no",
+      "candidate_validation": "diagnostic/no-go",
+      "weak_support": "no",
+      "external_data_readiness": "no"
+    }
+  ],
+  "boundary_condition_support": {
+    "scalar_1d_periodic": "supported (strong path and weak frozen slice)",
+    "scalar_1d_nonperiodic_canonical_field_batch_readiness": "supported (dirichlet, neumann, open_unknown)",
+    "scalar_1d_nonperiodic_strong_residual": "supported for Heat, Burgers, advection-diffusion, reaction-diffusion via compute_derivatives(backend=\"auto\") + interior-only diagnostics",
+    "scalar_1d_nonperiodic_kdv": "not supported (KdV remains periodic-only)",
+    "scalar_1d_nonperiodic_weak": "not supported",
+    "scalar_1d_nonperiodic_translation_finite_transform_verification": "not supported (deferred to v0.31.5 overlap-crop design)",
+    "multidimensional_grids": "not supported",
+    "nonuniform_grids": "not supported"
+  },
+  "derivative_backends": {
+    "spectral_fd": {
+      "boundary": "periodic-only",
+      "max_spatial_order_supported": 4,
+      "notes": "unchanged from v0.11+; strict-periodic FFT phase-shift path"
+    },
+    "finite_difference": {
+      "boundary": "dirichlet, neumann, open_unknown (nonperiodic uniform 1D grid only)",
+      "max_spatial_order_supported": 2,
+      "supported_orders": ["u_t", "u_x", "u_xx"],
+      "notes": "np.gradient(edge_order=2) on both axes; no u_xxx or u_xxxx on nonperiodic data in the stable v0.30 surface"
+    },
+    "auto_dispatch": {
+      "policy": "compute_derivatives(backend=\"auto\") picks spectral_fd for periodic data and finite_difference for supported nonperiodic BCs",
+      "explicit_mismatch": "raises ScopeValidationError; no silent fallback",
+      "audit_fields": [
+        "backend_selected_by_boundary_condition",
+        "backend_selection_reason"
+      ]
+    }
+  },
+  "residual_domain_policy": {
+    "periodic": "full_grid",
+    "nonperiodic_via_finite_difference": "interior_only (default trim width 4; full_grid_diagnostic block nested for transparency)"
+  },
+  "deferred": [
+    "PDEBench loaders",
+    "The Well loaders",
+    "file loaders",
+    "broad adapters",
+    "load_field_batch",
+    "from_pdebench",
+    "from_the_well",
+    "from_netcdf",
+    "from_zarr",
+    "public KS runtime APIs",
+    "KdV nonperiodic",
+    "weak nonperiodic",
+    "public weak derivative backend",
+    "u_xxx / u_xxxx on nonperiodic data",
+    "finite-transform verification on nonperiodic translations",
+    "root pdelie.discover_symmetries",
+    "SymmetryMethod registry",
+    "external symmetry-method ports",
+    "multidimensional grids",
+    "nonuniform grids",
+    "multi-channel / 2D contract widening",
+    "neural or callable generator APIs",
+    "train/test split enforcement or leakage prevention"
+  ]
+}

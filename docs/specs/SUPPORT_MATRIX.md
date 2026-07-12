@@ -2,7 +2,7 @@
 
 This page is a compact map of the stable `v0.x` user-facing surface. It is a navigation aid, not a replacement for `API_STABILITY.md`.
 
-The machine-readable version for the `v0.29` recipe release is `support_matrix.v0_29.json`.
+The machine-readable version for the current `v0.30` release is `support_matrix.v0_30.json`. The `v0.29` matrix at `support_matrix.v0_29.json` is retained for compatibility.
 
 ## Core Workflows
 

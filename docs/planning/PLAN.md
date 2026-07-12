@@ -1,6 +1,48 @@
+# PDELie - Execution Plan (V0.30 Release Close)
+
+**Status:** COMPLETE
+
+**V0.30.0 is complete as the nonperiodic-readiness and low-order finite-difference derivative-diagnostics release.**
+
+The `v0.30` arc closed on 2026-07-07. Sub-releases `v0.30a` (scope freeze), `v0.30b` (BoundaryConditionSpec runtime + FieldBatch 0.2 migration), `v0.30c` (finite-difference backend + boundary-aware readiness), `v0.30d` (residual evaluator auto-dispatch + interior-only diagnostics), `v0.30e` (non-blocking ruff/mypy/coverage hygiene phase 1), and `v0.30f` (narrow declarative release-gate consolidation) all merged before this close.
+
+Decision label:
+
+```text
+nonperiodic_readiness_and_low_order_finite_difference_diagnostics
+```
+
+## Release Close Actions
+
+- `pyproject.toml` version bumped `0.29.0` → `0.30.0`; description updated to reflect the v0.30 nonperiodic-readiness content.
+- `docs/conf.py` `release`/`version` strings bumped to `0.30.0` / `0.30`.
+- `docs/releases/V0_30_RELEASE_READINESS.md` written, mirroring the v0.29 structure and enumerating the new public surface, retained scope, hygiene phase 1 configuration, narrow release-gate consolidation, and deferred surfaces.
+- `docs/specs/support_matrix.v0_30.json` written (strict JSON) with per-PDE support, boundary-condition-support map, derivative-backend policy, residual-domain-policy, and deferred-scope list.
+- `docs/specs/SUPPORT_MATRIX.md` updated to reference `support_matrix.v0_30.json` alongside the v0.29 entry.
+- `docs/releases/PUBLISHING.md` v0.29-specific language extended to name v0.30.0 as the current Git-tag-only release.
+- `docs/releases/index.rst` extended to list `V0_30_RELEASE_READINESS`.
+- `docs/planning/V0_30_SCOPE.md` status flipped `IN_PROGRESS` → `COMPLETE`; milestones 1–6 flipped from "DESIGN COMPLETE, IMPLEMENTATION DEFERRED" to the concrete sub-release that landed each.
+- `docs/planning/ROADMAP.md` — `v0.30` and `v0.30f` moved to Completed Releases; `v0.30` becomes the current completed release; Next Planned Work now leads with `v0.31` (discovery task bridge) ahead of `v0.30.1` (submodule-only symmetry-method registry MVP), matching the ROADMAP table order and the earlier sequencing agreement to take the discovery task bridge before the symmetry-method registry.
+- `docs/specs/API_STABILITY.md` — a `v0.30` stable public-surface note added summarizing the new submodule-only APIs (`pdelie.derivatives.compute_finite_difference_derivatives`, `pdelie.derivatives.compute_derivatives`), the `FieldBatch.SCHEMA_VERSION` bump, the reporting additions (`boundary_condition_warnings`, `residual_domain_policy`), the internal-only `pdelie._boundary` module, and the deferred surfaces.
+- `CHANGELOG.md` prepended with a `## 0.30.0` entry.
+- `configs/release_gate_manifest.json` — new `v0.30` row replacing the `v0.30f` self-check; `current_release_gate_job_name` renamed `v0_30f-release-gate` → `v0_30-release-gate`; `release_count` updated. All existing rows retained.
+- `configs/planning/v0_30_nonperiodic_readiness_scope.json` — `status: complete`, `guard_no_version_bump: "0.30.0"`, `expected_ci_jobs: ["v0_30-release-gate", ...]`.
+- `.github/workflows/ci.yml` — release-gate job renamed `v0_30f-release-gate` → `v0_30-release-gate`.
+- Test guards flipped: `tests/test_current_release_gate.py`, `tests/test_v0_30_scope_freeze.py`, `tests/test_v0_30_hygiene_audit.py`, `tests/test_v0_30e_hygiene_config.py`.
+
+## Explicit Non-Goals for v0.30 Release Close
+
+- No new runtime feature. No `src/pdelie/` change beyond what already landed in v0.30b–f.
+- No symmetry-method registry, root API, PDEBench/The Well support claim, KdV/KS/weak nonperiodic, or nonperiodic finite-transform support.
+- No lift of the `numpy<2` cap. No Python matrix expansion. No promotion of the `lint`/`typecheck`/`coverage` CI jobs from advisory to blocking.
+- No standalone `tests/test_v0_30_release_gate.py` file — the declarative gate lives as a row in `configs/release_gate_manifest.json` replayed by `tests/test_release_gates.py`.
+- No PyPI or TestPyPI publication. Git-tag-only.
+
+---
+
 # PDELie - Execution Plan (V0.30f)
 
-**Status:** IN_PROGRESS
+**Status:** COMPLETE (merged as PR #79)
 
 `v0.30f` lands the narrow declarative release-gate consolidation proposed in `docs/design/V0_30_HYGIENE_AUDIT.md`. A strict-JSON manifest at `configs/release_gate_manifest.json` encodes 18 release rows of declarative assertions; the parameterized `tests/test_release_gates.py` replays them. The CI release-gate job is renamed `v0_29-release-gate` → `v0_30f-release-gate` and its invocation extended to run the manifest test alongside every retained per-version file. No runtime behavior change. No package version bump. No new dependency. No `src/pdelie/` change. Zero files deleted — consolidation is by manifest addition, not by file removal.
 

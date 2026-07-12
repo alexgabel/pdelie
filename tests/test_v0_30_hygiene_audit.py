@@ -156,8 +156,8 @@ def test_v0_30e_pyproject_now_configures_ruff_mypy_coverage() -> None:
     requires_python = pyproject["project"]["requires-python"]
     assert ">=3.11" in requires_python
 
-    # And package version stays 0.29.0 (version bump reserved for v0.30 release close).
-    assert pyproject["project"]["version"] == "0.29.0"
+    # Package version is 0.29.0 during the v0.30a-f arc and 0.30.0 at v0.30 close.
+    assert pyproject["project"]["version"] in {"0.29.0", "0.30.0"}
 
 
 def test_v0_30e_ci_workflow_now_has_lint_typecheck_coverage_jobs_nonblocking() -> None:
@@ -197,10 +197,14 @@ def test_v0_30e_ci_workflow_now_has_lint_typecheck_coverage_jobs_nonblocking() -
             f"v0.30e CI job {job!r} must be non-blocking"
         )
 
-    # After v0.30f, the single release-gate job is renamed accordingly.
+    # Release-gate job name across the v0.30 arc:
+    # v0.29 shipped ``v0_29-release-gate``; v0.30f renamed it to
+    # ``v0_30f-release-gate``; the v0.30 release close renamed it to
+    # ``v0_30-release-gate``. This guard tracks the current final name.
     release_gate_jobs = re.findall(r"^  (v0_\d+[a-z]?-release-gate):", workflow, flags=re.MULTILINE)
-    assert release_gate_jobs == ["v0_30f-release-gate"], (
-        f"v0.30f consolidates the release-gate job under a single name; got: {release_gate_jobs}"
+    assert release_gate_jobs == ["v0_30-release-gate"], (
+        f"expected exactly one release-gate job named 'v0_30-release-gate' "
+        f"after the v0.30 release close; got: {release_gate_jobs}"
     )
 
 
@@ -250,7 +254,7 @@ def test_v0_30f_release_gate_consolidation_manifest_exists() -> None:
 
     assert manifest["summary_type"] == "pdelie_declarative_release_gate_manifest"
     assert manifest["scope"] == "declarative_release_gate_checks_only"
-    assert manifest["current_release_gate_job_name"] == "v0_30f-release-gate"
+    assert manifest["current_release_gate_job_name"] == "v0_30-release-gate"
     assert manifest["release_count"] == len(manifest["releases"])
 
     for row in manifest["releases"]:

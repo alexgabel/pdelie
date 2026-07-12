@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pdelie"
-version = "0.29.0"
-description = "V0.29 workflow recipes and support matrix plus retained Dataset ingestion, confidence/readiness reports, PDE strong paths, and symmetry diagnostics"
+version = "0.30.0"
+description = "V0.30 nonperiodic readiness (structured BoundaryConditionSpec, FieldBatch 0.2 schema, low-order finite-difference derivative backend, interior-only residual diagnostics) plus retained workflow recipes, Dataset ingestion, and PDE strong paths"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"

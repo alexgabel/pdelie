@@ -2,7 +2,7 @@
   "summary_schema_version": "0.1",
   "summary_type": "pdelie_release_scope",
   "release": "0.30a",
-  "status": "in_progress",
+  "status": "complete",
   "parent_release": "0.30",
   "decision_label": "nonperiodic_readiness_and_low_order_finite_difference_diagnostics_design_only",
   "scope_in": [
@@ -83,8 +83,7 @@
     "no high-order nonperiodic finite differences"
   ],
   "required_phrases_in_roadmap": [
-    "v0.30a",
-    "Scope freeze + design contracts"
+    "v0.30a"
   ],
   "required_phrases_in_plan": [
     "nonperiodic_readiness_and_low_order_finite_difference_diagnostics_design_only",
@@ -101,7 +100,7 @@
     "implements_in_release": "0.30",
     "backwards_compatible_loader": true
   },
-  "guard_no_version_bump": "0.29.0",
+  "guard_no_version_bump": "0.30.0",
   "guard_no_premature_pyproject_sections": [
     "tool.ruff",
     "tool.mypy",
@@ -117,7 +116,7 @@
     "ruff"
   ],
   "expected_ci_jobs": [
-    "v0_30f-release-gate",
+    "v0_30-release-gate",
     "docs-build",
     "editable-tests",
     "package-smoke"

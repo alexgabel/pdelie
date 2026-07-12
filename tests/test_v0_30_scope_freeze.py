@@ -28,13 +28,17 @@ def _load_scope_config() -> dict[str, object]:
 
 
 def test_scope_config_is_present_and_strict_json_compatible() -> None:
-    """The v0.30a scope manifest must exist and be JSON-strict (no NaN, round-trippable)."""
+    """The v0.30a scope manifest must exist and be JSON-strict (no NaN, round-trippable).
+
+    Status flips from ``in_progress`` (during the v0.30a-f arc) to ``complete``
+    at the v0.30 release close.
+    """
     config = _load_scope_config()
     assert json.loads(json.dumps(config, allow_nan=False)) == config
     assert config["summary_schema_version"] == "0.1"
     assert config["summary_type"] == "pdelie_release_scope"
     assert config["release"] == "0.30a"
-    assert config["status"] == "in_progress"
+    assert config["status"] in {"in_progress", "complete"}
     assert config["parent_release"] == "0.30"
     assert config["decision_label"] == (
         "nonperiodic_readiness_and_low_order_finite_difference_diagnostics_design_only"
@@ -80,13 +84,17 @@ def test_v0_30_roadmap_records_v0_30a_and_refined_v0_30() -> None:
 
 
 def test_v0_30_plan_records_v0_30a_and_preserves_v0_29() -> None:
-    """PLAN.md must record v0.30a IN_PROGRESS and retain the v0.29 COMPLETE record."""
+    """PLAN.md must record v0.30a and retain the v0.29 COMPLETE record.
+
+    Status: the v0.30a plan header started as ``IN_PROGRESS`` and flipped to
+    ``COMPLETE`` at the v0.30 release close; both are accepted.
+    """
     config = _load_scope_config()
     plan = _repo_text("docs/planning/PLAN.md")
     for phrase in config["required_phrases_in_plan"]:
         assert phrase in plan, f"missing required phrase in PLAN.md: {phrase!r}"
-    # v0.30a section
-    assert "**Status:** IN_PROGRESS" in plan
+    # v0.30a section header must be present in either progress state.
+    assert "**Status:** IN_PROGRESS" in plan or "**Status:** COMPLETE" in plan
     # v0.29 record must remain intact (existing v0.29 release gate reads these)
     assert "V0.29 is complete" in plan
     assert "Milestone 6: COMPLETE" in plan
@@ -133,12 +141,17 @@ def test_v0_30_no_submodule_export_for_planned_v0_30_apis() -> None:
             )
 
 
-def test_v0_30_no_version_bump() -> None:
-    """v0.30a must not bump the package version."""
+def test_v0_30_version_matches_scope_config_pin() -> None:
+    """Package version must match the pinned value in the v0.30 scope config.
+
+    During the v0.30a-f arc this guard pinned the version at ``0.29.0`` (no
+    version bump). At the v0.30 release close, both the pin and the package
+    version flip to ``0.30.0``. The two must stay in sync.
+    """
     config = _load_scope_config()
     pyproject = tomllib.loads(_repo_text("pyproject.toml"))
     assert pyproject["project"]["version"] == config["guard_no_version_bump"]
-    assert pyproject["project"]["version"] == "0.29.0"
+    assert pyproject["project"]["version"] in {"0.29.0", "0.30.0"}
 
 
 def test_v0_30_schema_migration_design_is_documented() -> None:

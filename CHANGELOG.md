@@ -1,5 +1,40 @@
 # Changelog
 
+## 0.30.0
+
+Final release for the frozen V0.30 nonperiodic-readiness and low-order finite-difference derivative-diagnostics slice.
+
+- adds structured boundary metadata: `metadata["boundary_conditions"]["x"]` now supports `type ∈ {"periodic", "dirichlet", "neumann", "open_unknown"}` with optional per-face values; `FieldBatch.SCHEMA_VERSION` bumps `"0.1"` → `"0.2"`; `FieldBatch.from_dict` accepts both versions and normalizes legacy string BCs into the structured form via internal `pdelie._boundary` helpers, recording a `schema_0_1_to_0_2_boundary_normalization` entry in `preprocess_log`
+- adds `pdelie.derivatives.compute_finite_difference_derivatives(field, *, max_spatial_order=2)` — low-order finite-difference backend on scalar 1D nonperiodic uniform grids for `u_t`, `u_x`, `u_xx` only
+- adds `pdelie.derivatives.compute_derivatives(field, *, backend="auto", max_spatial_order=2)` — dispatcher that routes periodic data to `spectral_fd` and nonperiodic data to `finite_difference`; explicit-mismatch calls raise `ScopeValidationError`; the selection is recorded in `DerivativeBatch.config["backend_selected_by_boundary_condition"]` and `DerivativeBatch.config["backend_selection_reason"]`
+- adds interior-only residual diagnostics: Heat, Burgers, advection-diffusion, and reaction-diffusion residual evaluators route through `compute_derivatives(backend="auto")` when derivatives are omitted, consume `recommended_residual_domain_policy` and `recommended_boundary_trim_width` from `DerivativeBatch.config`, and emit `residual_domain_policy` (`"interior_only"` for nonperiodic FD-derived residuals, `"full_grid"` for periodic residuals) plus a nested `full_grid_diagnostic` block for transparency; Heat and Burgers diagnostics gain `rms_residual` alongside `max_abs_residual`
+- adds `boundary_condition_warnings` on `pdelie.reporting.summarize_field_batch_readiness` and `pdelie.reporting.summarize_xarray_dataset_readiness`, downgrading the readiness label from `"ready"` to `"needs_attention"` when warnings are present
+- adds cross-cutting hygiene phase 1: `[tool.ruff]`, `[tool.mypy]` (strict scope narrowed to `pdelie.contracts`, `pdelie._boundary`, `pdelie.derivatives.*`), and `[tool.coverage.*]` in `pyproject.toml`; three non-blocking CI jobs (`lint`, `typecheck`, `coverage`); coverage baseline **86%** on `src/pdelie/`; ruff/mypy/pytest-cov/pyyaml added to the `[test]` extra
+- adds narrow declarative release-gate consolidation: `configs/release_gate_manifest.json` (strict JSON) and `tests/test_release_gates.py` replay declarative content for 18 migrated releases plus a `v0.30` release-close row; the CI release-gate job is renamed to `v0_30-release-gate`; zero per-version `tests/test_v0_NN_release_gate.py` files are deleted
+- records the release decision `nonperiodic_readiness_and_low_order_finite_difference_diagnostics`
+- preserves the retained v0.29 workflow recipes, support matrix, and rendered tutorial notebooks; preserves v0.28 scalar `xarray.Dataset` ingestion; preserves the v0.19–v0.24 confidence, readiness, downstream, split-provenance, and weak-supportability report surfaces; preserves the frozen v0.8 weak Heat/Burgers report slice; preserves the stable Heat / Burgers / KdV (normalized short-horizon) / Fisher-KPP / advection-diffusion strong paths
+
+Explicitly deferred for this final release:
+
+- no new PDE
+- no PDEBench or The Well support claim
+- no file loaders, broad adapters, `from_pdebench`, `from_the_well`, `from_netcdf`, `from_zarr`, or dataset-adapter registries
+- no KdV nonperiodic; no KS nonperiodic; no public KS runtime API
+- no weak nonperiodic residuals or weak derivatives; no WSINDy design matrices; no weak sparse recovery
+- no `u_xxx` or `u_xxxx` on nonperiodic data in the stable v0.30 surface
+- no finite-transform verification on nonperiodic translations (deferred to `v0.31.5` overlap-crop design)
+- no `pdelie.symmetry.SymmetryMethod` registry (deferred to `v0.30.1`)
+- no root `pdelie.discover_symmetries` (deferred to `v1.0` scope decision)
+- no external symmetry-method ports (deferred to `v0.33`+)
+- no new root `pdelie` exports
+- no neural, callable, or operator-facing APIs
+- no train/test policy, split enforcement, or leakage prevention
+- no multidimensional or multi-channel widening; no nonuniform grid support (deferred to `v0.34` scope decision)
+- no lift of the `numpy<2` cap (deferred to Phase 3, `v0.32` or later)
+- no Python matrix expansion (CI stays Python 3.11 only)
+- no promotion of the advisory `lint` / `typecheck` / `coverage` CI jobs to blocking (deferred to Phase 2)
+- no PyPI or TestPyPI publication; package-index publishing remains deferred to `v1.0` or later
+
 ## 0.29.0
 
 First final release for the frozen V0.29 workflow recipes and support matrix slice.

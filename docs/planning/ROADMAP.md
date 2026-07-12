@@ -17,30 +17,23 @@ Long historical release detail is archived in `archive/ROADMAP_HISTORY.md`.
 
 ## Current State
 
-- Current completed release: `v0.29.0`
-- Current release decision: `workflow_recipes_and_support_matrix_complete_no_new_numerical_scope`
-- Current theme: workflow recipes and support matrix, with no new numerical scope, runtime helper, public API, or root export
+- Current completed release: `v0.30.0`
+- Current release decision: `nonperiodic_readiness_and_low_order_finite_difference_diagnostics`
+- Current theme: scalar 1D nonperiodic readiness via structured `BoundaryConditionSpec` + `FieldBatch` schema 0.2, low-order finite-difference derivative backend (`u_t`, `u_x`, `u_xx` only), auto-dispatched Heat/Burgers/advection-diffusion/reaction-diffusion residuals with interior-only diagnostics, non-blocking ruff/mypy/coverage hygiene, and a narrow manifest-driven declarative release-gate consolidation. Zero root-API expansion.
 - Current package policy: Git-tag-only `v0.x` releases; PyPI/TestPyPI publishing remains deferred until `v1.0` or later
-- Current user entry points: repository-root `README.md`, hosted RTD docs, `docs/workflows/`, `docs/specs/SUPPORT_MATRIX.md`, and rendered tutorials in `notebooks/`
+- Current user entry points: repository-root `README.md`, hosted RTD docs, `docs/workflows/`, `docs/specs/SUPPORT_MATRIX.md`, `docs/specs/support_matrix.v0_30.json`, `docs/releases/V0_30_RELEASE_READINESS.md`, and rendered tutorials in `notebooks/`
 
 ## Next Planned Work
 
-The next release `v0.30` is design-frozen by the `v0.30a` sub-release (audit-only, no runtime change, no version bump). Runtime implementation lands in `v0.30` proper.
+`v0.30` is closed. Per the earlier sequencing agreement, `v0.31` (downstream discovery task bridge) precedes `v0.30.1` (submodule-only symmetry-method registry MVP): the task-bridge release delivers the biggest user-facing scientific delta of the near-term work, while the registry MVP is smaller and can follow.
 
 Planned direction:
 
 | Target | Theme | Status | Notes |
 | --- | --- | --- | --- |
 | `v0.26b` | KS promotion | Reserved | Only if a separate scope freeze accepts direct-SVD/no-fallback KS evidence. |
-| `v0.30a` | Scope freeze + design contracts | Completed | Audit-only sub-release. No runtime change, no version bump. Froze BoundaryConditionSpec and derivative-backend policy. |
-| `v0.30b` | BoundaryConditionSpec runtime + FieldBatch 0.2 migration | Completed | Implemented the structured boundary spec, `FieldBatch.from_dict` 0.1->0.2 migration, and the `is_x_periodic` helper centralization. Adapters accept structured nonperiodic specs; downstream consumers stay strict-periodic. |
-| `v0.30c` | Finite-difference derivative backend (low-order) + boundary-aware reporting | Completed | Ships `compute_finite_difference_derivatives` (`u_t`, `u_x`, `u_xx` only), the `compute_derivatives(backend="auto")` dispatcher, `boundary_condition_warnings` on readiness summaries, and the `residual_domain_policy` field on residual summaries. |
-| `v0.30d` | Residual evaluator auto-dispatch + interior-only diagnostics | Completed | Heat, Burgers, advection-diffusion, and reaction-diffusion evaluators route through `compute_derivatives(backend="auto")` and consume `recommended_residual_domain_policy` / `recommended_boundary_trim_width` from `DerivativeBatch.config`. KdV and weak stay periodic-only. |
-| `v0.30e` | Hygiene phase 1 | Completed | `[tool.ruff]`, `[tool.mypy]` (strict scope narrowed to contracts+_boundary+derivatives), `[tool.coverage]` configured; three non-blocking CI jobs added (`lint`, `typecheck`, `coverage`). Coverage baseline 86%. `numpy<2` cap not lifted (deferred). |
-| `v0.30f` | Release-gate consolidation (narrow declarative) | In progress | `configs/release_gate_manifest.json` and `tests/test_release_gates.py` replay declarative content for 18 release rows across the 11 supported assertion classes. All 26 `tests/test_v0_NN_release_gate.py` files retained. CI release-gate job renamed `v0_29-release-gate` → `v0_30f-release-gate`. Files with schema-gap declarative patterns (`forbidden_phrases_in_*`, CHANGELOG/README/ROADMAP_HISTORY phrase checks, disjunctive+forbidden per-page phrase rules, `required_json_fields`) stay in their source files and are named in `excluded_functional_release_gate_files`. |
-| `v0.30` | Release close: Nonperiodic readiness + low-order FD diagnostics + hygiene preparation | Planned | Final v0.30 release; bumps `pyproject.toml` version to `0.30.0` and tags. |
-| `v0.30.1` | Submodule-only SymmetryMethod registry MVP | Planned | One built-in adapter (`polynomial_translation_svd`). No root API. No external method ports. |
-| `v0.31` | Downstream discovery task bridge | Planned | Unlock PySINDy `PDELibrary` config, add `WeakPDELibrary` diagnostic wrapper. Tasks live under `pdelie.tasks.discovery`, not under the symmetry registry. |
+| `v0.31` | Downstream discovery task bridge | Planned (next) | Unlock PySINDy `PDELibrary` config, add `WeakPDELibrary` diagnostic wrapper. Tasks live under `pdelie.tasks.discovery`, not under the symmetry registry. |
+| `v0.30.1` | Submodule-only SymmetryMethod registry MVP | Planned | One built-in adapter (`polynomial_translation_svd`). No root API. No external method ports. Follows `v0.31` per the discovery-first sequencing agreement. |
 | `v0.31.5` | Nonperiodic orbit/action scope decision | Planned | Overlap-crop design for nonperiodic translation; decision on whether finite-transform/orbit action machinery can be promoted beyond diagnostics. |
 | `v0.32` | External dataset readiness cookbooks | Planned | One scalar 1D PDEBench slice readiness and, if feasible, one scalar 1D The Well slice readiness. No recovery benchmark claim. |
 | `v0.33` | First external symmetry candidate-generator method | Planned | Ko-style sparse generator behind an experimental flag. LieGAN/LaLiGAN as a later optional stochastic extra. |
@@ -99,14 +92,16 @@ PDELie advances one stable axis at a time.
 | `v0.26` | Completed | KS revisit decision | Kept KS runtime APIs deferred; reserved `v0.26b` for separate promotion only if evidence settles. |
 | `v0.27` | Completed | Multi-generator diagnostics decision | Promoted diagnostics for supplied multi-row families; deferred fitting, finite actions, BCH, orbit charts. |
 | `v0.28` | Completed | Narrow xarray Dataset ingestion | Added explicit scalar Dataset readiness/conversion; deferred file loaders and broad adapters. |
-| `v0.29` | Completed | Workflow recipes and support matrix | Added workflow docs, machine-readable support matrix, and rendered recipe notebooks; no new runtime API. |
+| `v0.29` | Completed | Workflow recipes and support matrix | Added workflow docs, machine-readable support matrix, and rendered recipe notebooks; no new numerical scope, no new runtime helper, and no new runtime API. |
+| `v0.30` | Completed | Nonperiodic readiness + low-order FD diagnostics + hygiene preparation | Bumps `pyproject.toml` version to `0.30.0`. Closes the v0.30a–f arc: structured `BoundaryConditionSpec` and `FieldBatch` schema 0.2 (v0.30b), `compute_finite_difference_derivatives` + `compute_derivatives(backend="auto")` dispatcher + boundary-aware readiness (v0.30c), residual evaluator auto-dispatch + interior-only diagnostics for Heat/Burgers/advection-diffusion/reaction-diffusion (v0.30d), non-blocking ruff/mypy/coverage hygiene (v0.30e), narrow declarative release-gate consolidation (v0.30f). No root-API expansion; `numpy<2` and Python-3.11-only matrix unchanged. |
 
 ## Current Support Matrix
 
 The compact public support matrix lives in:
 
 - `../specs/SUPPORT_MATRIX.md`
-- `../specs/support_matrix.v0_29.json`
+- `../specs/support_matrix.v0_30.json` (current release)
+- `../specs/support_matrix.v0_29.json` (previous release, retained for compatibility)
 
 Current stable PDE rows:
 
