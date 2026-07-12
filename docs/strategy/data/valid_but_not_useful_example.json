@@ -1,0 +1,65 @@
+{
+  "summary_schema_version": "0.1",
+  "summary_type": "pdelie_illustrative_wedge_example",
+  "example_id": "valid_but_not_useful_v0_30_0",
+  "example_purpose": "Documents the PDELie wedge philosophy: a symmetry candidate can pass residual/finite-transform/verification checks (empirical validity) and still fail to improve downstream sparse-recovery utility. This fixture is illustrative and hand-authored, not the output of a runtime example. It is authored to be strict-JSON compatible so a reader can json.loads/json.dumps roundtrip it.",
+  "candidate": {
+    "candidate_kind": "generator_family",
+    "parameterization": "polynomial_translation_affine",
+    "notes": "A synthetic scale-and-translate candidate: xi = 1 + 0.03 * u, tau = 0.0, phi = 0.0. Departs from the pure translation xi = 1 by a small amplitude-coupled term."
+  },
+  "validation": {
+    "summary_type": "symmetry_candidate_validation_report",
+    "candidate_kind": "generator_family",
+    "conclusion": "validated",
+    "check_reports": {
+      "residual_stability": {"status": "passed", "reason": "residual_max_within_tolerance", "residual_max_before": 8.2e-05, "residual_max_after": 9.6e-05},
+      "finite_transform_verification": {"status": "passed", "reason": "verification_classification_exact", "classification": "exact", "error_curve_max": 6.7e-13},
+      "reference_span_comparison": {"status": "passed", "reason": "principal_angles_within_tolerance", "max_principal_angle_rad": 1.4e-06}
+    }
+  },
+  "downstream_workflow": {
+    "summary_type": "downstream_discovery_workflow",
+    "discovery_inputs": {"summary_type": "discovery_bridge_output", "backend_target": "pysindy", "feature_names": ["u"], "time_span": 1.0, "returns_field_batch": false},
+    "discovery_result_after_transform": {
+      "summary_type": "discovery_result",
+      "backend": "pysindy",
+      "status": "success",
+      "recovery": {
+        "aggregate": {
+          "support_precision": 0.40,
+          "support_recall": 0.60,
+          "support_f1": 0.48,
+          "exact_support": false,
+          "coefficient_relative_l2_error": 0.83,
+          "exact_count": 0,
+          "partial_count": 1,
+          "failed_count": 0
+        }
+      },
+      "fit_diagnostics": {"evidence_label": "direct_svd_in_tolerance", "fit_residual": 4.1e-04}
+    },
+    "extra_metrics": {
+      "reference_run_without_transform": {
+        "support_precision": 0.90,
+        "support_recall": 0.90,
+        "support_f1": 0.90,
+        "exact_support": true,
+        "coefficient_relative_l2_error": 0.09
+      },
+      "downstream_gain": {
+        "support_f1_delta": -0.42,
+        "coefficient_relative_l2_delta": 0.74,
+        "sign": "negative",
+        "interpretation": "the transformed run's F1 is 0.42 lower than the reference run and its coefficient error is 0.74 higher; the transform reduces downstream sparse-recovery quality"
+      }
+    }
+  },
+  "wedge_interpretation": {
+    "candidate_is_empirically_valid": true,
+    "candidate_improves_downstream_task": false,
+    "recommended_report": "PDELie surfaces every check that the candidate passes AND every downstream metric that it fails to improve. It does not merge these into a single supportability label; the reader must weigh empirical validity against downstream utility.",
+    "wedge_principle": "valid_but_not_useful",
+    "authoring_notes": "The numeric values here are chosen to be plausible for a scalar 1D periodic heat-equation-like configuration with a moderately noisy 32-window PySINDy PDELibrary fit. They are not the output of a real run."
+  }
+}
