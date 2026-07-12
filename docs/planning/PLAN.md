@@ -1,3 +1,61 @@
+# PDELie - Execution Plan (V0.31a)
+
+**Status:** IN_PROGRESS
+
+`v0.31a` is the design-only scope-freeze sub-release for the downstream discovery task bridge. It adds one scope document, one design document, one strict-JSON scope manifest, and two test files. No file under `src/pdelie/` is modified. No new optional dependency is added. No CI job is added. The `pyproject.toml` version stays pinned at `0.30.0`.
+
+Decision label:
+
+```text
+downstream_discovery_task_bridge_design_only
+```
+
+## Sub-release contents (v0.31a)
+
+- `docs/planning/V0_31_DISCOVERY_TASK_BRIDGE_SCOPE.md` — scope freeze covering the `pdelie.tasks.discovery` submodule design, the `TaskResult` schema shape, the `WeakPDELibrary` diagnostic wrapper policy, the supportability-policy update, and the release-gate consolidation confirmation.
+- `docs/design/DISCOVERY_TASK_RESULT_SCHEMA.md` — TaskResult schema design document with per-field types, the strict-JSON NaN-safety contract (`_validate_strict_json_compatible` at `src/pdelie/reporting/summaries.py:196-202`), the `weak_contract` trigger predicate, and the WeakPDELibrary wrapper's distinct identifier strings.
+- `configs/planning/v0_31_discovery_task_bridge_scope.json` — strict-JSON scope manifest. `release = "0.31a"`, `status = "in_progress"`, `parent_release = "0.31"`, `decision_label = "downstream_discovery_task_bridge_design_only"`, `guard_no_version_bump = "0.30.0"`.
+- `tests/test_v0_31_discovery_task_bridge_scope.py` — scope-freeze test. Loads the JSON manifest and drives every assertion from it. Enforces required literal phrases in the scope doc, PLAN, ROADMAP, and API_STABILITY. Asserts forbidden root/submodule attributes are absent. Asserts no version bump. Asserts no premature pyproject sections or CI jobs.
+- `tests/test_discovery_task_result_schema.py` — TaskResult schema tests. Imports the real `_validate_strict_json_compatible` from `pdelie.reporting.summaries` and proves it raises `SchemaValidationError` on:
+  1. NaN in `train_residual.l2_norm` at the TaskResult top level
+  2. NaN embedded in `underlying_discovery_result.coefficient_summary.l2_norm` (the load-bearing adversarial the peer-memo review flagged as absent)
+  3. NaN inside the `weak_contract` subtree
+  4. positive infinity in `train_residual.max_abs`
+
+## Files modified (v0.31a)
+
+- `docs/planning/ROADMAP.md` — new `v0.31a` row added above the existing `v0.31` row. The `v0.31` row's Notes now state "Design frozen by v0.31a. Runtime lands in v0.31b+." Every other row is preserved.
+- `docs/planning/PLAN.md` — this file. Prepends the v0.31a section above the v0.32a planning note and the v0.30 release-close section; earlier sections are retained below.
+- `docs/specs/API_STABILITY.md` — a Decision-only note for the frozen `v0.31a` scope-freeze sub-release is appended after the `v0.30.0` stable public-surface note and the `v0.30.1` planning note, mirroring the shape of the v0.30a-f notes. It records the decision label `downstream_discovery_task_bridge_design_only`, states that `v0.31a adds no new runtime public API`, references the composed `TaskResult` schema, and enumerates the deferred surfaces (SymmetryCandidate is v0.30.1 not v0.31; noise robustness deferred; multi-channel and 2D are `v0.34+`; LieGG / trained-model extraction is `v0.35a`; no PDEBench / The Well support claim; no external dataset benchmark claim).
+- `docs/planning/index.rst` — `V0_31_DISCOVERY_TASK_BRIDGE_SCOPE` added to the planning toctree between `V0_30_SCOPE` and `archive/index`.
+- `docs/design/index.rst` — `DISCOVERY_TASK_RESULT_SCHEMA` added to the design toctree.
+
+## Explicit non-goals for v0.31a
+
+- No `src/pdelie/` change. This is the load-bearing v0.31a design-only guard.
+- No version bump (`pyproject.toml` stays at `0.30.0`).
+- No new optional dependency; no new PySINDy version pin.
+- No new CI job; no promotion of the v0.30e advisory `lint` / `typecheck` / `coverage` jobs to blocking.
+- No root `pdelie` export.
+- No SymmetryCandidate contract or wrapper — that surface is v0.30.1 responsibility, not v0.31.
+- No WSINDy implementation, no weak nonperiodic surface, no noise robustness claim, no clean/noisy gate, no external dataset benchmark claim, no PDEBench support claim, no The Well support claim, no multi-channel or 2D FieldBatch dispatch, no LieGG / trained-model extraction.
+- No standalone `tests/test_v0_31_release_gate.py` file. The v0.31 release-gate is a row in `configs/release_gate_manifest.json` replayed by `tests/test_release_gates.py`, following the v0.30f consolidation pattern.
+
+## v0.31a Sub-Release Gate
+
+v0.31a is complete when:
+
+- the scope doc, design doc, and scope manifest above are in place and strictly JSON-compatible
+- `docs/planning/ROADMAP.md`, `docs/planning/PLAN.md`, and `docs/specs/API_STABILITY.md` carry the `v0.31a` records above
+- `tests/test_v0_31_discovery_task_bridge_scope.py` and `tests/test_discovery_task_result_schema.py` pass
+- the full test suite still passes
+- no file under `src/pdelie/` is modified
+- no version bump in `pyproject.toml`
+- no new optional dependency added
+- no new CI job added
+
+---
+
 # PDELie - Planning Note (V0.32a design freeze — method_scores / uncertainty_report / calibration_report)
 
 **Status:** PLANNED (design freeze scheduled for `v0.32a`)

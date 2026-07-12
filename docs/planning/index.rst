@@ -13,4 +13,5 @@ Release planning records. Planning docs do not override the specs.
    V0_28_SCOPE
    V0_29_SCOPE
    V0_30_SCOPE
+   V0_31_DISCOVERY_TASK_BRIDGE_SCOPE
    archive/index

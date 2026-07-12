@@ -1,0 +1,161 @@
+{
+  "summary_schema_version": "0.1",
+  "summary_type": "pdelie_release_scope",
+  "release": "0.31a",
+  "status": "in_progress",
+  "parent_release": "0.31",
+  "decision_label": "downstream_discovery_task_bridge_design_only",
+  "scope_in": [
+    "downstream discovery task-bridge scope freeze",
+    "pdelie.tasks.discovery submodule design",
+    "TaskResult schema design (summary_type = discovery_task_result)",
+    "WeakPDELibrary diagnostic wrapper design",
+    "supportability-policy dict update design",
+    "release-gate consolidation via configs/release_gate_manifest.json (no new tests/test_v0_31_release_gate.py file)"
+  ],
+  "scope_out": [
+    "runtime code in src/pdelie/",
+    "any new root pdelie export",
+    "WSINDy implementation",
+    "weak nonperiodic surface",
+    "public weak derivative backend beyond diagnostic",
+    "noise robustness claim",
+    "clean/noisy gate",
+    "external dataset benchmark claim",
+    "PDEBench support claim",
+    "The Well support claim",
+    "multi-channel FieldBatch dispatch",
+    "2D FieldBatch dispatch",
+    "SymmetryCandidate contract or wrapper (v0.30.1 responsibility)",
+    "LieGG / trained-model extraction",
+    "FD-nonperiodic extension of the PySINDy PDELibrary bridge",
+    "promotion of lint/typecheck/coverage from advisory to blocking",
+    "version bump",
+    "new optional dependency",
+    "new CI job",
+    "PyPI or TestPyPI publication"
+  ],
+  "forbidden_root_attributes": [
+    "run_discovery_task",
+    "fit_pysindy_pde_task",
+    "PySINDyPDETask",
+    "PySINDyPDETaskResult",
+    "TaskResult",
+    "WeakPDELibraryDiagnostic",
+    "discover_symmetries",
+    "SymmetryMethod",
+    "SymmetryCandidate"
+  ],
+  "forbidden_submodule_attributes": {
+    "pdelie.symmetry": [
+      "PySINDyPDETask",
+      "TaskResult",
+      "SymmetryCandidate",
+      "SymmetryMethod"
+    ],
+    "pdelie.discovery": [
+      "tasks",
+      "TaskResult",
+      "PySINDyPDETask",
+      "WeakPDELibraryDiagnostic"
+    ],
+    "pdelie.data": [],
+    "pdelie.residuals": [
+      "WeakPDELibraryDiagnostic"
+    ]
+  },
+  "required_design_documents": [
+    "docs/planning/V0_31_DISCOVERY_TASK_BRIDGE_SCOPE.md",
+    "docs/design/DISCOVERY_TASK_RESULT_SCHEMA.md"
+  ],
+  "required_phrases_in_scope_doc": [
+    "downstream_discovery_task_bridge_design_only",
+    "pdelie.tasks.discovery",
+    "no root API",
+    "no WSINDy implementation",
+    "no weak nonperiodic",
+    "no noise robustness claim",
+    "no clean/noisy gate",
+    "no external dataset benchmark claim",
+    "no PDEBench support claim",
+    "no The Well support claim",
+    "no multi-channel",
+    "no 2D",
+    "scalar 1D only",
+    "no promotion of lint/typecheck/coverage to blocking in v0.31",
+    "v0.31 sequences before v0.30.1",
+    "SymmetryCandidate wrapper is v0.30.1 responsibility not v0.31",
+    "PySINDy PDELibrary bridge is periodic-only in v0.31; FD-nonperiodic extension is explicitly deferred",
+    "weak_1d retained through v0.32 close",
+    "no LieGG / trained-model extraction in v0.31",
+    "no multi-channel or 2D FieldBatch dispatch in v0.31",
+    "no SymmetryCandidate contract in v0.31",
+    "the v0.31 release-gate is a row in configs/release_gate_manifest.json",
+    "not a new tests/test_v0_31_release_gate.py file",
+    "v0.31a is design-only; runtime lands in v0.31b+"
+  ],
+  "required_phrases_in_api_stability": [
+    "Decision-only note for the frozen `v0.31a`",
+    "downstream_discovery_task_bridge_design_only",
+    "v0.31a adds no new runtime public API",
+    "TaskResult"
+  ],
+  "required_phrases_in_roadmap": [
+    "v0.31a",
+    "downstream_discovery_task_bridge_design_only"
+  ],
+  "required_phrases_in_plan": [
+    "downstream_discovery_task_bridge_design_only",
+    "v0.31a"
+  ],
+  "guard_no_version_bump": "0.30.0",
+  "guard_no_premature_pyproject_sections": [
+    "tool.pytasks",
+    "tool.discovery_tasks"
+  ],
+  "guard_no_premature_ci_jobs": [
+    "discovery-task-bridge",
+    "pysindy-pde-library",
+    "weak-pde-library-diagnostic",
+    "noise-robustness-gate"
+  ],
+  "expected_ci_jobs": [
+    "v0_30-release-gate",
+    "docs-build",
+    "editable-tests",
+    "package-smoke"
+  ],
+  "planned_task_result_schema": {
+    "summary_schema_version": "0.1",
+    "summary_type": "discovery_task_result",
+    "fields": {
+      "task_name": "str",
+      "backend_name": "Literal['pysindy']",
+      "backend_version": "dict[str, str] (keys: pysindy, sklearn, pdelie)",
+      "target_convention": "Literal['pde_library', 'weak_pde_library']",
+      "derivative_backend": "str (promoted from fit_config.pysindy_model.differentiation_method; v0.30c spectral_fd/finite_difference dispatch)",
+      "input_layout": "Literal['scalar_1d_uniform']",
+      "library_feature_names": "list[str] (renamed from library_terms for continuity with summarize_discovery_result at src/pdelie/discovery/contracts.py:395)",
+      "selected_terms": "dict[str, dict[str, float]] (verbatim from equation_terms of the embedded discovery_result)",
+      "coefficients": "dict | None (optional coefficient matrix)",
+      "support_precision": "float",
+      "support_recall": "float",
+      "support_f1": "float",
+      "exact_support": "bool",
+      "coefficient_relative_l2": "float",
+      "train_residual": "dict | None (size, l2_norm, rms, max_abs; strict-numeric; matches _residual_summary_or_none at src/pdelie/discovery/contracts.py:198-214)",
+      "heldout_residual": "dict | None (size, l2_norm, rms, max_abs; strict-numeric; same shape as train_residual)",
+      "weak_contract": "dict | None (non-null iff target_convention == 'weak_pde_library'; carries method_family, test_function_family, quadrature_rule, diagnostic_only: true)",
+      "warnings": "list[str]",
+      "underlying_discovery_result": "dict (embedded summarize_discovery_result payload)"
+    },
+    "nan_safety": "must round-trip through json.dumps(payload, allow_nan=False); wire _validate_strict_json_compatible from src/pdelie/reporting/summaries.py",
+    "weak_pdelib_wrapper": {
+      "summary_type": "pdelie_weak_pde_library_diagnostic",
+      "method_family": "pysindy_weak_pde_library_polynomial_gauss_v1",
+      "test_function_family": "pysindy_weak_pde_library_polynomial_bump_v1",
+      "quadrature_rule": "pysindy_weak_pde_library_composite_gauss_v1",
+      "diagnostic_only": true
+    }
+  }
+}

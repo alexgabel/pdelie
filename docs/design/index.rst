@@ -10,4 +10,5 @@ Once a design is implemented and validated it is folded into the specs.
 
    BOUNDARY_CONDITION_SPEC
    DERIVATIVE_BACKEND_POLICY
+   DISCOVERY_TASK_RESULT_SCHEMA
    V0_30_HYGIENE_AUDIT

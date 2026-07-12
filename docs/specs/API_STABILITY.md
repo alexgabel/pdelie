@@ -481,6 +481,23 @@ Planning note for `v0.30.1` (registry MVP + `SymmetryCandidate` contract):
 - v0.30.1 remains submodule-only. No root `pdelie` export. No `pdelie.discover_symmetries`. No external-method port in v0.30.1 (Ko-sparse lands in v0.33 as a distinct experimental adapter).
 - v0.31 (discovery task bridge) is fenced against `SymmetryCandidate` inputs and outputs: v0.31 consumes only `FieldBatch` + `DerivativeBatch` + `ResidualBatch`, and its `TaskResult` schema records a `candidate_reference: dict | None` that becomes the `SymmetryCandidate` cross-link only after v0.30.1 lands and stabilizes.
 
+Decision-only note for the frozen `v0.31a` downstream discovery task bridge scope-freeze sub-release:
+
+- v0.31a adds no new runtime public API and no new root `pdelie` export
+- `v0.31a` records the design decision `downstream_discovery_task_bridge_design_only`
+- `v0.31a` does not bump `pyproject.toml` (stays at `0.30.0`); the version bump is reserved for the v0.31 release close
+- `v0.31a` does not change any existing public surface, does not change CI, and does not declare any new optional dependency
+- `v0.31a` freezes the design of the `pdelie.tasks.discovery` submodule, the composed `TaskResult` schema (`summary_type = "discovery_task_result"`, `summary_schema_version = "0.1"`), the `WeakPDELibrary` diagnostic wrapper (`summary_type = "pdelie_weak_pde_library_diagnostic"`, `diagnostic_only: true`), and the supportability-policy dict update; the documents are at `docs/planning/V0_31_DISCOVERY_TASK_BRIDGE_SCOPE.md` and `docs/design/DISCOVERY_TASK_RESULT_SCHEMA.md`
+- the composed `TaskResult` payload is contracted to pass `json.loads(json.dumps(payload, allow_nan=False)) == payload` via the existing `_validate_strict_json_compatible` helper at `src/pdelie/reporting/summaries.py:196-202`; this contract is enforced by `tests/test_discovery_task_result_schema.py` via NaN/Inf adversarials
+- the runtime implementation lands from `v0.31b` onward, not in `v0.31a`
+- `v0.31` sequences before `v0.30.1`; the `SymmetryCandidate` contract and wrapper are `v0.30.1` responsibility, **not** `v0.31`
+- the PySINDy `PDELibrary` bridge is periodic-only in `v0.31`; FD-nonperiodic extension is explicitly deferred
+- `weak_1d` is retained through `v0.32` close; removal is contingent on the `v0.31` `PDELibrary` bridge shipping a documented replacement path AND the `WeakPDELibrary` diagnostic wrapper landing a validated parity harness with a documented `O((dx)^p)` tolerance
+- `v0.31a` records that noise robustness is deferred, that no clean/noisy gate is added, and that no external dataset benchmark claim, PDEBench support claim, or The Well support claim is made
+- `v0.31a` records that multi-channel or 2D `FieldBatch` dispatch remains deferred to `v0.34+`, and that LieGG / trained-model extraction remains deferred to `v0.35a`
+- `v0.31a` does not promote the `v0.30e` advisory `lint` / `typecheck` / `coverage` CI jobs to blocking; that promotion remains Phase 2
+- `v0.31a` does not add a standalone `tests/test_v0_31_release_gate.py`; the `v0.31` release-gate lives as a row in `configs/release_gate_manifest.json` replayed by `tests/test_release_gates.py`
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 
