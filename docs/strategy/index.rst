@@ -8,3 +8,4 @@ Non-authoritative research and interoperability notes.
 
    SCIENTIFIC_POSITIONING
    INTEROPERABILITY_AND_BENCHMARKING
+   VALID_BUT_NOT_USEFUL
