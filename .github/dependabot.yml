@@ -1,0 +1,26 @@
+# Keeps the SHA pins in .github/workflows/*.yml on their latest patch releases.
+# Actions are pinned by full commit SHA (with a trailing "# vX.Y.Z" comment)
+# per GitHub's security-hardening guidance:
+# https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions
+#
+# Dependabot opens a PR whenever a pinned action publishes a new patch or
+# minor release. Rebase strategy is auto so the PR stays fresh against main.
+# The PR reviewer confirms the new SHA matches the intended tag before merge.
+#
+# See docs/releases/CI_TROUBLESHOOTING.md for the rationale behind SHA pinning.
+
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 3
+    rebase-strategy: "auto"
+    labels:
+      - "ci"
+      - "dependencies"
+    commit-message:
+      prefix: "ci"
+      include: "scope"

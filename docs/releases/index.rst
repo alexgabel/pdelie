@@ -7,6 +7,7 @@ Release readiness and publishing records.
    :maxdepth: 1
 
    PUBLISHING
+   CI_TROUBLESHOOTING
    V0_27_RELEASE_READINESS
    V0_28_RELEASE_READINESS
    V0_29_RELEASE_READINESS
