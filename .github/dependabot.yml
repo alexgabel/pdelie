@@ -1,10 +1,18 @@
-# Keeps the SHA pins in .github/workflows/*.yml on their latest patch releases.
-# Actions are pinned by full commit SHA (with a trailing "# vX.Y.Z" comment)
-# per GitHub's security-hardening guidance:
+# Keeps the SHA pins in .github/workflows/*.yml on their latest patch and
+# minor releases. Actions are pinned by full commit SHA (with a trailing
+# "# vX.Y.Z" comment) per GitHub's security-hardening guidance:
 # https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions
 #
 # Dependabot opens a PR whenever a pinned action publishes a new patch or
-# minor release. Rebase strategy is auto so the PR stays fresh against main.
+# minor release. Major-version bumps (semver X.0.0 breaks) are explicitly
+# ignored via the `ignore` block below — Dependabot's default is to bump to
+# the latest available, which for GitHub Actions has historically been a
+# breaking change (upload-artifact v3→v4 broke the artifact API in Dec 2024;
+# checkout v3→v4 required a Node 20 runner). Major bumps therefore stay
+# manual: a maintainer reads the changelog, updates the SHA and version
+# comment in .github/workflows/ci.yml directly, and reviews the PR themselves.
+#
+# Rebase strategy is auto so the PR stays fresh against main.
 # The PR reviewer confirms the new SHA matches the intended tag before merge.
 #
 # See docs/releases/CI_TROUBLESHOOTING.md for the rationale behind SHA pinning.
@@ -24,3 +32,10 @@ updates:
     commit-message:
       prefix: "ci"
       include: "scope"
+    ignore:
+      # Block automatic major-version bumps for every action. Major bumps of
+      # GitHub Actions cross API boundaries and require manual review of the
+      # action's changelog. Patch and minor bumps continue to auto-open PRs.
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
