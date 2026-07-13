@@ -24,7 +24,7 @@ Each row is one label family. Columns:
 | `classification` | v0.4 | `verification_report` | `exact`, `approximate`, `failed` | empirical | `src/pdelie/verification/finite_transform.py:58-61,105` |
 | `conclusion` | v0.16 (generator), v0.17 (formula) | `symmetry_candidate_validation_report` | `validated`, `partially_validated`, `failed` | empirical | `src/pdelie/reporting/summaries.py:500-505` |
 | `evidence_label` | v0.11+ | `generator_fit_diagnostics`, embedded in `generator_family` fit diagnostics | `direct_svd_in_tolerance`, `reference_fallback`, `mixed`, `unavailable` | diagnostic | `src/pdelie/reporting/summaries.py:31-33` |
-| `residual_domain_policy` | v0.30c | `residual_batch` | `full_grid`, `interior_only`, `drop_boundary_width_k`, `not_configured` | diagnostic | `src/pdelie/reporting/summaries.py` (residual-summary path) |
+| `residual_domain_policy` | v0.30c | `residual_batch` | `full_grid`, `interior_only`, `drop_boundary_width_k`, `not_configured` | diagnostic | `src/pdelie/reporting/summaries.py:1320-1327` |
 | component `status` (per-component within confidence, weak-supportability, downstream-workflow synthesis) | v0.10 | embedded in synthesis payloads | `passed`, `warning`, `failed`, `not_configured`, `unavailable` | diagnostic | `src/pdelie/reporting/summaries.py:39` |
 | KdV scope decision labels | v0.25 | `kdv_scope_decision_example` | `current_frozen_supported`, `deferred_no_go` | decision | `docs/planning/V0_25_SCOPE.md` + `src/pdelie/examples/kdv_scope_decision.py` |
 

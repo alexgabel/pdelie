@@ -14,4 +14,7 @@ Release planning records. Planning docs do not override the specs.
    V0_29_SCOPE
    V0_30_SCOPE
    V0_31_DISCOVERY_TASK_BRIDGE_SCOPE
+   PDL_JSON_1_STRICT_JSON_INVENTORY
+   PDL_JSON_2_STRICT_JSON_MIGRATION
+   PYSINDY_API_PREFLIGHT_AUDIT
    archive/index

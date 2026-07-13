@@ -1,3 +1,50 @@
+# PDELie - Execution Plan (V0.31b0 preparatory hygiene)
+
+**Status:** IN_PROGRESS
+
+`v0.31b0` is a preparatory hygiene sub-release for the `v0.31b1` runtime (`pdelie.tasks.discovery` implementation). It ships **no runtime code, no schema surface, and no version bump** (`pyproject.toml` stays pinned at `0.30.0`). It exists to land five preparatory artifacts that de-risk the `v0.31b1` implementation phase: a term-mapping golden fixture that pins the current PySINDy feature-name → PDELie canonical-term mapping, two planning tickets that inventory and stage the strict-JSON debt migration, a PySINDy API preflight audit that is a mandatory prerequisite for `v0.31b1`, and a documentation-anomaly fix in `LABEL_REGISTRY.md`. No file under `src/pdelie/` is modified. No new optional dependency is added. No CI job is added.
+
+Decision label:
+
+```text
+preparatory_hygiene_before_discovery_task_bridge_runtime
+```
+
+## Sub-release contents (v0.31b0)
+
+- `tests/test_v0_31b0_pysindy_term_mapping_golden.py` — golden pytest suite (8 tests) that pins the current PySINDy feature-name → PDELie canonical-term mapping. Specifically: the 17-key `summarize_discovery_result` top-level keyset; the `f"{var}__x_index_{i}"` bridge feature-name convention emitted by `to_pysindy_trajectories`; the 6-key frozen `coefficient_summary` inner shape; the `{train, heldout}` residuals block with 4-key inner blocks (`size`, `l2_norm`, `rms`, `max_abs`); the `equation_terms: dict[str, dict[str, float]]` shape keyed by `feature_names`; and the `returns_coefficients=False` invariant. STLSQ-selected term content is deliberately NOT pinned — threshold=0.1 makes term counts fragile. `pytest.importorskip("pysindy", ...)` gates the whole suite so the golden is skippable in minimal environments.
+- `docs/planning/PDL_JSON_1_STRICT_JSON_INVENTORY.md` — planning ticket that inventories every strict-JSON call site and every schema-emitting surface in `src/pdelie/reporting/`, records which surfaces currently pass `_validate_strict_json_compatible` and which do not, and enumerates the outstanding strict-JSON debt items. Design-only; no runtime change.
+- `docs/planning/PDL_JSON_2_STRICT_JSON_MIGRATION.md` — planning ticket that stages the migration of the debt items catalogued in `PDL_JSON_1`. Defines the migration ordering, the per-surface acceptance test shape, and the release-cycle in which each item lands. Design-only; no runtime change; explicitly not `v0.31b1` scope.
+- `docs/planning/PYSINDY_API_PREFLIGHT_AUDIT.md` — preflight audit of the exact PySINDy public surface `v0.31b1` will consume. Records the pinned PySINDy version, the specific classes/methods used (`WeakPDELibrary`, `PDELibrary`, `SINDy`, `.fit`, `.print`, `.feature_names_in_`, `.coefficients_`), their argument shapes at the pinned version, and the known-drift-risk items (feature-name string format across PySINDy minor versions). **Mandatory prerequisite for v0.31b1** — the runtime PR cannot land without this audit in place.
+- `docs/specs/LABEL_REGISTRY.md` — documentation-anomaly fix. The `residual_domain_policy` row's Source reference cell now cites `src/pdelie/reporting/summaries.py:1320-1327` (the extraction/default block) rather than the vague `(residual-summary path)` parenthetical. Every other row in the registry cites a specific line or line range; this row now matches that style. No runtime change; the vocabulary is unchanged.
+
+## Files modified (v0.31b0)
+
+- `docs/specs/LABEL_REGISTRY.md` — line-number citation fix on the `residual_domain_policy` row (see above).
+- `docs/planning/PLAN.md` — this section prepended above the existing `v0.31a` and `v0.32a` planning notes and the `v0.30` release-close record.
+- `docs/planning/ROADMAP.md` — new `v0.31b0` row added ahead of the `v0.31b` runtime placeholder; scope-note phrasing aligned with the `preparatory_hygiene_before_discovery_task_bridge_runtime` decision label.
+- `docs/planning/index.rst` — `PDL_JSON_1_STRICT_JSON_INVENTORY`, `PDL_JSON_2_STRICT_JSON_MIGRATION`, and `PYSINDY_API_PREFLIGHT_AUDIT` added to the planning toctree between `V0_31_DISCOVERY_TASK_BRIDGE_SCOPE` and `archive/index`.
+
+## Explicit non-goals
+
+- No `src/pdelie/` change. `v0.31b0` is preparatory-only; the runtime implementation lives in `v0.31b1`.
+- No `pyproject.toml` version bump (`0.30.0` remains pinned).
+- No runtime code. The golden fixture is JSON; the three docs are Markdown planning artifacts; the LABEL_REGISTRY fix is a citation edit.
+- No new optional dependency; no new PySINDy version pin (the pin is *documented* in `PYSINDY_API_PREFLIGHT_AUDIT.md` but not moved).
+- No new CI job. No promotion of the `v0.30e` advisory `lint`/`typecheck`/`coverage` jobs. No new release-gate manifest row (the `v0.31b0` gate below is enforced by the same infrastructure that enforces `v0.31a`).
+
+## v0.31b0 sub-release gate
+
+`v0.31b0` is complete when:
+
+- `tests/test_v0_31b0_pysindy_term_mapping_golden.py` is present and its 8 named tests pass on current HEAD (bridge feature-name convention, summarize keyset, library_feature_names shape, equation_terms shape, coefficient_summary keyset, residuals shape, `returns_coefficients=False`, and a no-regression keyset assertion).
+- `docs/planning/PDL_JSON_1_STRICT_JSON_INVENTORY.md` and `docs/planning/PDL_JSON_2_STRICT_JSON_MIGRATION.md` are in place, both referenced from the planning toctree, and both explicitly annotate that they are design-only and not `v0.31b1` scope.
+- `docs/planning/PYSINDY_API_PREFLIGHT_AUDIT.md` is in place, records the pinned PySINDy version, enumerates the exact public surface `v0.31b1` will consume, and is referenced from the `v0.31b1` planning ticket as a mandatory prerequisite.
+- `docs/specs/LABEL_REGISTRY.md`'s `residual_domain_policy` row cites `src/pdelie/reporting/summaries.py:1320-1327`; no other row is modified; the vocabulary is unchanged.
+- The full test suite still passes; no file under `src/pdelie/` is modified; `pyproject.toml` still declares `version = "0.30.0"`.
+
+---
+
 # PDELie - Execution Plan (V0.31a)
 
 **Status:** IN_PROGRESS
