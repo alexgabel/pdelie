@@ -1,3 +1,63 @@
+# PDELie - Planning Note (V0.32a design freeze — method_scores / uncertainty_report / calibration_report)
+
+**Status:** PLANNED (design freeze scheduled for `v0.32a`)
+
+Records the additive extension planned for `pdelie.reporting.summarize_generator_confidence`. This is a **planning note only** — it does not schedule the runtime implementation, does not bump any version, and does not touch `src/pdelie/`. It exists here so the label registry (`docs/specs/LABEL_REGISTRY.md`), the API stability policy (`docs/specs/API_STABILITY.md`), and the scientific positioning doc (`docs/strategy/SCIENTIFIC_POSITIONING.md`) can reference a single canonical decision for what "beyond `confidence_label`" looks like.
+
+## Motivation
+
+The v0.20 `confidence_label` (`strong`, `qualified`, `failed`, `insufficient_evidence`) is a frozen public contract. Renaming it or extending its allowed values would break `tests/test_v0_20_release_gate.py` and every downstream consumer that already relies on the categorical vocabulary. However, the peer review of the v0.31 arc flagged that:
+
+- users need numeric per-component scores for calibration and cross-method comparison work, not only a categorical rollup;
+- future release adapters (v0.33 Ko-sparse, v0.35a LieGG) naturally emit uncertainty distributions that today have nowhere to land in PDELie's public reporting;
+- BARNN-style calibration studies require reliability-diagram data that `confidence_label` cannot represent.
+
+The additive path avoids the breaking-change trap: keep `confidence_label` exactly as-is (v0.20 contract), and add three **optional** fields alongside it that default to `None` so existing downstream consumers are unaffected.
+
+## Planned additive fields on `summarize_generator_confidence`
+
+Design frozen at `v0.32a`; runtime implementation at `v0.32b+`. The fields are:
+
+- `method_scores: dict[str, float] | None` — numeric per-component scores alongside the categorical `confidence_label`. Expected keys at first ship: `span_distance`, `residual_l2`, `error_curve_max`, `svd_condition_number`. Consumers pre-registering keys must accept `None` until `v0.32b`.
+- `uncertainty_report: dict | None` — where a method emits mean / variance / HDR intervals, this is where they land. Expected shape at first ship: `{"method": Literal["point_estimate", "svd_perturbation", "bootstrap", "bayesian_hdr"], "point": float, "hdr_low": float | None, "hdr_high": float | None, "samples_n": int | None}`. `None` for point-estimate methods (current default for `polynomial_translation_svd`).
+- `calibration_report: dict | None` — where reliability-diagram data or ECE is available. Expected shape: `{"method": Literal["ece", "reliability_diagram"], "ece": float | None, "bin_edges": list[float] | None, "bin_conf": list[float] | None, "bin_acc": list[float] | None, "n": int | None}`. `None` for uncalibrated methods (all v0.30 methods).
+
+**All three fields default to `None` and never replace `confidence_label`.** Existing consumers that read `confidence_label` continue to work without modification. Consumers that want the numeric surfaces can opt in field-by-field.
+
+## Why v0.32a (and not v0.31)
+
+- `v0.31` is the discovery task bridge; it lands a new `discovery_task_result` schema. Bundling `generator_confidence` extension into v0.31 would confuse two axes (task-bridge scope vs reporting-refinement scope) in one release.
+- `v0.31.5` is the nonperiodic orbit/action scope decision — a decision-only sub-release that doesn't touch reporting.
+- `v0.32` is external dataset readiness cookbooks — user-facing, dataset-side, orthogonal to reporting internals.
+
+`v0.32a` is the earliest natural design-freeze slot: a small planning sub-release before `v0.32b` cookbooks, on a release axis where reporting extensions fit cleanly. If the release cadence changes, this planning note updates its date but not its shape.
+
+## Backwards compatibility
+
+- Field additions to `summarize_generator_confidence` require a scope-freeze note in the release that introduces them (`v0.32a` design freeze; `v0.32b` runtime). No existing field is removed or renamed.
+- The `_CONFIDENCE_LABELS` frozenset in `src/pdelie/reporting/summaries.py:38` is not touched — the v0.20 vocabulary is invariant.
+- The v0.20 release gate at `tests/test_v0_20_release_gate.py` continues to pass without modification; the added fields do not appear in that test.
+- Downstream tooling that reads only `confidence_label` sees no change. Downstream tooling that wants `method_scores` / `uncertainty_report` / `calibration_report` must accept `None` as the frozen default for methods that don't emit them.
+
+## Cross-references
+
+- `docs/specs/LABEL_REGISTRY.md` — "Planned additive extensions" section references this planning note. When `v0.32a` freezes, the label registry gains a note that `method_scores` / `uncertainty_report` / `calibration_report` are additive fields on the `generator_confidence` summary, not new label families.
+- `docs/specs/API_STABILITY.md` — Surface Matrix "deferred — additive reporting fields" row references this planning note.
+- `docs/strategy/SCIENTIFIC_POSITIONING.md` — "PDELie should not become Bayesian" section from the peer review is the design constraint: PDELie does not become a calibration or UQ framework, it exposes fields where methods that natively emit those quantities can land them without breaking the categorical contract.
+- `docs/strategy/VALID_BUT_NOT_USEFUL.md` — the wedge principle explains why `method_scores` is preferable to a generic `confidence` overload. Numeric per-component scores let downstream tooling reason about the wedge; a single overloaded scalar cannot.
+
+## Not in scope for this planning note
+
+- No `src/pdelie/reporting/summaries.py` change.
+- No test change; existing v0.20 release gate is preserved verbatim.
+- No version bump; `pyproject.toml` stays at `0.30.0`.
+- No new dependency; the fields are pure numerical values from existing method internals.
+- No renaming of `confidence_label`.
+- No promotion of `evidence_label` from diagnostic to pass-fail vocabulary.
+- No commitment on `v0.32a` PR shape beyond design-only; the runtime lands in `v0.32b+`.
+
+---
+
 # PDELie - Execution Plan (V0.30 Release Close)
 
 **Status:** COMPLETE
