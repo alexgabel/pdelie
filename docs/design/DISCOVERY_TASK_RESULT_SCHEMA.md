@@ -44,6 +44,7 @@ A user who wants to run a `PDELibrary`-backed PDE discovery over their canonical
     "heldout_residual": dict | None,
     "weak_contract": dict | None,
     "warnings": list[str],
+    "pysindy_bridge_variant": Literal["periodic_only_v1"],
     "underlying_discovery_result": dict,
 }
 ```
@@ -67,7 +68,19 @@ A user who wants to run a `PDELibrary`-backed PDE discovery over their canonical
 - `train_residual`, `heldout_residual` — optional strict-numeric dicts of the shape `{"size": int, "l2_norm": float, "rms": float, "max_abs": float}`, matching `_residual_summary_or_none` at `src/pdelie/discovery/contracts.py:198-214`.
 - `weak_contract` — optional dict. **Non-null iff `target_convention == "weak_pde_library"`**. Its structure is documented under "WeakPDELibrary wrapper" below.
 - `warnings` — list of non-empty strings drawn from a controlled vocabulary (`"heldout_residual_missing"`, `"support_epsilon_defaulted"`, `"weak_contract_diagnostic_only"`, `"differentiation_method_defaulted"`; extended per implementation review).
+- `pysindy_bridge_variant` — `Literal["periodic_only_v1"]`. Provenance identifier for the PySINDy discovery bridge variant that produced this `TaskResult`. `"periodic_only_v1"` is the sole accepted value in v0.31 and encodes the periodic-only-x contract enforced at runtime by the `pdelie.tasks.discovery` entry point (see "Runtime boundary-condition guard" below). Future FD-nonperiodic variants (v0.32.5 target) will add distinct string values (e.g. `"nonperiodic_x_finite_difference_v1"`) so consumers reading a saved `TaskResult` can determine which bridge produced it without inferring from `derivative_backend` or the embedded field metadata. This is a first-class field so extension does not require a schema-version bump.
 - `underlying_discovery_result` — the payload returned by `summarize_discovery_result(...)`. TaskResult composes with the existing summarizer as a sibling wrapper, not as a parent that swallows the child.
+
+## Runtime boundary-condition guard
+
+The v0.31a periodic-only fence is enforced at **two** places in v0.31b runtime:
+
+1. **The `pdelie.tasks.discovery` task-runner entry point** — before assembling PySINDy trajectories, the runner calls `is_x_periodic(field)` from `pdelie._boundary`. If the field is not periodic, the runner raises `PySINDyDiscoveryUnsupportedBoundaryError` (a new dedicated exception in `pdelie.tasks.discovery`, subclass of `ScopeValidationError`) with a message pointing to `pysindy_bridge_variant == "periodic_only_v1"`.
+2. The existing `to_pysindy_trajectories` gate at `src/pdelie/discovery/pysindy_bridge.py:27-28` continues to reject nonperiodic fields.
+
+**Both are required.** Relying on the `to_pysindy_trajectories` gate alone leaves a hole: `fit_pysindy_discovery` accepts raw trajectory arrays and does not consult boundary metadata, so a caller who assembles trajectories directly bypasses the bridge gate. The task-runner-level guard closes that hole for v0.31.
+
+The `pysindy_bridge_variant` field records which enforcement path was in effect at task time. When v0.32.5 lands FD-nonperiodic discovery, it will emit a distinct variant string; consumers reading old `TaskResult` payloads can filter by the periodic-only variant explicitly.
 
 ### `weak_contract` trigger predicate
 

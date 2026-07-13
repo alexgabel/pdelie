@@ -86,6 +86,9 @@
     "v0.31 sequences before v0.30.1",
     "SymmetryCandidate wrapper is v0.30.1 responsibility not v0.31",
     "PySINDy PDELibrary bridge is periodic-only in v0.31; FD-nonperiodic extension is explicitly deferred",
+    "PySINDyDiscoveryUnsupportedBoundaryError",
+    "pysindy_bridge_variant",
+    "periodic_only_v1",
     "weak_1d retained through v0.32 close",
     "no LieGG / trained-model extraction in v0.31",
     "no multi-channel or 2D FieldBatch dispatch in v0.31",
@@ -147,6 +150,7 @@
       "heldout_residual": "dict | None (size, l2_norm, rms, max_abs; strict-numeric; same shape as train_residual)",
       "weak_contract": "dict | None (non-null iff target_convention == 'weak_pde_library'; carries method_family, test_function_family, quadrature_rule, diagnostic_only: true)",
       "warnings": "list[str]",
+      "pysindy_bridge_variant": "Literal['periodic_only_v1'] (provenance identifier for the PySINDy bridge variant that produced this TaskResult; sole accepted value in v0.31; extension to nonperiodic variants is a v0.32.5 target and does not require a schema-version bump)",
       "underlying_discovery_result": "dict (embedded summarize_discovery_result payload)"
     },
     "nan_safety": "must round-trip through json.dumps(payload, allow_nan=False); wire _validate_strict_json_compatible from src/pdelie/reporting/summaries.py",
