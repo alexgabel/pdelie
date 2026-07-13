@@ -116,21 +116,39 @@ def test_ci_workflow_has_lint_typecheck_coverage_jobs() -> None:
         assert job_name in jobs, f"CI job {job_name!r} missing"
 
 
-def test_lint_typecheck_coverage_jobs_are_non_blocking() -> None:
+def test_lint_is_blocking_after_v0_30_1a_promotion() -> None:
+    """v0.30.1a promoted ``lint`` from advisory to blocking. The job must not
+    carry ``continue-on-error: true`` at either the job or step level.
+    """
+    job = _ci_workflow()["jobs"]["lint"]
+    assert job.get("continue-on-error") is not True, (
+        "lint job must be blocking after v0.30.1a promotion"
+    )
+    for step in job.get("steps", []):
+        if "run" in step and "ruff" in step.get("run", ""):
+            assert step.get("continue-on-error") is not True, (
+                "lint ruff step must be blocking after v0.30.1a promotion"
+            )
+
+
+def test_typecheck_and_coverage_jobs_remain_non_blocking() -> None:
+    """v0.30.1a promoted ``lint`` only. ``typecheck`` stays advisory pending
+    v0.30.1c-k mypy strict-scope broadening; ``coverage`` stays advisory
+    pending v0.30.1b coverage promotion.
+    """
     jobs = _ci_workflow()["jobs"]
-    for job_name in ("lint", "typecheck", "coverage"):
+    for job_name in ("typecheck", "coverage"):
         job = jobs[job_name]
-        # Either the job-level continue-on-error is true, or every action step
-        # that runs the tool has continue-on-error: true.
         job_level = job.get("continue-on-error") is True
         step_level = all(
             step.get("continue-on-error") is True
             for step in job.get("steps", [])
             if "run" in step
-            and ("ruff" in step.get("run", "") or "mypy" in step.get("run", "") or "pytest" in step.get("run", ""))
+            and ("mypy" in step.get("run", "") or "pytest" in step.get("run", ""))
         )
         assert job_level or step_level, (
-            f"job {job_name!r} must be non-blocking (job-level or step-level continue-on-error: true)"
+            f"job {job_name!r} must remain non-blocking through v0.30.1a "
+            f"(job-level or step-level continue-on-error: true)"
         )
 
 

@@ -180,12 +180,23 @@ def test_v0_30e_ci_workflow_now_has_lint_typecheck_coverage_jobs_nonblocking() -
         assert re.search(pattern, workflow, flags=re.MULTILINE), (
             f"v0.30e must add CI job: {job}"
         )
-    # Non-blocking assertion: the workflow's YAML carries continue-on-error: true
-    # on the added jobs. Parse once to be robust to formatting.
+    # Blocking / non-blocking state after v0.30.1a lint promotion:
+    #   lint      -> BLOCKING (promoted in v0.30.1a)
+    #   typecheck -> non-blocking (promoted in v0.30.1c-k, per subpackage)
+    #   coverage  -> non-blocking (promoted in v0.30.1b)
     import yaml  # local import: yaml is already a v0.30e test dep
 
     parsed_jobs = yaml.safe_load(workflow)["jobs"]
-    for job in ("lint", "typecheck", "coverage"):
+    lint_body = parsed_jobs["lint"]
+    assert lint_body.get("continue-on-error") is not True, (
+        "v0.30.1a promoted the lint job to blocking; it must not carry job-level continue-on-error: true"
+    )
+    for step in lint_body.get("steps", []):
+        if "run" in step and "ruff" in step.get("run", ""):
+            assert step.get("continue-on-error") is not True, (
+                "v0.30.1a promoted the lint ruff step to blocking"
+            )
+    for job in ("typecheck", "coverage"):
         job_body = parsed_jobs[job]
         job_level = job_body.get("continue-on-error") is True
         step_level = any(
@@ -194,7 +205,7 @@ def test_v0_30e_ci_workflow_now_has_lint_typecheck_coverage_jobs_nonblocking() -
             if "run" in step
         )
         assert job_level or step_level, (
-            f"v0.30e CI job {job!r} must be non-blocking"
+            f"v0.30.1a advisory CI job {job!r} must remain non-blocking pending its own promotion"
         )
 
     # Release-gate job name across the v0.30 arc:
