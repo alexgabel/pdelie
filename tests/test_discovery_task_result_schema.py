@@ -67,6 +67,7 @@ def _build_minimal_task_result_payload(*, target_convention: str = "pde_library"
         "heldout_residual": None,
         "weak_contract": weak_contract,
         "warnings": [],
+        "pysindy_bridge_variant": "periodic_only_v1",
         "underlying_discovery_result": {
             "summary_schema_version": "0.1",
             "summary_type": "discovery_result",
@@ -110,6 +111,22 @@ def test_task_result_schema_literal_invariants_match_design_doc() -> None:
     assert payload["backend_name"] == "pysindy"
     assert payload["target_convention"] in {"pde_library", "weak_pde_library"}
     assert payload["input_layout"] == "scalar_1d_uniform"
+    assert payload["pysindy_bridge_variant"] == "periodic_only_v1"
+
+
+def test_pysindy_bridge_variant_is_first_class_field() -> None:
+    """`pysindy_bridge_variant` must be a required top-level field.
+
+    v0.31 accepts only ``"periodic_only_v1"``. Future FD-nonperiodic bridge
+    variants (v0.32.5 target) will add distinct string values without a
+    schema-version bump — reading a saved ``TaskResult`` payload must be
+    able to determine which bridge produced it without inferring from
+    ``derivative_backend`` or the embedded discovery-result metadata.
+    """
+    payload = _build_minimal_task_result_payload()
+    assert "pysindy_bridge_variant" in payload
+    assert isinstance(payload["pysindy_bridge_variant"], str)
+    assert payload["pysindy_bridge_variant"] != ""
 
 
 def test_weak_contract_trigger_predicate_documented_in_design() -> None:
