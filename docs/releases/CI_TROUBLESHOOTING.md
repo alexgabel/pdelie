@@ -37,7 +37,7 @@ Reasons:
 - **Reproducibility.** Two runs of the same commit resolve to the same action bytes forever, regardless of upstream retagging.
 - **Modest resilience against tag-resolution outages.** When GitHub's tag-resolution endpoint 503s, a SHA-pinned reference can (sometimes) skip that lookup step. It does not help if the tarball-download endpoint itself is down.
 
-The pins are kept fresh by Dependabot per `.github/dependabot.yml` — a weekly Monday PR opens whenever a pinned action publishes a new patch or minor release.
+The pins are kept fresh by Dependabot per `.github/dependabot.yml` — a weekly Monday PR opens whenever a pinned action publishes a new **patch or minor** release. Major-version bumps (`X.0.0` breaks) are explicitly ignored by the Dependabot config and stay a manual maintenance task, because GitHub Actions major bumps have a history of cross-API breaks (`upload-artifact` v3 → v4 broke the artifact API in Dec 2024; `checkout` v3 → v4 required a Node 20 runner). To take a major bump, a maintainer reads the action's changelog, updates the SHA and version comment in `.github/workflows/ci.yml` directly, and reviews the PR themselves.
 
 ## Other common CI failure modes
 
