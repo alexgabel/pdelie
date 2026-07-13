@@ -11,3 +11,4 @@ Normative docs for runtime behavior, canonical objects, and public API policy.
    ARCHITECTURE
    API_STABILITY
    SUPPORT_MATRIX
+   LABEL_REGISTRY
