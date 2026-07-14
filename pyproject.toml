@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pdelie"
-version = "0.30.0"
-description = "V0.30 nonperiodic readiness (structured BoundaryConditionSpec, FieldBatch 0.2 schema, low-order finite-difference derivative backend, interior-only residual diagnostics) plus retained workflow recipes, Dataset ingestion, and PDE strong paths"
+version = "0.31.0"
+description = "V0.31 downstream discovery task bridge — periodic scalar 1D PySINDy PDELibrary task runner (discovery_task_result) and diagnostic-only WeakPDELibrary wrapper (pdelie_weak_pde_library_diagnostic), submodule-only, with a public JSON-only example and temporary PySINDy 1.x + setuptools compatibility policy."
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"

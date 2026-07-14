@@ -123,7 +123,7 @@
     "noise-robustness-gate"
   ],
   "expected_ci_jobs": [
-    "v0_30-release-gate",
+    "v0_31-release-gate",
     "docs-build",
     "editable-tests",
     "package-smoke"

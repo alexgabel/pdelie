@@ -2,7 +2,7 @@
   "summary_schema_version": "0.1",
   "summary_type": "pdelie_declarative_release_gate_manifest",
   "scope": "declarative_release_gate_checks_only",
-  "current_release_gate_job_name": "v0_30-release-gate",
+  "current_release_gate_job_name": "v0_31-release-gate",
   "release_count": 19,
   "excluded_functional_release_gate_files": [
     {
@@ -1304,8 +1304,7 @@
         "phrases": [
           "`v0.30`",
           "Completed",
-          "Nonperiodic readiness + low-order FD diagnostics",
-          "Current completed release: `v0.30.0`"
+          "Nonperiodic readiness + low-order FD diagnostics"
         ]
       },
       "strict_json_manifests": [
@@ -1403,9 +1402,12 @@
         "names": [
           "PySINDyDiscoveryUnsupportedBoundaryError",
           "SUPPORTED_PYSINDY_VERSIONS",
+          "SymmetryCandidate",
+          "SymmetryMethod",
           "TaskResult",
           "WeakPDELibraryDiagnostic",
           "_pysindy_compat",
+          "discover_symmetries",
           "discovery_task_result",
           "inspect_pysindy_weak_pde_library",
           "run_downstream_discovery_task_bridge_example",
@@ -1434,9 +1436,61 @@
       },
       "strict_json_manifests": [
         {
+          "path": "configs/release_gate_manifest.json"
+        },
+        {
           "path": "configs/pysindy_compatibility_matrix.json"
+        },
+        {
+          "path": "docs/specs/support_matrix.v0_31.json"
         }
-      ]
+      ],
+      "required_phrases_in_scope_doc": {
+        "doc_path": "docs/planning/V0_31_DISCOVERY_TASK_BRIDGE_SCOPE.md",
+        "phrases": [
+          "downstream_discovery_task_bridge",
+          "COMPLETE"
+        ]
+      },
+      "required_phrases_in_readiness_doc": {
+        "doc_path": "docs/releases/V0_31_RELEASE_READINESS.md",
+        "phrases": [
+          "downstream_discovery_task_bridge",
+          "package version: `0.31.0`",
+          "git tag: `v0.31.0`",
+          "Do not publish to TestPyPI or PyPI for `v0.31.0`",
+          ">=1.7.5,<2",
+          "**setuptools**: `<82`",
+          "pdelie.tasks.run_pysindy_pde_task",
+          "pdelie.tasks.inspect_pysindy_weak_pde_library",
+          "pdelie.examples.run_downstream_discovery_task_bridge_example"
+        ]
+      },
+      "required_phrases_in_api_stability": {
+        "doc_path": "docs/specs/API_STABILITY.md",
+        "phrases": [
+          "Stable public-surface note for the v0.31.0 release close",
+          "pdelie.tasks.run_pysindy_pde_task",
+          "pdelie.tasks.inspect_pysindy_weak_pde_library",
+          "pdelie.examples.run_downstream_discovery_task_bridge_example"
+        ]
+      },
+      "required_phrases_in_roadmap": {
+        "doc_path": "docs/planning/ROADMAP.md",
+        "phrases": [
+          "`v0.31`",
+          "Completed",
+          "downstream_discovery_task_bridge"
+        ]
+      },
+      "required_phrases_in_plan": {
+        "doc_path": "docs/planning/PLAN.md",
+        "phrases": [
+          "V0.31.0 Release Close",
+          "V0.31.0 is complete",
+          "downstream_discovery_task_bridge"
+        ]
+      }
     }
   ]
 }

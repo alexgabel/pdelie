@@ -1,5 +1,59 @@
 # Changelog
 
+## 0.31.0
+
+Final release for the v0.31 downstream discovery task-bridge slice. Submodule-only surface — no root `pdelie` export added. Periodic scalar 1D only.
+
+Release decision: `downstream_discovery_task_bridge`.
+
+### Added
+
+- `pdelie.tasks.run_pysindy_pde_task(field, *, task_name, pysindy_model, ...)` — executable PySINDy `PDELibrary`-backed sparse-discovery task runner (v0.31b1). Layer-1 boundary-condition guard raises `PySINDyDiscoveryUnsupportedBoundaryError` before any PySINDy call when `is_x_periodic(field)` is false. Returns a strict-JSON `discovery_task_result`.
+- `pdelie.tasks.summarize_discovery_task_result(...)` — strict-JSON payload assembler enforcing the frozen 22-key composed schema. `summary_type = "discovery_task_result"`, `summary_schema_version = "0.1"`, `pysindy_bridge_variant = "periodic_only_v1"`. `_validate_strict_json_compatible` invoked exactly once at the composition boundary.
+- `pdelie.tasks.PySINDyDiscoveryUnsupportedBoundaryError` — subclass of `ScopeValidationError`.
+- `pdelie.tasks.inspect_pysindy_weak_pde_library(field, ...)` — diagnostic-only wrapper around PySINDy's `WeakPDELibrary` (v0.31b2). Two-layer scope guard (periodic-x, uniform x/t grids, `batch == 1`, single var, K-scaled grid-sufficiency floor `max(8, 4*K)`, unsupported PySINDy API). Returns a strict-JSON `pdelie_weak_pde_library_diagnostic`.
+- `pdelie.tasks.summarize_pysindy_weak_pde_library_diagnostic(...)` — strict-JSON payload assembler enforcing the 27-key composed schema. `summary_type = "pdelie_weak_pde_library_diagnostic"`, `diagnostic_only = True`, `method_family = "pysindy_weak_pde_library_polynomial_gauss_v1"`.
+- `pdelie.tasks.WeakPDELibraryDiagnostic` — caller-declared JSON-safe library-configuration dataclass with `as_dict()`.
+- `pdelie.examples.run_downstream_discovery_task_bridge_example` and CLI `python -m pdelie.examples.downstream_discovery_task_bridge` (v0.31c) — composed JSON-only public example. `summary_type = "downstream_discovery_task_bridge_example"` (7-key wrapper — not a new report schema).
+- Adapter loosening: `fit_pysindy_discovery` accepts a caller-supplied `pysindy_model` kwarg (v0.31b1). `config != None` still raises; `config=None, pysindy_model=None` default path byte-preserved for existing v0.30 callers.
+- `configs/pysindy_compatibility_matrix.json` — machine-readable machine-readable compatibility matrix under `summary_type = "pdelie_pysindy_compatibility_matrix"` (v0.31b3), with a `v0_31c1_packaging_audit` block enumerating the setuptools boundary (v0.31c1).
+- `configs/release_gate_manifest.json` — extended `"0.31"` row pinning required submodule attributes and forbidden root attributes for the full v0.31 downstream task-bridge surface. The CI release-gate job is renamed `v0_30-release-gate → v0_31-release-gate`.
+- `docs/design/DISCOVERY_TASK_RESULT_SCHEMA.md`, `docs/design/PYSINDY_COMPATIBILITY_POLICY.md`, `docs/planning/PYSINDY_API_PREFLIGHT_AUDIT.md` — new design and planning artifacts anchoring the schema, the compat policy, and the fail-fast preflight discipline for future PySINDy-touching releases.
+
+### Compatibility
+
+- PySINDy pin: `>=1.7.5,<2` under `python_version < '3.12'` (v0.31b3, `C_temporary_1x_policy` outcome). PySINDy 2.x support is deferred to `v0.31.1` — the release-close document enumerates four independent 2.x API breaks and a transitive `numpy>=2` floor conflict.
+- scikit-learn pin: `>=1.2.2,<1.3` under `python_version < '3.12'`.
+- setuptools pin: `<82` under `python_version < '3.12'` — **temporary** constraint added by v0.31c1 because pysindy 1.7.5 imports `pkg_resources` at package init and setuptools 82 removed the module. Confirmed by an adversarial matrix on Python 3.11 fresh venvs (setuptools 81 pass; 82/83 `ModuleNotFoundError` at `import pysindy`). Post-fix rebuilt-wheel verification: pip auto-downgrades ambient setuptools 82/83 to 81 without user co-install. The cap retires when the pysindy pin widens to `>=2` in `v0.31.1` / `v0.32`.
+- Python 3.12+ downstream support: **deferred to `v0.31.1`.** The `[downstream]` extra is marker-scoped to `python_version < '3.12'`; on Python 3.12+, invoking the task bridge raises a targeted, actionable `ImportError` (or `ScopeValidationError` on the weak path) whose message names the v0.31.1 deferral and states that reinstalling the same extra will not fix the environment.
+- `numpy>=1.24,<2` and Python `>=3.11` unchanged.
+
+### Diagnostics
+
+- `pdelie_weak_pde_library_diagnostic` is **diagnostic-only**. It reports column norms, matrix rank, matrix condition number, retained/skipped weak rows, weak feature names, and provenance — but does NOT compute a recovery benchmark, does NOT tune thresholds, and does NOT introduce a clean/noisy gate.
+- No WSINDy benchmark claim.
+- No noise-robustness claim.
+- No numerical equivalence with `pdelie.residuals.weak_1d`. The PDELie-native weak-derivative path remains available and is retained through at least `v0.32` close.
+
+### Examples
+
+- One new public JSON-only example: `pdelie.examples.run_downstream_discovery_task_bridge_example` and its CLI. Composes both v0.31 paths on one canonical periodic scalar 1D Heat field (T=64, X=64, K=16, seed=31000). Deterministic under the frozen seed via a private `_legacy_numpy_rng_seed_scope` context manager (v0.31c1); documented as not-thread-safe because PySINDy 1.7.5 uses the legacy `np.random` global RNG.
+- The example uses only public submodule APIs (AST-checked). No root `pdelie` export.
+
+### Boundaries / non-goals
+
+- No new PDE.
+- No new summary type. The v0.31 report surface is exactly `discovery_task_result` (22 keys) and `pdelie_weak_pde_library_diagnostic` (27 keys) — plus the composed `downstream_discovery_task_bridge_example` wrapper, which is NOT a new report schema.
+- No nonperiodic PySINDy discovery. Both v0.31 task paths raise on nonperiodic-x inputs.
+- No FD-nonperiodic PySINDy discovery.
+- No PySINDy 2.x code; the pin stays `<2` and code paths are byte-preserved for v0.30 callers.
+- No `pdelie.symmetry.SymmetryMethod` registry, no `SymmetryCandidate` runtime — deferred to `v0.30.1`.
+- No PDEBench / The Well support claim — deferred to `v0.32`.
+- No multi-channel / 2D widening — deferred to `v0.34+` scope decision.
+- No new root `pdelie` exports.
+- No PyPI or TestPyPI publication; package-index publishing remains deferred to `v1.0` or later.
+- The three retained xfails all have non-empty reasons and are assigned to `v0.31.1` (runtime version guards on the two task entry points) or to a nested provenance follow-up (adding `scipy` to `_resolve_backend_version`).
+
 ## 0.30.0
 
 Final release for the frozen V0.30 nonperiodic-readiness and low-order finite-difference derivative-diagnostics slice.

@@ -157,11 +157,20 @@ def test_v0_31_pdelie_tasks_submodule_surface_is_v0_31b2_locked() -> None:
 
 
 def test_v0_31_version_pin_matches_scope_config() -> None:
-    """Package version must match the v0.31a guard pin (no version bump in v0.31a)."""
+    """Package version must be one of the versions authorized by the v0.31
+    arc: the design/runtime pin ``0.30.0`` held through v0.31a-c1, and the
+    release-close bump to ``0.31.0``. The scope-config
+    ``guard_no_version_bump`` remains ``0.30.0`` — its role is to guard the
+    sub-releases against a premature bump; release close legitimately
+    supersedes it.
+    """
     config = _load_scope_config()
-    pyproject = tomllib.loads(_repo_text("pyproject.toml"))
-    assert pyproject["project"]["version"] == config["guard_no_version_bump"]
-    assert pyproject["project"]["version"] == "0.30.0"
+    pyproject_version = tomllib.loads(_repo_text("pyproject.toml"))["project"]["version"]
+    assert config["guard_no_version_bump"] == "0.30.0"
+    assert pyproject_version in {"0.30.0", "0.31.0"}, (
+        f"pdelie version must be 0.30.0 (pre-close) or 0.31.0 (release "
+        f"close); got {pyproject_version!r}"
+    )
 
 
 def test_v0_31_no_premature_pyproject_sections() -> None:

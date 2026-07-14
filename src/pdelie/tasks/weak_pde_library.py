@@ -392,8 +392,22 @@ def _build_weak_library(
     try:
         import pysindy
     except ImportError as exc:  # pragma: no cover — importorskip guards tests
+        import sys as _sys
+
+        if _sys.version_info >= (3, 12):
+            raise ScopeValidationError(
+                "PySINDy WeakPDELibrary diagnostic is not supported on "
+                f"Python {_sys.version_info.major}.{_sys.version_info.minor}. "
+                "The v0.31 task bridge supports PySINDy 1.7.x on Python 3.11 "
+                "only; PySINDy 2.x / Python 3.12+ compatibility is deferred "
+                "to v0.31.1. Reinstalling pdelie[downstream] will not fix "
+                "this environment — the extra is marker-scoped to "
+                "python_version < '3.12'. See "
+                "docs/design/PYSINDY_COMPATIBILITY_POLICY.md."
+            ) from exc
         raise ScopeValidationError(
-            "pysindy is required for inspect_pysindy_weak_pde_library."
+            "pysindy is required for inspect_pysindy_weak_pde_library. "
+            "Install with `pip install pdelie[downstream]`."
         ) from exc
 
     X = int(x_coord.size)

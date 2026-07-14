@@ -10,10 +10,23 @@ from pdelie.errors import SchemaValidationError, ScopeValidationError
 
 
 def _require_discovery_dependencies():
+    import sys as _sys
+
     try:
         pysindy = importlib.import_module("pysindy")
         importlib.import_module("sklearn")
     except (ModuleNotFoundError, ImportError, ValueError) as exc:
+        if _sys.version_info >= (3, 12):
+            raise ImportError(
+                "PySINDy downstream discovery is not supported on Python "
+                f"{_sys.version_info.major}.{_sys.version_info.minor}. The "
+                "v0.31 task bridge supports PySINDy 1.7.x on Python 3.11 "
+                "only; PySINDy 2.x / Python 3.12+ compatibility is deferred "
+                "to v0.31.1. Reinstalling pdelie[downstream] will not fix "
+                "this environment — the extra is marker-scoped to "
+                "python_version < '3.12'. See "
+                "docs/design/PYSINDY_COMPATIBILITY_POLICY.md."
+            ) from exc
         raise ImportError(
             "PySINDy discovery adapter requires pdelie[downstream] or pdelie[test]."
         ) from exc

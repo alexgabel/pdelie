@@ -5,11 +5,14 @@ on:
   pull_request:
 
 jobs:
-  v0_30-release-gate:
+  v0_31-release-gate:
     runs-on: ubuntu-latest
     # v0.31b3: this job exercises PySINDy at the declared primary tested
     # version pinned by configs/pysindy_compatibility_matrix.json. See
     # docs/design/PYSINDY_COMPATIBILITY_POLICY.md.
+    # v0.31.0 release close: renamed from the pre-close release-gate job
+    # name. Unrelated jobs (lint, typecheck, coverage,
+    # docs-build, editable-tests, package-smoke) are unchanged.
     env:
       PDELIE_PINNED_PYSINDY_VERSION: "1.7.5"
     steps:
@@ -44,7 +47,7 @@ jobs:
           retry 3 python -m pip install "pysindy==${PDELIE_PINNED_PYSINDY_VERSION}"
       - name: Check dependencies
         run: python -m pip check
-      - name: Run v0.30 release gate (declarative manifest + all retained per-version gates + v0.31b3 compat policy)
+      - name: Run v0.31 release gate (declarative manifest + all retained per-version gates + v0.31 compat policy)
         run: >
           python -m pytest
           tests/test_current_release_gate.py

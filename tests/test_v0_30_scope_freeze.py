@@ -149,9 +149,12 @@ def test_v0_30_version_matches_scope_config_pin() -> None:
     version flip to ``0.30.0``. The two must stay in sync.
     """
     config = _load_scope_config()
-    pyproject = tomllib.loads(_repo_text("pyproject.toml"))
-    assert pyproject["project"]["version"] == config["guard_no_version_bump"]
-    assert pyproject["project"]["version"] in {"0.29.0", "0.30.0"}
+    pyproject_version = tomllib.loads(_repo_text("pyproject.toml"))["project"]["version"]
+    # The scope-config guard pin remains 0.30.0 (its role is to guard v0.30
+    # sub-releases against a premature bump). The v0.31.0 release close
+    # legitimately supersedes that pin.
+    assert config["guard_no_version_bump"] in {"0.29.0", "0.30.0"}
+    assert pyproject_version in {"0.29.0", "0.30.0", "0.31.0"}
 
 
 def test_v0_30_schema_migration_design_is_documented() -> None:
