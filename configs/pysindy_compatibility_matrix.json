@@ -23,5 +23,21 @@
       "ci_job_name": "v0_30-release-gate",
       "blocking": true
     }
-  ]
+  ],
+  "v0_31c1_packaging_audit": {
+    "summary": "adversarial setuptools matrix on Python 3.11 fresh venvs",
+    "verdict": "B_setuptools_82_boundary",
+    "tested_setuptools_versions": ["81.0.0", "82.0.0", "83.0.0"],
+    "passing_setuptools_versions": ["81.0.0"],
+    "failing_setuptools_versions": ["82.0.0", "83.0.0"],
+    "highest_working_setuptools_version": "81.0.0",
+    "failure_mechanism": "pysindy 1.7.5 imports pkg_resources at package init; setuptools 82 removed pkg_resources",
+    "applied_constraint": "setuptools<82; python_version < '3.12'",
+    "constraint_scope": "temporary — retired when pysindy pin widens to >=2 in v0.31.1 / v0.32",
+    "post_fix_verification": {
+      "ambient_setuptools_82_resolved_to": "81.0.0",
+      "ambient_setuptools_83_resolved_to": "81.0.0",
+      "fresh_venv_baseline_resolved_to": "65.5.0"
+    }
+  }
 }
