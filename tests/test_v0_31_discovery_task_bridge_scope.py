@@ -119,26 +119,30 @@ def test_v0_31_no_submodule_export_for_planned_v0_31_apis() -> None:
             )
 
 
-def test_v0_31_pdelie_tasks_submodule_surface_is_v0_31b1_locked() -> None:
-    """`pdelie.tasks.discovery` runtime landed in v0.31b1. Pin the public surface.
+def test_v0_31_pdelie_tasks_submodule_surface_is_v0_31b2_locked() -> None:
+    """Pin the `pdelie.tasks` public surface.
 
-    The submodule must expose exactly three public names — the runtime entry
-    point, the strict-JSON payload assembler, and the BC-guard exception —
-    plus the ``discovery`` submodule itself. Any other public attribute would
-    silently widen the v0.31 surface past the scope freeze.
+    v0.31b1 landed ``discovery`` (three public names). v0.31b2 landed
+    ``weak_pde_library`` (three additional public names). The lock advances
+    with each sub-release; any other public attribute would silently widen
+    the v0.31 surface past the scope freeze.
     """
     tasks_module = importlib.import_module("pdelie.tasks")
     public_attrs = sorted(name for name in dir(tasks_module) if not name.startswith("_"))
     expected = sorted(
         [
             "PySINDyDiscoveryUnsupportedBoundaryError",
+            "WeakPDELibraryDiagnostic",
             "discovery",
+            "inspect_pysindy_weak_pde_library",
             "run_pysindy_pde_task",
             "summarize_discovery_task_result",
+            "summarize_pysindy_weak_pde_library_diagnostic",
+            "weak_pde_library",
         ]
     )
     assert public_attrs == expected, (
-        f"pdelie.tasks public surface drifted from the v0.31b1 lock: "
+        f"pdelie.tasks public surface drifted from the v0.31b2 lock: "
         f"expected {expected!r}, got {public_attrs!r}"
     )
     # And the v0.31 forbidden-root guard must still hold — no root re-export.
@@ -146,6 +150,10 @@ def test_v0_31_pdelie_tasks_submodule_surface_is_v0_31b1_locked() -> None:
     assert not hasattr(pdelie, "summarize_discovery_task_result")
     assert not hasattr(pdelie, "PySINDyDiscoveryUnsupportedBoundaryError")
     assert not hasattr(pdelie, "TaskResult")
+    assert not hasattr(pdelie, "WeakPDELibraryDiagnostic")
+    assert not hasattr(pdelie, "inspect_pysindy_weak_pde_library")
+    assert not hasattr(pdelie, "summarize_pysindy_weak_pde_library_diagnostic")
+    assert not hasattr(pdelie, "weak_pde_library")
 
 
 def test_v0_31_version_pin_matches_scope_config() -> None:

@@ -1942,7 +1942,14 @@ def summarize_weak_form_supportability(
         "policy": {
             "scope": "frozen_public_heat_burgers_weak_residual_report_slice",
             "supports_wsindy": False,
+            # supports_weak_derivative_backend refers to the pdelie-native
+            # strong-derivative-only public weak-residual reporting slice
+            # (see src/pdelie/residuals/weak_1d.py). It is unrelated to the
+            # v0.31b2 diagnostic wrapper around PySINDy's WeakPDELibrary,
+            # which is a distinct, non-promoting surface tracked via the
+            # separate ``supports_pysindy_weak_library_diagnostic`` flag.
             "supports_weak_derivative_backend": False,
+            "supports_pysindy_weak_library_diagnostic": True,
             "supports_weak_sparse_recovery": False,
             "supports_weak_kdv": False,
             "supports_weak_ks": False,

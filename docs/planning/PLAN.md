@@ -1,3 +1,80 @@
+# PDELie - Execution Plan (V0.31b2)
+
+**Status:** IN_PROGRESS
+
+`v0.31b2` is the second runtime sub-release under the v0.31 arc. It lands the `pdelie.tasks.weak_pde_library` submodule with a diagnostic-only wrapper around PySINDy's `WeakPDELibrary`. The wrapper produces a **separate** top-level strict-JSON summary type (`pdelie_weak_pde_library_diagnostic`, `diagnostic_only=True`); it does **not** extend the v0.31b1 `discovery_task_result` shape and does not promote any PDE to `supported_existing_slice`. Three new submodule-only names ship (`WeakPDELibraryDiagnostic`, `summarize_pysindy_weak_pde_library_diagnostic`, `inspect_pysindy_weak_pde_library`), all available from `pdelie.tasks.weak_pde_library` and re-exported from `pdelie.tasks`; none is added to the `pdelie` root. `pyproject.toml` stays pinned at `0.30.0`.
+
+Decision label:
+
+```text
+downstream_discovery_task_bridge_diagnostic_weakpdelibrary
+```
+
+## Sub-release contents (v0.31b2)
+
+- `src/pdelie/tasks/weak_pde_library.py` (NEW) — submodule housing `WeakPDELibraryDiagnostic` (dataclass with `as_dict()`), `summarize_pysindy_weak_pde_library_diagnostic` (strict-JSON summarizer), and `inspect_pysindy_weak_pde_library` (PySINDy inspector). The inspector consumes a periodic scalar 1D `FieldBatch`, invokes PySINDy's `WeakPDELibrary` under the frozen identifier strings (`method_family = "pysindy_weak_pde_library_polynomial_gauss_v1"`, `test_function_family = "pysindy_weak_pde_library_polynomial_bump_v1"`, `quadrature_rule = "pysindy_weak_pde_library_composite_gauss_v1"`), and returns a `WeakPDELibraryDiagnostic` carrying weak-feature names, matrix/target shapes, retained/skipped-row counts, column norms, rank and condition number, and finite-value status.
+- `src/pdelie/tasks/__init__.py` (MODIFIED) — re-exports `WeakPDELibraryDiagnostic`, `summarize_pysindy_weak_pde_library_diagnostic`, and `inspect_pysindy_weak_pde_library` alongside the v0.31b1 re-exports; no new root `pdelie` export.
+- `src/pdelie/reporting/summaries.py` (MODIFIED) — additive supportability-policy update in `summarize_weak_form_supportability` at lines 1942-1951: a new key `"supports_pysindy_weak_library_diagnostic": True` is inserted immediately after the existing `"supports_weak_derivative_backend": False` line. The existing `"supports_weak_derivative_backend": False` value is **not** changed; its comment / docstring is re-scoped to name the pdelie-native strong-derivative-only path explicitly. No existing key is removed; no existing value is silently flipped.
+- Runtime boundary-condition guard (unchanged from v0.31b1): the wrapper reuses `PySINDyDiscoveryUnsupportedBoundaryError` (already defined in `pdelie.tasks.discovery`, subclass of `ScopeValidationError`). Nonperiodic-x inputs raise before any PySINDy call. The two-layer periodic-only fence (task-entry `is_x_periodic` + `to_pysindy_trajectories` bridge gate) covers the wrapper path.
+- Strict-JSON boundary — the wrapper summarizer routes its final payload through the existing `_validate_strict_json_compatible` helper at `src/pdelie/reporting/summaries.py:196-202`, mirroring the v0.31b1 discovery-task-result and the earlier weak-supportability strict-JSON summaries. NaN or Inf anywhere in the payload raises `SchemaValidationError`.
+- `tests/test_v0_31b2_weak_pde_library_diagnostic.py` (NEW) — runtime test file for the new submodule surface (import invariants, submodule-only export shape, `pdelie` root non-exposure, `pdelie.tasks` package re-export), the strict-JSON contract at the composed payload boundary (NaN/Inf adversarials on numeric fields), the inspector's periodic-only BC guard (raises `PySINDyDiscoveryUnsupportedBoundaryError` on nonperiodic-x inputs), the frozen identifier strings, the frozen top-level key set, the `diagnostic_only=True` marker, and the additive supportability-policy update in `summarize_weak_form_supportability`. Tests scope PySINDy `numpy.product` DeprecationWarning cascade narrowly via `pytest.warns(...)` / `warnings.filterwarnings("ignore", ...)` inside the specific weak-library tests; no global `warnings=error` filter is added.
+- `configs/release_gate_manifest.json` (MODIFIED) — the existing `0.31` row is **extended** in place (no new row). `required_submodule_attributes` grows to include the three new names on `pdelie.tasks.weak_pde_library` and their re-exports on `pdelie.tasks`. `forbidden_root_attributes.names` and `forbidden_submodule_attributes.names` are extended with the union of the new names and `weak_pde_library` (as a forbidden root attribute). `release_count` stays at 19; the `0.31` row is one row covering the whole minor.
+- Docs updated: `docs/design/DISCOVERY_TASK_RESULT_SCHEMA.md` (status line moved from RUNTIME DEFERRED to RUNTIME IMPLEMENTED for the WeakPDELibrary wrapper, plus a new section documenting the separate summary type and the 27-key top-level shape); `docs/specs/API_STABILITY.md` (new stable public-surface note for `v0.31b2`); `docs/planning/ROADMAP.md` (v0.31b1 marked Completed with PR #95 link; v0.31b2 marked In progress); `docs/planning/PLAN.md` (this section).
+- Preflight reference — `docs/planning/PYSINDY_API_PREFLIGHT_AUDIT.md` recorded the frozen PySINDy version (`1.7.5`), and a subsequent b2-specific preflight (`weak_pdelibrary_available: true`, `weak_pdelibrary_signature: (library_functions=..., derivative_order=..., spatiotemporal_grid=..., ..., is_uniform=..., periodic=...)`) verified that the installed WeakPDELibrary API is fully consumable via the same `pysindy.SINDy` integration path used in v0.31b1. Three preflight assumption-diffs are recorded there and are non-blocking: (a) `is_uniform=`/`periodic=` are still functional but emit a `UserWarning` — b2 routes the periodic hint through `differentiation_method` where possible and scopes warning filters narrowly per-test otherwise; (b) the frozen `pysindy_weak_pde_library_polynomial_gauss_v1` / `pysindy_weak_pde_library_composite_gauss_v1` strings mislabel PySINDy's actual method (analytical piecewise-polynomial integration under a polynomial test function) but the strings are opaque provenance labels, are deliberately distinct from pdelie-native `weak_1d`, and are carried forward verbatim; (c) PySINDy's internal `numpy.product` cascade emits ~30 DeprecationWarnings per fit — scoped narrowly per-test and not filtered globally.
+
+## Scope-in files (v0.31b2)
+
+- `src/pdelie/tasks/weak_pde_library.py`
+- `src/pdelie/tasks/__init__.py`
+- `src/pdelie/reporting/summaries.py` (additive supportability-policy key only)
+- `tests/test_v0_31b2_weak_pde_library_diagnostic.py`
+- `configs/release_gate_manifest.json` (extend the `0.31` row in place)
+- `docs/design/DISCOVERY_TASK_RESULT_SCHEMA.md`
+- `docs/specs/API_STABILITY.md`
+- `docs/planning/ROADMAP.md`
+- `docs/planning/PLAN.md`
+
+## Scope-out files (v0.31b2)
+
+- `src/pdelie/tasks/discovery.py` — unchanged; the v0.31b1 discovery-task runner is not extended and its `TaskResult` 22-key top-level shape is preserved.
+- `src/pdelie/residuals/weak_1d.py` — untouched; retention guaranteed through `v0.32` close.
+- `src/pdelie/discovery/*` — untouched; the periodic-only bridge and the v0.31b1 config-lock loosening are preserved.
+- `src/pdelie/_boundary.py` — untouched; the periodic-only-x fence is unchanged.
+- `pyproject.toml` — unchanged; no version bump.
+- `docs/specs/LABEL_REGISTRY.md` — not touched. The v0.31b2 wrapper reuses the existing `supportability_label` vocabulary (`diagnostic_only` is already one of the frozen values on the `weak_form_supportability` family, v0.24). No new label family is introduced; the wrapper adds one **field** on the supportability-policy dict (`supports_pysindy_weak_library_diagnostic`), not a new label vocabulary.
+
+## Explicit non-goals for v0.31b2
+
+- No WSINDy design matrix, no SR3 weak sparse recovery, no weak-sparse-recovery claim of any kind.
+- No noise-robustness claim; no clean/noisy gate.
+- No PDEBench support claim, no The Well support claim, no external-dataset benchmark claim.
+- No validated `O((dx)^p)` parity harness with pdelie-native `weak_1d`. Parity is contingent on `weak_1d` removal beyond `v0.32` close and is deliberately deferred.
+- No promotion of any PDE to `supported_existing_slice` via the wrapper. The `diagnostic_only=True` marker on the wrapper payload and its condensed `weak_contract` block is load-bearing.
+- No root `pdelie` export for any of the three new names.
+- No new label family in `docs/specs/LABEL_REGISTRY.md`; the wrapper reuses `supportability_label` / `diagnostic_only` on the existing v0.24 `weak_form_supportability` family.
+- No widening of the periodic-only-x guard. Nonperiodic-x is still rejected at the task entry with `PySINDyDiscoveryUnsupportedBoundaryError`.
+- No public strong extension of `supports_weak_derivative_backend`. That key stays `False` and is re-scoped in comment/docstring only to name the pdelie-native strong-derivative-only path.
+- No FD-nonperiodic PySINDy discovery. That extension is a `v0.32.5` target.
+- No multi-channel or 2D `FieldBatch` dispatch (deferred to `v0.34+`).
+- No new PDE row.
+- No new optional dependency; no CI workflow change; no promotion of the v0.30e advisory `lint` / `typecheck` / `coverage` jobs to blocking.
+- No version bump in `pyproject.toml` (`0.30.0` remains pinned).
+- No standalone `tests/test_v0_31b2_release_gate.py`; the `0.31` release-gate lives as a single row in `configs/release_gate_manifest.json` replayed by `tests/test_release_gates.py` (extended in place, following the v0.30f consolidation pattern).
+
+## v0.31b2 sub-release gate
+
+`v0.31b2` is complete when:
+
+- `pdelie.tasks.weak_pde_library` exists and exports exactly `WeakPDELibraryDiagnostic`, `summarize_pysindy_weak_pde_library_diagnostic`, and `inspect_pysindy_weak_pde_library`; the same three names are re-exported from `pdelie.tasks`; no other name leaks from `pdelie.tasks.weak_pde_library`; no root `pdelie` export is added; `pdelie.residuals`, `pdelie.reporting`, and `pdelie.discovery` do not carry any of the three new names.
+- `summarize_pysindy_weak_pde_library_diagnostic` returns a strict-JSON-compatible dict matching the frozen 27-key top-level shape; `summary_type == "pdelie_weak_pde_library_diagnostic"`; `summary_schema_version == "0.1"`; `diagnostic_only == True`; `method_family == "pysindy_weak_pde_library_polynomial_gauss_v1"`; `input_layout == "scalar_1d_uniform"`; `_validate_strict_json_compatible` is invoked at the composed payload boundary.
+- `inspect_pysindy_weak_pde_library` raises `PySINDyDiscoveryUnsupportedBoundaryError` (the existing v0.31b1 exception) on any nonperiodic-x `FieldBatch` before any PySINDy call.
+- `summarize_weak_form_supportability`'s policy dict at `src/pdelie/reporting/summaries.py:1942-1951` carries the additive `"supports_pysindy_weak_library_diagnostic": True` key immediately after `"supports_weak_derivative_backend": False`; the `False` value is unchanged; no other key is added or removed.
+- The v0.31b1 `discovery_task_result` 22-key top-level shape is preserved; no new top-level key is added; the condensed 4-key `weak_contract` block embedded when `target_convention == "weak_pde_library"` is unchanged from v0.31a.
+- `tests/test_v0_31b2_weak_pde_library_diagnostic.py` is present and its named tests pass; the full test suite still passes; the extended `0.31` row in `configs/release_gate_manifest.json` is enforced by `tests/test_release_gates.py`.
+- No file under `src/pdelie/` is added or modified beyond `tasks/weak_pde_library.py`, `tasks/__init__.py`, and the additive `summarize_weak_form_supportability` policy-dict update; `pyproject.toml` still declares `version = "0.30.0"`; no CI workflow is modified.
+
+---
+
 # PDELie - Execution Plan (V0.31b1)
 
 **Status:** IN_PROGRESS

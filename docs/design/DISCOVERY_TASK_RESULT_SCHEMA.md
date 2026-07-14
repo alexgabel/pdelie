@@ -1,6 +1,6 @@
 # DiscoveryTaskResult — Design Document
 
-**Status:** DESIGN-FROZEN in v0.31a; **RUNTIME IMPLEMENTED in v0.31b1** for `target_convention="pde_library"`; **WeakPDELibrary wrapper for `target_convention="weak_pde_library"` remains DEFERRED to v0.31b2**.
+**Status:** DESIGN-FROZEN in v0.31a; **RUNTIME IMPLEMENTED in v0.31b1** for `target_convention="pde_library"`; **WeakPDELibrary diagnostic wrapper RUNTIME IMPLEMENTED in v0.31b2 as a SEPARATE summary type (`pdelie_weak_pde_library_diagnostic`)**, not as a `discovery_task_result` variant.
 
 This document defines the composed `TaskResult` artifact returned by the `pdelie.tasks.discovery` submodule when a caller runs a PySINDy-backed PDE discovery task over a canonical scalar 1D PDELie input. It is normative for v0.31 proper.
 
@@ -213,3 +213,95 @@ The most surgical implementation places a new submodule `src/pdelie/tasks/discov
 - **no** new root `pdelie` export; **no** modification of `pdelie.residuals.weak_1d`
 
 The existing summarizer strict-JSON helper (`_validate_strict_json_compatible` at `src/pdelie/reporting/summaries.py:196-202`) handles the serialization enforcement without modification.
+
+## v0.31b2 — WeakPDELibrary diagnostic as a SEPARATE summary type
+
+**Status update:** In v0.31b1, `target_convention="weak_pde_library"` was DEFERRED. In v0.31b2, it is RUNTIME IMPLEMENTED — but the runtime lands on a **separate** top-level summary type (`pdelie_weak_pde_library_diagnostic`), not as a variant of `discovery_task_result`. The v0.31b1 `discovery_task_result` schema is not extended and its 22-key top-level shape is preserved.
+
+### Why a separate summary type
+
+The peer-review of the v0.31b arc flagged that embedding a full diagnostic-only WeakPDELibrary report inside `discovery_task_result` would either:
+
+1. inflate `discovery_task_result` from 22 keys to a variable-shape payload whose key set depends on `target_convention`, or
+2. force downstream consumers of the v0.31b1 discovery-task-result schema to disambiguate two very different payload shapes at read time.
+
+Both outcomes are avoided by giving the WeakPDELibrary diagnostic its own strict-JSON top-level summary type. The condensed `weak_contract` dict (already frozen at 4 keys in v0.31a) remains embedded inside `discovery_task_result` when `target_convention == "weak_pde_library"`, so the composition boundary between the two summary types is *only* the condensed 4-key `weak_contract` block. The full WeakPDELibrary diagnostic payload is *not* embedded into `discovery_task_result` and does not change the 22-key `discovery_task_result` top-level shape.
+
+### `pdelie_weak_pde_library_diagnostic` top-level key set
+
+The v0.31b2 wrapper's public JSON payload has exactly the following top-level keys:
+
+```
+summary_schema_version
+summary_type
+diagnostic_only
+method_family
+backend_name
+backend_version
+input_layout
+boundary_policy
+target_convention
+library_configuration
+test_function_family
+quadrature_rule
+spatiotemporal_grid_shape
+input_field_shape
+weak_feature_names
+weak_matrix_shape
+weak_target_shape
+retained_weak_rows
+skipped_weak_rows
+skipped_row_reasons
+finite_value_status
+column_norms
+matrix_rank
+matrix_condition_number
+warnings
+compatibility_notes
+provenance
+```
+
+Frozen literal values:
+
+- `summary_schema_version = "0.1"`
+- `summary_type = "pdelie_weak_pde_library_diagnostic"`
+- `diagnostic_only = True`
+- `method_family = "pysindy_weak_pde_library_polynomial_gauss_v1"`
+- `input_layout = "scalar_1d_uniform"`
+
+The three identifier strings frozen in v0.31a (`method_family`, `test_function_family`, `quadrature_rule`) continue to carry their `pysindy_weak_pde_library_*` prefix so the pdelie-native `weak_1d` provenance strings (`local_separable_quartic_bump_trapezoid_v1`, `separable_quartic_bump_beta`, `composite_tensor_product_trapezoidal_native_window`) remain unambiguously disambiguated.
+
+### `diagnostic_only=True` does NOT change `discovery_task_result`
+
+The `diagnostic_only: true` marker is a top-level field on `pdelie_weak_pde_library_diagnostic` only. It is **not** promoted to a top-level key on `discovery_task_result`. The v0.31b1 22-key top-level shape of `discovery_task_result` is preserved verbatim in v0.31b2:
+
+- no new top-level key is added to `discovery_task_result`;
+- the embedded 4-key `weak_contract` dict (with its own inner `diagnostic_only: true`) is unchanged from v0.31a;
+- `discovery_task_result` remains a 22-key top-level shape.
+
+Callers who want the full diagnostic report call the wrapper (via `pdelie.tasks.weak_pde_library`) directly; callers who want a discovery-task record with the condensed weak-contract provenance continue to use `pdelie.tasks.discovery.run_pysindy_pde_task` unchanged. The two entry points are siblings, not parent/child.
+
+### Public surface (v0.31b2)
+
+Three new submodule-only names, none of which is re-exported at the `pdelie` root:
+
+- `pdelie.tasks.weak_pde_library.WeakPDELibraryDiagnostic` — dataclass carrying the wrapper payload; has an `as_dict()` producing the strict-JSON top-level shape above.
+- `pdelie.tasks.weak_pde_library.summarize_pysindy_weak_pde_library_diagnostic` — takes a `WeakPDELibraryDiagnostic` instance (or the raw PySINDy assemblage produced by `inspect_pysindy_weak_pde_library`) and returns the strict-JSON-validated summary dict.
+- `pdelie.tasks.weak_pde_library.inspect_pysindy_weak_pde_library` — the inspector that runs PySINDy's `WeakPDELibrary` under a periodic scalar 1D `FieldBatch` and returns a `WeakPDELibraryDiagnostic`.
+
+All three names are also available from the `pdelie.tasks` package as re-exports; they are **not** exported at the `pdelie` root. No `pdelie.residuals`, `pdelie.reporting`, or `pdelie.discovery` symbol carries any of these names. The strict-JSON boundary is enforced by routing the final payload through `_validate_strict_json_compatible` at `src/pdelie/reporting/summaries.py:196-202` exactly once, immediately before return.
+
+### Exception reuse
+
+`PySINDyDiscoveryUnsupportedBoundaryError` (defined in `pdelie.tasks.discovery` since v0.31b1, subclass of `ScopeValidationError`) is the correct raise for nonperiodic-x inputs to `inspect_pysindy_weak_pde_library`. No new exception is introduced. General schema violations raise `SchemaValidationError` per the existing v0.22 convention.
+
+### Non-goals (v0.31b2)
+
+- no `pdelie` root export for the three new names
+- no promotion of any PDE to `supported_existing_slice` via the wrapper (the marker `diagnostic_only=True` is load-bearing)
+- no WSINDy design matrix; no SR3-style weak sparse recovery; no noise-robustness certification; no clean/noisy gate
+- no validated `O((dx)^p)` parity harness with the pdelie-native `weak_1d` output (contingent on `weak_1d` removal beyond v0.32 close and explicitly deferred)
+- no PDEBench / The Well benchmark claim
+- no widening of the periodic-only-x guard; the two-layer runtime BC guard from v0.31b1 (task-entry `is_x_periodic` + `to_pysindy_trajectories` bridge gate) covers the wrapper path as well
+- no removal of `weak_1d`; retention is guaranteed through v0.32 close
+- no change to `discovery_task_result`'s 22-key top-level shape, and no new top-level `diagnostic_only` key on `discovery_task_result`

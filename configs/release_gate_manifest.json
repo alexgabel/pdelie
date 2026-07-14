@@ -1369,15 +1369,43 @@
         {
           "submodule": "pdelie.tasks.discovery",
           "name": "PySINDyDiscoveryUnsupportedBoundaryError"
+        },
+        {
+          "submodule": "pdelie.tasks.weak_pde_library",
+          "name": "WeakPDELibraryDiagnostic"
+        },
+        {
+          "submodule": "pdelie.tasks.weak_pde_library",
+          "name": "summarize_pysindy_weak_pde_library_diagnostic"
+        },
+        {
+          "submodule": "pdelie.tasks.weak_pde_library",
+          "name": "inspect_pysindy_weak_pde_library"
+        },
+        {
+          "submodule": "pdelie.tasks",
+          "name": "WeakPDELibraryDiagnostic"
+        },
+        {
+          "submodule": "pdelie.tasks",
+          "name": "summarize_pysindy_weak_pde_library_diagnostic"
+        },
+        {
+          "submodule": "pdelie.tasks",
+          "name": "inspect_pysindy_weak_pde_library"
         }
       ],
       "forbidden_root_attributes": {
         "names": [
-          "run_pysindy_pde_task",
-          "summarize_discovery_task_result",
           "PySINDyDiscoveryUnsupportedBoundaryError",
           "TaskResult",
-          "discovery_task_result"
+          "WeakPDELibraryDiagnostic",
+          "discovery_task_result",
+          "inspect_pysindy_weak_pde_library",
+          "run_pysindy_pde_task",
+          "summarize_discovery_task_result",
+          "summarize_pysindy_weak_pde_library_diagnostic",
+          "weak_pde_library"
         ]
       },
       "forbidden_submodule_attributes": {
@@ -1387,9 +1415,12 @@
           "pdelie.discovery"
         ],
         "names": [
+          "PySINDyDiscoveryUnsupportedBoundaryError",
+          "WeakPDELibraryDiagnostic",
+          "inspect_pysindy_weak_pde_library",
           "run_pysindy_pde_task",
           "summarize_discovery_task_result",
-          "PySINDyDiscoveryUnsupportedBoundaryError"
+          "summarize_pysindy_weak_pde_library_diagnostic"
         ]
       }
     }
