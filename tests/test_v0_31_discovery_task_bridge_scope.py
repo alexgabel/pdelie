@@ -119,16 +119,33 @@ def test_v0_31_no_submodule_export_for_planned_v0_31_apis() -> None:
             )
 
 
-def test_v0_31_no_pdelie_tasks_submodule_landed() -> None:
-    """`pdelie.tasks.discovery` is v0.31b+ runtime. In v0.31a the submodule must be absent or empty."""
-    try:
-        tasks_module = importlib.import_module("pdelie.tasks")
-    except ImportError:
-        return  # Absent is the expected v0.31a state.
-    public_attrs = [name for name in dir(tasks_module) if not name.startswith("_")]
-    assert public_attrs == [], (
-        f"v0.31a must not populate pdelie.tasks; found public attrs: {public_attrs!r}"
+def test_v0_31_pdelie_tasks_submodule_surface_is_v0_31b1_locked() -> None:
+    """`pdelie.tasks.discovery` runtime landed in v0.31b1. Pin the public surface.
+
+    The submodule must expose exactly three public names — the runtime entry
+    point, the strict-JSON payload assembler, and the BC-guard exception —
+    plus the ``discovery`` submodule itself. Any other public attribute would
+    silently widen the v0.31 surface past the scope freeze.
+    """
+    tasks_module = importlib.import_module("pdelie.tasks")
+    public_attrs = sorted(name for name in dir(tasks_module) if not name.startswith("_"))
+    expected = sorted(
+        [
+            "PySINDyDiscoveryUnsupportedBoundaryError",
+            "discovery",
+            "run_pysindy_pde_task",
+            "summarize_discovery_task_result",
+        ]
     )
+    assert public_attrs == expected, (
+        f"pdelie.tasks public surface drifted from the v0.31b1 lock: "
+        f"expected {expected!r}, got {public_attrs!r}"
+    )
+    # And the v0.31 forbidden-root guard must still hold — no root re-export.
+    assert not hasattr(pdelie, "run_pysindy_pde_task")
+    assert not hasattr(pdelie, "summarize_discovery_task_result")
+    assert not hasattr(pdelie, "PySINDyDiscoveryUnsupportedBoundaryError")
+    assert not hasattr(pdelie, "TaskResult")
 
 
 def test_v0_31_version_pin_matches_scope_config() -> None:

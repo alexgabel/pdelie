@@ -193,13 +193,75 @@ def _failed_result(
     }
 
 
+def _fit_caller_supplied_model(
+    pysindy_model: object,
+    *,
+    trajectories: list[np.ndarray],
+    time_values: np.ndarray,
+) -> tuple[np.ndarray, list[str], dict[str, object]]:
+    """Fit a caller-configured ``pysindy.SINDy`` instance and extract the
+    same coefficients / library_feature_names / fit_config surface the
+    default-config path returns.
+
+    v0.31b1 loosening path — used when ``fit_pysindy_discovery`` is called
+    with an explicit ``pysindy_model=<configured_SINDy>``. The caller retains
+    full control over the feature library (e.g. ``PDELibrary``,
+    ``PolynomialLibrary``), the optimizer, and the differentiation method.
+    """
+    # A minimal ``pysindy_fit`` kwarg set that works across the common libraries
+    # (PolynomialLibrary, PDELibrary). Callers who need richer fit-kwargs can
+    # fit the model themselves and inspect it, or extend this bridge later.
+    try:
+        pysindy_model.fit(
+            trajectories,
+            t=time_values,
+            multiple_trajectories=True,
+            unbias=True,
+            quiet=True,
+        )
+    except TypeError:
+        # Older / newer pysindy releases may not accept every kwarg; retry
+        # with the minimal signature so this bridge stays version-tolerant.
+        pysindy_model.fit(
+            trajectories,
+            t=time_values,
+            multiple_trajectories=True,
+        )
+    coefficients = np.asarray(pysindy_model.coefficients(), dtype=float)
+    library_feature_names = [str(name) for name in pysindy_model.get_feature_names()]
+    fit_config_record: dict[str, object] = {
+        "pysindy_model_source": "caller_supplied",
+        "coefficient_threshold": 1e-8,
+        "pysindy_model": {
+            "type": type(pysindy_model).__name__,
+        },
+    }
+    return coefficients, library_feature_names, fit_config_record
+
+
 def fit_pysindy_discovery(
     trajectories: object,
     time_values: object,
     feature_names: object,
     *,
     config: object | None = None,
+    pysindy_model: object | None = None,
 ) -> dict[str, object]:
+    """Fit PySINDy against a bridge-emitted (trajectories, time_values, feature_names)
+    triple.
+
+    v0.31b1 loosening:
+
+    - ``config=None, pysindy_model=None`` (default): unchanged from v0.30 — the
+      adapter assembles a default ``pysindy.SINDy`` with a ``PolynomialLibrary``
+      / ``STLSQ`` / ``FiniteDifference`` and fits it.
+    - ``config is not None``: still rejected with :class:`ScopeValidationError`
+      — the ``config`` shape is not stabilized in v0.31.
+    - ``pysindy_model is not None``: NEW opt-in path — the caller passes a
+      pre-configured ``pysindy.SINDy`` instance (typically with a
+      ``PDELibrary``). The adapter runs the caller's model against the
+      bridge-emitted arrays and returns the same result-dict shape.
+    """
     if config is not None:
         raise ScopeValidationError("fit_pysindy_discovery only supports config=None in V0.6 Milestone 2.")
 
@@ -208,28 +270,46 @@ def fit_pysindy_discovery(
     normalized_time_values = _validate_time_values(time_values, num_times=num_times)
     normalized_feature_names = _validate_feature_names(feature_names, num_state_features=num_state_features)
 
-    pysindy = _require_discovery_dependencies()
-    fit_config = get_default_pysindy_discovery_config()
+    if pysindy_model is not None:
+        # Caller-supplied model path — skip default-config assembly.
+        try:
+            coefficients, library_feature_names, fit_config = _fit_caller_supplied_model(
+                pysindy_model,
+                trajectories=normalized_trajectories,
+                time_values=normalized_time_values,
+            )
+        except Exception as exc:  # mirror default-path degrade behavior
+            return _failed_result(
+                feature_names=normalized_feature_names,
+                fit_config={
+                    "pysindy_model_source": "caller_supplied",
+                    "coefficient_threshold": 1e-8,
+                },
+                exc=exc,
+            )
+    else:
+        pysindy = _require_discovery_dependencies()
+        fit_config = get_default_pysindy_discovery_config()
 
-    try:
-        model = _build_pysindy_model(
-            pysindy,
-            feature_names=normalized_feature_names,
-            fit_config=fit_config,
-        )
-        model.fit(
-            normalized_trajectories,
-            t=normalized_time_values,
-            **dict(fit_config["pysindy_fit"]),
-        )
-        coefficients = np.asarray(model.coefficients(), dtype=float)
-        library_feature_names = list(model.get_feature_names())
-    except Exception as exc:
-        return _failed_result(
-            feature_names=normalized_feature_names,
-            fit_config=fit_config,
-            exc=exc,
-        )
+        try:
+            model = _build_pysindy_model(
+                pysindy,
+                feature_names=normalized_feature_names,
+                fit_config=fit_config,
+            )
+            model.fit(
+                normalized_trajectories,
+                t=normalized_time_values,
+                **dict(fit_config["pysindy_fit"]),
+            )
+            coefficients = np.asarray(model.coefficients(), dtype=float)
+            library_feature_names = list(model.get_feature_names())
+        except Exception as exc:
+            return _failed_result(
+                feature_names=normalized_feature_names,
+                fit_config=fit_config,
+                exc=exc,
+            )
 
     if not np.all(np.isfinite(coefficients)):
         raise SchemaValidationError("PySINDy coefficients must be finite.")

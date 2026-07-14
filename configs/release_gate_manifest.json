@@ -3,7 +3,7 @@
   "summary_type": "pdelie_declarative_release_gate_manifest",
   "scope": "declarative_release_gate_checks_only",
   "current_release_gate_job_name": "v0_30-release-gate",
-  "release_count": 18,
+  "release_count": 19,
   "excluded_functional_release_gate_files": [
     {
       "file": "tests/test_v0_4_release_gate.py",
@@ -1351,6 +1351,45 @@
           "from_the_well",
           "load_pdebench",
           "load_the_well"
+        ]
+      }
+    },
+    {
+      "release": "0.31",
+      "source_file": "tests/test_v0_31b1_discovery_task_runtime.py",
+      "required_submodule_attributes": [
+        {
+          "submodule": "pdelie.tasks.discovery",
+          "name": "run_pysindy_pde_task"
+        },
+        {
+          "submodule": "pdelie.tasks.discovery",
+          "name": "summarize_discovery_task_result"
+        },
+        {
+          "submodule": "pdelie.tasks.discovery",
+          "name": "PySINDyDiscoveryUnsupportedBoundaryError"
+        }
+      ],
+      "forbidden_root_attributes": {
+        "names": [
+          "run_pysindy_pde_task",
+          "summarize_discovery_task_result",
+          "PySINDyDiscoveryUnsupportedBoundaryError",
+          "TaskResult",
+          "discovery_task_result"
+        ]
+      },
+      "forbidden_submodule_attributes": {
+        "submodules": [
+          "pdelie.residuals",
+          "pdelie.reporting",
+          "pdelie.discovery"
+        ],
+        "names": [
+          "run_pysindy_pde_task",
+          "summarize_discovery_task_result",
+          "PySINDyDiscoveryUnsupportedBoundaryError"
         ]
       }
     }

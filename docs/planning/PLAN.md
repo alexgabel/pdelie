@@ -1,3 +1,55 @@
+# PDELie - Execution Plan (V0.31b1)
+
+**Status:** IN_PROGRESS
+
+`v0.31b1` is the first runtime sub-release for the downstream discovery task bridge frozen by `v0.31a`. It lands the `pdelie.tasks.discovery` submodule with a periodic-only PySINDy `PDELibrary`-backed task runner, the composed `TaskResult` schema wrapper, a runtime boundary-condition guard, and a narrow loosening of the `fit_pysindy_discovery` config-lock to accept a caller-supplied `pysindy_model`. The `WeakPDELibrary` diagnostic wrapper (`target_convention="weak_pde_library"`) remains deferred to `v0.31b2`. No root `pdelie` export is added. `pyproject.toml` stays pinned at `0.30.0`.
+
+Decision label:
+
+```text
+downstream_discovery_task_bridge_runtime_pdelibrary_only
+```
+
+## Sub-release contents (v0.31b1)
+
+- `src/pdelie/tasks/__init__.py` + `src/pdelie/tasks/discovery.py` — new runtime submodule. Provides `run_pysindy_pde_task`, `summarize_discovery_task_result`, and `PySINDyDiscoveryUnsupportedBoundaryError`. Submodule-only; no root `pdelie` export.
+- `PySINDyDiscoveryUnsupportedBoundaryError` — new exception, subclass of `ScopeValidationError`. Raised at the `pdelie.tasks.discovery` entry when a nonperiodic-x `FieldBatch` is supplied, before any PySINDy call.
+- `summarize_discovery_task_result` — TaskResult wrapper. Enforces the composed schema invariants frozen in `docs/design/DISCOVERY_TASK_RESULT_SCHEMA.md`: 22-key top-level shape, `summary_type = "discovery_task_result"`, `summary_schema_version = "0.1"`, `pysindy_bridge_variant = "periodic_only_v1"`, and strict-JSON compatibility via `_validate_strict_json_compatible` at the composed payload boundary. `underlying_discovery_result` embeds `summarize_discovery_result` verbatim.
+- `run_pysindy_pde_task` — task runner. Accepts a periodic scalar 1D `FieldBatch` plus optional caller-supplied `pysindy_model`, runs the fit through the existing bridge, and returns a `TaskResult`-shaped dict. Runtime BC guard is the first check; nonperiodic-x inputs raise `PySINDyDiscoveryUnsupportedBoundaryError` immediately.
+- `fit_pysindy_discovery` — config-lock loosened. The existing `config=None`-only check (`src/pdelie/discovery/pysindy_adapter.py:204`) is broadened so that a caller-supplied `pysindy_model` is accepted; `config=None` default behavior is unchanged for existing callers.
+- `tests/test_v0_31b1_discovery_task_runtime.py` — 20 named runtime tests covering the submodule surface, the runner happy path, the BC guard, the TaskResult wrapper schema invariants, the strict-JSON contract at the composed boundary, the loosened `fit_pysindy_discovery` config-lock, and the `pysindy_bridge_variant = "periodic_only_v1"` invariant.
+- `configs/release_gate_manifest.json` — new `0.31` row (following the `v0.30f` consolidation pattern; no standalone `test_v0_31_release_gate.py`).
+- Docs updated: `docs/specs/API_STABILITY.md` (stable public-surface note for `v0.31b1`), `docs/planning/ROADMAP.md` (Next Planned Work rows updated), `docs/planning/PLAN.md` (this section), `docs/design/DISCOVERY_TASK_RESULT_SCHEMA.md` (status line moved from RUNTIME DEFERRED to RUNTIME IMPLEMENTED for `target_convention="pde_library"`; `weak_pde_library` remains DEFERRED to `v0.31b2`).
+
+## Explicit non-goals for v0.31b1
+
+- No root `pdelie` export for any of the three new names.
+- No `SymmetryCandidate` contract or wrapper — that surface is `v0.30.1` responsibility.
+- No `SymmetryMethod` registry — that is also `v0.30.1`.
+- No `WeakPDELibrary` runtime — the diagnostic wrapper is `v0.31b2`.
+- No WSINDy implementation and no noise-robustness claim.
+- No FD-nonperiodic PySINDy discovery. The bridge and the task runner are periodic-only in `v0.31b1`.
+- No PDEBench support claim, no The Well support claim.
+- No multi-channel or 2D `FieldBatch` dispatch (deferred to `v0.34+`).
+- No new PDE. The task runner is agnostic across the existing v0.30 stable PDE rows, but no new PDE row is added.
+- No deletion of `weak_1d`. It is retained through `v0.32` close per the `v0.31a` scope freeze.
+- No top-level `diagnostic_only` key on `TaskResult` — that key is exclusive to the `pdelie_weak_pde_library_diagnostic` summary type introduced in `v0.31b2`.
+- No `discovery_result` key on the composed payload — the embedded backend-native summary lives under `underlying_discovery_result` per the design.
+- No version bump. `pyproject.toml` stays at `0.30.0`.
+
+## v0.31b1 sub-release gate
+
+`v0.31b1` is complete when:
+
+- `src/pdelie/tasks/__init__.py` and `src/pdelie/tasks/discovery.py` exist and export exactly `run_pysindy_pde_task`, `summarize_discovery_task_result`, and `PySINDyDiscoveryUnsupportedBoundaryError`; no other name leaks from `pdelie.tasks.discovery`; no root `pdelie` export is added.
+- `PySINDyDiscoveryUnsupportedBoundaryError` is a subclass of `ScopeValidationError` and is raised at the `pdelie.tasks.discovery` entry on any nonperiodic-x `FieldBatch` before any PySINDy call.
+- `summarize_discovery_task_result` returns a strict-JSON-compatible dict matching the frozen 22-key schema; `underlying_discovery_result` is verbatim `summarize_discovery_result`; `pysindy_bridge_variant == "periodic_only_v1"` on every produced `TaskResult`; `_validate_strict_json_compatible` is invoked at the composed payload boundary.
+- `fit_pysindy_discovery` accepts a caller-supplied `pysindy_model` kwarg without raising the historical `config=None`-only guard; `config=None` default behavior is unchanged for existing callers.
+- `tests/test_v0_31b1_discovery_task_runtime.py` is present and its 20 named tests pass; the full test suite still passes; the new `0.31` release-gate manifest row is enforced by `tests/test_release_gates.py`.
+- No file under `src/pdelie/` is added beyond `tasks/__init__.py`, `tasks/discovery.py`, and the narrow `fit_pysindy_discovery` loosening; `pyproject.toml` still declares `version = "0.30.0"`; no CI workflow is modified.
+
+---
+
 # PDELie - Execution Plan (V0.31b0 preparatory hygiene)
 
 **Status:** IN_PROGRESS

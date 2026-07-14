@@ -498,6 +498,18 @@ Decision-only note for the frozen `v0.31a` downstream discovery task bridge scop
 - `v0.31a` does not promote the `v0.30e` advisory `lint` / `typecheck` / `coverage` CI jobs to blocking; that promotion remains Phase 2
 - `v0.31a` does not add a standalone `tests/test_v0_31_release_gate.py`; the `v0.31` release-gate lives as a row in `configs/release_gate_manifest.json` replayed by `tests/test_release_gates.py`
 
+Stable public-surface note for the `v0.31b1` sub-release:
+
+- `v0.31b1` lands the first runtime for `pdelie.tasks.discovery`: `run_pysindy_pde_task`, `summarize_discovery_task_result`, and `PySINDyDiscoveryUnsupportedBoundaryError`.
+- All three are submodule-only. There is no root `pdelie` export for any of them; callers must import from `pdelie.tasks.discovery`.
+- The composed `TaskResult` schema matches `docs/design/DISCOVERY_TASK_RESULT_SCHEMA.md` exactly. `underlying_discovery_result` embeds `pdelie.discovery.summarize_discovery_result` verbatim.
+- The runtime boundary-condition guard is enforced at the `pdelie.tasks.discovery` entry: any nonperiodic-x `FieldBatch` raises `PySINDyDiscoveryUnsupportedBoundaryError` (a subclass of `ScopeValidationError`) before any PySINDy call.
+- `pdelie.discovery.fit_pysindy_discovery` now accepts an optional `pysindy_model` keyword for caller-supplied `PDELibrary` configurations. The `config=None` default behavior is unchanged for existing callers.
+- The strict-JSON contract (`json.loads(json.dumps(payload, allow_nan=False)) == payload`) is enforced at the composed `TaskResult` payload boundary via `_validate_strict_json_compatible` at `src/pdelie/reporting/summaries.py:196`.
+- Every `TaskResult` produced by `v0.31b1` records `pysindy_bridge_variant = "periodic_only_v1"`.
+- The `WeakPDELibrary` diagnostic wrapper (`summary_type = "pdelie_weak_pde_library_diagnostic"`, `diagnostic_only: true`) is `v0.31b2` scope and is not shipped in `v0.31b1`. `target_convention = "weak_pde_library"` therefore remains a design-frozen, runtime-deferred surface in `v0.31b1`.
+- `v0.31b1` does not bump `pyproject.toml`. It stays at `0.30.0`.
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 
