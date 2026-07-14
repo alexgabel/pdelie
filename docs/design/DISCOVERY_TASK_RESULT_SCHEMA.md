@@ -1,6 +1,6 @@
 # DiscoveryTaskResult — Design Document
 
-**Status:** DESIGN-FROZEN in v0.31a; **RUNTIME DEFERRED to v0.31b+**. The runtime in v0.31a is unchanged; no `src/pdelie/` file is modified in this sub-release.
+**Status:** DESIGN-FROZEN in v0.31a; **RUNTIME IMPLEMENTED in v0.31b1** for `target_convention="pde_library"`; **WeakPDELibrary wrapper for `target_convention="weak_pde_library"` remains DEFERRED to v0.31b2**.
 
 This document defines the composed `TaskResult` artifact returned by the `pdelie.tasks.discovery` submodule when a caller runs a PySINDy-backed PDE discovery task over a canonical scalar 1D PDELie input. It is normative for v0.31 proper.
 
