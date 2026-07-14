@@ -161,6 +161,51 @@ removed from `setuptools>=81`. Downstream users installing
 `ModuleNotFoundError: No module named 'pkg_resources'` when importing
 `pysindy`.
 
+### v0.31c1 adversarial install matrix — outcome B (setuptools cap added)
+
+The v0.31c self-sufficiency claim held only because `python -m venv` on
+Python 3.11 pre-bundles `setuptools 65.5.0` (which ships
+`pkg_resources`). The v0.31c1 sub-release ran an adversarial follow-up
+matrix on fresh Python 3.11 venvs with the ambient `setuptools` version
+force-pinned to `81.0.0`, `82.0.0`, and `83.0.0` BEFORE installing
+`pdelie[downstream]` — i.e. simulating a realistic environment where the
+user (or the system, or a routine `pip install --upgrade setuptools`)
+has already upgraded past the pkg_resources boundary.
+
+| Ambient setuptools | pdelie[downstream] install | `import pysindy` | Smoke |
+|---|---|---|---|
+| `81.0.0` | pass | pass (removal warning) | pass |
+| `82.0.0` | pass | **fail** — `ModuleNotFoundError: No module named 'pkg_resources'` | not run |
+| `83.0.0` | pass | **fail** — same | not run |
+
+Outcome **B_setuptools_82_boundary**. The install itself never fails
+(pip check reports clean); the failure surfaces only at
+`import pysindy` because `pysindy/__init__.py` does `from pkg_resources
+import DistributionNotFound`, and setuptools 82 removed the
+`pkg_resources` module entirely.
+
+v0.31c1 amends the `[downstream]` extra with the narrow temporary
+constraint:
+
+```text
+setuptools<82; python_version < '3.12'
+```
+
+Post-fix verification (fresh venvs, rebuilt wheel): with ambient
+setuptools 82.0.0 or 83.0.0 pre-installed, `pip install
+"<wheel>[downstream]"` auto-downgrades setuptools to `81.0.0` and both
+smoke paths (`run_pysindy_pde_task`, `inspect_pysindy_weak_pde_library`)
+plus the example CLI (`python -m
+pdelie.examples.downstream_discovery_task_bridge`) pass. Fresh venv
+baseline: setuptools stays at the bundled `65.5.0`, untouched.
+
+The cap is scoped to `python_version < '3.12'` because the pysindy /
+sklearn deps themselves are already scoped that way — Python 3.12+
+does not receive `pdelie[downstream]` in v0.31. The constraint is
+temporary: it retires when the pysindy pin widens to `>=2` in
+`v0.31.1` / `v0.32`, since pysindy 2.x uses `importlib.metadata`
+instead of `pkg_resources`.
+
 ### v0.31c clean-install audit — outcome A (self-sufficient on Python 3.11)
 
 The v0.31c sub-release ran the mandatory clean-install audit with the

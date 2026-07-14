@@ -34,6 +34,8 @@ from __future__ import annotations
 
 import importlib.metadata as _importlib_metadata
 import json
+from collections.abc import Iterator
+from contextlib import contextmanager
 from typing import Any
 
 import numpy as np
@@ -108,6 +110,34 @@ def _resolve_backend_versions() -> dict[str, str]:
     return versions
 
 
+@contextmanager
+def _legacy_numpy_rng_seed_scope(seed: int) -> Iterator[None]:
+    """Seed the LEGACY ``np.random`` global RNG for the duration of the
+    context, then restore the caller's state on exit.
+
+    PySINDy 1.7.5's ``WeakPDELibrary`` randomizes K subdomain-center
+    placement using ``np.random.*`` — the legacy global RNG — and does not
+    accept a modern ``np.random.Generator``. Reproducing the example
+    deterministically therefore requires seeding the legacy state, and
+    politely restoring it so we do not permanently perturb global RNG state
+    for the caller.
+
+    Not thread-safe: ``np.random.seed`` / ``get_state`` / ``set_state``
+    mutate a process-global RNG. Concurrent calls from other threads (or
+    other libraries reaching into the same legacy global) can interleave
+    with this seeding. This example does not expose a concurrency API and
+    is not intended to run in parallel. When PySINDy migrates to a
+    ``Generator``-based API (tracked under the v0.31.1 PySINDy 2.x port),
+    this workaround is retired.
+    """
+    _saved_state = np.random.get_state()  # noqa: NPY002 — PySINDy 1.x uses legacy RNG
+    try:
+        np.random.seed(seed)  # noqa: NPY002 — PySINDy 1.x uses legacy RNG
+        yield
+    finally:
+        np.random.set_state(_saved_state)  # noqa: NPY002 — PySINDy 1.x uses legacy RNG
+
+
 def _build_caller_configured_sindy() -> Any:
     try:
         import pysindy
@@ -156,17 +186,7 @@ def run_downstream_discovery_task_bridge_example() -> dict[str, Any]:
 
     sindy_model = _build_caller_configured_sindy()
 
-    # PySINDy's WeakPDELibrary randomizes K subdomain-center placement using
-    # numpy's LEGACY global RNG (np.random.*). PySINDy 1.7.5 does not accept
-    # a modern ``np.random.Generator``, so switching to Generator here would
-    # not seed the backend. We seed-and-restore the legacy global RNG around
-    # the two task calls so the composed payload is deterministic under
-    # ``_SEED`` — a necessary property for the v0.31c release-close smoke
-    # and for the determinism regression test — without permanently
-    # perturbing global RNG state visible to any caller.
-    _global_rng_state = np.random.get_state()  # noqa: NPY002 — PySINDy 1.x uses legacy RNG
-    try:
-        np.random.seed(_SEED)  # noqa: NPY002 — PySINDy 1.x uses legacy RNG
+    with _legacy_numpy_rng_seed_scope(_SEED):
         pde_library_task = run_pysindy_pde_task(
             field,
             task_name=_TASK_NAME,
@@ -181,8 +201,6 @@ def run_downstream_discovery_task_bridge_example() -> dict[str, Any]:
                 num_domain_centers_K=_WEAK_K,
             ),
         )
-    finally:
-        np.random.set_state(_global_rng_state)  # noqa: NPY002 — PySINDy 1.x uses legacy RNG
 
     payload: dict[str, Any] = {
         "summary_schema_version": _SUMMARY_SCHEMA_VERSION,

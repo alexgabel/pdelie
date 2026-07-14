@@ -1,3 +1,42 @@
+# PDELie - Execution Plan (V0.31c1)
+
+**Status:** IN_PROGRESS
+
+`v0.31c1` is a tiny pre-release compatibility milestone that hardens `pdelie[downstream]` against the realistic Python 3.11 environment where the ambient `setuptools` has already been upgraded past `pkg_resources` removal. It ships:
+
+1. A mandatory adversarial install matrix on fresh Python 3.11 venvs with `setuptools` force-pinned to `81.0.0`, `82.0.0`, and `83.0.0` before `pip install "<wheel>[downstream]"`. Verdict: **B_setuptools_82_boundary**. Setuptools 81 works (with a removal warning); 82 and 83 fail with `ModuleNotFoundError: No module named 'pkg_resources'` at `import pysindy`, because pysindy 1.7.5 imports `pkg_resources` at package init and setuptools 82 removed the module.
+2. A narrow temporary constraint added to the `[downstream]` and `[test]` extras: `setuptools<82; python_version < '3.12'`. Rebuilt-wheel post-fix verification confirms pip auto-downgrades an ambient setuptools 82/83 to 81 without any user co-install. Fresh-venv baseline unaffected (setuptools stays at the bundled `65.5.0`).
+3. A small RNG-audit refactor: the v0.31c example's inline `try/finally` `np.random` seed/restore is extracted into a private `_legacy_numpy_rng_seed_scope(seed)` context manager. Deterministic behavior preserved verbatim; the manager's docstring documents that the workaround is **not thread-safe** because PySINDy 1.7.5 uses the legacy global RNG. No concurrency API is exposed.
+4. `tests/test_v0_31c1_downstream_packaging_policy.py` (9 named tests) asserting: the extra declares the boundary; every runtime `setuptools` cap is bounded and Python-version-scoped; the policy doc records the reason; PySINDy pin stays `>=1.7.5,<2`; the 22-key and 27-key public schemas are unchanged; no new root exports; the installed wheel metadata declares the cap under `extra == 'downstream'`; the pip resolver plan downgrades an ambient setuptools past 82.
+5. Documentation updates: `PYSINDY_COMPATIBILITY_POLICY.md` gains a "v0.31c1 adversarial install matrix — outcome B" section with the boundary table and post-fix verification; `configs/pysindy_compatibility_matrix.json` gains a `v0_31c1_packaging_audit` block; ROADMAP marks v0.31c completed and v0.31c1 in progress.
+
+Decision label:
+
+```text
+adversarial_downstream_install_audit_and_setuptools_cap
+```
+
+Non-goals for v0.31c1:
+
+- No new summary type. No change to the 22-key `discovery_task_result` schema. No change to the 27-key `pdelie_weak_pde_library_diagnostic` schema.
+- No PySINDy 2.x port. Pin stays `pysindy>=1.7.5,<2`.
+- No new root export.
+- No new PDE. No symmetry-method registry. No WSINDy claim. No noise benchmark. No FD-nonperiodic discovery. No additional example.
+- No package version bump. No tag. No PyPI/TestPyPI publication.
+- No stricter-than-necessary cap: the constraint is `setuptools<82`, not `<81` — the audit proved 81 works.
+- No release-gate manifest sub-release row for v0.31c1 (dependency policy is expressed via `pyproject.toml` + the compatibility-matrix JSON; the existing `0.31` manifest row is unchanged).
+
+Files touched in v0.31c1:
+
+- MODIFIED `pyproject.toml` — add `setuptools<82; python_version < '3.12'` to `[downstream]` and `[test]` extras.
+- MODIFIED `src/pdelie/examples/downstream_discovery_task_bridge.py` — extract `_legacy_numpy_rng_seed_scope` context manager.
+- NEW `tests/test_v0_31c1_downstream_packaging_policy.py` — 9 named tests.
+- MODIFIED `docs/design/PYSINDY_COMPATIBILITY_POLICY.md` — adversarial-matrix section.
+- MODIFIED `configs/pysindy_compatibility_matrix.json` — `v0_31c1_packaging_audit` block.
+- MODIFIED `docs/planning/PLAN.md`, `docs/planning/ROADMAP.md`.
+
+---
+
 # PDELie - Execution Plan (V0.31c)
 
 **Status:** IN_PROGRESS
