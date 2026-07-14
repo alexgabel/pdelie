@@ -25,6 +25,10 @@ Stable public import path for the invariant canonical object:
 
 - `pdelie.InvariantMapSpec`
 
+Stable public-surface note for the `v0.31c` sub-release:
+
+- `pdelie.examples.run_downstream_discovery_task_bridge_example()` and the CLI `python -m pdelie.examples.downstream_discovery_task_bridge` compose v0.31b1's `run_pysindy_pde_task` and v0.31b2's `inspect_pysindy_weak_pde_library` on one canonical periodic scalar 1D Heat field. The runner returns a strict-JSON-compatible dict with `summary_type = "downstream_discovery_task_bridge_example"` and seven top-level keys (`summary_schema_version`, `summary_type`, `pde_library_task`, `weak_pde_library_diagnostic`, `interpretation`, `scope_boundaries`, `backend_versions`). The composed wrapper is **not** a new report schema and does **not** alter the 22-key `discovery_task_result` or 27-key `pdelie_weak_pde_library_diagnostic` schemas. No root `pdelie` export is added. No WSINDy performance claim, no noise-robustness claim, no nonperiodic discovery claim. Periodic scalar 1D only. PySINDy 1.x support is temporary pending `v0.31.1` — see `docs/design/PYSINDY_COMPATIBILITY_POLICY.md`.
+
 Runtime public API for the frozen `v0.3` Milestone 1 slice:
 
 - `pdelie.invariants.InvariantApplier` for single-generator periodic `x` uniform translation only

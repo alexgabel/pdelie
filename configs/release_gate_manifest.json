@@ -1359,6 +1359,26 @@
       "source_file": "tests/test_v0_31b1_discovery_task_runtime.py",
       "required_submodule_attributes": [
         {
+          "submodule": "pdelie.examples",
+          "name": "run_downstream_discovery_task_bridge_example"
+        },
+        {
+          "submodule": "pdelie.tasks",
+          "name": "WeakPDELibraryDiagnostic"
+        },
+        {
+          "submodule": "pdelie.tasks",
+          "name": "inspect_pysindy_weak_pde_library"
+        },
+        {
+          "submodule": "pdelie.tasks",
+          "name": "summarize_pysindy_weak_pde_library_diagnostic"
+        },
+        {
+          "submodule": "pdelie.tasks.discovery",
+          "name": "PySINDyDiscoveryUnsupportedBoundaryError"
+        },
+        {
           "submodule": "pdelie.tasks.discovery",
           "name": "run_pysindy_pde_task"
         },
@@ -1367,32 +1387,16 @@
           "name": "summarize_discovery_task_result"
         },
         {
-          "submodule": "pdelie.tasks.discovery",
-          "name": "PySINDyDiscoveryUnsupportedBoundaryError"
-        },
-        {
           "submodule": "pdelie.tasks.weak_pde_library",
           "name": "WeakPDELibraryDiagnostic"
-        },
-        {
-          "submodule": "pdelie.tasks.weak_pde_library",
-          "name": "summarize_pysindy_weak_pde_library_diagnostic"
         },
         {
           "submodule": "pdelie.tasks.weak_pde_library",
           "name": "inspect_pysindy_weak_pde_library"
         },
         {
-          "submodule": "pdelie.tasks",
-          "name": "WeakPDELibraryDiagnostic"
-        },
-        {
-          "submodule": "pdelie.tasks",
+          "submodule": "pdelie.tasks.weak_pde_library",
           "name": "summarize_pysindy_weak_pde_library_diagnostic"
-        },
-        {
-          "submodule": "pdelie.tasks",
-          "name": "inspect_pysindy_weak_pde_library"
         }
       ],
       "forbidden_root_attributes": {
@@ -1404,6 +1408,7 @@
           "_pysindy_compat",
           "discovery_task_result",
           "inspect_pysindy_weak_pde_library",
+          "run_downstream_discovery_task_bridge_example",
           "run_pysindy_pde_task",
           "summarize_discovery_task_result",
           "summarize_pysindy_weak_pde_library_diagnostic",

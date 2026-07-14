@@ -161,8 +161,27 @@ removed from `setuptools>=81`. Downstream users installing
 `ModuleNotFoundError: No module named 'pkg_resources'` when importing
 `pysindy`.
 
-Workaround for the `1.x` line (until the pin is widened to admit
-`pysindy>=2`, which uses `importlib.metadata`):
+### v0.31c clean-install audit — outcome A (self-sufficient on Python 3.11)
+
+The v0.31c sub-release ran the mandatory clean-install audit with the
+advertised command `pip install "<wheel>[downstream]"` into a fresh
+Python 3.11 venv, **without** any manual `setuptools<81` co-install.
+The install succeeded end-to-end: CPython 3.11's `python -m venv`
+still bundles `setuptools 65.5.0` (which ships `pkg_resources`), so
+the standard install path is self-sufficient. Both v0.31 downstream
+task paths (`run_pysindy_pde_task` and `inspect_pysindy_weak_pde_library`)
+executed, and both emitted payloads passed
+`json.dumps(payload, allow_nan=False)`.
+
+Therefore **no `setuptools<81` constraint is added to the
+`pdelie[downstream]` extra** in v0.31c. The declared `python_version <
+'3.12'` marker on the downstream deps already gates the footgun
+population: on Python 3.12+, `python -m venv` no longer bundles
+`setuptools`, and the pysindy `pkg_resources` import would fail without
+an explicit co-install. That population is not supported by
+`pdelie[downstream]` today.
+
+### Workaround for the 1.x line on Python 3.12+ (opt-in only)
 
 ```bash
 python -m pip install 'setuptools<81'
