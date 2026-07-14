@@ -1,0 +1,27 @@
+{
+  "summary_schema_version": "0.1",
+  "summary_type": "pdelie_pysindy_compatibility_matrix",
+  "policy_outcome": "C_temporary_1x_policy",
+  "pyproject_constraint": "pysindy>=1.7.5,<2",
+  "primary_tested_version": "1.7.5",
+  "secondary_tested_version": null,
+  "supported_versions": [
+    "1.7.5"
+  ],
+  "unsupported_versions": [
+    "<1.7.5",
+    ">=2.0.0"
+  ],
+  "ci_matrix": [
+    {
+      "pysindy_version": "1.7.5",
+      "ci_job_name": "editable-tests",
+      "blocking": true
+    },
+    {
+      "pysindy_version": "1.7.5",
+      "ci_job_name": "v0_30-release-gate",
+      "blocking": true
+    }
+  ]
+}

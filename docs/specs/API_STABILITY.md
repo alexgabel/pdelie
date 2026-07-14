@@ -528,6 +528,16 @@ Stable public-surface note for the `v0.31b2` sub-release:
 - `v0.31b2` does not promote any of the `v0.30e` advisory `lint` / `typecheck` / `coverage` CI jobs to blocking; Phase 2 remains deferred.
 - `v0.31b2` does not add a standalone `tests/test_v0_31b2_release_gate.py`. The `v0.31` release-gate remains a single row in `configs/release_gate_manifest.json`, extended in place, replayed by `tests/test_release_gates.py`.
 
+### Compatibility policy for downstream tasks (`v0.31b3`)
+
+`v0.31b3` formalizes the existing `pdelie[downstream]` and `pdelie[test]` PySINDy pin as a **declared temporary policy** under the decision label `downstream_pysindy_compatibility_policy_and_wheel_hardening`. The outcome is `C_temporary_1x_policy`. Full detail lives in `docs/design/PYSINDY_COMPATIBILITY_POLICY.md`; the machine-readable form lives at `configs/pysindy_compatibility_matrix.json` (`summary_type = "pdelie_pysindy_compatibility_matrix"`).
+
+- The supported PySINDy range is `pysindy>=1.7.5,<2`. `1.7.5` is the primary tested version; there is no secondary tested version. `<1.7.5` and `>=2.0.0` are explicitly unsupported.
+- The exact public pdelie surfaces covered by this policy are: `pdelie.tasks.discovery.run_pysindy_pde_task`, `pdelie.tasks.discovery.summarize_discovery_task_result`, `pdelie.tasks.discovery.PySINDyDiscoveryUnsupportedBoundaryError`, `pdelie.tasks.weak_pde_library.inspect_pysindy_weak_pde_library`, `pdelie.tasks.weak_pde_library.summarize_pysindy_weak_pde_library_diagnostic`, `pdelie.tasks.weak_pde_library.WeakPDELibraryDiagnostic` (and their `pdelie.tasks` re-exports).
+- The future `v0.31.1` / `v0.32` migration shim (`pdelie.discovery._pysindy_compat`) and any accompanying constants (for example, `SUPPORTED_PYSINDY_VERSIONS`) are **private**: they are underscore-prefixed, do not appear as a root `pdelie` export, and are not publicly re-exported from any submodule (`pdelie.tasks`, `pdelie.tasks.discovery`, `pdelie.tasks.weak_pde_library`, `pdelie.discovery`). The `0.31` row of `configs/release_gate_manifest.json` records these names in `forbidden_root_attributes` and `forbidden_submodule_attributes` so the private status is enforced by `tests/test_release_gates.py`.
+- The policy declares the following non-claims: no WSINDy benchmark; no noise robustness claim (no clean-vs-noisy gate); no nonperiodic discovery; no PDEBench / The Well support claim; no `pdelie.residuals.weak_1d` retirement; no PySINDy 2.x support in `v0.31`.
+- `v0.31b3` does not add any file under `src/`, does not create the `_pysindy_compat` shim, does not bump `pyproject.toml`, and does not add a new CI job. The two existing blocking CI jobs (`editable-tests`, `v0_30-release-gate`) are updated to pin `pysindy==1.7.5` explicitly to match the compatibility matrix's declared primary tested version.
+
 Runtime-level APIs are versioned public APIs, but they are not canonical objects.
 They are backend-specific and may change with a version bump.
 

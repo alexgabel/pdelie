@@ -1398,8 +1398,10 @@
       "forbidden_root_attributes": {
         "names": [
           "PySINDyDiscoveryUnsupportedBoundaryError",
+          "SUPPORTED_PYSINDY_VERSIONS",
           "TaskResult",
           "WeakPDELibraryDiagnostic",
+          "_pysindy_compat",
           "discovery_task_result",
           "inspect_pysindy_weak_pde_library",
           "run_pysindy_pde_task",
@@ -1416,13 +1418,20 @@
         ],
         "names": [
           "PySINDyDiscoveryUnsupportedBoundaryError",
+          "SUPPORTED_PYSINDY_VERSIONS",
           "WeakPDELibraryDiagnostic",
+          "_pysindy_compat",
           "inspect_pysindy_weak_pde_library",
           "run_pysindy_pde_task",
           "summarize_discovery_task_result",
           "summarize_pysindy_weak_pde_library_diagnostic"
         ]
-      }
+      },
+      "strict_json_manifests": [
+        {
+          "path": "configs/pysindy_compatibility_matrix.json"
+        }
+      ]
     }
   ]
 }
