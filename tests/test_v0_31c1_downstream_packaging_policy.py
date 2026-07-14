@@ -320,6 +320,61 @@ def test_v0_31c1_pip_dry_run_downgrades_ambient_setuptools_82() -> None:
 # ---------------------------------------------------------------------------
 
 
+def test_v0_31_python_312_downstream_missing_extra_message_is_actionable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """On Python 3.12+, the missing-pysindy path must emit a message that
+    names the v0.31 support boundary and states that reinstalling the
+    ``[downstream]`` extra will not fix the environment.
+
+    The v0.31 release close adds this focused UX message. We simulate the
+    Python 3.12+ population by monkeypatching ``sys.version_info`` inside
+    the adapter module and forcing the pysindy import to fail even though
+    pysindy is installed in this test environment.
+    """
+    from pdelie.discovery import pysindy_adapter
+
+    fake_version = (3, 12, 0, "final", 0)
+
+    class _FakeVersionInfo(tuple):  # type: ignore[type-arg]
+        major = 3
+        minor = 12
+        micro = 0
+        releaselevel = "final"
+        serial = 0
+
+    def _blocked_import(name: str, *args: Any, **kwargs: Any) -> Any:
+        if name in ("pysindy", "sklearn") or name.startswith("pysindy.") or name.startswith("sklearn."):
+            raise ModuleNotFoundError(f"simulated: {name} not installed")
+        return _orig_import(name, *args, **kwargs)
+
+    _orig_import = __builtins__["__import__"] if isinstance(__builtins__, dict) else __builtins__.__import__
+
+    import sys as _sys
+
+    # Evict cached pysindy/sklearn from sys.modules so importlib.import_module
+    # re-invokes __import__ (which our monkeypatch rejects). Without this the
+    # test passes in isolation but silently no-ops when pysindy has already
+    # been imported by a prior test in the same session. monkeypatch restores
+    # sys.modules on teardown.
+    for _module_name in ("pysindy", "sklearn"):
+        monkeypatch.delitem(_sys.modules, _module_name, raising=False)
+    monkeypatch.setattr(_sys, "version_info", _FakeVersionInfo(fake_version), raising=True)
+    monkeypatch.setattr("builtins.__import__", _blocked_import)
+
+    with pytest.raises(ImportError) as excinfo:
+        pysindy_adapter._require_discovery_dependencies()
+    message = str(excinfo.value)
+    assert "3.12" in message, f"message must name Python 3.12+; got {message!r}"
+    assert "v0.31.1" in message, (
+        f"message must mention v0.31.1 deferral; got {message!r}"
+    )
+    assert "not fix" in message.lower(), (
+        f"message must state reinstalling the extra will not fix the env; "
+        f"got {message!r}"
+    )
+
+
 def test_v0_31c1_matrix_json_records_verdict_and_boundary() -> None:
     """The compatibility matrix JSON must record the v0.31c1 verdict.
 

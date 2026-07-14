@@ -1,6 +1,18 @@
 # V0.31 Scope - Downstream Discovery Task Bridge
 
-**Status:** IN_PROGRESS (v0.31a scope-freeze sub-release)
+**Status:** COMPLETE (v0.31.0 release close)
+
+`v0.31.0` closed the downstream discovery task bridge. Release conclusion (recorded at release close):
+
+```text
+downstream_discovery_task_bridge
+```
+
+The v0.31 arc delivered exactly what this scope document froze — the executable PySINDy `PDELibrary` task runner (v0.31b1), the diagnostic-only `WeakPDELibrary` wrapper (v0.31b2), a temporary PySINDy 1.x compatibility policy (v0.31b3), a public JSON-only example (v0.31c), and an adversarial-audit setuptools cap (v0.31c1). No new report schema was introduced; no root export was added; no WSINDy or noise-robustness claim was made. See `docs/releases/V0_31_RELEASE_READINESS.md` for the full release-close ledger.
+
+---
+
+## Historical scope-freeze record (kept for provenance)
 
 `v0.31` is the downstream-discovery task-bridge release. It designs a narrow, submodule-only bridge from canonical PDELie objects into PySINDy's `PDELibrary` (and, as a diagnostic-only wrapper, `WeakPDELibrary`), records a stable `TaskResult` schema for the composed task output, and freezes what stays out of scope.
 

@@ -25,7 +25,22 @@ Stable public import path for the invariant canonical object:
 
 - `pdelie.InvariantMapSpec`
 
-Stable public-surface note for the `v0.31c` sub-release:
+Stable public-surface note for the v0.31.0 release close:
+
+- `v0.31.0` closes the downstream discovery task bridge as a **submodule-only** stable surface. No root `pdelie` export is added.
+- Frozen public submodule names for v0.31.0:
+  - `pdelie.tasks.run_pysindy_pde_task` — periodic scalar 1D PySINDy `PDELibrary` sparse-discovery task runner. Returns a strict-JSON `discovery_task_result` (`summary_type = "discovery_task_result"`, 22-key composed schema, `pysindy_bridge_variant = "periodic_only_v1"`).
+  - `pdelie.tasks.summarize_discovery_task_result` — strict-JSON payload assembler for the discovery task result.
+  - `pdelie.tasks.PySINDyDiscoveryUnsupportedBoundaryError` — layer-1 BC guard exception (subclass of `ScopeValidationError`).
+  - `pdelie.tasks.inspect_pysindy_weak_pde_library` — diagnostic-only wrapper around PySINDy's `WeakPDELibrary`. Returns a strict-JSON `pdelie_weak_pde_library_diagnostic` (`summary_type = "pdelie_weak_pde_library_diagnostic"`, 27-key composed schema, `diagnostic_only = True`, `method_family = "pysindy_weak_pde_library_polynomial_gauss_v1"`).
+  - `pdelie.tasks.summarize_pysindy_weak_pde_library_diagnostic` — strict-JSON payload assembler for the diagnostic.
+  - `pdelie.tasks.WeakPDELibraryDiagnostic` — caller-declared JSON-safe library-configuration dataclass with `as_dict()`.
+  - `pdelie.examples.run_downstream_discovery_task_bridge_example()` and the CLI `python -m pdelie.examples.downstream_discovery_task_bridge` — composed JSON-only demonstration wrapper (`summary_type = "downstream_discovery_task_bridge_example"`, 7-key wrapper; **not** a new report schema).
+- Compatibility boundaries encoded in `pyproject.toml`: `pysindy>=1.7.5,<2` and `scikit-learn>=1.2.2,<1.3` under `python_version < '3.12'`; temporary `setuptools<82; python_version < '3.12'` cap because PySINDy 1.7.5 imports `pkg_resources` at package init. Downstream task support is validated on Python 3.11 only.
+- Explicit non-claims at release close: no WSINDy benchmark, no noise-robustness claim, no nonperiodic PySINDy discovery, no PySINDy 2.x code, no `SymmetryMethod` registry, no `SymmetryCandidate` runtime, no PDEBench / The Well support claim, no multi-channel / 2D widening.
+- Retirement plan: the temporary PySINDy 1.x + `setuptools<82` constraints retire together when the PySINDy pin widens to `>=2` in `v0.31.1` / `v0.32`. That release also lands the runtime version guards currently deferred (xfailed in `tests/test_v0_31b3_pysindy_compatibility_policy.py`) and unlocks Python 3.12+ downstream support.
+
+Historical stable public-surface note for the `v0.31c` sub-release (retained for provenance; superseded by the v0.31.0 note above):
 
 - `pdelie.examples.run_downstream_discovery_task_bridge_example()` and the CLI `python -m pdelie.examples.downstream_discovery_task_bridge` compose v0.31b1's `run_pysindy_pde_task` and v0.31b2's `inspect_pysindy_weak_pde_library` on one canonical periodic scalar 1D Heat field. The runner returns a strict-JSON-compatible dict with `summary_type = "downstream_discovery_task_bridge_example"` and seven top-level keys (`summary_schema_version`, `summary_type`, `pde_library_task`, `weak_pde_library_diagnostic`, `interpretation`, `scope_boundaries`, `backend_versions`). The composed wrapper is **not** a new report schema and does **not** alter the 22-key `discovery_task_result` or 27-key `pdelie_weak_pde_library_diagnostic` schemas. No root `pdelie` export is added. No WSINDy performance claim, no noise-robustness claim, no nonperiodic discovery claim. Periodic scalar 1D only. PySINDy 1.x support is temporary pending `v0.31.1` — see `docs/design/PYSINDY_COMPATIBILITY_POLICY.md`.
 

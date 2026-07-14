@@ -1,0 +1,173 @@
+{
+  "summary_schema_version": "0.1",
+  "summary_type": "pdelie_support_matrix",
+  "release": "0.31.0",
+  "release_decision": "downstream_discovery_task_bridge",
+  "carried_forward_from": "docs/specs/support_matrix.v0_30.json",
+  "columns": [
+    "pde",
+    "generator",
+    "residual",
+    "vertical_slice",
+    "candidate_validation",
+    "weak_support",
+    "external_data_readiness"
+  ],
+  "pdes": [
+    {
+      "pde": "Heat",
+      "generator": "yes",
+      "residual": "yes",
+      "vertical_slice": "yes",
+      "candidate_validation": "yes",
+      "weak_support": "frozen weak slice",
+      "external_data_readiness": "yes"
+    },
+    {
+      "pde": "Burgers",
+      "generator": "yes",
+      "residual": "yes",
+      "vertical_slice": "yes",
+      "candidate_validation": "yes",
+      "weak_support": "frozen weak slice",
+      "external_data_readiness": "yes"
+    },
+    {
+      "pde": "KdV",
+      "generator": "normalized short-horizon only",
+      "residual": "yes",
+      "vertical_slice": "yes",
+      "candidate_validation": "yes",
+      "weak_support": "no",
+      "external_data_readiness": "yes"
+    },
+    {
+      "pde": "Fisher-KPP",
+      "generator": "yes",
+      "residual": "yes",
+      "vertical_slice": "yes",
+      "candidate_validation": "yes",
+      "weak_support": "internal weak diagnostic only",
+      "external_data_readiness": "yes"
+    },
+    {
+      "pde": "Advection-diffusion",
+      "generator": "yes",
+      "residual": "yes",
+      "vertical_slice": "yes",
+      "candidate_validation": "yes",
+      "weak_support": "no",
+      "external_data_readiness": "yes"
+    },
+    {
+      "pde": "KS",
+      "generator": "no public runtime",
+      "residual": "no",
+      "vertical_slice": "no",
+      "candidate_validation": "diagnostic/no-go",
+      "weak_support": "no",
+      "external_data_readiness": "no"
+    }
+  ],
+  "boundary_condition_support": {
+    "scalar_1d_periodic": "supported (strong path, frozen weak slice, and v0.31 downstream discovery task bridge)",
+    "scalar_1d_nonperiodic_canonical_field_batch_readiness": "supported (dirichlet, neumann, open_unknown)",
+    "scalar_1d_nonperiodic_strong_residual": "supported for Heat, Burgers, advection-diffusion, reaction-diffusion via compute_derivatives(backend=\"auto\") + interior-only diagnostics",
+    "scalar_1d_nonperiodic_kdv": "not supported (KdV remains periodic-only)",
+    "scalar_1d_nonperiodic_weak": "not supported",
+    "scalar_1d_nonperiodic_pysindy_discovery": "not supported (both v0.31 task paths raise PySINDyDiscoveryUnsupportedBoundaryError on nonperiodic-x)",
+    "scalar_1d_nonperiodic_translation_finite_transform_verification": "not supported (deferred to v0.31.5 overlap-crop design)",
+    "multidimensional_grids": "not supported",
+    "nonuniform_grids": "not supported"
+  },
+  "downstream_discovery_task_bridge": {
+    "pysindy_pdelibrary_task": {
+      "status": "supported",
+      "scope": "periodic scalar 1D only",
+      "input_layout": "scalar_1d_uniform",
+      "backend": "pysindy>=1.7.5,<2 under python_version < '3.12'",
+      "public_names": [
+        "pdelie.tasks.run_pysindy_pde_task",
+        "pdelie.tasks.summarize_discovery_task_result",
+        "pdelie.tasks.PySINDyDiscoveryUnsupportedBoundaryError"
+      ],
+      "report_summary_type": "discovery_task_result",
+      "report_key_count": 22,
+      "pysindy_bridge_variant": "periodic_only_v1",
+      "root_export": "no"
+    },
+    "pysindy_weak_pde_library_diagnostic": {
+      "status": "diagnostic_only",
+      "scope": "periodic scalar 1D only",
+      "backend": "pysindy>=1.7.5,<2 under python_version < '3.12'",
+      "public_names": [
+        "pdelie.tasks.inspect_pysindy_weak_pde_library",
+        "pdelie.tasks.summarize_pysindy_weak_pde_library_diagnostic",
+        "pdelie.tasks.WeakPDELibraryDiagnostic"
+      ],
+      "report_summary_type": "pdelie_weak_pde_library_diagnostic",
+      "report_key_count": 27,
+      "diagnostic_only": true,
+      "method_family": "pysindy_weak_pde_library_polynomial_gauss_v1",
+      "test_function_family": "pysindy_weak_pde_library_polynomial_bump_v1",
+      "quadrature_rule": "pysindy_weak_pde_library_composite_gauss_v1",
+      "wsindy_benchmark_claim": false,
+      "noise_robustness_claim": false,
+      "numerical_equivalence_with_weak_1d_claim": false,
+      "root_export": "no"
+    },
+    "public_example": {
+      "public_name": "pdelie.examples.run_downstream_discovery_task_bridge_example",
+      "cli": "python -m pdelie.examples.downstream_discovery_task_bridge",
+      "composed_summary_type": "downstream_discovery_task_bridge_example",
+      "top_level_key_count": 7,
+      "new_report_schema": false,
+      "deterministic_under_frozen_seed": true,
+      "thread_safe": false,
+      "root_export": "no"
+    }
+  },
+  "compatibility_policy": {
+    "pysindy_pin": "pysindy>=1.7.5,<2; python_version < '3.12'",
+    "sklearn_pin": "scikit-learn>=1.2.2,<1.3; python_version < '3.12'",
+    "setuptools_pin": "setuptools<82; python_version < '3.12'",
+    "setuptools_pin_reason": "pysindy 1.7.5 imports pkg_resources at package init; setuptools 82 removed pkg_resources. Confirmed via adversarial matrix (setuptools 81 pass; 82/83 fail).",
+    "numpy_pin": "numpy>=1.24,<2",
+    "python_downstream_support": "Python 3.11 only",
+    "temporary_designation": "compatibility constraints retire when pysindy pin widens to >=2 in v0.31.1 / v0.32",
+    "hidden_manual_install_step": false
+  },
+  "deferred": [
+    "PySINDy 2.x support (deferred to v0.31.1)",
+    "Python 3.12+ downstream bridge support (deferred to v0.31.1)",
+    "numpy>=2 floor bump (coordinated with the PySINDy 2.x port)",
+    "FD-nonperiodic PySINDy discovery",
+    "WSINDy benchmark claim",
+    "noise robustness claim",
+    "SymmetryMethod registry (deferred to v0.30.1)",
+    "SymmetryCandidate runtime (deferred to v0.30.1)",
+    "root pdelie.discover_symmetries",
+    "external symmetry-method ports",
+    "PDEBench loaders",
+    "The Well loaders",
+    "PDEBench / The Well support claim",
+    "file loaders",
+    "broad adapters",
+    "load_field_batch",
+    "from_pdebench",
+    "from_the_well",
+    "from_netcdf",
+    "from_zarr",
+    "public KS runtime APIs",
+    "KdV nonperiodic",
+    "weak nonperiodic",
+    "public weak derivative backend",
+    "u_xxx / u_xxxx on nonperiodic data",
+    "finite-transform verification on nonperiodic translations",
+    "multidimensional grids",
+    "nonuniform grids",
+    "multi-channel / 2D contract widening",
+    "neural or callable generator APIs",
+    "train/test split enforcement or leakage prevention"
+  ]
+}

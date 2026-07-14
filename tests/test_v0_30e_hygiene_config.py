@@ -98,13 +98,15 @@ def test_requires_python_is_still_gte_3_11() -> None:
 
 
 def test_package_version_matches_v0_30_close() -> None:
-    """v0.30e held the version at 0.29.0; v0.30 close bumps it to 0.30.0.
+    """v0.30e held the version at 0.29.0; v0.30 close bumped to 0.30.0; the
+    v0.31 arc held the version at 0.30.0 through v0.31c1; v0.31.0 release
+    close bumps to 0.31.0.
 
-    Both are acceptable to keep this hygiene-config guard alive across the
-    release-close transition. numpy<2 and requires-python>=3.11 remain
-    unchanged either way (asserted by the sibling guards below).
+    All are acceptable to keep this hygiene-config guard alive across the
+    release-close transitions. numpy<2 and requires-python>=3.11 remain
+    unchanged (asserted by the sibling guards below).
     """
-    assert _pyproject()["project"]["version"] in {"0.29.0", "0.30.0"}
+    assert _pyproject()["project"]["version"] in {"0.29.0", "0.30.0", "0.31.0"}
 
 
 # --- CI workflow: lint / typecheck / coverage jobs ------------------------
@@ -176,14 +178,15 @@ def test_ci_workflow_release_gate_job_matches_v0_30_close() -> None:
     - v0.29 shipped ``v0_29-release-gate``.
     - v0.30f renamed it to ``v0_30f-release-gate`` alongside the
       manifest-driven narrow declarative consolidation.
-    - The v0.30 release close renamed it to the final ``v0_30-release-gate``.
+    - The v0.30 release close renamed it to ``v0_30-release-gate``.
+    - The v0.31.0 release close renamed it to ``v0_31-release-gate``.
 
     Inverted from the v0.30e-era ``test_ci_workflow_has_no_v0_30_release_gate_job_yet``
     guard, which asserted that v0.30e had not preempted v0.30f.
     """
     jobs = _ci_workflow()["jobs"]
     release_gate_jobs = [n for n in jobs if re.match(r"^v0_\d+[a-z]?-release-gate$", n)]
-    assert release_gate_jobs == ["v0_30-release-gate"], (
-        f"expected exactly one release-gate job named 'v0_30-release-gate' "
-        f"after the v0.30 release close; got: {release_gate_jobs}"
+    assert release_gate_jobs == ["v0_31-release-gate"], (
+        f"expected exactly one release-gate job named 'v0_31-release-gate' "
+        f"after the v0.31.0 release close; got: {release_gate_jobs}"
     )

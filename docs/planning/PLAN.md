@@ -1,3 +1,36 @@
+# PDELie - Execution Plan (V0.31.0 Release Close)
+
+**Status:** COMPLETE
+
+`V0.31.0 is complete.` This is the mechanical release-close record.
+
+Release decision: `downstream_discovery_task_bridge`.
+
+Release close closes the v0.31 downstream-discovery task-bridge slice:
+
+- v0.31a — design-only scope freeze (PR #84).
+- v0.31b0 — PySINDy term-mapping golden + PDL-JSON debt tickets + preflight audit + label-registry fix (PR #94).
+- v0.31b1 — executable periodic PySINDy `PDELibrary` task runner + `discovery_task_result` (22-key strict-JSON schema); adapter loosening for a caller-supplied `pysindy_model` (PR #95).
+- v0.31b2 — diagnostic-only `WeakPDELibrary` wrapper + `pdelie_weak_pde_library_diagnostic` (27-key strict-JSON schema; `diagnostic_only = True`) (PR #96).
+- v0.31b3 — temporary PySINDy 1.x compatibility policy (`C_temporary_1x_policy`) + compatibility-matrix JSON + CI pins (PR #97).
+- v0.31c — public JSON-only downstream task-bridge example (submodule-only, seven-key composed wrapper — NOT a new schema); mandatory clean-install audit outcome A; xfail ledger (PR #98).
+- v0.31c1 — adversarial setuptools 81/82/83 install matrix (verdict `B_setuptools_82_boundary`); narrow temporary `setuptools<82; python_version<'3.12'` cap on `[downstream]` and `[test]` extras; RNG audit refactor to a private `_legacy_numpy_rng_seed_scope` context manager (PR #99).
+- **v0.31.0 release close (this PR)** — version bump `0.30.0 → 0.31.0`; `docs/releases/V0_31_RELEASE_READINESS.md`, `docs/specs/support_matrix.v0_31.json`, `CHANGELOG.md`; CI release-gate job rename `v0_30-release-gate → v0_31-release-gate`; scope status → COMPLETE; Python 3.12+ downstream UX targeted-message change.
+
+Non-goals at release close (preserved verbatim from earlier sub-releases):
+
+- No new discovery backend. No new summary type. No change to the 22-key `discovery_task_result` schema. No change to the 27-key `pdelie_weak_pde_library_diagnostic` schema.
+- No WSINDy benchmark claim. No noise-robustness claim. No nonperiodic PySINDy discovery. No PySINDy 2.x code.
+- No SymmetryMethod registry. No SymmetryCandidate runtime. No new root exports.
+- No PDEBench / The Well support claim. No multi-channel or 2D widening.
+- `numpy>=1.24,<2` unchanged. `pysindy>=1.7.5,<2` unchanged. `setuptools<82; python_version<'3.12'` retained. Python support policy unchanged.
+- No PyPI or TestPyPI publication.
+- No git tag created — deferred to explicit authorization after review.
+
+Retained xfails (final v0.31.0 ledger, 3 entries): all in `tests/test_v0_31b3_pysindy_compatibility_policy.py`; every entry carries a non-empty reason; all deferred to `v0.31.1` (runtime version guards on the two task entry points) or to a nested provenance follow-up (scipy on `_resolve_backend_version`).
+
+---
+
 # PDELie - Execution Plan (V0.31c1)
 
 **Status:** IN_PROGRESS
