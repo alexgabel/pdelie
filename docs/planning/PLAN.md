@@ -1,3 +1,58 @@
+# PDELie - Execution Plan (V0.31c)
+
+**Status:** IN_PROGRESS
+
+`v0.31c` is the final sub-release of the v0.31 arc before the mechanical release-close PR. It ships:
+
+1. A mandatory clean-install audit that proves the advertised `pip install "<wheel>[downstream]"` command is self-sufficient on Python 3.11 (outcome A) — no manual pre-install of setuptools/PySINDy/NumPy/SciPy/scikit-learn is required. `pyproject.toml` is unchanged; the existing `python_version < '3.12'` marker already handles the Python 3.12+ `pkg_resources` footgun via the ambient CI `setuptools<81` co-install.
+2. One compact JSON-only public example — `pdelie.examples.run_downstream_discovery_task_bridge_example` and CLI `python -m pdelie.examples.downstream_discovery_task_bridge` — that demonstrates both v0.31 paths (`run_pysindy_pde_task` + `inspect_pysindy_weak_pde_library`) side-by-side on one canonical periodic scalar 1D Heat field. The example is deterministic under a frozen seed, records exact backend versions, and encodes its scope boundaries as machine-readable non-claim flags plus interpretation prose.
+3. An xfail audit covering every currently-declared xfail (3, all in `tests/test_v0_31b3_pysindy_compatibility_policy.py`); each has a non-empty reason, each defers to v0.31.1 (PySINDy 2.x port) or to a nested provenance addition already implicit in the b3 policy.
+4. Preflight notes for the v0.31 support-matrix additions, stored in this doc rather than as a finalized `support_matrix.v0_31.json` — the finalized matrix belongs in the release-close PR.
+
+Decision label:
+
+```text
+downstream_task_bridge_public_example_and_install_self_sufficiency
+```
+
+Non-goals for v0.31c:
+
+- No new scientific algorithm and no new report schema.
+- No PySINDy 2.x port (deferred to `v0.31.1`).
+- No change to the 22-key `discovery_task_result` schema.
+- No change to the 27-key `pdelie_weak_pde_library_diagnostic` schema.
+- No new PDE. No symmetry-method registry. No WSINDy claim. No noise benchmark. No FD-nonperiodic discovery.
+- No root `pdelie` export. No package version bump. No tag. No PyPI/TestPyPI publication.
+- No `setuptools<81` constraint added to the `[downstream]` extra (the clean-install audit demonstrated it is not needed on Python 3.11).
+
+Files touched in v0.31c:
+
+- NEW `src/pdelie/examples/downstream_discovery_task_bridge.py`
+- MODIFIED `src/pdelie/examples/__init__.py` (re-export the new runner)
+- NEW `tests/test_v0_31c_downstream_task_bridge_example.py` (15 named tests)
+- MODIFIED docs: `PLAN.md`, `ROADMAP.md`, `API_STABILITY.md`, `PYSINDY_COMPATIBILITY_POLICY.md`
+- MODIFIED `configs/release_gate_manifest.json` (single "0.31" row extended; no new sub-release row; `release_count` stays 19)
+
+Support-matrix preflight (draft only — final content lives in the release-close PR):
+
+- PySINDy `PDELibrary` task: supported for periodic scalar 1D under PySINDy 1.x (v0.31b1).
+- `WeakPDELibrary` diagnostic: diagnostic-only, no benchmark claim (v0.31b2).
+- PySINDy 2.x: deferred to `v0.31.1`.
+- FD-nonperiodic PySINDy discovery: unsupported / deferred.
+- WSINDy / noise robustness: explicitly unsupported claim.
+
+Retained xfails (release-readiness ledger draft):
+
+| test node id | reason | disposition |
+|---|---|---|
+| `test_v0_31b3::test_unsupported_major_pysindy_version_rejected_by_discovery_task_runner` | runtime version guard not yet landed on `run_pysindy_pde_task`; awaits `v0.31.1` | KEEP as xfail |
+| `test_v0_31b3::test_unsupported_major_pysindy_version_rejected_by_weak_diagnostic` | runtime version guard not yet landed on `inspect_pysindy_weak_pde_library`; awaits `v0.31.1` | KEEP as xfail |
+| `test_v0_31b3::test_discovery_task_backend_version_records_exact_pysindy_and_sklearn` | asks `pdelie.tasks.discovery._resolve_backend_version` to include `scipy` for uniformity with the weak diagnostic's provenance | KEEP as xfail — nested provenance extension deferred to a follow-up |
+
+Every xfail carries a non-empty reason. None of the xfails represent a genuine failure being masked to make the suite green. None have been converted stale.
+
+---
+
 # PDELie - Execution Plan (V0.31b3)
 
 **Status:** IN_PROGRESS

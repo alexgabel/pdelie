@@ -2,6 +2,7 @@ __all__ = [
     "run_advection_diffusion_vertical_slice_example",
     "run_data_ecosystem_feasibility_example",
     "run_downstream_discovery_contracts_example",
+    "run_downstream_discovery_task_bridge_example",
     "run_external_data_readiness_example",
     "run_formula_generator_validation_example",
     "run_generator_confidence_report_example",
@@ -36,6 +37,14 @@ def run_data_ecosystem_feasibility_example() -> dict[str, object]:
 def run_downstream_discovery_contracts_example() -> dict[str, object]:
     from pdelie.examples.downstream_discovery_contracts import (
         run_downstream_discovery_contracts_example as _impl,
+    )
+
+    return _impl()
+
+
+def run_downstream_discovery_task_bridge_example() -> dict[str, object]:
+    from pdelie.examples.downstream_discovery_task_bridge import (
+        run_downstream_discovery_task_bridge_example as _impl,
     )
 
     return _impl()
