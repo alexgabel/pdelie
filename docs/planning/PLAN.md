@@ -1,3 +1,76 @@
+# PDELie - Execution Plan (V0.31b3)
+
+**Status:** IN_PROGRESS
+
+`v0.31b3` is the third runtime sub-release under the v0.31 arc. It does **not** ship a new PDE, a new schema, a new symmetry-registry surface, a new discovery task type, or a new WSINDy claim. Its scope is entirely **downstream compatibility hardening**: it formalizes the existing `pysindy>=1.7.5,<2` pin as a declared temporary policy, documents the exact PySINDy versions the `pdelie.tasks.*` runtime is verified against, records the four independent 2.x-API deltas that a future `v0.31.1` / `v0.32` shim will need to absorb, and reflects the policy into `configs/release_gate_manifest.json`, `configs/pysindy_compatibility_matrix.json`, and the CI matrix. `pyproject.toml` stays pinned at `0.30.0`.
+
+Decision label:
+
+```text
+downstream_pysindy_compatibility_policy_and_wheel_hardening
+```
+
+Chosen outcome: `C_temporary_1x_policy`. The env-audit phase verified that `pysindy 1.7.5` passes 61/61 targeted `pdelie.tasks.discovery` / `pdelie.tasks.weak_pde_library` tests against the current `pdelie 0.30.0` code, while `pysindy 2.1.0` HARD-breaks on three independent axes (`SINDy(feature_names=, discrete_time=)` constructor kwargs removed, `WeakPDELibrary(library_functions=, function_names=, interaction_only=)` kwargs removed, `SINDy.differentiate` removed) plus a transitive `numpy>=2` floor conflict with pdelie's `numpy<2` pin (21/61 targeted tests fail on 2.1.0; `pip` rejects joint install with `ResolutionImpossible`). The correct v0.31b3 posture is therefore to declare the existing `pysindy>=1.7.5,<2` pin as an intentional temporary policy, document the `setuptools<81` install footgun for the 1.x line, and defer PySINDy 2.x support to a dedicated migration release. **No compat shim is added in v0.31b3.**
+
+## Sub-release contents (v0.31b3)
+
+- `docs/design/PYSINDY_COMPATIBILITY_POLICY.md` (NEW) — the authoritative policy document. Enumerates the supported PySINDy range (`1.7.5` only under the pinned `>=1.7.5,<2` constraint), the primary tested version (`1.7.5`; no secondary), the unsupported ranges (`<1.7.5` and `>=2.0.0`) with per-axis rationale, the exact public pdelie surfaces covered (`pdelie.tasks.discovery.run_pysindy_pde_task`, `summarize_discovery_task_result`, `PySINDyDiscoveryUnsupportedBoundaryError`; `pdelie.tasks.weak_pde_library.inspect_pysindy_weak_pde_library`, `summarize_pysindy_weak_pde_library_diagnostic`, `WeakPDELibraryDiagnostic`), the nine known 1.x-vs-2.x API-diff rows recorded for the future shim, the `setuptools<81` install footgun for pysindy 1.x, the CI matrix summary, and a reserved "Resource envelope" section for the follow-on resource-envelope phase to append its numbers. Also explicitly declares the non-claims: no WSINDy benchmark, no noise robustness claim, no nonperiodic discovery, no PDEBench / The Well support claim, no `weak_1d` retirement, no PySINDy 2.x support.
+- `configs/pysindy_compatibility_matrix.json` (NEW) — strict-JSON machine-readable matrix under `summary_type = "pdelie_pysindy_compatibility_matrix"`, `summary_schema_version = "0.1"`. Carries `policy_outcome`, `pyproject_constraint`, `primary_tested_version`, `secondary_tested_version` (null), `supported_versions`, `unsupported_versions`, and `ci_matrix`. Loads under `json.loads(json.dumps(m, allow_nan=False)) == m`.
+- `configs/release_gate_manifest.json` (MODIFIED) — the existing `0.31` row is **extended in place** (no new `0.31b3` row; `release_count` stays 19). `forbidden_root_attributes.names` grows to reject the future compat-shim leak surface (`_pysindy_compat`, `SUPPORTED_PYSINDY_VERSIONS`) so those names cannot silently reach the `pdelie` root when the shim is later introduced. `forbidden_submodule_attributes` mirrors the same forbiddance for the `pdelie.discovery`, `pdelie.tasks`, `pdelie.tasks.discovery`, and `pdelie.tasks.weak_pde_library` submodules. A `strict_json_manifests` entry is added for `configs/pysindy_compatibility_matrix.json`. Every v0.31b1 and v0.31b2 assertion is preserved verbatim.
+- `.github/workflows/ci.yml` (MODIFIED) — narrow, additive change: the two existing blocking jobs (`editable-tests`, `v0_30-release-gate`) have their PySINDy version made explicit via an `env: PDELIE_PINNED_PYSINDY_VERSION: "1.7.5"` variable and an install-time `python -m pip install "pysindy==1.7.5"` step immediately after the `.[test]` install. The `.[test]` extra already resolves to `pysindy>=1.7.5,<2`; the explicit pin makes the CI's exercised version match the compatibility matrix's declared primary tested version. Both jobs run the v0.31b3 test file (`tests/test_v0_31b3_pysindy_compat_policy.py`) alongside the existing v0.30 release-gate suite; both remain blocking. No other CI job is modified; the Python version matrix is unchanged.
+- `docs/specs/API_STABILITY.md` (MODIFIED) — appends a new sub-note under the v0.31b2 stable public-surface note recording the declared temporary `pysindy>=1.7.5,<2` compatibility policy, the fact that any future `_pysindy_compat` helpers are private (no root export, no submodule public re-export), and a pointer to `docs/design/PYSINDY_COMPATIBILITY_POLICY.md`. No existing text is changed.
+- `docs/planning/ROADMAP.md` (MODIFIED) — v0.31b2 status moves to `Completed (PR #96)`; v0.31b3 gets a new `In progress` row on the planned-direction table with the decision label above; a new `v0.31.1` row is added for "PySINDy 2.x port" per the `C_temporary_1x_policy` outcome. No existing row is deleted.
+- `docs/planning/PLAN.md` (this section prepended).
+- `tests/test_v0_31b3_pysindy_compat_policy.py` (Author B's remit; not written by this author) — will exercise the manifest, JSON matrix, and installed-pysindy version at runtime.
+
+## Scope-in files (v0.31b3)
+
+- `docs/design/PYSINDY_COMPATIBILITY_POLICY.md`
+- `configs/pysindy_compatibility_matrix.json`
+- `configs/release_gate_manifest.json` (extend the `0.31` row in place)
+- `.github/workflows/ci.yml` (narrow, additive per-job change; no new job)
+- `docs/specs/API_STABILITY.md`
+- `docs/planning/ROADMAP.md`
+- `docs/planning/PLAN.md`
+- `tests/test_v0_31b3_pysindy_compat_policy.py` (Author B)
+
+## Scope-out files (v0.31b3)
+
+- Any file under `src/` — the runtime is unchanged. No shim is introduced; `pdelie.discovery.pysindy_adapter`, `pdelie.discovery._pysindy_defaults`, `pdelie.tasks.discovery`, `pdelie.tasks.weak_pde_library` are untouched.
+- Any file under `tests/` other than the new v0.31b3 policy test file authored by Author B — the b0/b1/b2 test files are unchanged.
+- `pyproject.toml` — unchanged. The existing `pysindy>=1.7.5,<2` pin on the `[downstream]` and `[test]` extras is the policy. No version bump. No optional-dependency addition.
+- `src/pdelie/discovery/_pysindy_compat.py` — **not created** in v0.31b3. The compat shim is deferred to `v0.31.1` / `v0.32` when the pin is widened to admit PySINDy 2.x.
+- `docs/specs/SPEC.md`, `docs/specs/CONTRACTS_AND_DEFAULTS.md`, `docs/specs/SUPPORT_MATRIX.md`, `docs/specs/LABEL_REGISTRY.md` — no changes. This is a compatibility-policy release, not a public-API expansion.
+
+## Explicit non-goals for v0.31b3
+
+- No new schema; no new PDE; no new symmetry registry; no new discovery task type; no WSINDy claim; no nonperiodic discovery.
+- No new `pdelie` runtime code, no new submodule, no new public re-export.
+- No compat shim (`src/pdelie/discovery/_pysindy_compat.py` is **not** created in this sub-release).
+- No PySINDy 2.x support. `>=2.0.0` remains explicitly unsupported.
+- No `numpy>=2` floor bump. Widening the numpy floor is coupled with admitting PySINDy 2.x and is deferred to `v0.31.1` / `v0.32`.
+- No new CI job for a per-PySINDy-version matrix — the existing two blocking jobs already exercise the sole supported PySINDy version through the `.[test]` extra.
+- No promotion of the v0.30e advisory `lint` / `typecheck` / `coverage` CI jobs to blocking; Phase 2 remains deferred.
+- No version bump in `pyproject.toml` (`0.30.0` remains pinned).
+- No standalone `tests/test_v0_31b3_release_gate.py`; the `0.31` release-gate lives as a single row in `configs/release_gate_manifest.json` replayed by `tests/test_release_gates.py` (extended in place, following the v0.30f consolidation pattern).
+- No new label family in `docs/specs/LABEL_REGISTRY.md`.
+- No `pdelie.residuals.weak_1d` removal; retention through `v0.32` close is unchanged.
+- No public root `pdelie` export for any new name.
+
+## v0.31b3 sub-release gate
+
+`v0.31b3` is complete when:
+
+- `docs/design/PYSINDY_COMPATIBILITY_POLICY.md` exists and enumerates the supported range (`1.7.5` only), the primary tested version (`1.7.5`), the unsupported ranges (`<1.7.5` and `>=2.0.0`) with per-axis rationale, the exact six public pdelie surfaces covered, the known 1.x-vs-2.x API differences, the explicit non-claims (no WSINDy benchmark, no noise robustness claim, no nonperiodic discovery), and reserves a "Resource envelope" section for later.
+- `configs/pysindy_compatibility_matrix.json` exists, is strict-JSON compatible (`json.loads(json.dumps(m, allow_nan=False)) == m`), carries `summary_type = "pdelie_pysindy_compatibility_matrix"`, `summary_schema_version = "0.1"`, `policy_outcome = "C_temporary_1x_policy"`, `pyproject_constraint = "pysindy>=1.7.5,<2"`, `primary_tested_version = "1.7.5"`, `secondary_tested_version = null`, `supported_versions = ["1.7.5"]`, `unsupported_versions = ["<1.7.5", ">=2.0.0"]`, and a two-entry `ci_matrix`.
+- The `0.31` row of `configs/release_gate_manifest.json` is extended in place: `forbidden_root_attributes.names` includes `_pysindy_compat` and `SUPPORTED_PYSINDY_VERSIONS`; `forbidden_submodule_attributes.names` includes the same names against `pdelie.tasks`, `pdelie.tasks.discovery`, `pdelie.tasks.weak_pde_library`, and `pdelie.discovery`; a `strict_json_manifests` entry is added for `configs/pysindy_compatibility_matrix.json`. `release_count` stays 19; no `0.31b3` row is added.
+- `.github/workflows/ci.yml` records `pysindy==1.7.5` explicitly on the two existing blocking jobs (`editable-tests`, `v0_30-release-gate`) and runs `tests/test_v0_31b3_pysindy_compat_policy.py` alongside the existing release-gate suite. No other job is modified.
+- `docs/specs/API_STABILITY.md` carries a compatibility-policy note that names the supported range and points to `docs/design/PYSINDY_COMPATIBILITY_POLICY.md`.
+- `docs/planning/ROADMAP.md` shows v0.31b2 as `Completed (PR #96)`, v0.31b3 as `In progress`, and adds a `v0.31.1` "PySINDy 2.x port" row.
+- `pyproject.toml` still declares `version = "0.30.0"`; no file under `src/` is added or modified; the compat shim is deferred.
+
+---
+
 # PDELie - Execution Plan (V0.31b2)
 
 **Status:** IN_PROGRESS
