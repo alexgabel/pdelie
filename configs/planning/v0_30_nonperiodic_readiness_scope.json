@@ -40,11 +40,7 @@
     "from_netcdf",
     "from_zarr",
     "compute_finite_difference_derivatives",
-    "compute_derivatives",
-    "SymmetryMethod",
-    "SymmetryCandidate",
-    "SymmetryMethodResult",
-    "register_symmetry_method"
+    "compute_derivatives"
   ],
   "forbidden_submodule_attributes": {
     "pdelie.data": [
@@ -53,14 +49,7 @@
       "from_netcdf",
       "from_zarr"
     ],
-    "pdelie.symmetry": [
-      "SymmetryMethod",
-      "SymmetryCandidate",
-      "SymmetryMethodResult",
-      "register_symmetry_method",
-      "get_symmetry_method",
-      "list_symmetry_methods"
-    ]
+    "pdelie.symmetry": []
   },
   "required_design_documents": [
     "docs/planning/V0_30_SCOPE.md",

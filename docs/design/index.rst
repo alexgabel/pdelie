@@ -14,4 +14,5 @@ Once a design is implemented and validated it is folded into the specs.
    PYSINDY_2_MIGRATION_AUDIT
    PYSINDY_COMPATIBILITY_POLICY
    RUNTIME_COMPATIBILITY_POLICY
+   SYMMETRY_METHOD_REGISTRY
    V0_30_HYGIENE_AUDIT
