@@ -25,6 +25,18 @@ Stable public import path for the invariant canonical object:
 
 - `pdelie.InvariantMapSpec`
 
+Stable public-surface note for the v0.32b strict method-score, uncertainty, and calibration reporting:
+
+- Decision label: `v0_32b_generator_confidence_additive_method_scores_uncertainty_calibration`.
+- `v0.32b` adds three additive optional fields to `pdelie.reporting.summarize_generator_confidence`: `method_scores`, `uncertainty_report`, `calibration_report`. All three default to `None`; existing callers without new arguments retain equivalent output semantics.
+- Frozen shape lives in `docs/design/GENERATOR_CONFIDENCE_ADDITIVE_FIELDS.md`; machine-readable form in `configs/planning/v0_32_method_scores_scope.json`.
+- `_CONFIDENCE_LABELS` is unchanged (still `{"strong", "qualified", "failed", "insufficient_evidence"}`) — this is a v0.32b invariant.
+- The full `generator_confidence` payload now goes through the strict-JSON boundary `_validate_strict_json_compatible`: NaN and Inf raise `SchemaValidationError` at every nested level.
+- New submodule-only helper `pdelie.reporting.enrich_method_scores(values, metadata)` composes a plain `dict[str, float | None]` (from `SymmetryMethodResult.method_scores`) with a method's frozen `SCORE_METADATA` into the enriched-form dict accepted by `method_scores`.
+- The built-in `polynomial_translation_svd` populates `method_scores` with **exactly** the frozen four names `{span_distance, residual_l2, error_curve_max, svd_condition_number}`. Directions: `span_distance` and `residual_l2` are `lower_is_better`; `error_curve_max` and `svd_condition_number` are `diagnostic_only`. `SymmetryMethodResult.method_scores` remains a `dict[str, float | None]` per the v0.30.1 registry contract.
+- New method-specific helper `pdelie.symmetry.methods.polynomial_translation_svd.bootstrap_uncertainty(...)` emits an opt-in `uncertainty_report`. Batch (trajectory) resampling only; row-level bootstrap is refused with `ScopeValidationError` — there is no silent fallback. `min_units=8` default; below that the report is emitted with empty intervals and an explicit warning. Seeded and deterministic; each resample re-runs the full underlying fit. `diagnostic_only` is `True`.
+- No new root `pdelie` export. No new PDE. No new symmetry method. No new `SymmetryCandidate` discriminator. No scalar aggregate confidence probability. No reinterpretation of method-native scores as probabilities. Bootstrap intervals are called bootstrap intervals — not Bayesian posterior intervals. No noise robustness claim. No package version bump. No PyPI or TestPyPI publication.
+
 Stable public-surface note for the v0.32a modern-runtime migration:
 
 - `v0.32a` migrates the active development line to Python ≥3.12 + NumPy 2.x + PySINDy 2.1.x. The v0.31.x line is retained as the legacy Python 3.11 + PySINDy 1.7.x maintenance branch — see `docs/design/RUNTIME_COMPATIBILITY_POLICY.md`.
@@ -642,7 +654,7 @@ Four-column view of the current surface. Rows are grouped by category. Downstrea
 | **internal** — helpers | `pdelie.contracts._translation_generator_basis_spec`, `_TRANSLATION_GENERATOR_BASIS_LABELS`, and other underscore-prefixed helpers; `pdelie.reporting.summaries._validate_strict_json_compatible`, `_validate_json_compatible`, `_summary_payload`, `_json_safe`, `_component_status`; `pdelie.discovery.contracts._json_safe`, `_summary_payload`, `_residual_summary_or_none` | Used by `pdelie/*` code and by `tests/*` release-gate fixtures. Not part of the public surface. |
 | **deferred** — surfaces named in v0.30.0 close note | root `pdelie.discover_symmetries` (v1.0 scope decision); `pdelie.symmetry.SymmetryMethod` registry + `SymmetryCandidate` wrapper (v0.30.1); external symmetry-method ports (Ko-sparse v0.33, LieGAN/LaLiGAN v0.33.1); PDEBench / The Well loaders (v0.32 readiness cookbooks only); nonperiodic KdV/KS/weak; `u_xxx`/`u_xxxx` on nonperiodic data; nonperiodic finite-transform verification (v0.31.5 overlap-crop); multi-channel or 2D contract widening (v0.34); LieGG / trained-model extraction (v0.35a) | See the v0.30.0 stable public-surface note above for the full list. |
 | **deferred** — hygiene | `numpy>=2` support (Phase 3, v0.32 or later); Python 3.12/3.13 CI matrix (Phase 3); `typecheck` CI job promotion to blocking (after v0.30.1c–k mypy strict-scope broadening); `coverage` CI job promotion to blocking with `fail_under=85` (v0.30.1b) | Advisory-to-blocking promotion sequence is documented in `docs/design/V0_30_HYGIENE_AUDIT.md`. |
-| **deferred** — additive reporting fields | `method_scores`, `uncertainty_report`, `calibration_report` on `generator_confidence` (v0.32a planning note in `docs/planning/PLAN.md`) | Additive extension, non-breaking; downstream consumers may pre-register keys but must accept `None` until they ship. |
+| **public stable** — v0.32b additive reporting fields | `method_scores`, `uncertainty_report`, `calibration_report` on `generator_confidence`; `pdelie.reporting.enrich_method_scores`; `pdelie.symmetry.methods.polynomial_translation_svd.bootstrap_uncertainty` | Additive; default-None; existing callers unchanged. Frozen shape in `docs/design/GENERATOR_CONFIDENCE_ADDITIVE_FIELDS.md`. |
 
 The rule: **anything not in this matrix is either (a) covered by the per-release Stable / Runtime / Decision-only notes above, or (b) not stable.** The three categories cover every callable and every JSON field the current release documents.
 

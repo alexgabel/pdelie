@@ -1,3 +1,24 @@
+# PDELie - Execution Plan (V0.32b Strict Method-Score, Uncertainty, and Calibration Reporting)
+
+**Status:** IN_PROGRESS
+
+`v0.32b` extends `pdelie.reporting.summarize_generator_confidence` with three additive optional fields — `method_scores`, `uncertainty_report`, `calibration_report` — and migrates the assembled generator-confidence payload to the strict-JSON validation boundary. The v0.20 `confidence_label` categorical vocabulary is unchanged; all three new fields default to `None`; existing callers without new arguments retain equivalent output semantics.
+
+Decision label: `v0_32b_generator_confidence_additive_method_scores_uncertainty_calibration`.
+
+Substantive changes:
+
+- `summarize_generator_confidence` gains `method_scores`, `uncertainty_report`, `calibration_report` kwargs (all default `None`) and routes the assembled payload through `_validate_strict_json_compatible` instead of the permissive `_validate_json_compatible`. NaN/Inf raise `SchemaValidationError` at every nested level.
+- New submodule-only helper `pdelie.reporting.enrich_method_scores(values, metadata)` composes a plain `dict[str, float | None]` (from `SymmetryMethodResult.method_scores`) with a frozen `SCORE_METADATA` map into the enriched-form dict accepted by the report.
+- The built-in `polynomial_translation_svd` method_scores now uses the **frozen four names**: `span_distance` (lower_is_better), `residual_l2` (lower_is_better), `error_curve_max` (diagnostic_only), `svd_condition_number` (diagnostic_only). Underlying diagnostics semantic mapping: `span_distance ← selected_span_distance`; `residual_l2` = L2 norm of the residual field; `error_curve_max = max(basis_delta_norms.values())`; `svd_condition_number ← condition_number`. The class-level `SCORE_METADATA` attribute exposes direction/description/units for the enrichment helper. `SymmetryMethodResult.method_scores` remains a plain `dict[str, float | None]` for backward compatibility with the v0.30.1 registry contract.
+- New method-specific helper `pdelie.symmetry.methods.polynomial_translation_svd.bootstrap_uncertainty(field, residual_evaluator, *, seed, num_resamples=64, interval_level=0.95, min_units=8, resampling_unit="batch")`. Batch (trajectory) resampling only; `resampling_unit="row"` raises `ScopeValidationError`. Seeded and deterministic; each resample re-runs the full underlying fit; failed resamples are counted, not silently retried. Below `min_units`, intervals are all None with an explicit `insufficient_independent_units` warning. `diagnostic_only=True`.
+- New tests: `tests/test_v0_32b_method_scores_uncertainty.py` (20 named cases covering backward compatibility, three-field validation, direction vocabulary, strict-JSON round-trip, built-in coverage, bootstrap determinism, insufficient-units warning, row-bootstrap refusal).
+- Design frozen at `docs/design/GENERATOR_CONFIDENCE_ADDITIVE_FIELDS.md` and `configs/planning/v0_32_method_scores_scope.json`.
+
+Non-goals: no scalar aggregate confidence probability; no reinterpretation of method-native scores as probabilities; no bootstrap intervals renamed to Bayesian posterior intervals; no new symmetry method; no root exports; no `SymmetryCandidate` discriminator semantic change; no noise-robustness claim; no package version bump; no tag; no PyPI/TestPyPI publication.
+
+---
+
 # PDELie - Execution Plan (V0.32a Modern Runtime Migration)
 
 **Status:** IN_PROGRESS
@@ -572,7 +593,7 @@ v0.31a is complete when:
 
 # PDELie - Planning Note (V0.32a design freeze — method_scores / uncertainty_report / calibration_report)
 
-**Status:** PLANNED (design freeze scheduled for `v0.32a`)
+**Status:** IMPLEMENTED at `v0.32b`. This planning note is retained verbatim as history. The actual v0.32b shape (enriched-metadata per score entry, strict-JSON boundary, batch-only bootstrap) is documented in [`docs/design/GENERATOR_CONFIDENCE_ADDITIVE_FIELDS.md`](../design/GENERATOR_CONFIDENCE_ADDITIVE_FIELDS.md) and [`configs/planning/v0_32_method_scores_scope.json`](../../configs/planning/v0_32_method_scores_scope.json), which are more rigorous than the shape sketched below (each `method_scores` entry is `{value, direction, description, units}` rather than a bare float; `uncertainty_report` uses percentile bootstrap intervals with an explicit `resampling_unit ∈ {"batch", "trajectory", "not_applicable"}`, `seed`, `failed_resamples`, `warnings`, `diagnostic_only`; `calibration_report` mirrors the same `diagnostic_only` invariant).
 
 Records the additive extension planned for `pdelie.reporting.summarize_generator_confidence`. This is a **planning note only** — it does not schedule the runtime implementation, does not bump any version, and does not touch `src/pdelie/`. It exists here so the label registry (`docs/specs/LABEL_REGISTRY.md`), the API stability policy (`docs/specs/API_STABILITY.md`), and the scientific positioning doc (`docs/strategy/SCIENTIFIC_POSITIONING.md`) can reference a single canonical decision for what "beyond `confidence_label`" looks like.
 

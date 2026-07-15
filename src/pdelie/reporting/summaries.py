@@ -47,6 +47,43 @@ _BOUNDARY_CONDITION_WARNING_KEYS = frozenset(
     }
 )
 
+# --- v0.32b: additive generator-confidence field vocabularies ---------------
+# See docs/design/GENERATOR_CONFIDENCE_ADDITIVE_FIELDS.md for the frozen shapes.
+_METHOD_SCORE_DIRECTIONS = frozenset(
+    {"lower_is_better", "higher_is_better", "diagnostic_only"}
+)
+_METHOD_SCORE_ENTRY_KEYS = frozenset(
+    {"value", "direction", "description", "units"}
+)
+_UNCERTAINTY_METHOD_VOCABULARY = frozenset({"bootstrap", "point_estimate"})
+_UNCERTAINTY_RESAMPLING_UNITS = frozenset(
+    {"batch", "trajectory", "not_applicable"}
+)
+_UNCERTAINTY_REPORT_KEYS = frozenset(
+    {
+        "method",
+        "resampling_unit",
+        "sample_count",
+        "seed",
+        "interval_level",
+        "intervals",
+        "point_estimates",
+        "failed_resamples",
+        "warnings",
+        "diagnostic_only",
+    }
+)
+_CALIBRATION_REPORT_KEYS = frozenset(
+    {
+        "method",
+        "target",
+        "sample_count",
+        "metrics",
+        "warnings",
+        "diagnostic_only",
+    }
+)
+
 
 def _x_boundary_warnings(metadata: object) -> list[str]:
     """Return the v0.30c boundary_condition_warnings list for a FieldBatch/Dataset metadata.
@@ -259,6 +296,291 @@ def _summary_payload(summary_type: str, **items: Any) -> dict[str, Any]:
         **items,
     }
     return _validate_json_compatible(payload, name=f"{summary_type} summary")
+
+
+def _validate_finite_scalar(value: Any, *, name: str) -> float | None:
+    """v0.32b strict validator: finite float or None. NaN/Inf raise."""
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        raise SchemaValidationError(
+            f"{name} must be a finite float or None; boolean values are not accepted."
+        )
+    try:
+        normalized = float(value)
+    except (TypeError, ValueError) as exc:
+        raise SchemaValidationError(
+            f"{name} must be a finite float or None."
+        ) from exc
+    if not np.isfinite(normalized):
+        raise SchemaValidationError(
+            f"{name} must be a finite float or None; NaN/Inf are forbidden."
+        )
+    return normalized
+
+
+def _validate_v0_32b_method_scores(
+    value: Any, *, name: str
+) -> dict[str, dict[str, Any]] | None:
+    """Validate the additive method_scores field on the confidence report.
+
+    See docs/design/GENERATOR_CONFIDENCE_ADDITIVE_FIELDS.md. Enforces:
+
+    - value is a non-empty mapping (or None -> None).
+    - each entry has EXACTLY {value, direction, description, units}.
+    - direction is in the frozen vocabulary.
+    - value is a finite float or None (NaN/Inf raise).
+    - description is a non-empty string.
+    - units is a non-empty string or None.
+    """
+    if value is None:
+        return None
+    mapping = _require_mapping(value, name=name)
+    if not mapping:
+        raise SchemaValidationError(
+            f"{name} must be non-empty when provided; use None to opt out."
+        )
+    normalized: dict[str, dict[str, Any]] = {}
+    for raw_key, raw_entry in mapping.items():
+        score_key = str(raw_key)
+        entry_name = f"{name}[{score_key!r}]"
+        entry = _require_mapping(raw_entry, name=entry_name)
+        entry_keys = set(entry.keys())
+        if entry_keys != _METHOD_SCORE_ENTRY_KEYS:
+            missing = _METHOD_SCORE_ENTRY_KEYS - entry_keys
+            extra = entry_keys - _METHOD_SCORE_ENTRY_KEYS
+            raise SchemaValidationError(
+                f"{entry_name} must have exactly keys "
+                f"{sorted(_METHOD_SCORE_ENTRY_KEYS)}; "
+                f"missing={sorted(missing)!r}, extra={sorted(extra)!r}."
+            )
+        direction = entry["direction"]
+        if direction not in _METHOD_SCORE_DIRECTIONS:
+            raise SchemaValidationError(
+                f"{entry_name}.direction must be one of "
+                f"{sorted(_METHOD_SCORE_DIRECTIONS)}; got {direction!r}."
+            )
+        description = entry["description"]
+        if not isinstance(description, str) or not description.strip():
+            raise SchemaValidationError(
+                f"{entry_name}.description must be a non-empty string."
+            )
+        units = entry["units"]
+        if units is not None and (
+            not isinstance(units, str) or not units.strip()
+        ):
+            raise SchemaValidationError(
+                f"{entry_name}.units must be a non-empty string or None."
+            )
+        score_value = _validate_finite_scalar(
+            entry["value"], name=f"{entry_name}.value"
+        )
+        normalized[score_key] = {
+            "value": score_value,
+            "direction": direction,
+            "description": description,
+            "units": units,
+        }
+    return normalized
+
+
+def _validate_non_negative_int(value: Any, *, name: str) -> int:
+    if isinstance(value, bool):
+        raise SchemaValidationError(
+            f"{name} must be a non-negative integer; boolean values are not accepted."
+        )
+    if not isinstance(value, int):
+        raise SchemaValidationError(f"{name} must be a non-negative integer.")
+    if value < 0:
+        raise SchemaValidationError(f"{name} must be a non-negative integer.")
+    return int(value)
+
+
+def _validate_optional_seed(value: Any, *, name: str) -> int | None:
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        raise SchemaValidationError(
+            f"{name} must be an integer or None; boolean values are not accepted."
+        )
+    if not isinstance(value, int):
+        raise SchemaValidationError(f"{name} must be an integer or None.")
+    return int(value)
+
+
+def _validate_str_list(value: Any, *, name: str) -> list[str]:
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes)):
+        raise SchemaValidationError(f"{name} must be a list of strings.")
+    out: list[str] = []
+    for index, entry in enumerate(value):
+        if not isinstance(entry, str):
+            raise SchemaValidationError(
+                f"{name}[{index}] must be a string; got {type(entry).__name__!r}."
+            )
+        out.append(entry)
+    return out
+
+
+def _validate_v0_32b_uncertainty_report(
+    value: Any, *, name: str
+) -> dict[str, Any] | None:
+    """Validate the additive uncertainty_report field on the confidence report.
+
+    See docs/design/GENERATOR_CONFIDENCE_ADDITIVE_FIELDS.md.
+    """
+    if value is None:
+        return None
+    mapping = _require_mapping(value, name=name)
+    keys = set(mapping.keys())
+    if keys != _UNCERTAINTY_REPORT_KEYS:
+        missing = _UNCERTAINTY_REPORT_KEYS - keys
+        extra = keys - _UNCERTAINTY_REPORT_KEYS
+        raise SchemaValidationError(
+            f"{name} must have exactly keys "
+            f"{sorted(_UNCERTAINTY_REPORT_KEYS)}; "
+            f"missing={sorted(missing)!r}, extra={sorted(extra)!r}."
+        )
+    method = mapping["method"]
+    if method not in _UNCERTAINTY_METHOD_VOCABULARY:
+        raise SchemaValidationError(
+            f"{name}.method must be one of "
+            f"{sorted(_UNCERTAINTY_METHOD_VOCABULARY)}; got {method!r}."
+        )
+    resampling_unit = mapping["resampling_unit"]
+    if resampling_unit not in _UNCERTAINTY_RESAMPLING_UNITS:
+        raise SchemaValidationError(
+            f"{name}.resampling_unit must be one of "
+            f"{sorted(_UNCERTAINTY_RESAMPLING_UNITS)}; got {resampling_unit!r}."
+        )
+    sample_count = _validate_non_negative_int(
+        mapping["sample_count"], name=f"{name}.sample_count"
+    )
+    seed = _validate_optional_seed(mapping["seed"], name=f"{name}.seed")
+    interval_level_raw = mapping["interval_level"]
+    interval_level = _validate_finite_scalar(
+        interval_level_raw, name=f"{name}.interval_level"
+    )
+    if interval_level is None or not (0.0 <= interval_level <= 1.0):
+        raise SchemaValidationError(
+            f"{name}.interval_level must be a finite float in [0.0, 1.0]."
+        )
+    intervals_raw = _require_mapping(
+        mapping["intervals"], name=f"{name}.intervals"
+    )
+    intervals: dict[str, dict[str, float | None]] = {}
+    for raw_key, raw_entry in intervals_raw.items():
+        interval_name = f"{name}.intervals[{str(raw_key)!r}]"
+        interval_entry = _require_mapping(raw_entry, name=interval_name)
+        interval_keys = set(interval_entry.keys())
+        if interval_keys != {"low", "high"}:
+            raise SchemaValidationError(
+                f"{interval_name} must have exactly keys ['high', 'low']; "
+                f"got {sorted(interval_keys)!r}."
+            )
+        low = _validate_finite_scalar(
+            interval_entry["low"], name=f"{interval_name}.low"
+        )
+        high = _validate_finite_scalar(
+            interval_entry["high"], name=f"{interval_name}.high"
+        )
+        intervals[str(raw_key)] = {"low": low, "high": high}
+    point_estimates_raw = _require_mapping(
+        mapping["point_estimates"], name=f"{name}.point_estimates"
+    )
+    point_estimates: dict[str, float | None] = {}
+    for raw_key, raw_entry in point_estimates_raw.items():
+        est_name = f"{name}.point_estimates[{str(raw_key)!r}]"
+        point_estimates[str(raw_key)] = _validate_finite_scalar(
+            raw_entry, name=est_name
+        )
+    failed_resamples = _validate_non_negative_int(
+        mapping["failed_resamples"], name=f"{name}.failed_resamples"
+    )
+    warnings_list = _validate_str_list(
+        mapping["warnings"], name=f"{name}.warnings"
+    )
+    diagnostic_only = mapping["diagnostic_only"]
+    if not isinstance(diagnostic_only, bool):
+        raise SchemaValidationError(
+            f"{name}.diagnostic_only must be a boolean."
+        )
+    if diagnostic_only is not True:
+        raise SchemaValidationError(
+            f"{name}.diagnostic_only must be True in v0.32b."
+        )
+    return {
+        "method": method,
+        "resampling_unit": resampling_unit,
+        "sample_count": sample_count,
+        "seed": seed,
+        "interval_level": interval_level,
+        "intervals": intervals,
+        "point_estimates": point_estimates,
+        "failed_resamples": failed_resamples,
+        "warnings": warnings_list,
+        "diagnostic_only": diagnostic_only,
+    }
+
+
+def _validate_v0_32b_calibration_report(
+    value: Any, *, name: str
+) -> dict[str, Any] | None:
+    """Validate the additive calibration_report field on the confidence report.
+
+    See docs/design/GENERATOR_CONFIDENCE_ADDITIVE_FIELDS.md.
+    """
+    if value is None:
+        return None
+    mapping = _require_mapping(value, name=name)
+    keys = set(mapping.keys())
+    if keys != _CALIBRATION_REPORT_KEYS:
+        missing = _CALIBRATION_REPORT_KEYS - keys
+        extra = keys - _CALIBRATION_REPORT_KEYS
+        raise SchemaValidationError(
+            f"{name} must have exactly keys "
+            f"{sorted(_CALIBRATION_REPORT_KEYS)}; "
+            f"missing={sorted(missing)!r}, extra={sorted(extra)!r}."
+        )
+    method = mapping["method"]
+    if not isinstance(method, str) or not method.strip():
+        raise SchemaValidationError(
+            f"{name}.method must be a non-empty string."
+        )
+    target = mapping["target"]
+    if not isinstance(target, str) or not target.strip():
+        raise SchemaValidationError(
+            f"{name}.target must be a non-empty string."
+        )
+    sample_count = _validate_non_negative_int(
+        mapping["sample_count"], name=f"{name}.sample_count"
+    )
+    metrics_raw = _require_mapping(mapping["metrics"], name=f"{name}.metrics")
+    metrics: dict[str, float | None] = {}
+    for raw_key, raw_entry in metrics_raw.items():
+        metric_name = f"{name}.metrics[{str(raw_key)!r}]"
+        metrics[str(raw_key)] = _validate_finite_scalar(
+            raw_entry, name=metric_name
+        )
+    warnings_list = _validate_str_list(
+        mapping["warnings"], name=f"{name}.warnings"
+    )
+    diagnostic_only = mapping["diagnostic_only"]
+    if not isinstance(diagnostic_only, bool):
+        raise SchemaValidationError(
+            f"{name}.diagnostic_only must be a boolean."
+        )
+    if diagnostic_only is not True:
+        raise SchemaValidationError(
+            f"{name}.diagnostic_only must be True in v0.32b."
+        )
+    return {
+        "method": method,
+        "target": target,
+        "sample_count": sample_count,
+        "metrics": metrics,
+        "warnings": warnings_list,
+        "diagnostic_only": diagnostic_only,
+    }
 
 
 def _runtime_report(
@@ -2197,6 +2519,78 @@ def summarize_vertical_slice(
     )
 
 
+def enrich_method_scores(
+    values: Mapping[str, float | None] | None,
+    metadata: Mapping[str, Mapping[str, Any]],
+) -> dict[str, dict[str, Any]] | None:
+    """v0.32b: pair a plain ``dict[str, float | None]`` with a metadata map.
+
+    ``values`` come from :class:`SymmetryMethodResult.method_scores`, keeping
+    the v0.30.1 registry contract intact.
+
+    ``metadata`` is the method's frozen ``SCORE_METADATA`` class attribute:
+    ``{score_name: {"direction": ..., "description": ..., "units": ...}}``.
+
+    Returns the enriched-form ``dict[str, {"value", "direction",
+    "description", "units"}]`` accepted by
+    :func:`summarize_generator_confidence`. Returns ``None`` when ``values``
+    is ``None``.
+
+    Raises :class:`SchemaValidationError` if:
+    - a score value has no metadata entry, or
+    - a value is not a finite float or ``None``, or
+    - a metadata direction is not in the frozen vocabulary.
+    """
+    if values is None:
+        return None
+    values_map = _require_mapping(values, name="values")
+    metadata_map = _require_mapping(metadata, name="metadata")
+    enriched: dict[str, dict[str, Any]] = {}
+    for raw_key, raw_value in values_map.items():
+        score_name = str(raw_key)
+        if score_name not in metadata_map:
+            raise SchemaValidationError(
+                f"enrich_method_scores: no metadata entry for score "
+                f"{score_name!r}; metadata keys="
+                f"{sorted(metadata_map.keys())!r}."
+            )
+        entry_metadata = _require_mapping(
+            metadata_map[score_name],
+            name=f"metadata[{score_name!r}]",
+        )
+        direction = entry_metadata.get("direction")
+        if direction not in _METHOD_SCORE_DIRECTIONS:
+            raise SchemaValidationError(
+                f"enrich_method_scores: metadata[{score_name!r}].direction "
+                f"must be one of {sorted(_METHOD_SCORE_DIRECTIONS)}; got "
+                f"{direction!r}."
+            )
+        description = entry_metadata.get("description")
+        if not isinstance(description, str) or not description.strip():
+            raise SchemaValidationError(
+                f"enrich_method_scores: metadata[{score_name!r}].description "
+                "must be a non-empty string."
+            )
+        units = entry_metadata.get("units")
+        if units is not None and (
+            not isinstance(units, str) or not units.strip()
+        ):
+            raise SchemaValidationError(
+                f"enrich_method_scores: metadata[{score_name!r}].units must "
+                "be a non-empty string or None."
+            )
+        score_value = _validate_finite_scalar(
+            raw_value, name=f"values[{score_name!r}]"
+        )
+        enriched[score_name] = {
+            "value": score_value,
+            "direction": direction,
+            "description": description,
+            "units": units,
+        }
+    return enriched
+
+
 def summarize_generator_confidence(
     *,
     residual: ResidualBatch | Mapping[str, Any] | None = None,
@@ -2209,11 +2603,25 @@ def summarize_generator_confidence(
     orbit: Mapping[str, Any] | Sequence[Mapping[str, Any]] | None = None,
     thresholds: Mapping[str, Any] | None = None,
     extra_metrics: Mapping[str, Any] | None = None,
+    method_scores: Mapping[str, Any] | None = None,
+    uncertainty_report: Mapping[str, Any] | None = None,
+    calibration_report: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     if extra_metrics is None:
         normalized_extra_metrics: Mapping[str, Any] = {}
     else:
         normalized_extra_metrics = _require_mapping(extra_metrics, name="extra_metrics")
+
+    # v0.32b additive fields — default None for backward compatibility.
+    normalized_method_scores = _validate_v0_32b_method_scores(
+        method_scores, name="method_scores"
+    )
+    normalized_uncertainty_report = _validate_v0_32b_uncertainty_report(
+        uncertainty_report, name="uncertainty_report"
+    )
+    normalized_calibration_report = _validate_v0_32b_calibration_report(
+        calibration_report, name="calibration_report"
+    )
 
     normalized_thresholds = _thresholds_or_empty(thresholds)
     residual_summary = _residual_summary_or_none(residual, name="residual")
@@ -2265,22 +2673,31 @@ def summarize_generator_confidence(
     if label not in _CONFIDENCE_LABELS:
         raise AssertionError(f"unsupported confidence label: {label}")
 
-    return _summary_payload(
-        "generator_confidence",
-        confidence_label=label,
-        component_statuses=component_statuses,
-        residual=residual_summary,
-        generator=generator_summary,
-        fit_diagnostics=fit_summary,
-        verification=verification_summary,
-        candidate_validation=candidate_validation_summary,
-        coverage=coverage_summary,
-        consistency=consistency_summary,
-        orbit=orbit_summary,
-        thresholds=normalized_thresholds,
-        missing_evidence=missing_evidence,
-        extra_metrics=normalized_extra_metrics,
+    payload = {
+        "summary_schema_version": _SUMMARY_SCHEMA_VERSION,
+        "summary_type": "generator_confidence",
+        "confidence_label": label,
+        "component_statuses": component_statuses,
+        "residual": residual_summary,
+        "generator": generator_summary,
+        "fit_diagnostics": fit_summary,
+        "verification": verification_summary,
+        "candidate_validation": candidate_validation_summary,
+        "coverage": coverage_summary,
+        "consistency": consistency_summary,
+        "orbit": orbit_summary,
+        "thresholds": normalized_thresholds,
+        "missing_evidence": missing_evidence,
+        "extra_metrics": normalized_extra_metrics,
+        # v0.32b additive fields (default-None for backward compatibility).
+        "method_scores": normalized_method_scores,
+        "uncertainty_report": normalized_uncertainty_report,
+        "calibration_report": normalized_calibration_report,
+    }
+    validated: dict[str, Any] = _validate_strict_json_compatible(
+        payload, name="generator confidence summary"
     )
+    return validated
 
 
 def summarize_invariant_workflow(

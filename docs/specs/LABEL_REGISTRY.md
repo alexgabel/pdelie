@@ -52,11 +52,17 @@ Each row is one label family. Columns:
 
 The following are planned as **additive** fields on existing summaries and are not part of any stable contract yet. They appear here so the label registry can grow in one place rather than fragmenting across release notes.
 
-- **`method_scores: dict[str, float] | None`** on `generator_confidence` (planned for v0.32a or later). Numeric per-component scores (span-distance, residual-l2, error-curve-max) alongside the existing categorical `confidence_label`. Enables downstream calibration studies without breaking the v0.20 frozen `confidence_label` contract.
-- **`uncertainty_report: dict | None`** on `generator_confidence` (planned for v0.32a or later). Where a method emits mean/variance/HDR intervals, this is where they land. `None` for point-estimate methods (the current default for `polynomial_translation_svd`).
-- **`calibration_report: dict | None`** on `generator_confidence` (planned for v0.32a or later). Reliability-diagram / ECE data where available. `None` for uncalibrated methods.
+*(none currently planned; the previous v0.32a-planned additive fields on `generator_confidence` shipped as v0.32b — see the section below.)*
 
-These three fields are scope-freeze-planned per `docs/planning/PLAN.md`'s v0.32a planning note. Downstream consumers may pre-register keys but must accept `None` until the fields ship as documented public API.
+## Additive extensions shipped in v0.32b
+
+Frozen shape in [`docs/design/GENERATOR_CONFIDENCE_ADDITIVE_FIELDS.md`](../design/GENERATOR_CONFIDENCE_ADDITIVE_FIELDS.md); machine-readable form in [`configs/planning/v0_32_method_scores_scope.json`](../../configs/planning/v0_32_method_scores_scope.json).
+
+- **`method_scores: dict[str, dict] | None`** on `generator_confidence`. Each entry has exactly `{value, direction, description, units}`. `direction` is a frozen `Literal["lower_is_better", "higher_is_better", "diagnostic_only"]`. The v0.20 categorical `confidence_label` vocabulary is unchanged; the new field is additive. See `pdelie.reporting.enrich_method_scores` for composing a plain `dict[str, float | None]` (from `SymmetryMethodResult.method_scores`) with a method's frozen `SCORE_METADATA`.
+- **`uncertainty_report: dict | None`** on `generator_confidence`. Bootstrap or point-estimate reports. `diagnostic_only` is always `True` in v0.32b. `resampling_unit` is `Literal["batch", "trajectory", "not_applicable"]`; row-level bootstrap is refused at both the built-in bootstrap helper and the report boundary — there is no silent fallback.
+- **`calibration_report: dict | None`** on `generator_confidence`. Method + target + metrics. `diagnostic_only` is always `True` in v0.32b. The built-in `polynomial_translation_svd` does NOT synthesize a calibration report; callers with an explicit calibration target opt in.
+
+The built-in method `polynomial_translation_svd` populates `method_scores` with exactly the frozen four names `{span_distance, residual_l2, error_curve_max, svd_condition_number}`. `SymmetryMethodResult.method_scores` remains a plain `dict[str, float | None]` for backward compatibility with the v0.30.1 registry contract; the enriched-metadata form lives on the confidence report only.
 
 ## See also
 

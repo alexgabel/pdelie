@@ -70,11 +70,13 @@ def test_adapter_method_scores_are_finite_or_none() -> None:
         _small_periodic_heat_field(),
         residual_evaluator=HeatResidualEvaluator(),
     )
+    # v0.32b: frozen four score names. See
+    # docs/design/GENERATOR_CONFIDENCE_ADDITIVE_FIELDS.md.
     assert set(result.method_scores.keys()) == {
-        "svd_span_distance",
-        "selected_span_distance",
-        "condition_number",
-        "fit_residual",
+        "span_distance",
+        "residual_l2",
+        "error_curve_max",
+        "svd_condition_number",
     }
     for key, value in result.method_scores.items():
         assert value is None or isinstance(value, float), (
