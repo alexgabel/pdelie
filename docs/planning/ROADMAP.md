@@ -27,8 +27,10 @@ Long historical release detail is archived in `archive/ROADMAP_HISTORY.md`.
 
 `v0.31` is closed. The next active scientific items, in order:
 
-1. **`v0.31.1` — PySINDy 2.x migration spike.** Absorb the four independent 2.x API breaks documented in `docs/design/PYSINDY_COMPATIBILITY_POLICY.md` under a private `_pysindy_compat` version-dispatch shim, coordinate the transitive `numpy>=2` floor bump, unlock Python 3.12+ downstream support, and land the runtime version guards on `run_pysindy_pde_task` / `inspect_pysindy_weak_pde_library` that release-close deferred (see the retained-xfail ledger in `docs/releases/V0_31_RELEASE_READINESS.md`).
-2. **`v0.30.1` — submodule-only `SymmetryMethod` registry MVP + `SymmetryCandidate` wrapper contract freeze.** One built-in adapter (`polynomial_translation_svd`). No root API. No external method ports.
+1. **`v0.31.1a` — research spike (IN PROGRESS on `research/v0.31.1a-runtime-modernization-audit`).** SPEC 0 runtime-compatibility policy + PySINDy 2.x API delta audit + machine-readable compatibility matrix + private compatibility prototype (research-only, not wired into production). Ships no runtime behavior; produces the SPEC 0 policy document, the migration-audit document, and the two test files that gate future implementation. Outcome: **A (modern-only future line).**
+2. **`v0.31.1` — implementation PR (follows v0.31.1a).** Widen `numpy>=1.24,<3`; migrate the six pysindy 2.x API-break sites; retire the `setuptools<82` temporary cap (pysindy 2.x uses `importlib.metadata`); either promote `_pysindy2_prototype.py` to `_pysindy_compat.py` or delete it; retire the three xfailed tests from v0.31b3. Coordinates the transitive `numpy>=2` floor bump. Unlocks Python 3.12+ downstream support and lands the runtime version guards on `run_pysindy_pde_task` / `inspect_pysindy_weak_pde_library` that v0.31.0 deferred.
+3. **`v0.32` — modernization delivery.** Python ≥3.12 minimum, NumPy 2.x, PySINDy 2.1.x. CI matrix: blocking Python 3.12 / 3.13, advisory Python 3.14. Legacy Python 3.11 lane retires here.
+4. **`v0.30.1` — submodule-only `SymmetryMethod` registry MVP + `SymmetryCandidate` wrapper contract freeze.** One built-in adapter (`polynomial_translation_svd`). No root API. No external method ports.
 
 Per the earlier sequencing agreement, `v0.31` (downstream discovery task bridge) preceded `v0.30.1` (submodule-only symmetry-method registry MVP): the task-bridge release delivered the biggest user-facing scientific delta of the near-term work, while the registry MVP is smaller and can follow.
 
