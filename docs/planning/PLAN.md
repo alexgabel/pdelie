@@ -1,3 +1,65 @@
+# PDELie - Execution Plan (V0.31.1a Research Spike)
+
+**Status:** IN_PROGRESS
+
+`v0.31.1a` is a compatibility research spike and decision milestone — **not** an implementation release. It does not modify any v0.31.0 report schema, add any root API, or bump the package version. It produces the SPEC 0 policy, the PySINDy 2.x migration audit, a machine-readable compatibility matrix, a private compatibility prototype (research-only), and the two test files that gate future implementation PRs.
+
+Decision label:
+
+```text
+spec_0_modernization_outcome_A_modern_only_future_line
+```
+
+Outcome: **A (modern-only future line).** v0.32 targets Python ≥3.12 + NumPy 2.x + PySINDy 2.1.x. v0.31.x remains the legacy Python 3.11 + PySINDy 1.7.x maintenance line during the transition.
+
+## Sub-release contents (v0.31.1a)
+
+New research artifacts:
+
+- `docs/design/RUNTIME_COMPATIBILITY_POLICY.md` — SPEC 0 alignment (Python ~3 years, core deps ~2 years, named-owner / removed-by rule for temporary exceptions), the target runtime matrix for v0.32, the retirement plan for every currently declared temporary exception, and the CI matrix proposal for the v0.32 implementation PR.
+- `docs/design/PYSINDY_2_MIGRATION_AUDIT.md` — exhaustive per-delta API diff between pysindy 1.7.5 and 2.1.0, mapped to specific pdelie call sites; per-lane environment-matrix failure signatures; the recommended migration PR shape.
+- `configs/runtime_compatibility_matrix.json` — strict-JSON machine-readable form of the two documents above (`summary_type = "pdelie_runtime_compatibility_matrix"`, `policy_outcome = "A_modern_only_future_line"`).
+- `src/pdelie/discovery/_pysindy2_prototype.py` — **experimental, private, research-only** compatibility prototype recording the shape of the eventual shim. Not wired into any production code path.
+- `tests/test_runtime_compatibility_policy.py` (18 tests) — strict-JSON invariants on the matrix; SPEC 0 policy statements; every-supported-Python-has-a-CI-lane guard; every-unsupported-generation-has-an-actionable-message guard; no-schema-drift guards on the 22-key and 27-key public reports; no-new-root-exports guard; NaN/Inf strict-JSON boundary preservation.
+- `tests/test_pysindy_2_migration_prototype.py` (26 tests) — prototype detects 1.x and 2.x; rejects unsupported generations with an actionable message; enumerates the six documented API breaks; delta enumeration matches the audit document; prototype does not silently catch arbitrary exceptions; prototype is private (no public re-export); legacy 1.x task runtime is unaffected by the prototype's presence.
+
+Environment matrix (audited under `uv`-managed Python 3.11 / 3.12 / 3.13 / 3.14 fresh venvs):
+
+- Core-only lanes A/B/C/D (no `[downstream]` extra): all pass. Python 3.12–3.14 core surface is ready today (numpy 1.26.4 builds from source on 3.13/3.14 aarch64).
+- Legacy lane E (Python 3.11 + pysindy 1.7.5): fully green (matches v0.31.0 baseline).
+- Modern lanes F/G/H (Python 3.12/3.13/3.14 + pysindy 2.1.0): natural resolver refuses due to the numpy floor conflict (pdelie `<2` vs pysindy 2.1.0 `>=2.0`). Under `--no-deps` probe, pdelie core imports cleanly against numpy 2.5.1 — the `<2` cap is currently a resolver floor, not a runtime one. All fit paths fail with clean TypeError chains mapping to specific pysindy 2.x API changes.
+
+PySINDy 2.x API deltas (six independent breaks + one unchanged random-state observation):
+
+1. `SINDy.__init__`: removes `feature_names`, `t_default`, `discrete_time`.
+2. `SINDy.fit`: drops `multiple_trajectories`, `unbias`, `quiet`, `ensemble`, `library_ensemble`, `replace`; moves `feature_names` from ctor.
+3. `SINDy.differentiate`: method REMOVED.
+4. `SINDy.model`: attribute REMOVED.
+5. `STLSQ.__init__`: drops `fit_intercept`.
+6. `PDELibrary.__init__` / `WeakPDELibrary.__init__`: drops `library_functions`, `function_names`, `interaction_only`; now requires `function_library=<BaseFeatureLibrary>`.
+7. `WeakPDELibrary` random-state: unchanged (still no seed kwarg). The v0.31c1 `_legacy_numpy_rng_seed_scope` workaround does NOT retire with the port.
+
+## Explicit non-goals for v0.31.1a
+
+- No PySINDy 2.x compatibility code wired into production paths.
+- No modification of the 22-key `discovery_task_result` schema.
+- No modification of the 27-key `pdelie_weak_pde_library_diagnostic` schema.
+- No new root export.
+- No new PDE. No `SymmetryMethod` / `SymmetryCandidate` registry. No nonperiodic PySINDy discovery. No WSINDy benchmark. No noise-robustness claim.
+- No pyproject dependency-range change. No CI job rename. No package version bump.
+- No claim of PySINDy 2 support until v0.31.1 / v0.32 lands the full task and diagnostic paths.
+- No dual 1.x/2.x runtime branching in the follow-up implementation PR (single-generation cutover per outcome A).
+
+## Recommended follow-up implementation
+
+`v0.31.1` (implementation PR, follows this research spike): widen `numpy>=1.24,<3`; move the `[downstream]` extra to `pysindy>=2.1,<3` scoped to `python_version < '3.15'`; retire the `setuptools<82` temporary cap (pysindy 2.x uses `importlib.metadata`); migrate the six API-break sites; either promote `_pysindy2_prototype.py` to `_pysindy_compat.py` or delete it; retire the three xfailed tests in `tests/test_v0_31b3_pysindy_compatibility_policy.py`; add a `v0_32-release-gate` CI job proposal for v0.32 release close.
+
+## Retained xfails (unchanged by this spike)
+
+The three v0.31b3-era xfails remain xfail in v0.31.1a — the spike does not land runtime version guards on `run_pysindy_pde_task` / `inspect_pysindy_weak_pde_library` and does not extend `_resolve_backend_version` to include scipy. All three retire under the v0.31.1 implementation PR.
+
+---
+
 # PDELie - Execution Plan (V0.31.0 Release Close)
 
 **Status:** COMPLETE
