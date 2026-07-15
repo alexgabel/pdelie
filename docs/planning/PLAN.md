@@ -1,3 +1,24 @@
+# PDELie - Execution Plan (V0.32c Candidate-to-Discovery Workflow Example)
+
+**Status:** IN_PROGRESS
+
+`v0.32c` ships the first public candidate-to-downstream-task workflow example. It composes `FieldBatch → run_symmetry_method("polynomial_translation_svd") → SymmetryCandidate → validate_symmetry_candidate → verify_translation_generator → caller-configured periodic-translation orbit (train-only) → run_pysindy_pde_task (baseline + candidate-guided) → strict composed workflow evidence`, using only public submodule APIs. It is a controlled example, not a general workflow engine, benchmark harness, or automatic augmentation policy.
+
+Decision label: `v0_32c_candidate_to_discovery_workflow_example`.
+
+Substantive changes:
+
+- New composed summary `pdelie.reporting.summarize_candidate_to_discovery_workflow` (`summary_type = "candidate_to_discovery_workflow"`). Composition audit (in-tree) established that no existing composed summary can natively carry the required 15 stages side-by-side; the new type nests existing per-stage summaries by their frozen `summary_type` and adds four glue-only fields: `action_policy`, `downstream_comparison`, `evidence_conclusion`, `scope_boundaries`.
+- 15 explicit stages preserved in fixed order: `field_readiness`, `derivative_residual_evidence`, `symmetry_method_result`, `candidate_summary`, `generator_confidence` (optional), `candidate_validation`, `finite_transform_verification`, `action_policy`, `orbit_or_coverage_diagnostics`, `split_leakage_provenance`, `baseline_discovery_task`, `candidate_guided_discovery_task`, `downstream_comparison`, `evidence_conclusion`, `scope_boundaries`. Every stage is retained in the payload; unavailable / blocked / skipped stages carry a `candidate_to_discovery_workflow_stage_marker` payload rather than being silently omitted.
+- New JSON-only example runner `pdelie.examples.candidate_to_discovery_workflow.run_candidate_to_discovery_workflow_example(scenario=...)` with two deterministic scenarios: `"successful"` (fully executable end-to-end) and `"valid_but_not_useful_static"` (all real stages run; the two discovery-task and comparison blocks are a provenance-backed static illustration marked `static_illustration=True`). Includes a `__main__` CLI that prints the payload as JSON.
+- Action-policy separation: the discovered generator identifies a family/direction only; the caller supplies shifts, orbit cardinality, augmentation budget, and train/test policy explicitly. `explicitly_configured_by_caller=True` is a hard invariant; `False` is refused with a `SchemaValidationError`.
+- Held-out and leakage policy: heldout FieldBatch is passed to `run_pysindy_pde_task(heldout_field=...)` for evaluation and is never fed through the orbit materializer; `action_policy.train_test_policy = "orbit_train_only_heldout_untransformed"`. Split/leakage provenance is emitted for every partition entry (never silently dropped).
+- 20 v0.32c contract tests in `tests/test_v0_32c_candidate_to_task_workflow.py` covering: public-submodule-only imports, root-API cleanliness, exact stage order, stage retention on failure, strict-JSON round-trip, NaN/Inf adversarial rejection, validation/verification gating, explicit action-policy fields, no-inference-from-method-scores, heldout untransformed, split/leakage provenance, comparable baseline/candidate-guided configs, no silent stage exclusion, deterministic output, valid-but-not-useful honesty, no automatic best selection, CLI JSON-only, end-to-end example smoke, and scope-boundary non-claim vocabulary.
+
+Non-goals: no new PDE; no new symmetry method; no root exports; no `SymmetryCandidate` discriminator change; no automatic candidate winner; no automatic shift-budget selection; no universal-downstream-benefit claim; no noise / nonperiodic / multi-D / external-data claim; no `discovery_task_result` schema modification; no held-out transformation; no silent stage exclusion; no package version bump.
+
+---
+
 # PDELie - Execution Plan (V0.32b Strict Method-Score, Uncertainty, and Calibration Reporting)
 
 **Status:** IN_PROGRESS

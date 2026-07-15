@@ -25,6 +25,17 @@ Stable public import path for the invariant canonical object:
 
 - `pdelie.InvariantMapSpec`
 
+Stable public-surface note for the v0.32c candidate-to-discovery workflow example:
+
+- Decision label: `v0_32c_candidate_to_discovery_workflow_example`.
+- `v0.32c` adds `pdelie.reporting.summarize_candidate_to_discovery_workflow` (submodule-only; `summary_type = "candidate_to_discovery_workflow"`) and `pdelie.examples.candidate_to_discovery_workflow.run_candidate_to_discovery_workflow_example(...)` (submodule-only; also a `__main__` CLI that prints strict-JSON only).
+- 15 explicit stages preserved in fixed order: `field_readiness`, `derivative_residual_evidence`, `symmetry_method_result`, `candidate_summary`, `generator_confidence` (optional), `candidate_validation`, `finite_transform_verification`, `action_policy`, `orbit_or_coverage_diagnostics`, `split_leakage_provenance`, `baseline_discovery_task`, `candidate_guided_discovery_task`, `downstream_comparison`, `evidence_conclusion`, `scope_boundaries`. Every stage is always present; unavailable / blocked / skipped stages carry a `candidate_to_discovery_workflow_stage_marker` payload.
+- `action_policy.explicitly_configured_by_caller` is a hard invariant (`True`); the caller supplies shifts, orbit cardinality, augmentation budget, and train/test policy. Action parameters are NEVER inferred from method scores.
+- Heldout FieldBatch is passed to `run_pysindy_pde_task(heldout_field=...)` for evaluation only; heldout is never fed through the orbit materializer. Recorded on the workflow as `action_policy.train_test_policy = "orbit_train_only_heldout_untransformed"`.
+- `evidence_conclusion.downstream_gain_claimed = False` is a hard invariant. The workflow example NEVER claims universal downstream improvement.
+- `scope_boundaries` records `periodic_scalar_1d_only = True` and refuses every "generic symmetry discovery" / "universal downstream benefit" / "noise robustness" / "nonperiodic" / "multi-D" / "external data" / "automatic best selection" claim.
+- No new root `pdelie` export. No new PDE. No new symmetry method. No `SymmetryCandidate` discriminator change. No modification to `discovery_task_result`. No package version bump.
+
 Stable public-surface note for the v0.32b strict method-score, uncertainty, and calibration reporting:
 
 - Decision label: `v0_32b_generator_confidence_additive_method_scores_uncertainty_calibration`.
@@ -655,6 +666,7 @@ Four-column view of the current surface. Rows are grouped by category. Downstrea
 | **deferred** — surfaces named in v0.30.0 close note | root `pdelie.discover_symmetries` (v1.0 scope decision); `pdelie.symmetry.SymmetryMethod` registry + `SymmetryCandidate` wrapper (v0.30.1); external symmetry-method ports (Ko-sparse v0.33, LieGAN/LaLiGAN v0.33.1); PDEBench / The Well loaders (v0.32 readiness cookbooks only); nonperiodic KdV/KS/weak; `u_xxx`/`u_xxxx` on nonperiodic data; nonperiodic finite-transform verification (v0.31.5 overlap-crop); multi-channel or 2D contract widening (v0.34); LieGG / trained-model extraction (v0.35a) | See the v0.30.0 stable public-surface note above for the full list. |
 | **deferred** — hygiene | `numpy>=2` support (Phase 3, v0.32 or later); Python 3.12/3.13 CI matrix (Phase 3); `typecheck` CI job promotion to blocking (after v0.30.1c–k mypy strict-scope broadening); `coverage` CI job promotion to blocking with `fail_under=85` (v0.30.1b) | Advisory-to-blocking promotion sequence is documented in `docs/design/V0_30_HYGIENE_AUDIT.md`. |
 | **public stable** — v0.32b additive reporting fields | `method_scores`, `uncertainty_report`, `calibration_report` on `generator_confidence`; `pdelie.reporting.enrich_method_scores`; `pdelie.symmetry.methods.polynomial_translation_svd.bootstrap_uncertainty` | Additive; default-None; existing callers unchanged. Frozen shape in `docs/design/GENERATOR_CONFIDENCE_ADDITIVE_FIELDS.md`. |
+| **public stable** — v0.32c candidate-to-discovery workflow | `pdelie.reporting.summarize_candidate_to_discovery_workflow`; `pdelie.examples.candidate_to_discovery_workflow.run_candidate_to_discovery_workflow_example`; `python -m pdelie.examples.candidate_to_discovery_workflow` CLI | 15 explicit stages preserved in fixed order; strict-JSON; submodule-only; no root export; no `discovery_task_result` schema change. |
 
 The rule: **anything not in this matrix is either (a) covered by the per-release Stable / Runtime / Decision-only notes above, or (b) not stable.** The three categories cover every callable and every JSON field the current release documents.
 

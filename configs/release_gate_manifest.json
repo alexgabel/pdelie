@@ -3,7 +3,7 @@
   "summary_type": "pdelie_declarative_release_gate_manifest",
   "scope": "declarative_release_gate_checks_only",
   "current_release_gate_job_name": "v0_32-release-gate",
-  "release_count": 21,
+  "release_count": 22,
   "excluded_functional_release_gate_files": [
     {
       "file": "tests/test_v0_4_release_gate.py",
@@ -1683,6 +1683,74 @@
           "path": "configs/planning/v0_32_method_scores_scope.json"
         }
       ]
+    },
+    {
+      "release": "0.32c",
+      "source_file": "tests/test_v0_32c_candidate_to_task_workflow.py",
+      "required_submodule_attributes": [
+        {
+          "submodule": "pdelie.reporting",
+          "name": "summarize_candidate_to_discovery_workflow"
+        },
+        {
+          "submodule": "pdelie.examples.candidate_to_discovery_workflow",
+          "name": "run_candidate_to_discovery_workflow_example"
+        },
+        {
+          "submodule": "pdelie.examples.candidate_to_discovery_workflow",
+          "name": "main"
+        }
+      ],
+      "forbidden_root_attributes": {
+        "names": [
+          "run_candidate_to_discovery_workflow_example",
+          "summarize_candidate_to_discovery_workflow"
+        ]
+      },
+      "forbidden_submodule_attributes": {
+        "submodules": [
+          "pdelie.tasks",
+          "pdelie.discovery"
+        ],
+        "names": [
+          "run_candidate_to_discovery_workflow_example",
+          "summarize_candidate_to_discovery_workflow"
+        ]
+      },
+      "required_phrases_in_api_stability": {
+        "doc_path": "docs/specs/API_STABILITY.md",
+        "phrases": [
+          "v0.32c candidate-to-discovery workflow",
+          "summarize_candidate_to_discovery_workflow",
+          "run_candidate_to_discovery_workflow_example",
+          "candidate_to_discovery_workflow_stage_marker",
+          "v0_32c_candidate_to_discovery_workflow_example",
+          "explicitly_configured_by_caller",
+          "orbit_train_only_heldout_untransformed",
+          "downstream_gain_claimed",
+          "periodic_scalar_1d_only"
+        ]
+      },
+      "required_phrases_in_plan": {
+        "doc_path": "docs/planning/PLAN.md",
+        "phrases": [
+          "V0.32c Candidate-to-Discovery Workflow Example",
+          "v0_32c_candidate_to_discovery_workflow_example",
+          "summarize_candidate_to_discovery_workflow",
+          "run_candidate_to_discovery_workflow_example",
+          "action_policy",
+          "downstream_comparison",
+          "evidence_conclusion",
+          "scope_boundaries"
+        ]
+      },
+      "required_phrases_in_roadmap": {
+        "doc_path": "docs/planning/ROADMAP.md",
+        "phrases": [
+          "v0.32c",
+          "candidate_to_discovery_workflow"
+        ]
+      }
     }
   ]
 }

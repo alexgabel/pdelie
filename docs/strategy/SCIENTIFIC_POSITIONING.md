@@ -40,6 +40,8 @@ Deliberate scope narrowings that appear in earlier drafts of the wedge but are *
 
 Any claim beyond this chain in public marketing or documentation is a wedge drift and should be corrected against `docs/specs/API_STABILITY.md` and `docs/specs/support_matrix.v0_30.json`.
 
+**v0.32c anchor (submodule-only, not a stable contract).** `pdelie.reporting.summarize_candidate_to_discovery_workflow` composes the chain above into a strict-JSON payload with 15 explicit stages; `pdelie.examples.candidate_to_discovery_workflow` is a JSON-only runnable example wired against the built-in `polynomial_translation_svd` method. The example is not a general workflow engine, not a benchmark harness, and not an automatic augmentation policy — action parameters (shifts, orbit cardinality, augmentation budget, train/test split) are always caller-configured and NEVER inferred from method scores. The example is scoped to periodic scalar 1D data with the built-in translation method only. See `docs/strategy/VALID_BUT_NOT_USEFUL.md`.
+
 ## What PDELie is not
 
 PDELie is not, and does not aim to be, any of the following:
