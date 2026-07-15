@@ -28,7 +28,9 @@ def test_current_release_metadata_docs_and_ci_are_aligned() -> None:
     assert pyproject["project"]["version"] == "0.31.0"
     assert 'release = "0.31.0"' in docs_conf
     assert 'version = "0.31"' in docs_conf
-    assert release_gate_jobs == ["v0_31-release-gate"]
+    # v0.31.0 release close: v0_31-release-gate. v0.32a migration:
+    # v0_32-release-gate. Both acceptable across the transition.
+    assert release_gate_jobs in (["v0_31-release-gate"], ["v0_32-release-gate"])
     for invocation_fragment in (
         "tests/test_current_release_gate.py",
         "tests/test_release_gates.py",

@@ -146,15 +146,19 @@ def test_v0_30e_pyproject_now_configures_ruff_mypy_coverage() -> None:
             f"v0.30e must configure [tool.{expected}] in pyproject.toml"
         )
 
-    # numpy upper bound still <2 — v0.30e explicitly does not lift the cap.
+    # numpy upper bound: v0.30e held <2. v0.32a widened to <3 (SPEC 0
+    # modernization). Both are acceptable to keep this v0.30e audit alive
+    # across the transition.
     deps = pyproject["project"]["dependencies"]
     numpy_dep = next((dep for dep in deps if dep.lower().startswith("numpy")), None)
     assert numpy_dep is not None
-    assert "<2" in numpy_dep, f"numpy cap must remain <2 through v0.30e; got: {numpy_dep}"
+    assert "<2" in numpy_dep or "<3" in numpy_dep, (
+        f"numpy cap must be <2 (v0.30e) or <3 (v0.32a); got: {numpy_dep}"
+    )
 
-    # requires-python is still >=3.11 — v0.30e does not expand matrix.
+    # requires-python: v0.30e held >=3.11. v0.32a bumped to >=3.12.
     requires_python = pyproject["project"]["requires-python"]
-    assert ">=3.11" in requires_python
+    assert ">=3.11" in requires_python or ">=3.12" in requires_python
 
     # Package version is 0.29.0 during the v0.30a-f arc, 0.30.0 at v0.30 close
     # (which held through the v0.31a-c1 runtime sub-releases), and 0.31.0 at
@@ -216,9 +220,12 @@ def test_v0_30e_ci_workflow_now_has_lint_typecheck_coverage_jobs_nonblocking() -
     # ``v0_30-release-gate``; the v0.31.0 release close renamed it to
     # ``v0_31-release-gate``. This guard tracks the current name.
     release_gate_jobs = re.findall(r"^  (v0_\d+[a-z]?-release-gate):", workflow, flags=re.MULTILINE)
-    assert release_gate_jobs == ["v0_31-release-gate"], (
-        f"expected exactly one release-gate job named 'v0_31-release-gate' "
-        f"after the v0.31.0 release close; got: {release_gate_jobs}"
+    assert release_gate_jobs in (
+        ["v0_31-release-gate"],
+        ["v0_32-release-gate"],
+    ), (
+        f"expected the current v0.31.x or v0.32 release-gate job; got: "
+        f"{release_gate_jobs}"
     )
 
 
@@ -268,12 +275,13 @@ def test_v0_30f_release_gate_consolidation_manifest_exists() -> None:
 
     assert manifest["summary_type"] == "pdelie_declarative_release_gate_manifest"
     assert manifest["scope"] == "declarative_release_gate_checks_only"
-    # v0.30f introduced the manifest under v0_30-release-gate; v0.30 close held
-    # the same name; v0.31.0 release close renamed to v0_31-release-gate. Any of
-    # those forward-compatible names is acceptable here.
+    # Release-gate job name lineage: v0_30-release-gate (v0.30 close) →
+    # v0_31-release-gate (v0.31.0 close) → v0_32-release-gate (v0.32a
+    # migration).
     assert manifest["current_release_gate_job_name"] in {
         "v0_30-release-gate",
         "v0_31-release-gate",
+        "v0_32-release-gate",
     }
     assert manifest["release_count"] == len(manifest["releases"])
 

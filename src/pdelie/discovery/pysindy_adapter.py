@@ -10,25 +10,19 @@ from pdelie.errors import SchemaValidationError, ScopeValidationError
 
 
 def _require_discovery_dependencies():
-    import sys as _sys
+    """Import PySINDy + scikit-learn or raise with an actionable hint.
 
+    v0.32a: the Python 3.12+ deferral branch that lived here through the
+    v0.31.x line is removed. Python 3.12+ is now the supported target,
+    not the deferred surface.
+    """
     try:
         pysindy = importlib.import_module("pysindy")
         importlib.import_module("sklearn")
     except (ModuleNotFoundError, ImportError, ValueError) as exc:
-        if _sys.version_info >= (3, 12):
-            raise ImportError(
-                "PySINDy downstream discovery is not supported on Python "
-                f"{_sys.version_info.major}.{_sys.version_info.minor}. The "
-                "v0.31 task bridge supports PySINDy 1.7.x on Python 3.11 "
-                "only; PySINDy 2.x / Python 3.12+ compatibility is deferred "
-                "to v0.31.1. Reinstalling pdelie[downstream] will not fix "
-                "this environment — the extra is marker-scoped to "
-                "python_version < '3.12'. See "
-                "docs/design/PYSINDY_COMPATIBILITY_POLICY.md."
-            ) from exc
         raise ImportError(
-            "PySINDy discovery adapter requires pdelie[downstream] or pdelie[test]."
+            "PySINDy discovery adapter requires pdelie[downstream] or "
+            "pdelie[test]. Install with `pip install pdelie[downstream]`."
         ) from exc
     return pysindy
 
@@ -91,13 +85,22 @@ def _validate_feature_names(feature_names: object, *, num_state_features: int) -
 
 
 def _build_pysindy_model(pysindy, *, feature_names: list[str], fit_config: dict[str, object]):
+    """Assemble a default PySINDy 2.1.x SINDy instance.
+
+    v0.32a migration notes:
+
+    - ``SINDy.__init__`` no longer accepts ``feature_names``,
+      ``t_default``, or ``discrete_time`` (all three removed in 2.0).
+      ``feature_names`` moves to ``SINDy.fit(...)``; the other two are
+      dropped entirely.
+    - Kwargs from the default-config dict are validated implicitly by
+      passing them straight through to the 2.1.x constructors.
+    """
     model_config = dict(fit_config["pysindy_model"])
     return pysindy.SINDy(
         optimizer=pysindy.STLSQ(**dict(model_config["optimizer"])),
         feature_library=pysindy.PolynomialLibrary(**dict(model_config["feature_library"])),
         differentiation_method=pysindy.FiniteDifference(**dict(model_config["differentiation_method"])),
-        feature_names=list(feature_names),
-        discrete_time=bool(model_config["discrete_time"]),
     )
 
 
@@ -220,26 +223,22 @@ def _fit_caller_supplied_model(
     with an explicit ``pysindy_model=<configured_SINDy>``. The caller retains
     full control over the feature library (e.g. ``PDELibrary``,
     ``PolynomialLibrary``), the optimizer, and the differentiation method.
+
+    v0.32a migration: ``SINDy.fit`` in 2.1.x is ``fit(x, t, x_dot=None,
+    u=None, feature_names=None)`` — ``t`` is positional-required and
+    every legacy ensemble/multi-trajectory kwarg is gone. For pdelie's
+    task-bridge use case (a single-trajectory PDELibrary fit), we pass
+    the trajectory array directly as ``x`` and the scalar/array time
+    grid as ``t``. Callers wanting ensembling must fit their model
+    themselves and pass a fitted instance.
     """
-    # A minimal ``pysindy_fit`` kwarg set that works across the common libraries
-    # (PolynomialLibrary, PDELibrary). Callers who need richer fit-kwargs can
-    # fit the model themselves and inspect it, or extend this bridge later.
-    try:
-        pysindy_model.fit(
-            trajectories,
-            t=time_values,
-            multiple_trajectories=True,
-            unbias=True,
-            quiet=True,
-        )
-    except TypeError:
-        # Older / newer pysindy releases may not accept every kwarg; retry
-        # with the minimal signature so this bridge stays version-tolerant.
-        pysindy_model.fit(
-            trajectories,
-            t=time_values,
-            multiple_trajectories=True,
-        )
+    # In 2.1.x ``x`` accepts either a single (T, F) ndarray OR a list of
+    # trajectories that get concatenated internally. pdelie's task bridge
+    # emits one trajectory at a time in the current scope; pass the first
+    # element directly and preserve the list form for the future
+    # multi-trajectory extension.
+    fit_input = trajectories[0] if len(trajectories) == 1 else trajectories
+    pysindy_model.fit(fit_input, t=time_values)
     coefficients = np.asarray(pysindy_model.coefficients(), dtype=float)
     library_feature_names = [str(name) for name in pysindy_model.get_feature_names()]
     fit_config_record: dict[str, object] = {
@@ -310,9 +309,18 @@ def fit_pysindy_discovery(
                 feature_names=normalized_feature_names,
                 fit_config=fit_config,
             )
+            # v0.32a: SINDy.fit(x, t, ...) in 2.1.x — no ensemble kwargs,
+            # feature_names moved off the ctor onto fit. See
+            # _pysindy_defaults: pysindy_fit is now an empty dict.
+            fit_input = (
+                normalized_trajectories[0]
+                if len(normalized_trajectories) == 1
+                else normalized_trajectories
+            )
             model.fit(
-                normalized_trajectories,
+                fit_input,
                 t=normalized_time_values,
+                feature_names=list(normalized_feature_names),
                 **dict(fit_config["pysindy_fit"]),
             )
             coefficients = np.asarray(model.coefficients(), dtype=float)

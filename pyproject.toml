@@ -5,9 +5,9 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pdelie"
 version = "0.31.0"
-description = "V0.31 downstream discovery task bridge — periodic scalar 1D PySINDy PDELibrary task runner (discovery_task_result) and diagnostic-only WeakPDELibrary wrapper (pdelie_weak_pde_library_diagnostic), submodule-only, with a public JSON-only example and temporary PySINDy 1.x + setuptools compatibility policy."
+description = "V0.32 modern Scientific Python + PySINDy 2.1 downstream discovery task bridge — periodic scalar 1D PySINDy PDELibrary task runner (discovery_task_result) and diagnostic-only WeakPDELibrary wrapper (pdelie_weak_pde_library_diagnostic), submodule-only, with a public JSON-only example. Python >=3.12, NumPy 2.x, PySINDy 2.1.x."
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [
@@ -24,12 +24,14 @@ classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Science/Research",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Topic :: Scientific/Engineering",
   "Topic :: Scientific/Engineering :: Mathematics",
 ]
 dependencies = [
-  "numpy>=1.24,<2",
+  "numpy>=2,<3",
 ]
 
 [project.urls]
@@ -38,44 +40,40 @@ Repository = "https://github.com/alexgabel/pdelie"
 Issues = "https://github.com/alexgabel/pdelie/issues"
 Documentation = "https://pdelie.readthedocs.io/en/latest/"
 
-# Optional downstream bridge path is currently validated on the
-# PySINDy 1.x / scikit-learn 1.2.x line only.
-# Broader Python 3.12+ compatibility is intentionally not claimed until validated.
+# v0.32 modern-only compatibility policy — outcome A from the v0.31.1a
+# research spike. The downstream bridge targets PySINDy 2.1.x on the
+# modern Scientific Python stack (NumPy 2.x, SciPy 1.14+, scikit-learn
+# 1.4+). PySINDy 2.x uses importlib.metadata instead of pkg_resources,
+# so the v0.31c1 `setuptools<82` temporary cap is retired here.
 #
-# The `setuptools<82` cap is a temporary v0.31c1 compatibility constraint:
-# pysindy 1.7.5 imports pkg_resources at package init, and setuptools 82
-# removed the pkg_resources module entirely. Setuptools 81 still ships it
-# (with a removal-warning). Verified via a fresh-venv adversarial matrix
-# against setuptools 81.0.0 (pass), 82.0.0 (import fail), 83.0.0 (import fail).
-# See docs/design/PYSINDY_COMPATIBILITY_POLICY.md. The cap is scoped to
-# python_version<'3.12' — Python 3.12+ is not a supported downstream target
-# in v0.31 (the pysindy/sklearn deps themselves are marker-scoped the same
-# way). This cap will be removed when the pin widens to pysindy>=2 in v0.31.1
-# / v0.32.
+# Floors follow Scientific Python SPEC 0 (~2 year window) plus the
+# hard constraints imposed by pysindy 2.1.0's numpy>=2.0 requirement.
+# The v0.31.x maintenance branch retains the legacy Python 3.11 /
+# PySINDy 1.7.x line.
 [project.optional-dependencies]
 downstream = [
-  "pysindy>=1.7.5,<2; python_version < '3.12'",
-  "scikit-learn>=1.2.2,<1.3; python_version < '3.12'",
-  "setuptools<82; python_version < '3.12'",
+  "pysindy>=2.1,<3",
+  "scikit-learn>=1.4,<2",
+  "scipy>=1.14,<2",
 ]
 xarray = [
-  "xarray>=2023.1.0",
+  "xarray>=2024.6.0",
 ]
 viz = [
-  "matplotlib>=3.7,<4",
+  "matplotlib>=3.9,<4",
 ]
 test = [
   "build>=1.2",
-  "matplotlib>=3.7,<4",
+  "matplotlib>=3.9,<4",
   "mypy>=1.11",
-  "pysindy>=1.7.5,<2; python_version < '3.12'",
+  "pysindy>=2.1,<3",
   "pytest>=7.4",
   "pytest-cov>=5.0",
   "pyyaml>=6.0",
   "ruff>=0.6",
-  "scikit-learn>=1.2.2,<1.3; python_version < '3.12'",
-  "setuptools<82; python_version < '3.12'",
-  "xarray>=2023.1.0",
+  "scikit-learn>=1.4,<2",
+  "scipy>=1.14,<2",
+  "xarray>=2024.6.0",
 ]
 
 [tool.setuptools]
@@ -91,7 +89,7 @@ testpaths = ["tests"]
 # non-blocking CI jobs; a red run reports but does not gate merges.
 
 [tool.ruff]
-target-version = "py311"
+target-version = "py312"
 line-length = 120
 # Rendered notebooks live in the tree as docs; nbsphinx builds them into
 # the docs site. They are not treated as maintained code and are excluded.
@@ -175,7 +173,7 @@ extend-select = ["E", "W", "F", "B", "I", "UP", "RUF", "NPY"]
 "src/pdelie/examples/*.py" = ["E501"]
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.12"
 warn_unused_configs = true
 warn_unreachable = true
 warn_redundant_casts = true

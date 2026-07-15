@@ -392,19 +392,6 @@ def _build_weak_library(
     try:
         import pysindy
     except ImportError as exc:  # pragma: no cover — importorskip guards tests
-        import sys as _sys
-
-        if _sys.version_info >= (3, 12):
-            raise ScopeValidationError(
-                "PySINDy WeakPDELibrary diagnostic is not supported on "
-                f"Python {_sys.version_info.major}.{_sys.version_info.minor}. "
-                "The v0.31 task bridge supports PySINDy 1.7.x on Python 3.11 "
-                "only; PySINDy 2.x / Python 3.12+ compatibility is deferred "
-                "to v0.31.1. Reinstalling pdelie[downstream] will not fix "
-                "this environment — the extra is marker-scoped to "
-                "python_version < '3.12'. See "
-                "docs/design/PYSINDY_COMPATIBILITY_POLICY.md."
-            ) from exc
         raise ScopeValidationError(
             "pysindy is required for inspect_pysindy_weak_pde_library. "
             "Install with `pip install pdelie[downstream]`."
@@ -437,40 +424,43 @@ def _build_weak_library(
     grid[..., 0] = x_coord[:, None]
     grid[..., 1] = t_coord[None, :]
 
-    # Small polynomial library of degree <= polynomial_degree.
-    library_functions: list[Any] = [lambda z: z]
-    function_name_builders: list[Any] = [lambda s: s]
-    if library_configuration.polynomial_degree >= 2:
-        library_functions.append(lambda z: z * z)
-        function_name_builders.append(lambda s: f"{s}^2")
-    if library_configuration.polynomial_degree >= 3:
-        library_functions.append(lambda z: z * z * z)
-        function_name_builders.append(lambda s: f"{s}^3")
+    # v0.32a migration: PySINDy 2.1.x's WeakPDELibrary REMOVED the legacy
+    # ``library_functions=``, ``function_names=``, and ``interaction_only=``
+    # kwargs. The library-composition entry point is now
+    # ``function_library=<BaseFeatureLibrary>``; the polynomial
+    # library is passed as a ``PolynomialLibrary`` instance whose degree
+    # matches the caller's requested polynomial_degree.
+    include_bias = bool(library_configuration.include_bias)
+    include_interaction = bool(library_configuration.include_interaction)
+    interaction_only = bool(library_configuration.interaction_only)
+    polynomial_library = pysindy.PolynomialLibrary(
+        degree=int(library_configuration.polynomial_degree),
+        include_bias=include_bias,
+        include_interaction=include_interaction,
+        interaction_only=interaction_only,
+    )
 
-    # Silence the (a) is_uniform/periodic deprecation UserWarning and
-    # (b) library_ensemble deprecation. Both are documented in the preflight
-    # as non-fatal and out of scope for b2. Also silence numpy.product
-    # DeprecationWarnings from pysindy internals.
+    # Silence numpy 2.x DeprecationWarnings from pysindy internals during
+    # library construction. The v0.32a runtime does NOT pass the
+    # deprecated is_uniform/periodic kwargs — periodic-boundary handling
+    # is routed through diff_kwargs on the differentiation method.
     with _warnings.catch_warnings():
-        _warnings.simplefilter("ignore", category=UserWarning)
         _warnings.simplefilter("ignore", category=DeprecationWarning)
         try:
             library = pysindy.WeakPDELibrary(
-                library_functions=library_functions,
-                function_names=function_name_builders,
+                function_library=polynomial_library,
                 derivative_order=int(library_configuration.derivative_order),
                 spatiotemporal_grid=grid,
-                include_bias=bool(library_configuration.include_bias),
-                include_interaction=bool(library_configuration.include_interaction),
-                interaction_only=bool(library_configuration.interaction_only),
+                include_bias=include_bias,
+                include_interaction=include_interaction,
                 K=K,
-                is_uniform=True,
-                periodic=True,
+                differentiation_method=pysindy.FiniteDifference,
+                diff_kwargs={"periodic": True},
             )
         except TypeError as exc:
             raise ScopeValidationError(
                 "installed PySINDy WeakPDELibrary API is incompatible with "
-                f"the v0.31b2 diagnostic wrapper: {exc!s}"
+                f"the v0.32a diagnostic wrapper: {exc!s}"
             ) from exc
 
     return library, grid
@@ -572,8 +562,8 @@ def inspect_pysindy_weak_pde_library(
 
     warnings_out: list[str] = []
     compatibility_notes: list[str] = [
-        "pysindy_weak_pde_library_is_uniform_periodic_kwargs_deprecated_in_pysindy_1_7_5",
-        "pysindy_weak_pde_library_library_ensemble_deprecated_in_pysindy_1_7_5",
+        "pysindy_2_1_x_weak_pde_library_function_library_pattern_v0_32a",
+        "pysindy_2_1_x_weak_pde_library_periodic_boundary_via_diff_kwargs_v0_32a",
     ]
 
     x_coord = np.asarray(field_batch.coords["x"], dtype=float)

@@ -1,10 +1,10 @@
-# Runtime Compatibility Policy (v0.31.1a — research spike)
+# Runtime Compatibility Policy (v0.32a — implemented)
 
-**Status:** RESEARCH — decision recorded, implementation deferred to v0.32.
+**Status:** IMPLEMENTED — v0.32a landed the modernization migration on `main`.
 
 **Decision label:** `spec_0_modernization_outcome_A_modern_only_future_line`.
 
-**Outcome:** **A (modern-only future line).** v0.32 targets Python ≥3.12 + NumPy 2.x + PySINDy 2.1.x. v0.31.x remains the legacy Python 3.11 + PySINDy 1.7.x line on a maintenance branch during transition. This file is the single source of truth for the runtime-compatibility policy; the machine-readable form lives at `configs/runtime_compatibility_matrix.json`.
+**Outcome:** **A (modern-only future line).** `main` is now Python ≥3.12 + NumPy 2.x + PySINDy 2.1.x. The v0.31.x line is retained as the legacy Python 3.11 + PySINDy 1.7.x maintenance branch — no scientific runtime scope will be added to it after v0.32.0 release close. This file is the single source of truth for the runtime-compatibility policy; the machine-readable form lives at `configs/runtime_compatibility_matrix.json`.
 
 ## SPEC 0 alignment
 

@@ -30,7 +30,8 @@ def test_pyproject_has_ruff_section_with_expected_shape() -> None:
     tool = _pyproject().get("tool", {})
     ruff = tool.get("ruff")
     assert ruff is not None, "[tool.ruff] section missing"
-    assert ruff.get("target-version") == "py311"
+    # v0.30e / v0.30 close: py311. v0.32a: py312 (SPEC 0 modernization).
+    assert ruff.get("target-version") in {"py311", "py312"}
     line_length = ruff.get("line-length")
     assert isinstance(line_length, int) and line_length >= 100
     lint = ruff.get("lint", {})
@@ -46,7 +47,8 @@ def test_pyproject_has_mypy_section_with_strict_scope_override() -> None:
     tool = _pyproject().get("tool", {})
     mypy = tool.get("mypy")
     assert mypy is not None, "[tool.mypy] section missing"
-    assert mypy.get("python_version") == "3.11"
+    # v0.30e / v0.30 close: 3.11. v0.32a: 3.12 (SPEC 0 modernization).
+    assert mypy.get("python_version") in {"3.11", "3.12"}
     overrides = mypy.get("overrides", [])
     strict_scopes = [entry for entry in overrides if entry.get("strict") is True]
     assert strict_scopes, "no strict [[tool.mypy.overrides]] block"
@@ -87,14 +89,22 @@ def test_pyproject_test_extras_include_ruff_mypy_pytest_cov() -> None:
 
 
 def test_numpy_upper_bound_is_still_less_than_2() -> None:
+    """v0.30e / v0.30 close: numpy<2. v0.32a widens to numpy<3 (SPEC 0
+    modernization). Both are acceptable to keep this hygiene guard alive
+    across the transition.
+    """
     deps = _pyproject()["project"]["dependencies"]
     numpy_dep = next((dep for dep in deps if dep.lower().startswith("numpy")), None)
     assert numpy_dep is not None
-    assert "<2" in numpy_dep
+    assert "<2" in numpy_dep or "<3" in numpy_dep
 
 
 def test_requires_python_is_still_gte_3_11() -> None:
-    assert _pyproject()["project"]["requires-python"] == ">=3.11"
+    """v0.30e / v0.30 close: requires-python>=3.11. v0.32a bumps to >=3.12
+    (SPEC 0 modernization). Both are acceptable to keep this hygiene guard
+    alive across the transition.
+    """
+    assert _pyproject()["project"]["requires-python"] in {">=3.11", ">=3.12"}
 
 
 def test_package_version_matches_v0_30_close() -> None:
@@ -186,7 +196,11 @@ def test_ci_workflow_release_gate_job_matches_v0_30_close() -> None:
     """
     jobs = _ci_workflow()["jobs"]
     release_gate_jobs = [n for n in jobs if re.match(r"^v0_\d+[a-z]?-release-gate$", n)]
-    assert release_gate_jobs == ["v0_31-release-gate"], (
-        f"expected exactly one release-gate job named 'v0_31-release-gate' "
-        f"after the v0.31.0 release close; got: {release_gate_jobs}"
+    # v0.31.0 close: v0_31-release-gate. v0.32a: v0_32-release-gate.
+    assert release_gate_jobs in (
+        ["v0_31-release-gate"],
+        ["v0_32-release-gate"],
+    ), (
+        f"expected the current v0.31.x or v0.32 release-gate job; got: "
+        f"{release_gate_jobs}"
     )

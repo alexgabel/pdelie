@@ -14,21 +14,40 @@
   "target_release": "0.32.0",
   "legacy_line": "0.31.x",
   "supported_python_versions": {
-    "blocking": ["3.12", "3.13"],
-    "advisory": ["3.14"],
-    "legacy_line_only": ["3.11"]
+    "blocking": [
+      "3.12",
+      "3.13"
+    ],
+    "advisory": [
+      "3.14"
+    ],
+    "legacy_line_only": [
+      "3.11"
+    ]
   },
   "supported_numpy_versions": {
-    "blocking": ["2.x"],
-    "legacy_line_only": ["1.24.x through 1.26.x"]
+    "blocking": [
+      "2.x"
+    ],
+    "legacy_line_only": [
+      "1.24.x through 1.26.x"
+    ]
   },
   "supported_pysindy_versions": {
-    "blocking": ["2.1.x"],
-    "legacy_line_only": ["1.7.5"]
+    "blocking": [
+      "2.1.x"
+    ],
+    "legacy_line_only": [
+      "1.7.5"
+    ]
   },
   "supported_sklearn_versions": {
-    "blocking": ["latest_compatible_with_pysindy_2_1"],
-    "legacy_line_only": ["1.2.2 <= x < 1.3"]
+    "blocking": [
+      "latest_compatible_with_pysindy_2_1"
+    ],
+    "legacy_line_only": [
+      "1.2.2 <= x < 1.3"
+    ]
   },
   "environment_matrix_audit": {
     "audit_release": "v0.31.1a",
@@ -121,7 +140,11 @@
     {
       "delta": 1,
       "surface": "SINDy.__init__",
-      "kwargs_removed": ["feature_names", "t_default", "discrete_time"],
+      "kwargs_removed": [
+        "feature_names",
+        "t_default",
+        "discrete_time"
+      ],
       "kwargs_added": [],
       "pdelie_call_sites": [
         "src/pdelie/discovery/pysindy_adapter.py::_build_pysindy_model"
@@ -130,8 +153,17 @@
     {
       "delta": 2,
       "surface": "SINDy.fit",
-      "kwargs_removed": ["multiple_trajectories", "unbias", "quiet", "ensemble", "library_ensemble", "replace"],
-      "kwargs_moved_from_init": ["feature_names"],
+      "kwargs_removed": [
+        "multiple_trajectories",
+        "unbias",
+        "quiet",
+        "ensemble",
+        "library_ensemble",
+        "replace"
+      ],
+      "kwargs_moved_from_init": [
+        "feature_names"
+      ],
       "confirmed_error": "TypeError: SINDy.fit() got an unexpected keyword argument 'multiple_trajectories'",
       "pdelie_call_sites": [
         "src/pdelie/discovery/pysindy_adapter.py::fit_pysindy_discovery",
@@ -157,7 +189,9 @@
     {
       "delta": 5,
       "surface": "STLSQ.__init__",
-      "kwargs_removed": ["fit_intercept"],
+      "kwargs_removed": [
+        "fit_intercept"
+      ],
       "confirmed_error": "TypeError: STLSQ.__init__() got an unexpected keyword argument 'fit_intercept'",
       "pdelie_call_sites": [
         "src/pdelie/discovery/_pysindy_defaults.get_default_pysindy_discovery_config"
@@ -166,8 +200,19 @@
     {
       "delta": 6,
       "surface": "PDELibrary.__init__ / WeakPDELibrary.__init__",
-      "kwargs_removed": ["library_functions", "function_names", "interaction_only"],
-      "kwargs_added": ["function_library", "temporal_grid", "implicit_terms", "multiindices", "differentiation_method", "diff_kwargs"],
+      "kwargs_removed": [
+        "library_functions",
+        "function_names",
+        "interaction_only"
+      ],
+      "kwargs_added": [
+        "function_library",
+        "temporal_grid",
+        "implicit_terms",
+        "multiindices",
+        "differentiation_method",
+        "diff_kwargs"
+      ],
       "new_pattern": "function_library=<BaseFeatureLibrary>, e.g. pysindy.PolynomialLibrary(degree=2, interaction_only=True)",
       "confirmed_error_legacy_call": "TypeError: WeakPDELibrary.__init__() got an unexpected keyword argument 'library_functions'",
       "pdelie_call_sites": [
@@ -198,44 +243,89 @@
     "removed_or_promoted_by": "v0.32 implementation PR"
   },
   "ci_matrix_proposal_v0_32": [
-    {"job": "v0_32-core-3_12", "python": "3.12", "downstream": false, "blocking": true},
-    {"job": "v0_32-core-3_13", "python": "3.13", "downstream": false, "blocking": true},
-    {"job": "v0_32-core-3_14", "python": "3.14", "downstream": false, "blocking": false},
-    {"job": "v0_32-downstream-3_12", "python": "3.12", "downstream": true, "pysindy": "2.1.x", "blocking": true},
-    {"job": "v0_32-downstream-3_13", "python": "3.13", "downstream": true, "pysindy": "2.1.x", "blocking": true},
-    {"job": "v0_32-downstream-3_14", "python": "3.14", "downstream": true, "pysindy": "2.1.x", "blocking": false},
-    {"job": "v0_31-release-gate", "python": "3.11", "downstream": true, "pysindy": "1.7.5", "blocking": true, "branch_scope": "release/v0.31.x_maintenance_branch_only"}
+    {
+      "job": "v0_32-core-3_12",
+      "python": "3.12",
+      "downstream": false,
+      "blocking": true
+    },
+    {
+      "job": "v0_32-core-3_13",
+      "python": "3.13",
+      "downstream": false,
+      "blocking": true
+    },
+    {
+      "job": "v0_32-core-3_14",
+      "python": "3.14",
+      "downstream": false,
+      "blocking": false
+    },
+    {
+      "job": "v0_32-downstream-3_12",
+      "python": "3.12",
+      "downstream": true,
+      "pysindy": "2.1.x",
+      "blocking": true
+    },
+    {
+      "job": "v0_32-downstream-3_13",
+      "python": "3.13",
+      "downstream": true,
+      "pysindy": "2.1.x",
+      "blocking": true
+    },
+    {
+      "job": "v0_32-downstream-3_14",
+      "python": "3.14",
+      "downstream": true,
+      "pysindy": "2.1.x",
+      "blocking": false
+    },
+    {
+      "job": "v0_31-release-gate",
+      "python": "3.11",
+      "downstream": true,
+      "pysindy": "1.7.5",
+      "blocking": true,
+      "branch_scope": "release/v0.31.x_maintenance_branch_only"
+    }
   ],
   "temporary_exceptions": [
     {
       "exception": "pysindy>=1.7.5,<2; python_version < '3.12'",
       "introduced": "v0.31b3",
       "owner_milestone": "v0.31.1_implementation_pr",
-      "removed_by": "v0.32"
+      "removed_by": "v0.32",
+      "retirement_outcome": "retired_by_v0_32a"
     },
     {
       "exception": "scikit-learn>=1.2.2,<1.3; python_version < '3.12'",
       "introduced": "v0.31b3",
       "owner_milestone": "v0.31.1_implementation_pr",
-      "removed_by": "v0.32"
+      "removed_by": "v0.32",
+      "retirement_outcome": "retired_by_v0_32a"
     },
     {
       "exception": "setuptools<82; python_version < '3.12'",
       "introduced": "v0.31c1_adversarial_matrix_outcome_B",
       "owner_milestone": "v0.31.1_implementation_pr",
-      "removed_by": "v0.32"
+      "removed_by": "v0.32",
+      "retirement_outcome": "retired_by_v0_32a"
     },
     {
       "exception": "numpy>=1.24,<2_core_cap",
       "introduced": "pre_v0_30",
       "owner_milestone": "v0.31.1_pin_widening",
-      "removed_by": "v0.32"
+      "removed_by": "v0.32",
+      "retirement_outcome": "retired_by_v0_32a"
     },
     {
       "exception": "Python_3_11_minimum",
       "introduced": "v0.30",
       "owner_milestone": "v0.32_minimum_bump_pr",
-      "removed_by": "v0.32"
+      "removed_by": "v0.32",
+      "retirement_outcome": "retired_by_v0_32a"
     }
   ],
   "public_schema_invariance_guarantee": {
@@ -250,5 +340,7 @@
     "no PyPI/TestPyPI publication (tag-only through v1.0)",
     "no new PDE, no new report schema, no new root export, no symmetry registry, no nonperiodic discovery, no WSINDy benchmark, no noise-robustness claim, no PDEBench/The Well support claim, no multi-channel/2D widening",
     "no dual 1.x/2.x runtime branching in the v0.32 migration PR (single-generation cutover per outcome A)"
-  ]
+  ],
+  "v0_32a_implementation_status": "IMPLEMENTED",
+  "v0_32a_implementation_notes": "v0.32a lands the modernization migration on main. All temporary exceptions from v0.31.x have been retired. See docs/design/PYSINDY_2_MIGRATION_AUDIT.md for the per-call-site record of the six API deltas absorbed."
 }

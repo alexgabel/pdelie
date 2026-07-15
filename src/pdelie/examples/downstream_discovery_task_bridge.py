@@ -25,7 +25,7 @@ Scope boundaries encoded in the emitted payload:
 - The example does not establish WSINDy performance.
 - The example does not establish noise robustness.
 - The example is periodic scalar 1D only.
-- PySINDy 1.x support is temporary pending v0.31.1.
+- PySINDy 2.1.x is the supported downstream backend on v0.32+.
 
 Submodule-only surface. No root ``pdelie`` re-export.
 """
@@ -78,8 +78,9 @@ _INTERPRETATION: dict[str, str] = {
     "noise_claim": "The example does not establish noise robustness.",
     "scope_boundary": "The example is periodic scalar 1D only.",
     "pysindy_version_policy": (
-        "PySINDy 1.x support is temporary pending v0.31.1. See "
-        "docs/design/PYSINDY_COMPATIBILITY_POLICY.md."
+        "PySINDy 2.1.x is the supported downstream backend on the v0.32 "
+        "modern line. The v0.31.x legacy line is maintained on a separate "
+        "branch. See docs/design/RUNTIME_COMPATIBILITY_POLICY.md."
     ),
 }
 
@@ -115,27 +116,26 @@ def _legacy_numpy_rng_seed_scope(seed: int) -> Iterator[None]:
     """Seed the LEGACY ``np.random`` global RNG for the duration of the
     context, then restore the caller's state on exit.
 
-    PySINDy 1.7.5's ``WeakPDELibrary`` randomizes K subdomain-center
+    PySINDy 2.1.x's ``WeakPDELibrary`` still randomizes K subdomain-center
     placement using ``np.random.*`` — the legacy global RNG — and does not
-    accept a modern ``np.random.Generator``. Reproducing the example
-    deterministically therefore requires seeding the legacy state, and
-    politely restoring it so we do not permanently perturb global RNG state
-    for the caller.
+    accept a modern ``np.random.Generator`` (verified in the v0.32a
+    preflight audit). Reproducing the example deterministically therefore
+    requires seeding the legacy state and politely restoring it so we do
+    not permanently perturb global RNG state for the caller.
 
     Not thread-safe: ``np.random.seed`` / ``get_state`` / ``set_state``
     mutate a process-global RNG. Concurrent calls from other threads (or
     other libraries reaching into the same legacy global) can interleave
     with this seeding. This example does not expose a concurrency API and
-    is not intended to run in parallel. When PySINDy migrates to a
-    ``Generator``-based API (tracked under the v0.31.1 PySINDy 2.x port),
-    this workaround is retired.
+    is not intended to run in parallel. When PySINDy adds a
+    ``Generator``-based seed API, this workaround retires.
     """
-    _saved_state = np.random.get_state()  # noqa: NPY002 — PySINDy 1.x uses legacy RNG
+    _saved_state = np.random.get_state()  # noqa: NPY002 — PySINDy uses legacy RNG
     try:
-        np.random.seed(seed)  # noqa: NPY002 — PySINDy 1.x uses legacy RNG
+        np.random.seed(seed)  # noqa: NPY002 — PySINDy uses legacy RNG
         yield
     finally:
-        np.random.set_state(_saved_state)  # noqa: NPY002 — PySINDy 1.x uses legacy RNG
+        np.random.set_state(_saved_state)  # noqa: NPY002 — PySINDy uses legacy RNG
 
 
 def _build_caller_configured_sindy() -> Any:

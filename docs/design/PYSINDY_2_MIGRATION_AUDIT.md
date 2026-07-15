@@ -1,12 +1,12 @@
-# PySINDy 2.x Migration Audit (v0.31.1a — research spike)
+# PySINDy 2.x Migration Audit (v0.32a — implemented)
 
-**Status:** RESEARCH. Enumerates the exact API deltas between PySINDy `1.7.5` (v0.31 legacy line) and PySINDy `2.1.0` (v0.32 modern target), and maps each delta to the pdelie call site that needs a change. Implementation deferred to the v0.31.1 / v0.32 migration PR.
+**Status:** IMPLEMENTED — v0.32a landed the migration. This document is retained as the historical record of the six API deltas and the per-call-site mapping used during migration.
 
 **Companion documents:**
 
-- `docs/design/RUNTIME_COMPATIBILITY_POLICY.md` — the SPEC 0 policy that frames this audit's recommendation.
+- `docs/design/RUNTIME_COMPATIBILITY_POLICY.md` — the SPEC 0 policy frame.
 - `configs/runtime_compatibility_matrix.json` — machine-readable summary.
-- `src/pdelie/discovery/_pysindy2_prototype.py` — private, experimental compatibility sketch showing the intended shim shape. **Not wired into any production code path.**
+- **The private research prototype** (`src/pdelie/discovery/_pysindy2_prototype.py`) **was deleted by v0.32a**. The v0.31.1a research phase chose outcome A (modern-only future line); no runtime compatibility shim was needed. Every migration site listed below was rewritten directly against the pysindy 2.1.x API.
 
 ## Environment matrix outcome
 

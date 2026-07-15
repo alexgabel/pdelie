@@ -242,14 +242,93 @@ def test_reserved_representation_types_are_in_the_set(reserved_type: str) -> Non
     ],
 )
 def test_reserved_representation_type_rejects_a_payload(reserved_type: str) -> None:
+    """v0.32a hardening: reserved types raise on any public construction,
+    regardless of whether ``payload`` is None or a real representation."""
     payload = _minimal_generator_family()
     with pytest.raises(ScopeValidationError, match="reserved"):
         SymmetryCandidate(
             candidate_id="reserved-test",
             representation_type=reserved_type,
-            payload=payload,  # any non-None payload must reject
+            payload=payload,
             source_method="test",
         )
+
+
+@pytest.mark.parametrize(
+    "reserved_type",
+    [
+        "matrix_lie_algebra",
+        "coordinate_vector_field",
+        "finite_transform_spec",
+        "latent_generator_reference",
+    ],
+)
+def test_reserved_representation_type_rejects_none_payload_too(
+    reserved_type: str,
+) -> None:
+    """v0.32a hardening: reserved+payload=None also raises. Previously a
+    UserWarning-gated placeholder was permitted; that path produced a
+    zombie candidate with ``payload_summary=None`` that leaked through
+    downstream reporting. The v0.32a hardening removes it entirely.
+    """
+    with pytest.raises(ScopeValidationError, match="reserved"):
+        SymmetryCandidate(
+            candidate_id="reserved-none-test",
+            representation_type=reserved_type,
+            payload=None,
+            source_method="test",
+        )
+
+
+@pytest.mark.parametrize(
+    "reserved_type",
+    [
+        "matrix_lie_algebra",
+        "coordinate_vector_field",
+        "finite_transform_spec",
+        "latent_generator_reference",
+    ],
+)
+def test_build_symmetry_candidate_rejects_reserved_types(
+    reserved_type: str,
+) -> None:
+    """The public :func:`build_symmetry_candidate` entry point rejects
+    reserved types with the same guard as direct constructor use.
+    """
+    with pytest.raises(ScopeValidationError, match="reserved"):
+        build_symmetry_candidate(
+            candidate_id="reserved-build-test",
+            representation_type=reserved_type,
+            payload=None,
+            source_method="test",
+        )
+
+
+def test_no_warning_only_zombie_candidate_for_reserved_types() -> None:
+    """v0.32a: no code path may produce a serializable SymmetryCandidate
+    with a reserved discriminator + ``payload=None`` outside the private
+    test-only construction hook. Uses :mod:`warnings` catcher to verify
+    the removed placeholder path does NOT emit a UserWarning (because it
+    now raises before reaching the warn call).
+    """
+    import warnings as _warnings
+
+    with _warnings.catch_warnings(record=True) as caught:
+        _warnings.simplefilter("always")
+        with pytest.raises(ScopeValidationError):
+            build_symmetry_candidate(
+                candidate_id="zombie-check",
+                representation_type="matrix_lie_algebra",
+                payload=None,
+                source_method="test",
+            )
+    zombie_warnings = [
+        w for w in caught if "reserved" in str(w.message).lower()
+    ]
+    assert not zombie_warnings, (
+        f"v0.32a hardening removed the warning path; expected no reserved-"
+        f"discriminator warning but got: {zombie_warnings!r}"
+    )
 
 
 # ---------------------------------------------------------------------------

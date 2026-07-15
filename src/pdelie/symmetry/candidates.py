@@ -47,7 +47,6 @@ internal spec-freeze tests).
 from __future__ import annotations
 
 import copy
-import warnings
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from typing import Any, ClassVar, cast
@@ -297,17 +296,26 @@ class SymmetryCandidate:
         self.source_method = _require_nonempty_string(
             self.source_method, name="source_method"
         )
-        # Reject reserved-but-unimplemented representation types unless
-        # the payload is explicitly None (only for the reserved-shape
-        # spec-freeze tests).
+        # Reject reserved-but-unimplemented representation types entirely.
+        # v0.32a hardening: previously reserved+payload=None constructed a
+        # placeholder + emitted a UserWarning. Warnings can be silenced by
+        # any caller and a payload=None candidate has an unusable
+        # ``payload_summary=None`` in its strict-JSON output — it is a
+        # zombie object that leaks through downstream reporting. All
+        # public construction of a reserved discriminator now raises;
+        # the escape hatch remains only through the private ``_construct``
+        # classmethod below, which is documented as test-only.
         if self.representation_type in _RESERVED_REPRESENTATION_TYPES:
-            if self.payload is not None:
-                raise ScopeValidationError(
-                    f"representation_type {self.representation_type!r} is "
-                    "reserved but has no validated payload schema in "
-                    "v0.30.1; construct a placeholder candidate with "
-                    "payload=None only."
-                )
+            raise ScopeValidationError(
+                f"representation_type {self.representation_type!r} is "
+                "reserved but has no validated payload schema in "
+                "v0.32; public construction is refused. The discriminator "
+                "value is retained in the reserved set for forward "
+                "compatibility, but no SymmetryCandidate carrying it may "
+                "be built through the public constructor. See "
+                "docs/design/SYMMETRY_METHOD_REGISTRY.md for the "
+                "reserved-discriminator lifecycle."
+            )
         else:
             # Implemented representation: enforce payload type.
             expected_cls, _ = _PAYLOAD_SUMMARIZERS[self.representation_type]
@@ -370,28 +378,16 @@ def build_symmetry_candidate(
     executable_status: str = "unknown",
     provenance: Mapping[str, Any] | None = None,
     warnings_out: Any = None,
-    allow_reserved_unimplemented: bool = False,
 ) -> SymmetryCandidate:
     """Construct a :class:`SymmetryCandidate` with validation.
 
     Delegates to :class:`SymmetryCandidate` after normalizing the
-    provenance and warnings. The ``allow_reserved_unimplemented`` flag
-    is a narrow escape hatch for the reserved-representation-type
-    spec-freeze tests — production callers must not use it.
+    provenance and warnings. Reserved-but-unimplemented representation
+    types (see :data:`_RESERVED_REPRESENTATION_TYPES`) cannot be
+    constructed through this public entry point — v0.32a removed the
+    warning-gated placeholder path because a payload=None candidate is
+    a zombie object that leaks through downstream reporting.
     """
-    if (
-        representation_type in _RESERVED_REPRESENTATION_TYPES
-        and not allow_reserved_unimplemented
-        and payload is None
-    ):
-        # Emit a UserWarning; explicit is better than silent.
-        warnings.warn(
-            f"constructing a placeholder SymmetryCandidate for reserved "
-            f"representation_type {representation_type!r}; production "
-            "callers must not use this path.",
-            UserWarning,
-            stacklevel=2,
-        )
     return SymmetryCandidate(
         candidate_id=candidate_id,
         representation_type=representation_type,
@@ -402,6 +398,41 @@ def build_symmetry_candidate(
         provenance=copy.deepcopy(dict(provenance)) if provenance else {},
         warnings=list(warnings_out) if warnings_out else [],
     )
+
+
+def _construct_reserved_candidate_for_spec_tests(
+    *,
+    candidate_id: str,
+    representation_type: str,
+    source_method: str,
+) -> SymmetryCandidate:
+    """Test-only escape hatch for the reserved-discriminator spec tests.
+
+    Bypasses the reserved-type ScopeValidationError guard so the internal
+    tests can assert the discriminator remains in the reserved set. This
+    function is deliberately private (underscore-prefixed) and not
+    exported from ``pdelie.symmetry``. It must never be called from
+    production code.
+
+    Constructs a bare ``object.__new__``-shaped instance directly through
+    ``dataclass.__init__`` bypass; this is intentional and NOT how you
+    make candidates outside of tests.
+    """
+    instance = SymmetryCandidate.__new__(SymmetryCandidate)
+    # Populate fields without going through __init__ (which would raise).
+    instance.candidate_id = _require_nonempty_string(
+        candidate_id, name="candidate_id"
+    )
+    instance.representation_type = representation_type
+    instance.mathematical_status = "candidate_only"
+    instance.executable_status = "unknown"
+    instance.source_method = _require_nonempty_string(
+        source_method, name="source_method"
+    )
+    instance.payload = None
+    instance.provenance = {}
+    instance.warnings = []
+    return instance
 
 
 def summarize_symmetry_candidate(candidate: SymmetryCandidate) -> dict[str, Any]:

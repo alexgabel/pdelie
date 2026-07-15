@@ -622,20 +622,27 @@ def _compute_residual_over_trajectories(
 ) -> np.ndarray[Any, Any] | None:
     """Compute a concatenated ``predict - differentiate`` residual, or None on failure.
 
-    The PySINDy model's ``.predict`` returns predicted time-derivatives; its
-    ``.differentiate`` (via the configured ``differentiation_method``) returns
-    the observed time-derivatives. Their difference is the training residual.
-    Any exception from the backend degrades to ``None`` so the task-runner can
-    still emit a valid TaskResult.
+    The PySINDy model's ``.predict`` returns predicted time-derivatives.
+    v0.32a migration: ``SINDy.differentiate(...)`` was REMOVED in PySINDy
+    2.x. The replacement path is the configured differentiation method
+    itself, exposed on the fitted model as ``model.differentiation_method``
+    (attribute — no trailing underscore). We call it directly as a
+    callable to obtain the observed time-derivatives.
+
+    Any exception from the backend degrades to ``None`` so the task-runner
+    can still emit a valid TaskResult.
     """
     if pysindy_model is None:
+        return None
+    diff_method = getattr(pysindy_model, "differentiation_method", None)
+    if diff_method is None:
         return None
     try:
         pieces: list[np.ndarray[Any, Any]] = []
         for trajectory in trajectories:
             predicted = np.asarray(pysindy_model.predict(trajectory), dtype=float)
             differentiated = np.asarray(
-                pysindy_model.differentiate(trajectory, t=time_values), dtype=float
+                diff_method(trajectory, t=time_values), dtype=float
             )
             pieces.append((predicted - differentiated).reshape(-1))
         if not pieces:
