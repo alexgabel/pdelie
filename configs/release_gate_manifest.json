@@ -3,7 +3,7 @@
   "summary_type": "pdelie_declarative_release_gate_manifest",
   "scope": "declarative_release_gate_checks_only",
   "current_release_gate_job_name": "v0_31-release-gate",
-  "release_count": 19,
+  "release_count": 20,
   "excluded_functional_release_gate_files": [
     {
       "file": "tests/test_v0_4_release_gate.py",
@@ -1345,7 +1345,6 @@
           "pdelie.data"
         ],
         "names": [
-          "SymmetryMethod",
           "from_pdebench",
           "from_the_well",
           "load_pdebench",
@@ -1489,6 +1488,117 @@
           "V0.31.0 Release Close",
           "V0.31.0 is complete",
           "downstream_discovery_task_bridge"
+        ]
+      }
+    },
+    {
+      "release": "0.30.1",
+      "source_file": "tests/test_symmetry_candidate_contract.py",
+      "required_submodule_attributes": [
+        {
+          "submodule": "pdelie.symmetry",
+          "name": "REPRESENTATION_TYPES"
+        },
+        {
+          "submodule": "pdelie.symmetry",
+          "name": "SymmetryCandidate"
+        },
+        {
+          "submodule": "pdelie.symmetry",
+          "name": "SymmetryMethod"
+        },
+        {
+          "submodule": "pdelie.symmetry",
+          "name": "SymmetryMethodMetadata"
+        },
+        {
+          "submodule": "pdelie.symmetry",
+          "name": "SymmetryMethodResult"
+        },
+        {
+          "submodule": "pdelie.symmetry",
+          "name": "SymmetryMethodSpec"
+        },
+        {
+          "submodule": "pdelie.symmetry",
+          "name": "build_symmetry_candidate"
+        },
+        {
+          "submodule": "pdelie.symmetry",
+          "name": "get_symmetry_method"
+        },
+        {
+          "submodule": "pdelie.symmetry",
+          "name": "list_symmetry_methods"
+        },
+        {
+          "submodule": "pdelie.symmetry",
+          "name": "register_symmetry_method"
+        },
+        {
+          "submodule": "pdelie.symmetry",
+          "name": "run_symmetry_method"
+        },
+        {
+          "submodule": "pdelie.symmetry",
+          "name": "summarize_symmetry_candidate"
+        },
+        {
+          "submodule": "pdelie.symmetry",
+          "name": "summarize_symmetry_method_result"
+        }
+      ],
+      "forbidden_root_attributes": {
+        "names": [
+          "REPRESENTATION_TYPES",
+          "SymmetryCandidate",
+          "SymmetryMethod",
+          "SymmetryMethodMetadata",
+          "SymmetryMethodResult",
+          "SymmetryMethodSpec",
+          "build_symmetry_candidate",
+          "discover_symmetries",
+          "get_symmetry_method",
+          "list_symmetry_methods",
+          "register_symmetry_method",
+          "run_symmetry_method",
+          "summarize_symmetry_candidate",
+          "summarize_symmetry_method_result"
+        ]
+      },
+      "forbidden_submodule_attributes": {
+        "submodules": [
+          "pdelie.tasks",
+          "pdelie.discovery",
+          "pdelie.reporting"
+        ],
+        "names": [
+          "REPRESENTATION_TYPES",
+          "SymmetryCandidate",
+          "SymmetryMethod",
+          "SymmetryMethodMetadata",
+          "SymmetryMethodResult",
+          "SymmetryMethodSpec",
+          "build_symmetry_candidate",
+          "get_symmetry_method",
+          "list_symmetry_methods",
+          "register_symmetry_method",
+          "run_symmetry_method",
+          "summarize_symmetry_candidate",
+          "summarize_symmetry_method_result"
+        ]
+      },
+      "required_phrases_in_api_stability": {
+        "doc_path": "docs/specs/API_STABILITY.md",
+        "phrases": [
+          "Stable public-surface note for the v0.30.1 sub-release",
+          "SymmetryCandidate",
+          "SymmetryMethod",
+          "SymmetryMethodResult",
+          "polynomial_translation_svd",
+          "generator_family",
+          "formula_generator_family",
+          "invariant_map_spec"
         ]
       }
     }

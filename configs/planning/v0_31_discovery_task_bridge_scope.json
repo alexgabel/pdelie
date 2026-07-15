@@ -42,16 +42,12 @@
     "PySINDyPDETaskResult",
     "TaskResult",
     "WeakPDELibraryDiagnostic",
-    "discover_symmetries",
-    "SymmetryMethod",
-    "SymmetryCandidate"
+    "discover_symmetries"
   ],
   "forbidden_submodule_attributes": {
     "pdelie.symmetry": [
       "PySINDyPDETask",
-      "TaskResult",
-      "SymmetryCandidate",
-      "SymmetryMethod"
+      "TaskResult"
     ],
     "pdelie.discovery": [
       "tasks",

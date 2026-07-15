@@ -25,6 +25,23 @@ Stable public import path for the invariant canonical object:
 
 - `pdelie.InvariantMapSpec`
 
+Stable public-surface note for the v0.30.1 sub-release:
+
+- `v0.30.1` adds the extensibility foundation for external symmetry-method integrations as a **submodule-only surface under `pdelie.symmetry`**. No root `pdelie` export is added.
+- Frozen public submodule names on `pdelie.symmetry`:
+  - `SymmetryCandidate` — representation-neutral wrapper. Discriminated by `representation_type` on `{generator_family, formula_generator_family, invariant_map_spec}` (v0.30.1 implemented) plus `{matrix_lie_algebra, coordinate_vector_field, finite_transform_spec, latent_generator_reference}` (reserved).
+  - `SymmetryMethod` — `typing.Protocol` (duck-typed adapter contract).
+  - `SymmetryMethodMetadata` — static, JSON-safe method description.
+  - `SymmetryMethodResult` — uniform result shape. Fields: `method_name`, `candidates`, `method_scores`, `fit_diagnostics`, `runtime_seconds`, `peak_memory_mb`, `seed`, `deterministic`, `warnings`, `backend_versions`, `provenance`. **No `best` accessor. No `method_confidence` field.**
+  - `SymmetryMethodSpec` — lazy registration entry.
+  - `REPRESENTATION_TYPES` — frozenset of the seven reserved discriminators.
+  - `register_symmetry_method`, `get_symmetry_method`, `list_symmetry_methods`, `run_symmetry_method` — the registry entry points.
+  - `build_symmetry_candidate`, `summarize_symmetry_candidate`, `summarize_symmetry_method_result` — strict-JSON helpers.
+- One built-in adapter is registered: `polynomial_translation_svd`. It wraps `fit_translation_generator` without changing numerics; produces one `SymmetryCandidate` with `representation_type = "generator_family"`; deterministic; scalar 1D periodic input only; requires a residual evaluator.
+- Lazy-import guarantee: `list_symmetry_methods()` returns the metadata list WITHOUT importing any adapter module. `get_symmetry_method(name)` and `run_symmetry_method(name, ...)` are the only paths that resolve the adapter module. Failed imports for optional external adapters raise `ScopeValidationError` with a `pip install pdelie[<extras>]` hint.
+- Architectural rule preserved from v0.30 forward: external methods GENERATE candidates; PDELie VERIFICATION determines evidence. The registry does NOT run verification, does NOT rank candidates, and does NOT call arbitrary method-native scores "confidence".
+- Explicit non-claims at v0.30.1: no external method port; no PyTorch dependency; no root `pdelie.discover_symmetries`; no file-path input; no ndarray/xarray coercion in the symmetry API; no multi-D expansion; no new finite-transform implementation; no NaN/Inf in any summary; no change to `GeneratorFamily` semantics or `validate_symmetry_candidate` semantics.
+
 Stable public-surface note for the v0.31.0 release close:
 
 - `v0.31.0` closes the downstream discovery task bridge as a **submodule-only** stable surface. No root `pdelie` export is added.

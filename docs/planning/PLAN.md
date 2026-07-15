@@ -1,6 +1,59 @@
-# PDELie - Execution Plan (V0.31.1a Research Spike)
+# PDELie - Execution Plan (V0.30.1 SymmetryMethod Registry MVP)
 
 **Status:** IN_PROGRESS
+
+`v0.30.1` is a submodule-only extensibility-foundation release. It introduces:
+
+- The representation-neutral :class:`SymmetryCandidate` contract with seven reserved discriminators (three implemented, four reserved-only).
+- The lazy :class:`SymmetryMethod` registry + :class:`SymmetryMethodResult` + :class:`SymmetryMethodSpec`.
+- One built-in adapter — ``polynomial_translation_svd`` — that wraps :func:`pdelie.symmetry.fitting.translation_baseline.fit_translation_generator` without changing its numerics.
+
+**No external symmetry method is added.** Ko-style, LieGAN, LaLiGAN, and LieGG remain deferred to their own scope-freeze designs.
+
+Per the solo-dev consolidation policy adopted after the v0.30.1 code review, this sub-release is a milestone name only — its code ships publicly as part of `v0.32.0` and no `v0.30.1` tag is created.
+
+submodule_only_symmetry_method_registry_mvp_plus_symmetry_candidate_contract
+```
+
+## Architectural rule
+
+External methods GENERATE candidates. PDELie verification determines EVIDENCE. Candidate generation, candidate validation, and downstream utility remain distinct stages. The registry deliberately does NOT rank candidates, does NOT expose a ``best`` accessor, and does NOT call arbitrary method-native scores "confidence" — the field name is ``method_scores`` and values are finite floats or ``None``.
+
+## Sub-release contents (v0.30.1)
+
+- ``src/pdelie/symmetry/candidates.py`` — ``SymmetryCandidate``, ``build_symmetry_candidate``, ``summarize_symmetry_candidate``, ``REPRESENTATION_TYPES``.
+- ``src/pdelie/symmetry/registry.py`` — ``SymmetryMethod`` (Protocol), ``SymmetryMethodMetadata``, ``SymmetryMethodResult``, ``SymmetryMethodSpec``, ``register_symmetry_method``, ``get_symmetry_method``, ``list_symmetry_methods``, ``run_symmetry_method``, ``summarize_symmetry_method_result``.
+- ``src/pdelie/symmetry/methods/__init__.py`` — deliberately empty (no eager adapter import).
+- ``src/pdelie/symmetry/methods/polynomial_translation_svd.py`` — built-in adapter.
+- ``tests/test_symmetry_candidate_contract.py`` (30 tests).
+- ``tests/test_symmetry_method_registry.py`` (16 tests).
+- ``tests/test_polynomial_translation_svd_method.py`` (15 tests).
+- ``docs/design/SYMMETRY_METHOD_REGISTRY.md`` — the full design.
+- Extended ``pdelie.symmetry`` ``__init__.py`` re-exports (submodule-only surface).
+
+Explicit non-goals for v0.30.1:
+
+- No external symmetry method port. No Ko-style, LieGAN, LaLiGAN, LieGG code.
+- No PyTorch dependency.
+- No root ``pdelie.discover_symmetries`` API.
+- No root exports for any registry function.
+- No file-path input. No ndarray/xarray coercion in the symmetry API.
+- No ``ArenaResult.best``, no automatic ranking, no winner selection.
+- No ``method_confidence`` field on any registry output.
+- No NaN or Inf in any summary output.
+- No change to ``GeneratorFamily`` semantics or ``validate_symmetry_candidate`` semantics.
+- No multi-D expansion, no new finite-transform implementation.
+- No package version bump. No tag.
+
+Lazy-import guarantee:
+
+Importing ``pdelie.symmetry`` and ``pdelie.symmetry.methods`` does NOT load any adapter module. ``list_symmetry_methods()`` returns metadata without importing any adapter. ``get_symmetry_method(name)`` and ``run_symmetry_method(name, ...)`` are the only paths that resolve the adapter module (via ``importlib.import_module``). Failed imports raise ``ScopeValidationError`` with an actionable "pip install pdelie[<extras>]" hint.
+
+---
+
+# PDELie - Execution Plan (V0.31.1a Research Spike)
+
+**Status:** COMPLETE (merged as PR #101)
 
 `v0.31.1a` is a compatibility research spike and decision milestone — **not** an implementation release. It does not modify any v0.31.0 report schema, add any root API, or bump the package version. It produces the SPEC 0 policy, the PySINDy 2.x migration audit, a machine-readable compatibility matrix, a private compatibility prototype (research-only), and the two test files that gate future implementation PRs.
 
@@ -52,11 +105,11 @@ PySINDy 2.x API deltas (six independent breaks + one unchanged random-state obse
 
 ## Recommended follow-up implementation
 
-`v0.31.1` (implementation PR, follows this research spike): widen `numpy>=1.24,<3`; move the `[downstream]` extra to `pysindy>=2.1,<3` scoped to `python_version < '3.15'`; retire the `setuptools<82` temporary cap (pysindy 2.x uses `importlib.metadata`); migrate the six API-break sites; either promote `_pysindy2_prototype.py` to `_pysindy_compat.py` or delete it; retire the three xfailed tests in `tests/test_v0_31b3_pysindy_compatibility_policy.py`; add a `v0_32-release-gate` CI job proposal for v0.32 release close.
+`v0.32` (implementation, follows this research spike, per solo-dev consolidation policy): widen `numpy>=1.24,<3`; move the `[downstream]` extra to `pysindy>=2.1,<3` scoped to `python_version < '3.15'`; retire the `setuptools<82` temporary cap (pysindy 2.x uses `importlib.metadata`); migrate the six API-break sites; delete `_pysindy2_prototype.py` (outcome A — no runtime shim); retire the three xfailed tests in `tests/test_v0_31b3_pysindy_compatibility_policy.py`; rename CI release-gate job `v0_31-release-gate → v0_32-release-gate` at v0.32 release close.
 
 ## Retained xfails (unchanged by this spike)
 
-The three v0.31b3-era xfails remain xfail in v0.31.1a — the spike does not land runtime version guards on `run_pysindy_pde_task` / `inspect_pysindy_weak_pde_library` and does not extend `_resolve_backend_version` to include scipy. All three retire under the v0.31.1 implementation PR.
+The three v0.31b3-era xfails remain xfail in v0.31.1a — the spike does not land runtime version guards on `run_pysindy_pde_task` / `inspect_pysindy_weak_pde_library` and does not extend `_resolve_backend_version` to include scipy. All three retire under the v0.32 implementation.
 
 ---
 
