@@ -140,7 +140,8 @@ def _normalize_warnings(value: Any) -> list[str]:
         return []
     if isinstance(value, str) or not hasattr(value, "__iter__"):
         raise SchemaValidationError(
-            "warnings must be a sequence of strings; got a single non-string value."
+            "warnings must be a sequence of warning strings (e.g. list/tuple); "
+            "a single string or a non-iterable value is not accepted."
         )
     normalized: list[str] = []
     for index, warning in enumerate(value):

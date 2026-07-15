@@ -675,9 +675,10 @@ __all__: Sequence[str] = (
 
 
 # ---------------------------------------------------------------------------
-# Suppress unused-import warnings from static analysers — Iterable is
-# exported for downstream annotation use if needed but not otherwise used
-# in this module.
+# ``Iterable`` is imported for future annotation use but not referenced in
+# this module today. The bind-to-underscore below silences unused-import
+# warnings from static analysers without implying a public export contract
+# (``Iterable`` is not in ``__all__``).
 # ---------------------------------------------------------------------------
 
 _ = Iterable
