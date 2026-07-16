@@ -1,3 +1,24 @@
+# PDELie - Execution Plan (V0.32d External-Data Readiness Cookbooks)
+
+**Status:** IN_PROGRESS
+
+`v0.32d` ships two narrow external-data readiness cookbooks required for the v0.32 milestone: (1) an honest PDEBench 1D Burgers slice cookbook, and (2) a metadata-only The Well feasibility scan. Neither is a broad dataset adapter framework; neither makes a recovery benchmark claim.
+
+Decision label: `v0_32d_pdebench_1d_burgers_readiness_and_the_well_feasibility_scan`.
+
+Substantive changes:
+
+- Preflight audit: PDEBench 1D Burgers V8 shard `1D_Burgers_Sols_Nu0.001.hdf5` (DaRUS `doi:10.18419/darus-2986`, CC-BY-4.0) with MD5 `b4be2fc3383f737c76033073e6d2ccfb`. Layout `(n_traj, T, X)` float32; datasets `/tensor`, `/x-coordinate`, `/t-coordinate`; periodic-in-x boundary; equation convention `u_t + u u_x = nu u_xx` — exact match with `pdelie.residuals.BurgersResidualEvaluator`. Frozen at `configs/external_data/pdebench_burgers_1d_readiness.json`.
+- Preflight audit: The Well v1 (Ohana et al., NeurIPS 2024) — 23 datasets enumerated. Every dataset is 2D or 3D on a structured grid and either carries multiple physically coupled channels or is coupled through the geometry itself. NO honest scalar 1D slice exists. Frozen at `configs/external_data/the_well_feasibility_scan.json` with `conclusion = "blocked_multichannel_required"`.
+- New submodule-only cookbook `pdelie.examples.pdebench_burgers_1d_readiness` with `run_pdebench_burgers_1d_readiness_cookbook(cached_file_path=..., residual_preflight=...)` and a `__main__` CLI. Narrow loader: exact expected filename + MD5 checksum + HDF5 dataset-path verification + axis-shape validation + uniformity check + optional Burgers residual preflight (interior-only + full-grid diagnostics, `diagnostic_only=True`). Emits a strict-JSON `pdelie_external_data_readiness` report.
+- New submodule-only scan `pdelie.examples.the_well_feasibility_scan` with `run_the_well_feasibility_scan()` and a `__main__` CLI. Metadata-only — no network I/O — emits a strict-JSON `pdelie_the_well_feasibility_scan` report with `conclusion = "blocked_multichannel_required"`.
+- Optional dependency: `h5py`. v0.32d does NOT add a broad `pdelie[pdebench]` extra — users install `h5py` directly. Absent `h5py`, all non-file paths of the cookbook (unavailable / config validation / checksum-mismatch on the wrong file) still work.
+- 20 v0.32d contract tests in `tests/test_v0_32d_external_data_readiness.py` covering: strict-JSON config + output; exact dataset identifier and checksum enforcement; wrong-checksum rejection; unknown-variable rejection; axis-mismatch rejection; missing-boundary-metadata blocks residual; missing-coefficient-metadata blocks residual; supported-cached-slice FieldBatch construction; no-train-test-policy-invented; no-recovery-claim in conclusion; optional-dataset absence nonfatal; no-bulk-network-download; The Well scan metadata-only; The Well conclusion `blocked_multichannel_required`; no broad root/data API leaks; citation/license/provenance present; strict-JSON NaN/Inf rejection; docs do NOT use broad "PDEBench support" / "The Well support" phrases; CLI JSON-only; release-gate manifest pins the narrow surface.
+
+Non-goals: no broad `from_pdebench` / `from_the_well` adapter; no adapter registry; no automatic dataset-name inference; no broad PDEBench support claim; no recovery benchmark claim; no model training; no FNO/U-Net/PINN comparison; no external-data symmetry discovery claim; no The Well full-data download in CI; no multi-channel or 2D widening; no root API; no hidden train/test redefinition; no package version bump; no PyPI/TestPyPI publication.
+
+---
+
 # PDELie - Execution Plan (V0.32c Candidate-to-Discovery Workflow Example)
 
 **Status:** IN_PROGRESS
