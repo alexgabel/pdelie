@@ -3297,3 +3297,517 @@ def summarize_downstream_discovery_workflow(
         missing_evidence=missing_evidence,
         extra_metrics=normalized_extra_metrics,
     )
+
+
+# ---------------------------------------------------------------------------
+# v0.32c: candidate-to-discovery workflow (composed) ------------------------
+# ---------------------------------------------------------------------------
+#
+# 15 explicit ordered stages, each carried natively by an existing per-stage
+# summary or a v0.32c glue block. See:
+#   docs/design/GENERATOR_CONFIDENCE_ADDITIVE_FIELDS.md (unrelated: v0.32b)
+#   docs/planning/PLAN.md (v0.32c planning note)
+#   src/pdelie/examples/candidate_to_discovery_workflow.py (canonical runner)
+#
+
+_CANDIDATE_TO_DISCOVERY_STAGE_ORDER: tuple[str, ...] = (
+    "field_readiness",
+    "derivative_residual_evidence",
+    "symmetry_method_result",
+    "candidate_summary",
+    "generator_confidence",
+    "candidate_validation",
+    "finite_transform_verification",
+    "action_policy",
+    "orbit_or_coverage_diagnostics",
+    "split_leakage_provenance",
+    "baseline_discovery_task",
+    "candidate_guided_discovery_task",
+    "downstream_comparison",
+    "evidence_conclusion",
+    "scope_boundaries",
+)
+
+_STAGE_MARKER_SUMMARY_TYPE = "candidate_to_discovery_workflow_stage_marker"
+_STAGE_MARKER_STATUSES = frozenset(
+    {"blocked", "not_configured", "unavailable", "skipped_by_policy"}
+)
+_STAGE_MARKER_KEYS = frozenset({"summary_type", "status", "reason", "stage"})
+
+_EVIDENCE_CONCLUSION_LABELS = frozenset(
+    {
+        "successful_composition",
+        "valid_but_not_useful",
+        "blocked_by_field_readiness",
+        "blocked_by_candidate_validation",
+        "blocked_by_finite_transform_verification",
+        "blocked_by_action_policy",
+        "blocked_by_split_leakage_provenance",
+        "blocked_by_discovery_task",
+    }
+)
+
+_ACTION_POLICY_KEYS = frozenset(
+    {
+        "explicitly_configured_by_caller",
+        "shifts",
+        "orbit_cardinality",
+        "augmentation_budget",
+        "train_test_policy",
+        "action_family",
+        "warnings",
+    }
+)
+
+_DOWNSTREAM_COMPARISON_KEYS = frozenset(
+    {
+        "metric_key",
+        "baseline_value",
+        "candidate_guided_value",
+        "absolute_delta",
+        "relative_delta",
+        "improvement_direction",
+        "improved",
+        "warnings",
+    }
+)
+
+_EVIDENCE_CONCLUSION_KEYS = frozenset(
+    {"label", "reasons", "downstream_gain_claimed"}
+)
+
+
+def _validate_stage_marker(value: Mapping[str, Any], *, stage: str) -> dict[str, Any]:
+    keys = set(value.keys())
+    if keys != _STAGE_MARKER_KEYS:
+        raise SchemaValidationError(
+            f"{stage} stage marker must have exactly keys "
+            f"{sorted(_STAGE_MARKER_KEYS)}; got {sorted(keys)!r}."
+        )
+    if value["summary_type"] != _STAGE_MARKER_SUMMARY_TYPE:
+        raise SchemaValidationError(
+            f"{stage} stage marker summary_type must be "
+            f"{_STAGE_MARKER_SUMMARY_TYPE!r}."
+        )
+    status = value["status"]
+    if status not in _STAGE_MARKER_STATUSES:
+        raise SchemaValidationError(
+            f"{stage} stage marker status must be one of "
+            f"{sorted(_STAGE_MARKER_STATUSES)}; got {status!r}."
+        )
+    if value["stage"] != stage:
+        raise SchemaValidationError(
+            f"{stage} stage marker.stage must equal {stage!r}; got "
+            f"{value['stage']!r}."
+        )
+    reason = value["reason"]
+    if not isinstance(reason, str) or not reason.strip():
+        raise SchemaValidationError(
+            f"{stage} stage marker.reason must be a non-empty string."
+        )
+    return {
+        "summary_type": _STAGE_MARKER_SUMMARY_TYPE,
+        "status": status,
+        "reason": reason,
+        "stage": stage,
+    }
+
+
+def _stage_or_marker(
+    value: Any,
+    *,
+    stage: str,
+    expected_summary_types: frozenset[str] | set[str] | None,
+    allow_none: bool = False,
+) -> dict[str, Any] | None:
+    """v0.32c helper: validate a per-stage nested report OR accept a marker.
+
+    ``expected_summary_types`` is the set of frozen summary_types that a real
+    report for this stage may declare (e.g. ``{"field_batch_readiness"}``).
+    When ``None``, any non-marker mapping is passed through as-is
+    (used for glue blocks that are validated separately by the caller).
+    """
+    if value is None:
+        if allow_none:
+            return None
+        raise SchemaValidationError(
+            f"{stage} is required; use a workflow_stage_marker to record "
+            "unavailable / blocked / skipped stages."
+        )
+    if not isinstance(value, Mapping):
+        raise SchemaValidationError(
+            f"{stage} must be a mapping (real report or workflow_stage_marker)."
+        )
+    if value.get("summary_type") == _STAGE_MARKER_SUMMARY_TYPE:
+        return _validate_stage_marker(value, stage=stage)
+    if expected_summary_types is None:
+        result_any: dict[str, Any] = _validate_json_compatible(
+            dict(value), name=stage
+        )
+        return result_any
+    return _runtime_report(
+        value, name=stage, expected_summary_types=expected_summary_types
+    )
+
+
+def _validate_action_policy(value: Any, *, name: str = "action_policy") -> dict[str, Any]:
+    mapping = _require_mapping(value, name=name)
+    keys = set(mapping.keys())
+    if keys != _ACTION_POLICY_KEYS:
+        missing = _ACTION_POLICY_KEYS - keys
+        extra = keys - _ACTION_POLICY_KEYS
+        raise SchemaValidationError(
+            f"{name} must have exactly keys {sorted(_ACTION_POLICY_KEYS)}; "
+            f"missing={sorted(missing)!r}, extra={sorted(extra)!r}."
+        )
+    explicit = mapping["explicitly_configured_by_caller"]
+    if not isinstance(explicit, bool) or explicit is not True:
+        raise SchemaValidationError(
+            f"{name}.explicitly_configured_by_caller must be True. Action "
+            "parameters (shifts, orbit_cardinality, augmentation_budget, "
+            "train_test_policy) are NEVER inferred from method scores."
+        )
+    shifts = mapping["shifts"]
+    if not isinstance(shifts, Sequence) or isinstance(shifts, (str, bytes)):
+        raise SchemaValidationError(f"{name}.shifts must be a list.")
+    shifts_out: list[Any] = []
+    for index, item in enumerate(shifts):
+        if isinstance(item, bool):
+            raise SchemaValidationError(
+                f"{name}.shifts[{index}] must be a finite float; got bool."
+            )
+        try:
+            shift_value = float(item)
+        except (TypeError, ValueError) as exc:
+            raise SchemaValidationError(
+                f"{name}.shifts[{index}] must be a finite float."
+            ) from exc
+        if not np.isfinite(shift_value):
+            raise SchemaValidationError(
+                f"{name}.shifts[{index}] must be a finite float; NaN/Inf forbidden."
+            )
+        shifts_out.append(shift_value)
+    orbit_cardinality = mapping["orbit_cardinality"]
+    if isinstance(orbit_cardinality, bool) or not isinstance(orbit_cardinality, int):
+        raise SchemaValidationError(
+            f"{name}.orbit_cardinality must be a non-negative integer."
+        )
+    if orbit_cardinality < 0:
+        raise SchemaValidationError(
+            f"{name}.orbit_cardinality must be a non-negative integer."
+        )
+    augmentation_budget = mapping["augmentation_budget"]
+    if augmentation_budget is not None:
+        if isinstance(augmentation_budget, bool) or not isinstance(augmentation_budget, int):
+            raise SchemaValidationError(
+                f"{name}.augmentation_budget must be a non-negative integer or None."
+            )
+        if augmentation_budget < 0:
+            raise SchemaValidationError(
+                f"{name}.augmentation_budget must be a non-negative integer or None."
+            )
+    train_test_policy = mapping["train_test_policy"]
+    if not isinstance(train_test_policy, str) or not train_test_policy.strip():
+        raise SchemaValidationError(
+            f"{name}.train_test_policy must be a non-empty string."
+        )
+    action_family = mapping["action_family"]
+    if not isinstance(action_family, str) or not action_family.strip():
+        raise SchemaValidationError(
+            f"{name}.action_family must be a non-empty string."
+        )
+    warnings_out = _validate_str_list(mapping["warnings"], name=f"{name}.warnings")
+    return {
+        "explicitly_configured_by_caller": True,
+        "shifts": shifts_out,
+        "orbit_cardinality": int(orbit_cardinality),
+        "augmentation_budget": (
+            None if augmentation_budget is None else int(augmentation_budget)
+        ),
+        "train_test_policy": train_test_policy,
+        "action_family": action_family,
+        "warnings": warnings_out,
+    }
+
+
+def _validate_downstream_comparison(
+    value: Any, *, name: str = "downstream_comparison"
+) -> dict[str, Any]:
+    mapping = _require_mapping(value, name=name)
+    keys = set(mapping.keys())
+    if keys != _DOWNSTREAM_COMPARISON_KEYS:
+        missing = _DOWNSTREAM_COMPARISON_KEYS - keys
+        extra = keys - _DOWNSTREAM_COMPARISON_KEYS
+        raise SchemaValidationError(
+            f"{name} must have exactly keys "
+            f"{sorted(_DOWNSTREAM_COMPARISON_KEYS)}; "
+            f"missing={sorted(missing)!r}, extra={sorted(extra)!r}."
+        )
+    metric_key = mapping["metric_key"]
+    if not isinstance(metric_key, str) or not metric_key.strip():
+        raise SchemaValidationError(
+            f"{name}.metric_key must be a non-empty string."
+        )
+    baseline_value = _validate_finite_scalar(
+        mapping["baseline_value"], name=f"{name}.baseline_value"
+    )
+    candidate_guided_value = _validate_finite_scalar(
+        mapping["candidate_guided_value"],
+        name=f"{name}.candidate_guided_value",
+    )
+    absolute_delta = _validate_finite_scalar(
+        mapping["absolute_delta"], name=f"{name}.absolute_delta"
+    )
+    relative_delta = _validate_finite_scalar(
+        mapping["relative_delta"], name=f"{name}.relative_delta"
+    )
+    direction = mapping["improvement_direction"]
+    if direction not in _METHOD_SCORE_DIRECTIONS:
+        raise SchemaValidationError(
+            f"{name}.improvement_direction must be one of "
+            f"{sorted(_METHOD_SCORE_DIRECTIONS)}; got {direction!r}."
+        )
+    improved = mapping["improved"]
+    if improved is not None and not isinstance(improved, bool):
+        raise SchemaValidationError(
+            f"{name}.improved must be a boolean or None."
+        )
+    warnings_out = _validate_str_list(
+        mapping["warnings"], name=f"{name}.warnings"
+    )
+    return {
+        "metric_key": metric_key,
+        "baseline_value": baseline_value,
+        "candidate_guided_value": candidate_guided_value,
+        "absolute_delta": absolute_delta,
+        "relative_delta": relative_delta,
+        "improvement_direction": direction,
+        "improved": improved,
+        "warnings": warnings_out,
+    }
+
+
+def _validate_evidence_conclusion(
+    value: Any, *, name: str = "evidence_conclusion"
+) -> dict[str, Any]:
+    mapping = _require_mapping(value, name=name)
+    keys = set(mapping.keys())
+    if keys != _EVIDENCE_CONCLUSION_KEYS:
+        missing = _EVIDENCE_CONCLUSION_KEYS - keys
+        extra = keys - _EVIDENCE_CONCLUSION_KEYS
+        raise SchemaValidationError(
+            f"{name} must have exactly keys "
+            f"{sorted(_EVIDENCE_CONCLUSION_KEYS)}; "
+            f"missing={sorted(missing)!r}, extra={sorted(extra)!r}."
+        )
+    label = mapping["label"]
+    if label not in _EVIDENCE_CONCLUSION_LABELS:
+        raise SchemaValidationError(
+            f"{name}.label must be one of "
+            f"{sorted(_EVIDENCE_CONCLUSION_LABELS)}; got {label!r}."
+        )
+    reasons = _validate_str_list(mapping["reasons"], name=f"{name}.reasons")
+    downstream_gain_claimed = mapping["downstream_gain_claimed"]
+    if not isinstance(downstream_gain_claimed, bool):
+        raise SchemaValidationError(
+            f"{name}.downstream_gain_claimed must be a boolean."
+        )
+    if downstream_gain_claimed is not False:
+        raise SchemaValidationError(
+            f"{name}.downstream_gain_claimed must be False. The workflow "
+            "example never claims universal downstream benefit."
+        )
+    return {
+        "label": label,
+        "reasons": reasons,
+        "downstream_gain_claimed": False,
+    }
+
+
+def _validate_scope_boundaries(
+    value: Any, *, name: str = "scope_boundaries"
+) -> dict[str, bool]:
+    mapping = _require_mapping(value, name=name)
+    if not mapping:
+        raise SchemaValidationError(f"{name} must be non-empty.")
+    required_negative_claims = frozenset(
+        {
+            "periodic_scalar_1d_only",
+            "generic_symmetry_discovery_claimed",
+            "universal_downstream_benefit_claimed",
+            "noise_robustness_claimed",
+            "nonperiodic_claimed",
+            "multi_d_claimed",
+            "external_data_claimed",
+            "automatic_best_selection_claimed",
+        }
+    )
+    missing = required_negative_claims - set(mapping.keys())
+    if missing:
+        raise SchemaValidationError(
+            f"{name} is missing required scope-boundary keys: "
+            f"{sorted(missing)!r}."
+        )
+    normalized: dict[str, bool] = {}
+    for key, item in mapping.items():
+        if not isinstance(key, str) or not key.strip():
+            raise SchemaValidationError(
+                f"{name} keys must be non-empty strings."
+            )
+        if not isinstance(item, bool):
+            raise SchemaValidationError(
+                f"{name}[{key!r}] must be a boolean; got {type(item).__name__}."
+            )
+        normalized[key] = item
+    if normalized["periodic_scalar_1d_only"] is not True:
+        raise SchemaValidationError(
+            f"{name}['periodic_scalar_1d_only'] must be True."
+        )
+    for false_claim in required_negative_claims - {"periodic_scalar_1d_only"}:
+        if normalized[false_claim] is not False:
+            raise SchemaValidationError(
+                f"{name}[{false_claim!r}] must be False."
+            )
+    return normalized
+
+
+def summarize_candidate_to_discovery_workflow(
+    *,
+    field_readiness: Mapping[str, Any],
+    derivative_residual_evidence: Mapping[str, Any],
+    symmetry_method_result: Mapping[str, Any],
+    candidate_summary: Mapping[str, Any],
+    candidate_validation: Mapping[str, Any],
+    finite_transform_verification: Mapping[str, Any],
+    action_policy: Mapping[str, Any],
+    orbit_or_coverage_diagnostics: Mapping[str, Any],
+    split_leakage_provenance: Mapping[str, Any],
+    baseline_discovery_task: Mapping[str, Any],
+    candidate_guided_discovery_task: Mapping[str, Any],
+    downstream_comparison: Mapping[str, Any],
+    evidence_conclusion: Mapping[str, Any],
+    scope_boundaries: Mapping[str, Any],
+    generator_confidence: Mapping[str, Any] | None = None,
+    extra_metrics: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """v0.32c: composed candidate-to-discovery workflow summary.
+
+    Composes 15 explicit stages in a fixed order. Every stage is retained in
+    the emitted payload; unavailable / blocked / skipped stages are recorded
+    via a ``workflow_stage_marker`` (see :func:`_validate_stage_marker`) so
+    that no failed stage is silently omitted.
+
+    Non-goals: this is NOT a broad workflow engine; it does NOT rank methods;
+    it does NOT infer action parameters from method scores; it does NOT
+    claim universal downstream improvement. See
+    ``docs/strategy/VALID_BUT_NOT_USEFUL.md`` for the wedge principle.
+    """
+    field_readiness_stage = _stage_or_marker(
+        field_readiness,
+        stage="field_readiness",
+        expected_summary_types={"field_batch_readiness"},
+    )
+    derivative_residual_stage = _stage_or_marker(
+        derivative_residual_evidence,
+        stage="derivative_residual_evidence",
+        expected_summary_types={"vertical_slice", "residual_batch"},
+    )
+    symmetry_method_stage = _stage_or_marker(
+        symmetry_method_result,
+        stage="symmetry_method_result",
+        expected_summary_types={"pdelie_symmetry_method_result"},
+    )
+    candidate_stage = _stage_or_marker(
+        candidate_summary,
+        stage="candidate_summary",
+        expected_summary_types={"pdelie_symmetry_candidate"},
+    )
+    if generator_confidence is None:
+        generator_confidence_stage: dict[str, Any] = {
+            "summary_type": _STAGE_MARKER_SUMMARY_TYPE,
+            "status": "not_configured",
+            "reason": "generator_confidence_not_configured_by_caller",
+            "stage": "generator_confidence",
+        }
+    else:
+        generator_confidence_stage = _stage_or_marker(
+            generator_confidence,
+            stage="generator_confidence",
+            expected_summary_types={"generator_confidence"},
+        )  # type: ignore[assignment]
+    candidate_validation_stage = _stage_or_marker(
+        candidate_validation,
+        stage="candidate_validation",
+        expected_summary_types={"symmetry_candidate_validation"},
+    )
+    finite_transform_stage = _stage_or_marker(
+        finite_transform_verification,
+        stage="finite_transform_verification",
+        expected_summary_types={"verification_report"},
+    )
+    action_policy_stage = _validate_action_policy(action_policy)
+    orbit_stage = _stage_or_marker(
+        orbit_or_coverage_diagnostics,
+        stage="orbit_or_coverage_diagnostics",
+        expected_summary_types={
+            "uniform_translation_orbit",
+            "uniform_translation_orbit_batch",
+            "periodic_window_coverage",
+        },
+    )
+    split_provenance_stage = _stage_or_marker(
+        split_leakage_provenance,
+        stage="split_leakage_provenance",
+        expected_summary_types={"split_leakage_provenance"},
+    )
+    baseline_stage = _stage_or_marker(
+        baseline_discovery_task,
+        stage="baseline_discovery_task",
+        expected_summary_types={"discovery_task_result"},
+    )
+    candidate_guided_stage = _stage_or_marker(
+        candidate_guided_discovery_task,
+        stage="candidate_guided_discovery_task",
+        expected_summary_types={"discovery_task_result"},
+    )
+    downstream_comparison_stage = _validate_downstream_comparison(
+        downstream_comparison
+    )
+    evidence_conclusion_stage = _validate_evidence_conclusion(
+        evidence_conclusion
+    )
+    scope_boundaries_stage = _validate_scope_boundaries(scope_boundaries)
+
+    if extra_metrics is None:
+        normalized_extra_metrics: Mapping[str, Any] = {}
+    else:
+        normalized_extra_metrics = _require_mapping(
+            extra_metrics, name="extra_metrics"
+        )
+
+    payload: dict[str, Any] = {
+        "summary_schema_version": _SUMMARY_SCHEMA_VERSION,
+        "summary_type": "candidate_to_discovery_workflow",
+        "stage_order": list(_CANDIDATE_TO_DISCOVERY_STAGE_ORDER),
+        "field_readiness": field_readiness_stage,
+        "derivative_residual_evidence": derivative_residual_stage,
+        "symmetry_method_result": symmetry_method_stage,
+        "candidate_summary": candidate_stage,
+        "generator_confidence": generator_confidence_stage,
+        "candidate_validation": candidate_validation_stage,
+        "finite_transform_verification": finite_transform_stage,
+        "action_policy": action_policy_stage,
+        "orbit_or_coverage_diagnostics": orbit_stage,
+        "split_leakage_provenance": split_provenance_stage,
+        "baseline_discovery_task": baseline_stage,
+        "candidate_guided_discovery_task": candidate_guided_stage,
+        "downstream_comparison": downstream_comparison_stage,
+        "evidence_conclusion": evidence_conclusion_stage,
+        "scope_boundaries": scope_boundaries_stage,
+        "extra_metrics": normalized_extra_metrics,
+    }
+    validated: dict[str, Any] = _validate_strict_json_compatible(
+        payload,
+        name="candidate_to_discovery_workflow summary",
+    )
+    return validated

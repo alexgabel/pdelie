@@ -1,6 +1,13 @@
 # Valid But Not Useful — the PDELie wedge in one example
 
-**Status:** advisory, not a stable contract. This note documents PDELie's core wedge philosophy — *a valid symmetry candidate can pass every empirical check PDELie ships and still fail to improve downstream utility* — using a hand-authored static JSON fixture rather than a runnable example. A runnable version will follow once v0.31's downstream discovery task bridge is available; until then, the JSON fixture is enough to make the principle concrete.
+**Status:** advisory, not a stable contract. This note documents PDELie's core wedge philosophy — *a valid symmetry candidate can pass every empirical check PDELie ships and still fail to improve downstream utility* — using a hand-authored static JSON fixture (`docs/strategy/data/valid_but_not_useful_example.json`) *and*, since `v0.32c`, a runnable submodule-only example.
+
+The v0.32c runnable example is `pdelie.examples.candidate_to_discovery_workflow` (composed summary: `summarize_candidate_to_discovery_workflow`, `summary_type = "candidate_to_discovery_workflow"`). It ships two deterministic scenarios:
+
+- `scenario="successful"` — end-to-end executable chain (`FieldBatch → run_symmetry_method → validate → verify → materialize orbit (train-only) → run_pysindy_pde_task ×2 → measured downstream comparison`). The evidence-conclusion label is chosen from the measured `absolute_delta` against a fixed threshold; the runner never claims universal downstream improvement.
+- `scenario="valid_but_not_useful_static"` — every real stage (field-readiness through split/leakage) runs on the same real fixtures, but the two `discovery_task_result` slots and the `downstream_comparison` block are marked as a provenance-backed static illustration (`extra_metrics.static_illustration = True`) so runtime numbers are never mistaken for a live measurement.
+
+Both scenarios preserve the 15 explicit stages, and the composed summary carries `evidence_conclusion.downstream_gain_claimed = False` as a hard invariant.
 
 ## Why this note exists
 
