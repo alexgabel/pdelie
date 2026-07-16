@@ -1,3 +1,26 @@
+# PDELie - Execution Plan (V0.32a Modern Runtime Migration)
+
+**Status:** IN_PROGRESS
+
+`v0.32a` migrates the active development line from Python 3.11 + NumPy 1.x + PySINDy 1.7.5 to Python ≥3.12 + NumPy 2.x + PySINDy 2.1.x per the v0.31.1a research spike's outcome A (modern-only future line). It deletes the private prototype from that spike, retires the v0.31c1 `setuptools<82` cap, and hardens the reserved-`SymmetryCandidate`-representation construction path from a warning-gated placeholder to a hard `ScopeValidationError`.
+
+Decision label: `v0_32_modernization_outcome_A_modern_only_future_line`.
+
+Substantive changes:
+
+- pyproject.toml: `requires-python>=3.12`, `numpy>=2,<3`, `pysindy>=2.1,<3`, `scikit-learn>=1.4,<2`, `scipy>=1.14,<2`; the v0.31c1 `setuptools<82` cap is REMOVED (pysindy 2.x uses `importlib.metadata`).
+- PySINDy 2.x runtime migration across `src/pdelie/discovery/pysindy_adapter.py`, `src/pdelie/discovery/pysindy_bridge.py`, `src/pdelie/discovery/_pysindy_defaults.py`, `src/pdelie/tasks/discovery.py`, `src/pdelie/tasks/weak_pde_library.py`, `src/pdelie/examples/downstream_discovery_task_bridge.py`, and `tests/_helpers/downstream_benchmark.py`. Six documented API breaks absorbed (SINDy ctor kwargs removed, SINDy.fit kwargs removed + `t` positional-required, SINDy.differentiate removed → `model.differentiation_method(x, t)`, SINDy.model removed, STLSQ.fit_intercept removed, PDELibrary/WeakPDELibrary require `function_library=<BaseFeatureLibrary>`).
+- `SymmetryCandidate` reserved-type hardening: public construction of `matrix_lie_algebra` / `coordinate_vector_field` / `finite_transform_spec` / `latent_generator_reference` now raises `ScopeValidationError` (was warning-gated placeholder).
+- Deletions: `_pysindy2_prototype.py`, `test_pysindy_2_migration_prototype.py`, `test_v0_31b3_pysindy_compatibility_policy.py`, `test_v0_31c1_downstream_packaging_policy.py`.
+- New tests: `tests/test_v0_32a_modern_runtime.py` (20+ named tests).
+- CI: `v0_31-release-gate` → `v0_32-release-gate` (matrix Python 3.12/3.13); `editable-tests` matrixed; new `py314-core-only-advisory` job; `setuptools<81` co-install workaround removed.
+
+Non-goals: no PySINDy 1.x production support on main, no dual-generation shim, no schema changes on `discovery_task_result` (22 keys) or `pdelie_weak_pde_library_diagnostic` (27 keys), no new symmetry method, no nonperiodic discovery, no external dataset support, no new PDE, no noise/WSINDy claim, no root exports, no package version bump, no tag.
+
+Follow-up milestones in v0.32 arc: v0.32b (method_scores + uncertainty_report + calibration_report), v0.32c (composed workflow example), v0.32d (PDEBench readiness cookbook), v0.32.0 (release close — single tag).
+
+---
+
 # PDELie - Execution Plan (V0.30.1 SymmetryMethod Registry MVP)
 
 **Status:** IN_PROGRESS

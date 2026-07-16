@@ -5,21 +5,22 @@ on:
   pull_request:
 
 jobs:
-  v0_31-release-gate:
+  v0_32-release-gate:
+    # v0.32a: modern-runtime release gate. Python 3.12/3.13 blocking (via
+    # matrix), Python 3.14 advisory-only in a separate job below.
+    # PySINDy is resolved by the [test] extra directly to the declared
+    # >=2.1,<3 pin; no explicit setuptools workaround (pysindy 2.x uses
+    # importlib.metadata). See docs/design/RUNTIME_COMPATIBILITY_POLICY.md.
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13"]
     runs-on: ubuntu-latest
-    # v0.31b3: this job exercises PySINDy at the declared primary tested
-    # version pinned by configs/pysindy_compatibility_matrix.json. See
-    # docs/design/PYSINDY_COMPATIBILITY_POLICY.md.
-    # v0.31.0 release close: renamed from the pre-close release-gate job
-    # name. Unrelated jobs (lint, typecheck, coverage,
-    # docs-build, editable-tests, package-smoke) are unchanged.
-    env:
-      PDELIE_PINNED_PYSINDY_VERSION: "1.7.5"
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
-          python-version: "3.11"
+          python-version: ${{ matrix.python-version }}
       - name: Install package and test dependencies
         shell: bash
         run: |
@@ -38,16 +39,9 @@ jobs:
           }
           retry 3 python -m pip install --upgrade pip
           retry 3 python -m pip install -e .[test]
-          # v0.31b3: pin pysindy to the declared primary tested version.
-          # The [test] extra already resolves pysindy>=1.7.5,<2; this pin
-          # makes the CI-exercised version match the compatibility matrix.
-          # pysindy 1.7.5 imports pkg_resources at package init, which
-          # setuptools>=81 removed — pin setuptools<81 for the 1.x line.
-          retry 3 python -m pip install 'setuptools<81'
-          retry 3 python -m pip install "pysindy==${PDELIE_PINNED_PYSINDY_VERSION}"
       - name: Check dependencies
         run: python -m pip check
-      - name: Run v0.31 release gate (declarative manifest + all retained per-version gates + v0.31 compat policy)
+      - name: Run v0.32 release gate (declarative manifest + retained per-version gates + v0.32a modern runtime tests)
         run: >
           python -m pytest
           tests/test_current_release_gate.py
@@ -77,7 +71,7 @@ jobs:
           tests/test_v0_27_release_gate.py
           tests/test_v0_28_release_gate.py
           tests/test_v0_29_release_gate.py
-          tests/test_v0_31b3_pysindy_compatibility_policy.py
+          tests/test_v0_32a_modern_runtime.py
   # v0.30e hygiene phase 1 landed lint/typecheck/coverage as advisory.
   # v0.30.1a hygiene phase 2 (this PR) promotes `lint` from advisory to
   # blocking: a red run now fails the workflow. `typecheck` and `coverage`
@@ -89,7 +83,7 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
-          python-version: "3.11"
+          python-version: "3.12"
       - name: Install package and test dependencies
         shell: bash
         run: |
@@ -117,7 +111,7 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
-          python-version: "3.11"
+          python-version: "3.12"
       - name: Install package and test dependencies
         shell: bash
         run: |
@@ -146,7 +140,7 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
-          python-version: "3.11"
+          python-version: "3.12"
       - name: Install package and test dependencies
         shell: bash
         run: |
@@ -181,7 +175,7 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
-          python-version: "3.11"
+          python-version: "3.12"
       - name: Install documentation dependencies
         shell: bash
         run: |
@@ -203,17 +197,17 @@ jobs:
       - name: Build documentation
         run: sphinx-build -b html -W --keep-going docs docs/_build/html
   editable-tests:
+    # v0.32a: modern-runtime editable-install lane. Matrix over 3.12/3.13.
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13"]
     runs-on: ubuntu-latest
-    # v0.31b3: this job exercises PySINDy at the declared primary tested
-    # version pinned by configs/pysindy_compatibility_matrix.json. See
-    # docs/design/PYSINDY_COMPATIBILITY_POLICY.md.
-    env:
-      PDELIE_PINNED_PYSINDY_VERSION: "1.7.5"
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
-          python-version: "3.11"
+          python-version: ${{ matrix.python-version }}
       - name: Install package and test dependencies
         shell: bash
         run: |
@@ -232,13 +226,6 @@ jobs:
           }
           retry 3 python -m pip install --upgrade pip
           retry 3 python -m pip install -e .[test]
-          # v0.31b3: pin pysindy to the declared primary tested version.
-          # The [test] extra already resolves pysindy>=1.7.5,<2; this pin
-          # makes the CI-exercised version match the compatibility matrix.
-          # pysindy 1.7.5 imports pkg_resources at package init, which
-          # setuptools>=81 removed — pin setuptools<81 for the 1.x line.
-          retry 3 python -m pip install 'setuptools<81'
-          retry 3 python -m pip install "pysindy==${PDELIE_PINNED_PYSINDY_VERSION}"
       - name: Check dependencies
         run: python -m pip check
       - name: Run test suite
@@ -268,7 +255,7 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
-          python-version: "3.11"
+          python-version: "3.12"
       - name: Install packaging frontend
         shell: bash
         run: |
@@ -974,3 +961,42 @@ jobs:
           assert first["verification"]["classification"] == "exact"
           print("example-smoke-ok")
           PY
+
+  # v0.32a: Python 3.14 advisory core-only lane. Non-blocking; exercises
+  # the core numeric surface (contracts / derivatives / residuals /
+  # reporting / symmetry registry) WITHOUT the [downstream] extra so
+  # PySINDy 2.1.x compatibility on 3.14 is not required for this lane
+  # to pass. See docs/design/RUNTIME_COMPATIBILITY_POLICY.md.
+  py314-core-only-advisory:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.14"
+      - name: Install core-only (no [downstream] extra)
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          # Core-only: install pdelie itself + pytest + pyyaml only. The
+          # [downstream] extra is not exercised on 3.14 pending upstream
+          # PySINDy readiness.
+          python -m pip install -e . pytest pyyaml
+      - name: pip check
+        run: python -m pip check
+      - name: Core import smoke
+        run: |
+          python -c "
+          import pdelie
+          from pdelie.data import generate_heat_1d_field_batch
+          from pdelie.derivatives import compute_spectral_fd_derivatives
+          from pdelie.residuals import HeatResidualEvaluator
+          from pdelie.symmetry import list_symmetry_methods, SymmetryCandidate
+          field = generate_heat_1d_field_batch(batch_size=1, num_times=7, num_points=16, seed=1)
+          deriv = compute_spectral_fd_derivatives(field)
+          resid = HeatResidualEvaluator().evaluate(field, deriv)
+          methods = list_symmetry_methods()
+          assert any(m['method_name'] == 'polynomial_translation_svd' for m in methods)
+          print('py314-core-only-smoke-ok')
+          "

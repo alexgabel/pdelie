@@ -25,6 +25,16 @@ Stable public import path for the invariant canonical object:
 
 - `pdelie.InvariantMapSpec`
 
+Stable public-surface note for the v0.32a modern-runtime migration:
+
+- `v0.32a` migrates the active development line to Python ≥3.12 + NumPy 2.x + PySINDy 2.1.x. The v0.31.x line is retained as the legacy Python 3.11 + PySINDy 1.7.x maintenance branch — see `docs/design/RUNTIME_COMPATIBILITY_POLICY.md`.
+- **No public schema changed**: `discovery_task_result` remains 22 keys; `pdelie_weak_pde_library_diagnostic` remains 27 keys; `SymmetryCandidate` and `SymmetryMethodResult` shapes are unchanged.
+- **`SymmetryCandidate` reserved discriminators (`matrix_lie_algebra`, `coordinate_vector_field`, `finite_transform_spec`, `latent_generator_reference`) now raise `ScopeValidationError` on public construction.** The v0.30.1 warning-gated placeholder path was removed as a hardening step; a payload=None candidate is no longer a valid public shape.
+- The private v0.31.1a research prototype (`src/pdelie/discovery/_pysindy2_prototype.py`) is deleted.
+- Temporary constraints removed: `setuptools<82; python_version < '3.12'` (pysindy 2.x uses `importlib.metadata`), `pysindy>=1.7.5,<2`, `scikit-learn>=1.2.2,<1.3`, `numpy<2` core cap.
+- CI: blocking Python 3.12 / 3.13 lanes; advisory core-only Python 3.14 lane.
+- No new root `pdelie` export. No new PDE. No new symmetry method. No nonperiodic PySINDy discovery. No noise/WSINDy claim.
+
 Stable public-surface note for the v0.30.1 sub-release:
 
 - `v0.30.1` adds the extensibility foundation for external symmetry-method integrations as a **submodule-only surface under `pdelie.symmetry`**. No root `pdelie` export is added.

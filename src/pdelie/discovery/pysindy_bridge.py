@@ -43,9 +43,19 @@ def _fit_pysindy_smoke(
     time_values: np.ndarray,
     feature_names: list[str],
 ):
+    """Minimal PySINDy 2.1.x fit smoke.
+
+    v0.32a migration: ``SINDy.__init__`` in 2.x no longer accepts
+    ``feature_names``. The feature names live on ``SINDy.fit(...)``
+    instead.
+    """
     pysindy = _require_pysindy()
-    model = pysindy.SINDy(feature_names=list(feature_names))
-    model.fit(np.asarray(trajectory, dtype=float), t=np.asarray(time_values, dtype=float))
+    model = pysindy.SINDy()
+    model.fit(
+        np.asarray(trajectory, dtype=float),
+        t=np.asarray(time_values, dtype=float),
+        feature_names=list(feature_names),
+    )
     return model, np.asarray(model.coefficients(), dtype=float)
 
 

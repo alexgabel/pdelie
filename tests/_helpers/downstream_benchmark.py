@@ -40,13 +40,14 @@ DOWNSTREAM_BENCHMARK_CONFIG: dict[str, object] = {
     "burgers_heldout_seed": 311,
     "burgers_nuisance_train_shift_seed": 312,
     "burgers_nuisance_heldout_shift_seed": 313,
+    # v0.32a: PySINDy 2.1.x kwargs — all legacy 1.x ensemble/multi-trajectory
+    # kwargs removed. See _pysindy_defaults.py for the primary reference.
     "pysindy_model": {
         "optimizer": {
             "threshold": 0.1,
             "alpha": 0.05,
             "max_iter": 20,
             "normalize_columns": False,
-            "fit_intercept": False,
             "copy_X": True,
             "verbose": False,
         },
@@ -56,7 +57,6 @@ DOWNSTREAM_BENCHMARK_CONFIG: dict[str, object] = {
             "interaction_only": False,
             "include_bias": True,
             "order": "C",
-            "library_ensemble": False,
         },
         "differentiation_method": {
             "order": 2,
@@ -66,22 +66,13 @@ DOWNSTREAM_BENCHMARK_CONFIG: dict[str, object] = {
             "drop_endpoints": False,
             "periodic": False,
         },
-        "discrete_time": False,
     },
-    "pysindy_fit": {
-        "multiple_trajectories": True,
-        "unbias": True,
-        "quiet": True,
-        "ensemble": False,
-        "library_ensemble": False,
-        "replace": True,
-        "n_candidates_to_drop": 1,
-        "n_subset": None,
-        "n_models": None,
-        "ensemble_aggregator": None,
-    },
+    # SINDy.fit(x, t, x_dot=None, u=None, feature_names=None) — all legacy
+    # kwargs removed. This benchmark passes only x + t + feature_names.
+    "pysindy_fit": {},
+    # SINDy.score(x, t=None, x_dot=None, u=None, metric=None) — 2.x drops
+    # multiple_trajectories.
     "pysindy_score": {
-        "multiple_trajectories": True,
         "metric": "r2_score",
     },
 }
@@ -100,7 +91,6 @@ def _benchmark_settings() -> dict[str, object]:
             "optimizer": dict(model_config["optimizer"]),
             "feature_library": dict(model_config["feature_library"]),
             "differentiation_method": dict(model_config["differentiation_method"]),
-            "discrete_time": bool(model_config["discrete_time"]),
         },
         "pysindy_fit": dict(DOWNSTREAM_BENCHMARK_CONFIG["pysindy_fit"]),
         "pysindy_score": dict(DOWNSTREAM_BENCHMARK_CONFIG["pysindy_score"]),
@@ -213,14 +203,15 @@ def _bridge_sample_fields(
 
 
 def _build_pysindy_model(feature_names: list[str]):
+    """Build a PySINDy 2.1.x SINDy model. ``feature_names`` is now passed
+    on ``SINDy.fit(...)`` in 2.x, not the constructor.
+    """
     pysindy, _ = _require_downstream_dependencies()
     model_config = dict(DOWNSTREAM_BENCHMARK_CONFIG["pysindy_model"])
     return pysindy.SINDy(
         optimizer=pysindy.STLSQ(**dict(model_config["optimizer"])),
         feature_library=pysindy.PolynomialLibrary(**dict(model_config["feature_library"])),
         differentiation_method=pysindy.FiniteDifference(**dict(model_config["differentiation_method"])),
-        feature_names=list(feature_names),
-        discrete_time=bool(model_config["discrete_time"]),
     )
 
 
@@ -237,16 +228,28 @@ def _fit_and_score_branch(
         raise AssertionError("Training and held-out branches must share identical feature names.")
 
     model = _build_pysindy_model(train_feature_names)
+    # v0.32a: SINDy.fit takes a single trajectory or a list; ``t`` is
+    # positional-required; ``feature_names`` moves off the ctor.
+    fit_input = (
+        train_trajectories[0]
+        if len(train_trajectories) == 1
+        else train_trajectories
+    )
     model.fit(
-        train_trajectories,
+        fit_input,
         t=train_time_values,
+        feature_names=list(train_feature_names),
         **dict(DOWNSTREAM_BENCHMARK_CONFIG["pysindy_fit"]),
+    )
+    score_input = (
+        heldout_trajectories[0]
+        if len(heldout_trajectories) == 1
+        else heldout_trajectories
     )
     score = float(
         model.score(
-            heldout_trajectories,
+            score_input,
             t=train_time_values,
-            multiple_trajectories=bool(DOWNSTREAM_BENCHMARK_CONFIG["pysindy_score"]["multiple_trajectories"]),
             metric=r2_score,
         )
     )
