@@ -40,6 +40,8 @@ Deliberate scope narrowings that appear in earlier drafts of the wedge but are *
 
 Any claim beyond this chain in public marketing or documentation is a wedge drift and should be corrected against `docs/specs/API_STABILITY.md` and `docs/specs/support_matrix.v0_30.json`.
 
+**v0.32d anchor (submodule-only, not a stable contract).** `pdelie.examples.pdebench_burgers_1d_readiness` is a narrow readiness cookbook for exactly one PDEBench 1D Burgers shard (`1D_Burgers_Sols_Nu0.001.hdf5`, DaRUS `10.18419/darus-2986`, CC-BY-4.0). `pdelie.examples.the_well_feasibility_scan` is a metadata-only scan of The Well v1 whose frozen conclusion is `blocked_multichannel_required` — no honest scalar 1D slice exists in The Well v1 release. These are NOT broad dataset adapters, do NOT make a recovery benchmark claim, and do NOT enable multi-channel / 2D / 3D data through PDELie's scalar 1D contract.
+
 **v0.32c anchor (submodule-only, not a stable contract).** `pdelie.reporting.summarize_candidate_to_discovery_workflow` composes the chain above into a strict-JSON payload with 15 explicit stages; `pdelie.examples.candidate_to_discovery_workflow` is a JSON-only runnable example wired against the built-in `polynomial_translation_svd` method. The example is not a general workflow engine, not a benchmark harness, and not an automatic augmentation policy — action parameters (shifts, orbit cardinality, augmentation budget, train/test split) are always caller-configured and NEVER inferred from method scores. The example is scoped to periodic scalar 1D data with the built-in translation method only. See `docs/strategy/VALID_BUT_NOT_USEFUL.md`.
 
 ## What PDELie is not

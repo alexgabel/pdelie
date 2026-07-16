@@ -3,7 +3,7 @@
   "summary_type": "pdelie_declarative_release_gate_manifest",
   "scope": "declarative_release_gate_checks_only",
   "current_release_gate_job_name": "v0_32-release-gate",
-  "release_count": 22,
+  "release_count": 23,
   "excluded_functional_release_gate_files": [
     {
       "file": "tests/test_v0_4_release_gate.py",
@@ -1749,6 +1749,103 @@
         "phrases": [
           "v0.32c",
           "candidate_to_discovery_workflow"
+        ]
+      }
+    },
+    {
+      "release": "0.32d",
+      "source_file": "tests/test_v0_32d_external_data_readiness.py",
+      "required_submodule_attributes": [
+        {
+          "submodule": "pdelie.examples.pdebench_burgers_1d_readiness",
+          "name": "run_pdebench_burgers_1d_readiness_cookbook"
+        },
+        {
+          "submodule": "pdelie.examples.pdebench_burgers_1d_readiness",
+          "name": "load_pdebench_burgers_1d_readiness_config"
+        },
+        {
+          "submodule": "pdelie.examples.pdebench_burgers_1d_readiness",
+          "name": "main"
+        },
+        {
+          "submodule": "pdelie.examples.the_well_feasibility_scan",
+          "name": "run_the_well_feasibility_scan"
+        },
+        {
+          "submodule": "pdelie.examples.the_well_feasibility_scan",
+          "name": "load_the_well_feasibility_scan_config"
+        },
+        {
+          "submodule": "pdelie.examples.the_well_feasibility_scan",
+          "name": "main"
+        }
+      ],
+      "forbidden_root_attributes": {
+        "names": [
+          "from_pdebench",
+          "from_the_well",
+          "from_thewell",
+          "load_pdebench",
+          "load_the_well",
+          "run_pdebench_burgers_1d_readiness_cookbook",
+          "run_the_well_feasibility_scan"
+        ]
+      },
+      "forbidden_submodule_attributes": {
+        "submodules": [
+          "pdelie.data",
+          "pdelie.reporting",
+          "pdelie.tasks",
+          "pdelie.discovery"
+        ],
+        "names": [
+          "from_pdebench",
+          "from_the_well",
+          "from_thewell",
+          "load_pdebench",
+          "load_the_well"
+        ]
+      },
+      "strict_json_manifests": [
+        {
+          "path": "configs/external_data/pdebench_burgers_1d_readiness.json"
+        },
+        {
+          "path": "configs/external_data/the_well_feasibility_scan.json"
+        }
+      ],
+      "required_phrases_in_api_stability": {
+        "doc_path": "docs/specs/API_STABILITY.md",
+        "phrases": [
+          "v0.32d external-data readiness cookbooks",
+          "v0_32d_pdebench_1d_burgers_readiness_and_the_well_feasibility_scan",
+          "pdebench_burgers_1d_readiness",
+          "the_well_feasibility_scan",
+          "1D_Burgers_Sols_Nu0.001.hdf5",
+          "10.18419/darus-2986",
+          "CC-BY-4.0",
+          "blocked_multichannel_required",
+          "unavailable_no_cached_dataset"
+        ]
+      },
+      "required_phrases_in_plan": {
+        "doc_path": "docs/planning/PLAN.md",
+        "phrases": [
+          "V0.32d External-Data Readiness Cookbooks",
+          "v0_32d_pdebench_1d_burgers_readiness_and_the_well_feasibility_scan",
+          "PDEBench",
+          "The Well",
+          "1D_Burgers_Sols_Nu0.001.hdf5",
+          "blocked_multichannel_required"
+        ]
+      },
+      "required_phrases_in_roadmap": {
+        "doc_path": "docs/planning/ROADMAP.md",
+        "phrases": [
+          "v0.32d",
+          "PDEBench",
+          "The Well"
         ]
       }
     }

@@ -1,0 +1,105 @@
+{
+  "summary_schema_version": "0.1",
+  "summary_type": "pdelie_external_data_readiness_config",
+  "config_slug": "pdebench_burgers_1d",
+  "status": "FROZEN",
+  "target_release": "v0.32d",
+  "source_project": "PDEBench",
+  "dataset_family": "1D_Burgers",
+  "dataset_version": "V8",
+  "data_doi_or_record": "10.18419/darus-2986",
+  "data_record_url": "https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/darus-2986",
+  "license": "CC-BY-4.0",
+  "citation": "Takamoto, Makoto; Praditia, Timothy; Leiteritz, Raphael; MacKinlay, Dan; Alesiani, Francesco; Pflueger, Dirk; Niepert, Mathias. 2022. PDEBench Datasets. DaRUS V8. https://doi.org/10.18419/darus-2986.",
+  "source_file": "1D_Burgers_Sols_Nu0.001.hdf5",
+  "source_checksum": {
+    "algorithm": "md5",
+    "value": "b4be2fc3383f737c76033073e6d2ccfb",
+    "sha256_available": false,
+    "sha256_unavailable_reason": "DaRUS record publishes only MD5 for this shard; v0.32d records both algorithms but MD5 is the pinned check."
+  },
+  "file_format": "HDF5",
+  "hdf5_dataset_paths": {
+    "field": "/tensor",
+    "x_coordinate": "/x-coordinate",
+    "t_coordinate": "/t-coordinate"
+  },
+  "array_layout": "trajectory_time_space",
+  "axis_mapping": {
+    "trajectory_axis": 0,
+    "time_axis": 1,
+    "space_axis": 2
+  },
+  "field_dtype": "float32",
+  "variable_mapping": {
+    "u": "tensor"
+  },
+  "coordinate_ranges": {
+    "x": [0.0, 1.0],
+    "t": [0.0, 2.0]
+  },
+  "coordinate_units": {
+    "x": null,
+    "t": null,
+    "unit_note": "PDEBench 1D_Burgers is non-dimensional; DaRUS record does not publish units."
+  },
+  "grid_uniformity": "uniform_rectilinear",
+  "boundary_condition_evidence": {
+    "x": "periodic",
+    "source": "pdebench_paper_appendix_D_and_data_generation_source_code",
+    "verified": true
+  },
+  "parameter_evidence": {
+    "nu": 0.001,
+    "source": "filename_and_darus_metadata",
+    "verified": true
+  },
+  "equation_tag_candidate": "burgers_1d",
+  "equation_convention_match": {
+    "conclusion": "match",
+    "pdebench_form": "u_t + u * u_x = nu * u_xx",
+    "pdelie_residual_form": "residual = u_t + u * u_x - nu * u_xx",
+    "pdelie_evaluator": "pdelie.residuals.BurgersResidualEvaluator",
+    "sign_convention_verified": true
+  },
+  "initial_condition_metadata": {
+    "family": "superposition_of_sinusoidal_modes_with_random_amplitude_phase",
+    "random_seed_default_pdebench": 2022,
+    "notes": [
+      "additional_sign_flip_probability_0_9",
+      "additional_windowing_probability_0_5"
+    ]
+  },
+  "train_test_split_semantics": {
+    "in_file": false,
+    "policy": "monolithic_file_no_split_stored_on_disk",
+    "pdelie_policy": "the_cookbook_does_not_invent_a_split_the_caller_partitions_trajectories_explicitly"
+  },
+  "compatibility_note": "PDEBench stores (n_traj, T, X); PDELie requires (batch, time, x, var). The loader appends a unit trailing variable axis (var=1) with var_names=['u']; no permutation of the leading three axes is needed.",
+  "non_goals_v0_32d": [
+    "no_broad_from_pdebench_adapter",
+    "no_adapter_registry",
+    "no_automatic_dataset_name_inference",
+    "no_broad_pdebench_support_claim",
+    "no_recovery_benchmark_claim",
+    "no_model_training",
+    "no_fno_unet_pinn_comparison",
+    "no_external_data_symmetry_discovery_claim",
+    "no_multi_channel_or_2d_widening",
+    "no_root_api",
+    "no_hidden_train_test_redefinition",
+    "no_package_version_bump",
+    "no_vendoring_of_external_data_without_confirmed_compatible_license"
+  ],
+  "readiness_conclusion_vocabulary": [
+    "ready_scalar_1d_readiness_only",
+    "ready_residual_preflight_only",
+    "blocked_boundary_metadata_unverified",
+    "blocked_parameter_convention_mismatch",
+    "blocked_nonuniform_grid",
+    "blocked_schema_mismatch",
+    "blocked_multichannel_required",
+    "blocked_download_or_checksum_failure",
+    "unavailable_no_cached_dataset"
+  ]
+}

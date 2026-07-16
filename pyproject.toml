@@ -64,6 +64,7 @@ viz = [
 ]
 test = [
   "build>=1.2",
+  "h5py>=3.10",
   "matplotlib>=3.9,<4",
   "mypy>=1.11",
   "pysindy>=2.1,<3",
@@ -81,6 +82,9 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+"pdelie.examples._external_data" = ["*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -199,6 +203,7 @@ module = [
     "sklearn.*",
     "sympy.*",
     "scipy.*",
+    "h5py.*",
 ]
 ignore_missing_imports = true
 
