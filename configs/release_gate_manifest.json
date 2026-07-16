@@ -3,7 +3,7 @@
   "summary_type": "pdelie_declarative_release_gate_manifest",
   "scope": "declarative_release_gate_checks_only",
   "current_release_gate_job_name": "v0_32-release-gate",
-  "release_count": 20,
+  "release_count": 21,
   "excluded_functional_release_gate_files": [
     {
       "file": "tests/test_v0_4_release_gate.py",
@@ -1601,6 +1601,88 @@
           "invariant_map_spec"
         ]
       }
+    },
+    {
+      "release": "0.32b",
+      "source_file": "tests/test_v0_32b_method_scores_uncertainty.py",
+      "required_submodule_attributes": [
+        {
+          "submodule": "pdelie.reporting",
+          "name": "enrich_method_scores"
+        },
+        {
+          "submodule": "pdelie.reporting",
+          "name": "summarize_generator_confidence"
+        },
+        {
+          "submodule": "pdelie.symmetry.methods.polynomial_translation_svd",
+          "name": "SCORE_METADATA"
+        },
+        {
+          "submodule": "pdelie.symmetry.methods.polynomial_translation_svd",
+          "name": "bootstrap_uncertainty"
+        }
+      ],
+      "forbidden_root_attributes": {
+        "names": [
+          "SCORE_METADATA",
+          "bootstrap_uncertainty",
+          "enrich_method_scores"
+        ]
+      },
+      "forbidden_submodule_attributes": {
+        "submodules": [
+          "pdelie.tasks",
+          "pdelie.discovery"
+        ],
+        "names": [
+          "SCORE_METADATA",
+          "bootstrap_uncertainty",
+          "enrich_method_scores"
+        ]
+      },
+      "required_phrases_in_api_stability": {
+        "doc_path": "docs/specs/API_STABILITY.md",
+        "phrases": [
+          "Stable public-surface note for the v0.32b strict method-score, uncertainty, and calibration reporting",
+          "method_scores",
+          "uncertainty_report",
+          "calibration_report",
+          "enrich_method_scores",
+          "bootstrap_uncertainty",
+          "span_distance",
+          "residual_l2",
+          "error_curve_max",
+          "svd_condition_number",
+          "v0_32b_generator_confidence_additive_method_scores_uncertainty_calibration"
+        ]
+      },
+      "required_phrases_in_plan": {
+        "doc_path": "docs/planning/PLAN.md",
+        "phrases": [
+          "V0.32b Strict Method-Score, Uncertainty, and Calibration Reporting",
+          "v0_32b_generator_confidence_additive_method_scores_uncertainty_calibration",
+          "method_scores",
+          "uncertainty_report",
+          "calibration_report",
+          "bootstrap_uncertainty",
+          "enrich_method_scores"
+        ]
+      },
+      "required_phrases_in_roadmap": {
+        "doc_path": "docs/planning/ROADMAP.md",
+        "phrases": [
+          "v0.32b",
+          "method_scores",
+          "uncertainty_report",
+          "calibration_report"
+        ]
+      },
+      "strict_json_manifests": [
+        {
+          "path": "configs/planning/v0_32_method_scores_scope.json"
+        }
+      ]
     }
   ]
 }

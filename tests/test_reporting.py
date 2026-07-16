@@ -100,6 +100,10 @@ _GENERATOR_CONFIDENCE_SUMMARY_KEYS = _SUMMARY_PREFIX_KEYS | {
     "thresholds",
     "missing_evidence",
     "extra_metrics",
+    # v0.32b additive fields (default-None for backward compatibility).
+    "method_scores",
+    "uncertainty_report",
+    "calibration_report",
 }
 _FIELD_BATCH_READINESS_SUMMARY_KEYS = _SUMMARY_PREFIX_KEYS | {
     "readiness_label",

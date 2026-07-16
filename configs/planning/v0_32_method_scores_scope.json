@@ -1,0 +1,131 @@
+{
+  "summary_schema_version": "0.1",
+  "summary_type": "pdelie_v0_32_method_scores_scope",
+  "decision_label": "v0_32b_generator_confidence_additive_method_scores_uncertainty_calibration",
+  "design_document": "docs/design/GENERATOR_CONFIDENCE_ADDITIVE_FIELDS.md",
+  "status": "FROZEN",
+  "target_release": "v0.32b",
+  "confidence_labels_invariant": [
+    "strong",
+    "qualified",
+    "failed",
+    "insufficient_evidence"
+  ],
+  "confidence_labels_invariant_note": "The frozen v0.20 confidence_label vocabulary is preserved verbatim by v0.32b. Additive fields do NOT change label semantics.",
+  "additive_fields": {
+    "method_scores": {
+      "type": "dict[str, dict] | None",
+      "default": null,
+      "each_entry_keys": [
+        "value",
+        "direction",
+        "description",
+        "units"
+      ],
+      "value_type": "float | None (finite; NaN/Inf raise SchemaValidationError)",
+      "direction_vocabulary": [
+        "lower_is_better",
+        "higher_is_better",
+        "diagnostic_only"
+      ],
+      "description_type": "non_empty_string",
+      "units_type": "string | None"
+    },
+    "uncertainty_report": {
+      "type": "dict | None",
+      "default": null,
+      "keys": [
+        "method",
+        "resampling_unit",
+        "sample_count",
+        "seed",
+        "interval_level",
+        "intervals",
+        "point_estimates",
+        "failed_resamples",
+        "warnings",
+        "diagnostic_only"
+      ],
+      "method_vocabulary": [
+        "bootstrap",
+        "point_estimate"
+      ],
+      "resampling_unit_vocabulary": [
+        "batch",
+        "trajectory",
+        "not_applicable"
+      ],
+      "diagnostic_only_invariant": true,
+      "resampling_unit_hard_constraint": "batch/trajectory only. Row-level bootstrap (flattening spatial or temporal rows as independent observations) is refused with ScopeValidationError; no silent fallback."
+    },
+    "calibration_report": {
+      "type": "dict | None",
+      "default": null,
+      "keys": [
+        "method",
+        "target",
+        "sample_count",
+        "metrics",
+        "warnings",
+        "diagnostic_only"
+      ],
+      "diagnostic_only_invariant": true,
+      "builtin_svd_populates_calibration": false,
+      "builtin_svd_populates_calibration_note": "The v0.32b built-in polynomial_translation_svd method does NOT synthesize a calibration report. calibration_report remains None unless a caller supplies an explicit calibration target and method."
+    }
+  },
+  "builtin_method_scores": {
+    "method_name": "polynomial_translation_svd",
+    "frozen_score_names": [
+      "span_distance",
+      "residual_l2",
+      "error_curve_max",
+      "svd_condition_number"
+    ],
+    "frozen_score_directions": {
+      "span_distance": "lower_is_better",
+      "residual_l2": "lower_is_better",
+      "error_curve_max": "diagnostic_only",
+      "svd_condition_number": "diagnostic_only"
+    }
+  },
+  "strictness_migration": {
+    "before_v0_32b": "summarize_generator_confidence used a permissive _summary_payload handler; nested NaN/Inf could survive.",
+    "after_v0_32b": "summarize_generator_confidence routes the fully assembled payload through _validate_strict_json_compatible; NaN/Inf raise SchemaValidationError at the composition boundary. No silent conversion to None.",
+    "backward_compatibility_note": "Default calls (no new arguments) produce semantically equivalent output apart from strict rejection of previously invalid NaN/Inf inputs."
+  },
+  "bootstrap_uncertainty_policy_for_builtin": {
+    "resampling_unit_required": "batch",
+    "resampling_unit_forbidden": "row",
+    "row_bootstrap_refused_with": "ScopeValidationError",
+    "seed_required": true,
+    "min_independent_units_default": 8,
+    "interval_method_default": "percentile",
+    "interval_level_default": 0.95,
+    "num_resamples_default": 64,
+    "fit_per_resample_required": true,
+    "resample_scalar_scores_forbidden": true,
+    "no_silent_fallback_to_row_bootstrap": true,
+    "failed_resamples_retained_explicitly": true
+  },
+  "non_goals_v0_32b": [
+    "no change to _CONFIDENCE_LABELS",
+    "no scalar aggregate confidence probability",
+    "no reinterpretation of method-native scores as probabilities",
+    "no bootstrap intervals called Bayesian posterior intervals",
+    "no new symmetry method",
+    "no root exports",
+    "no SymmetryCandidate discriminator semantic change",
+    "no noise robustness claim",
+    "no package version bump",
+    "no tag",
+    "no PyPI or TestPyPI publication"
+  ],
+  "explicit_forbidden_shapes": [
+    "boolean values inside method_scores (booleans stay booleans in fit_diagnostics/provenance)",
+    "NaN or Inf at any nested level of the assembled generator_confidence payload",
+    "row-level bootstrap (flattening spatial/temporal rows as independent observations)",
+    "silently downgrading a bootstrap to a row bootstrap when too few independent units are available",
+    "synthesizing a calibration_report for the built-in SVD method without an explicit calibration target"
+  ]
+}

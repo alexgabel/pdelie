@@ -1,4 +1,5 @@
 from pdelie.reporting.summaries import (
+    enrich_method_scores,
     summarize_downstream_discovery_workflow,
     summarize_field_batch_readiness,
     summarize_formula_generator_family,
@@ -16,6 +17,7 @@ from pdelie.reporting.summaries import (
 )
 
 __all__ = [
+    "enrich_method_scores",
     "summarize_downstream_discovery_workflow",
     "summarize_field_batch_readiness",
     "summarize_formula_generator_family",

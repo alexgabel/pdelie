@@ -36,6 +36,8 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any, ClassVar
 
+import numpy as np
+
 from pdelie._boundary import is_x_periodic
 from pdelie.contracts import FieldBatch
 from pdelie.errors import ScopeValidationError
@@ -77,6 +79,48 @@ def _resolve_backend_versions() -> dict[str, str]:
     return versions
 
 
+#: v0.32b frozen score-name → metadata mapping for
+#: :class:`PolynomialTranslationSvdMethod`. Consumers who need the enriched
+#: form (value + direction + description + units) look up the direction/
+#: description/units here and pair them with the ``method_scores`` values
+#: emitted on :class:`SymmetryMethodResult`. See
+#: ``docs/design/GENERATOR_CONFIDENCE_ADDITIVE_FIELDS.md``.
+SCORE_METADATA: dict[str, dict[str, Any]] = {
+    "span_distance": {
+        "direction": "lower_is_better",
+        "description": (
+            "Post-selection SVD span-distance of the chosen translation "
+            "coefficient direction (0 == exactly translation-invariant)."
+        ),
+        "units": None,
+    },
+    "residual_l2": {
+        "direction": "lower_is_better",
+        "description": (
+            "L2 norm of the baseline residual field emitted by the "
+            "residual evaluator on the input FieldBatch."
+        ),
+        "units": None,
+    },
+    "error_curve_max": {
+        "direction": "diagnostic_only",
+        "description": (
+            "Maximum L2 norm of the finite-difference deltas across the "
+            "polynomial basis; larger implies stronger perturbation signal."
+        ),
+        "units": None,
+    },
+    "svd_condition_number": {
+        "direction": "diagnostic_only",
+        "description": (
+            "Ratio of the largest to smallest SVD singular value of the "
+            "design matrix; None when the smallest singular value is zero."
+        ),
+        "units": None,
+    },
+}
+
+
 @dataclass(slots=True)
 class PolynomialTranslationSvdMethod:
     """v0.30.1 built-in adapter implementing :class:`SymmetryMethod`.
@@ -88,6 +132,10 @@ class PolynomialTranslationSvdMethod:
     METADATA: ClassVar[SymmetryMethodMetadata] = (
         _BUILTIN_POLYNOMIAL_TRANSLATION_SVD_METADATA
     )
+
+    #: Frozen score-metadata surface (v0.32b). Exposed as a class attribute
+    #: for the confidence-report enrichment helper.
+    SCORE_METADATA: ClassVar[dict[str, dict[str, Any]]] = SCORE_METADATA
 
     def fit(
         self,
@@ -138,17 +186,30 @@ class PolynomialTranslationSvdMethod:
         runtime_seconds = time.perf_counter() - start
 
         # Extract method-native scalar quantities from the diagnostics.
-        # The underlying fit_translation_generator records these in the
-        # GeneratorFamily.diagnostics dict; we surface a subset with
-        # method_scores + preserve booleans as booleans in fit_diagnostics.
+        # v0.32b: the emitted ``method_scores`` uses the FROZEN score names
+        # from configs/planning/v0_32_method_scores_scope.json. The
+        # semantic mapping from the underlying diagnostics:
+        #
+        #   span_distance         <- selected_span_distance (post-selection)
+        #   residual_l2           <- L2 norm of the residual field
+        #   error_curve_max       <- max of basis_delta_norms.values()
+        #   svd_condition_number  <- condition_number
+        #
+        # Direction/description/units metadata lives on the class-level
+        # SCORE_METADATA attribute for the confidence-report enrichment
+        # helper; see ``docs/design/GENERATOR_CONFIDENCE_ADDITIVE_FIELDS.md``.
         diag = dict(generator_family.diagnostics)
+        residual_l2 = self._compute_residual_l2(field, residual_evaluator)
+        error_curve_max = self._compute_error_curve_max(diag)
         method_scores: dict[str, float | None] = {
-            "svd_span_distance": _finite_float_or_none(diag.get("svd_span_distance")),
-            "selected_span_distance": _finite_float_or_none(
+            "span_distance": _finite_float_or_none(
                 diag.get("selected_span_distance")
             ),
-            "condition_number": _finite_float_or_none(diag.get("condition_number")),
-            "fit_residual": _finite_float_or_none(diag.get("fit_residual")),
+            "residual_l2": residual_l2,
+            "error_curve_max": error_curve_max,
+            "svd_condition_number": _finite_float_or_none(
+                diag.get("condition_number")
+            ),
         }
 
         # fit_diagnostics: everything that is not a scalar score. Preserve
@@ -210,6 +271,259 @@ class PolynomialTranslationSvdMethod:
         )
 
 
+    # --- v0.32b score-computation helpers ---------------------------------
+
+    @staticmethod
+    def _compute_residual_l2(
+        field: FieldBatch, residual_evaluator: ResidualEvaluator
+    ) -> float | None:
+        """Return the L2 norm of the residual field, or ``None`` on failure.
+
+        The residual evaluator was already invoked inside
+        ``fit_translation_generator`` for the baseline_residual computation;
+        we re-invoke here for the top-level ``residual_l2`` score without
+        assuming the underlying fit exposes the intermediate residual.
+        """
+        try:
+            residual = residual_evaluator.evaluate(field).residual
+        except Exception:  # degrade gracefully
+            return None
+        residual_array = np.asarray(residual, dtype=float).reshape(-1)
+        if residual_array.size == 0:
+            return None
+        if not np.all(np.isfinite(residual_array)):
+            return None
+        return float(np.linalg.norm(residual_array))
+
+    @staticmethod
+    def _compute_error_curve_max(diag: dict[str, Any]) -> float | None:
+        """Return max of basis_delta_norms.values(), or ``None`` on failure."""
+        basis_delta_norms = diag.get("basis_delta_norms")
+        if not isinstance(basis_delta_norms, dict) or not basis_delta_norms:
+            return None
+        values = [
+            _finite_float_or_none(v) for v in basis_delta_norms.values()
+        ]
+        finite_values = [v for v in values if v is not None]
+        if not finite_values:
+            return None
+        return max(finite_values)
+
+
 def build_method() -> PolynomialTranslationSvdMethod:
     """Factory used by the registry to build a fresh adapter instance."""
     return PolynomialTranslationSvdMethod()
+
+
+# --- v0.32b: opt-in batch-bootstrap uncertainty -----------------------------
+
+
+_BOOTSTRAP_MIN_UNITS_DEFAULT = 8
+_BOOTSTRAP_INTERVAL_LEVEL_DEFAULT = 0.95
+_BOOTSTRAP_NUM_RESAMPLES_DEFAULT = 64
+_BOOTSTRAP_SCORE_NAMES: tuple[str, ...] = (
+    "span_distance",
+    "residual_l2",
+    "error_curve_max",
+    "svd_condition_number",
+)
+
+
+def _slice_field_batch_by_batch_indices(
+    field: FieldBatch, indices: np.ndarray[Any, Any]
+) -> FieldBatch:
+    """Return a FieldBatch containing the selected batch rows.
+
+    Keeps the same dims / var_names / metadata / preprocess_log /
+    boundary conditions; only the values (and mask, if present) are
+    resampled along the batch axis.
+    """
+    if "batch" not in field.dims:
+        raise ScopeValidationError(
+            "bootstrap_uncertainty requires a FieldBatch with a 'batch' dim."
+        )
+    batch_axis = field.dims.index("batch")
+    resampled_values = np.take(field.values, indices, axis=batch_axis)
+    resampled_mask = None
+    if field.mask is not None:
+        resampled_mask = np.take(field.mask, indices, axis=batch_axis)
+    # Coords stay identical (batch has no coord array under the scalar 1D
+    # contract because "batch" is not required in required_coord_dims).
+    return FieldBatch(
+        schema_version=field.schema_version,
+        values=resampled_values,
+        dims=field.dims,
+        coords={k: v.copy() for k, v in field.coords.items()},
+        var_names=list(field.var_names),
+        metadata={k: v for k, v in field.metadata.items()},
+        preprocess_log=[dict(entry) for entry in field.preprocess_log],
+        mask=resampled_mask,
+    )
+
+
+def _percentile_interval(
+    samples: list[float], interval_level: float
+) -> tuple[float | None, float | None]:
+    if not samples:
+        return None, None
+    array = np.asarray(samples, dtype=float)
+    if array.size == 0 or not np.all(np.isfinite(array)):
+        finite = array[np.isfinite(array)]
+        if finite.size == 0:
+            return None, None
+        array = finite
+    alpha = (1.0 - interval_level) / 2.0
+    low = float(np.quantile(array, alpha))
+    high = float(np.quantile(array, 1.0 - alpha))
+    if not (math.isfinite(low) and math.isfinite(high)):
+        return None, None
+    return low, high
+
+
+def bootstrap_uncertainty(
+    field: FieldBatch,
+    residual_evaluator: ResidualEvaluator,
+    *,
+    seed: int,
+    num_resamples: int = _BOOTSTRAP_NUM_RESAMPLES_DEFAULT,
+    interval_level: float = _BOOTSTRAP_INTERVAL_LEVEL_DEFAULT,
+    min_units: int = _BOOTSTRAP_MIN_UNITS_DEFAULT,
+    resampling_unit: str = "batch",
+) -> dict[str, Any]:
+    """Batch-bootstrap uncertainty helper for :func:`fit`.
+
+    Opt-in. Refuses row-level bootstrap outright — resampling MUST occur
+    at the batch (trajectory) unit, never over spatial or temporal rows
+    (correlated for PDE dynamics; row bootstrap invalidates the interval).
+    Returns an uncertainty report ready to hand to
+    :func:`pdelie.reporting.summarize_generator_confidence`
+    ``uncertainty_report=...``.
+
+    Contract (frozen v0.32b):
+
+    - ``resampling_unit`` must be ``"batch"``. Anything else (in
+      particular ``"row"``) raises :class:`ScopeValidationError`. There
+      is no silent fallback.
+    - ``seed`` is required; ``np.random.default_rng(seed)`` selects batch
+      indices; same seed + same field → byte-identical intervals.
+    - When the number of independent batch units is below ``min_units``,
+      the report is emitted with ``sample_count = actual``, empty
+      intervals, and a warning entry — never a spurious interval.
+    - Each resample re-runs the full underlying fit; the bootstrap does
+      NOT resample precomputed scalar scores.
+    - Any resample whose fit raises is caught, counted in
+      ``failed_resamples``, and excluded from the interval computation.
+    """
+    if resampling_unit == "row":
+        raise ScopeValidationError(
+            "bootstrap_uncertainty refuses row-level bootstrap: spatial "
+            "and temporal rows are correlated under PDE dynamics; use "
+            "resampling_unit='batch' (or 'trajectory'), or hand-craft an "
+            "explicit uncertainty_report."
+        )
+    if resampling_unit not in ("batch", "trajectory"):
+        raise ScopeValidationError(
+            "bootstrap_uncertainty resampling_unit must be 'batch' or "
+            f"'trajectory'; got {resampling_unit!r}."
+        )
+    if not isinstance(field, FieldBatch):
+        raise ScopeValidationError(
+            "bootstrap_uncertainty requires a FieldBatch."
+        )
+    if residual_evaluator is None:
+        raise ScopeValidationError(
+            "bootstrap_uncertainty requires a residual_evaluator."
+        )
+    if not isinstance(num_resamples, int) or num_resamples <= 0:
+        raise ScopeValidationError(
+            "num_resamples must be a positive integer."
+        )
+    if not isinstance(min_units, int) or min_units <= 0:
+        raise ScopeValidationError("min_units must be a positive integer.")
+    if (
+        not isinstance(interval_level, (int, float))
+        or isinstance(interval_level, bool)
+        or not (0.0 < float(interval_level) < 1.0)
+    ):
+        raise ScopeValidationError(
+            "interval_level must be a finite float strictly in (0.0, 1.0)."
+        )
+    if not isinstance(seed, int) or isinstance(seed, bool):
+        raise ScopeValidationError("seed must be an integer.")
+
+    batch_size = field.values.shape[field.dims.index("batch")]
+    warnings_out: list[str] = []
+
+    method = PolynomialTranslationSvdMethod()
+    # Point estimates on the original field.
+    point_result = method.fit(field, residual_evaluator=residual_evaluator)
+    point_estimates: dict[str, float | None] = {
+        name: point_result.method_scores.get(name)
+        for name in _BOOTSTRAP_SCORE_NAMES
+    }
+
+    intervals: dict[str, dict[str, float | None]] = {
+        name: {"low": None, "high": None} for name in _BOOTSTRAP_SCORE_NAMES
+    }
+
+    if batch_size < min_units:
+        warnings_out.append(
+            f"insufficient_independent_units:{batch_size}<{min_units}"
+        )
+        return {
+            "method": "bootstrap",
+            "resampling_unit": resampling_unit,
+            "sample_count": int(batch_size),
+            "seed": int(seed),
+            "interval_level": float(interval_level),
+            "intervals": intervals,
+            "point_estimates": point_estimates,
+            "failed_resamples": 0,
+            "warnings": warnings_out,
+            "diagnostic_only": True,
+        }
+
+    rng = np.random.default_rng(seed)
+    samples: dict[str, list[float]] = {
+        name: [] for name in _BOOTSTRAP_SCORE_NAMES
+    }
+    failed_resamples = 0
+    for _ in range(num_resamples):
+        indices = rng.integers(low=0, high=batch_size, size=batch_size)
+        try:
+            resampled = _slice_field_batch_by_batch_indices(field, indices)
+            resample_result = method.fit(
+                resampled, residual_evaluator=residual_evaluator
+            )
+        except Exception:
+            failed_resamples += 1
+            continue
+        for name in _BOOTSTRAP_SCORE_NAMES:
+            score = resample_result.method_scores.get(name)
+            if score is None:
+                continue
+            score_float = float(score)
+            if math.isfinite(score_float):
+                samples[name].append(score_float)
+
+    for name in _BOOTSTRAP_SCORE_NAMES:
+        low, high = _percentile_interval(samples[name], float(interval_level))
+        intervals[name] = {"low": low, "high": high}
+        if low is None or high is None:
+            warnings_out.append(f"empty_interval_for_score:{name}")
+
+    if failed_resamples > 0:
+        warnings_out.append(f"failed_resamples:{failed_resamples}")
+
+    return {
+        "method": "bootstrap",
+        "resampling_unit": resampling_unit,
+        "sample_count": int(batch_size),
+        "seed": int(seed),
+        "interval_level": float(interval_level),
+        "intervals": intervals,
+        "point_estimates": point_estimates,
+        "failed_resamples": int(failed_resamples),
+        "warnings": warnings_out,
+        "diagnostic_only": True,
+    }
