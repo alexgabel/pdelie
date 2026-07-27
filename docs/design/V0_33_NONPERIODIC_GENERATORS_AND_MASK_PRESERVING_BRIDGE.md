@@ -147,6 +147,31 @@ New keys added to `VerificationReport.diagnostics` (already `dict[str, Any]`):
 - `overlap_row_count`: `int`. On the nonperiodic branch: the number of spatial rows retained per epsilon in the overlap comparison.
 - `symmetry_claim`: one of the six frozen values above. The overlap-crop branch emits `interior_overlap_verified` on success (never `boundary_value_problem_preserved`), `domain_changing_action` when the shift is nonzero on a bounded domain, `boundary_value_problem_not_preserved` on a demonstrated boundary violation, and `inconclusive_boundary_metadata` when the boundary type is `open_unknown`.
 
+### Amended by measurement: domain length, trim, and the sign convention
+
+**1. `domain_length` is `x[-1] - x[0] + dx` (N·dx), not the `(N-1)·dx` span.** A shift of `k·dx` retains exactly `N − k` rows, so `overlap_fraction` must be `1 − k/N` for the reported fraction and the reported row count to describe the same crop. The span convention gives `1 − k/(N−1)` — 0.5733 versus 0.5789 at `k=32, N=76`. Measured across `k ∈ {0,4,8,16,32}`, only the N·dx convention satisfies `overlap_fraction == retained_rows / num_points` exactly. It is also what `apply_pointwise_translation` already uses for the periodic period.
+
+**2. The comparison is overlap ∩ interior, not overlap alone.** On nonperiodic data the residual near a boundary is dominated by finite-difference stencil error; comparing there lets stencil error drive the classification. The trim width comes from the residual evaluator's own `boundary_trim_width`, matching v0.33a's fit shave and the v0.30d interior-only residual policy.
+
+Measured, the interior trim is the **binding** constraint at every default epsilon:
+
+| shift | overlap rows | interior rows | binding |
+|---|---|---|---|
+| 0.002–4 dx | 75–72 | 68 | interior trim |
+| 8 dx | 68 | 68 | interior trim |
+| 16 dx | 60 | 68 | **overlap crop** |
+| 32 dx | 44 | 68 | **overlap crop** |
+
+The default `epsilon_values = logspace(-4, -1, 7)` produce shifts of 0.002–2.04 dx, while the crop first binds above `|shift| > boundary_trim_width · dx ≈ 0.196` — twice the largest default epsilon. **Under default settings the overlap crop is a no-op.** It is still correct and necessary for callers who pass large explicit epsilons, but the frozen monotonicity and small-overlap gates exercise a regime the default sweep never enters: the `overlap_fraction < 0.5` warning needs `shift > L/2 ≈ 38 dx`, i.e. epsilon ≈ 1.87, some 19× the default maximum.
+
+Because the trim usually dominates, `overlap_row_count` (geometric overlap) alone would overstate the evidence. `compared_row_count` reports the row-set actually measured, and `interior_only_row_count` is emitted alongside so a caller can see which constraint bound.
+
+**3. Shift sign.** `overlap_fraction` depends only on `|shift|` and is sign-symmetric; the retained *region* is not — a positive shift keeps the right portion of the domain, a negative shift the left. The **public API cannot produce a negative shift**: `normalize_translation_coefficients` forces a non-negative leading component and `epsilon_values` must be strictly increasing. The internal helper is sign-safe regardless and is tested for both signs.
+
+**4. Neither boundary-value-problem label is emitted.** The v0.33 scope amendment reserved `boundary_value_problem_preserved` as unemittable. `boundary_value_problem_not_preserved` is equally unreachable here, and for the same reason: the overlap crop discards exactly the boundary rows, so a failed classification says nothing about the boundary. A failure therefore reports `equation_symmetry_candidate` — the candidate remains unverified — rather than asserting a boundary violation the run did not observe.
+
+Note also that a wrong-basis generator classifies `failed` via the **pre-existing** `span_distance > span_tolerance` check, not via the overlap-crop error curve; on the error curve alone it scores in the approximate band.
+
 ### Frozen invariant on `VerificationReport`
 
 `classification` vocabulary unchanged: `"exact"` / `"approximate"` / `"failed"`. No new labels. The classification is computed the same way; only its inputs change (nonperiodic classification is based on the overlap-crop residual, not a full-domain residual). This is a documented weakening of the classification's meaning on nonperiodic data — `dispatch_path` and `symmetry_claim` together make it explicit.
