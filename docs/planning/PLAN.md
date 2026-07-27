@@ -4,7 +4,11 @@
 
 `v0.33` closes two long-standing wedge gaps that the v0.30–v0.32 arc did not reach: the **nonperiodic generator gap** (`fit_translation_generator`, `verify_translation_generator`, and `polynomial_translation_svd` remain periodic-only despite v0.30 shipping nonperiodic `FieldBatch` readiness + boundary-condition metadata + strong-form nonperiodic residuals) and the **discovery-bridge mask leakage** (`run_pysindy_pde_task` applies the input mask before differentiation, so the derivative stencil widens the effective mask and the row-set the optimizer sees no longer matches the row-set PDELie audited). Both fit the wedge (empirical diagnostics on scalar 1D data) and do not require multi-D or new PDEs.
 
-Decision label: `v0_33_nonperiodic_generators_and_mask_preserving_bridge`.
+Decision label: `v0_33_nonperiodic_generators_and_mask_preserving_bridge` (a stable identifier, retained across the title amendment).
+
+**Title amendment (pre-v0.33a).** v0.33 is titled **"Nonperiodic Interior-Symmetry and Mask-Validity Support."** The original "nonperiodic generator support" overclaimed: v0.33a/b establish that a candidate is a symmetry of the **differential equation on interior/overlap rows**, not that it preserves the **boundary-value problem**. A uniform translation on a bounded domain is a domain-changing action, and the overlap crop discards exactly the rows that would settle the boundary question. The `symmetry_claim` diagnostic carries the distinction in machine-readable form over a frozen six-value vocabulary; `boundary_value_problem_preserved` is reserved but never emitted in v0.33, so the claim cannot be made accidentally.
+
+**Three-mask amendment (pre-v0.33c).** The mask diagnostics decompose into observation / derivative-validity / regression-row counts with a nesting invariant, replacing the drafted `mask_row_count` / `unmasked_row_count` pair. Spectral derivatives on a partially-observed field are hard-rejected with a typed error: FFT differentiation is globally coupled and would leak unobserved values into rows the mask declares observed.
 
 Design freeze: [`docs/design/V0_33_NONPERIODIC_GENERATORS_AND_MASK_PRESERVING_BRIDGE.md`](../design/V0_33_NONPERIODIC_GENERATORS_AND_MASK_PRESERVING_BRIDGE.md). Machine-readable scope: [`configs/planning/v0_33_scope.json`](../../configs/planning/v0_33_scope.json).
 
