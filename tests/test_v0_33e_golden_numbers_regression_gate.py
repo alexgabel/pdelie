@@ -99,6 +99,29 @@ def test_every_supported_pde_has_a_golden_entry(fixture_payload: dict) -> None:
     assert tuple(entry["name"] for entry in fixture_payload["pdes"]) == GOLDEN_PDE_NAMES
 
 
+def test_nonperiodic_boundary_types_are_covered(fixture_payload: dict) -> None:
+    """v0.33a exit gate: at least three boundary types beyond periodic are pinned.
+
+    The periodic entries resolve to ``spectral_fd`` + ``full_grid``, so they
+    never exercise the finite-difference backend or the interior-only residual
+    policy. Without nonperiodic entries the gate would leave the entire v0.33a
+    numerical path unpinned.
+    """
+    covered = {entry["boundary_condition_x"] for entry in fixture_payload["pdes"]}
+    assert "periodic" in covered
+    assert len(covered - {"periodic"}) >= 3, covered
+
+
+def test_nonperiodic_entries_record_their_window(fixture_payload: dict) -> None:
+    """The window fraction is part of the reproduction recipe, not incidental."""
+    for entry in fixture_payload["pdes"]:
+        if entry["boundary_condition_x"] == "periodic":
+            assert entry["nonperiodic_window_keep"] is None
+        else:
+            assert isinstance(entry["nonperiodic_window_keep"], float)
+            assert 0.0 < entry["nonperiodic_window_keep"] <= 1.0
+
+
 @pytest.mark.parametrize("pde_name", GOLDEN_PDE_NAMES)
 def test_fixture_entry_shape(pde_name: str, fixture_entries: dict) -> None:
     """Each entry carries exactly the frozen key set, with finite float metrics."""

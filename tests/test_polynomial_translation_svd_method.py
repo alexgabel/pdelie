@@ -214,10 +214,13 @@ def test_adapter_result_carries_no_method_confidence_field() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_adapter_rejects_nonperiodic_field() -> None:
-    """Build a nonperiodic FieldBatch by directly rewriting the boundary
-    metadata (bypasses the constructor's periodic default) and confirm the
-    adapter's ``is_x_periodic`` guard fires before any expensive work.
+def test_adapter_dispatches_nonperiodic_field_since_v0_33a() -> None:
+    """v0.33a: the adapter accepts nonperiodic input and forwards the dispatch
+    diagnostics verbatim, superseding the pre-v0.33a ``is_x_periodic`` guard.
+
+    Acceptance is not a claim of boundary-value-problem preservation; the
+    ``symmetry_claim`` diagnostic carries the narrower claim the interior-only
+    branch actually supports.
     """
     field = _small_periodic_heat_field()
     field.metadata["boundary_conditions"] = {
@@ -228,12 +231,26 @@ def test_adapter_rejects_nonperiodic_field() -> None:
             "specified": True,
         }
     }
-    with pytest.raises(ScopeValidationError, match="periodic"):
-        run_symmetry_method(
-            "polynomial_translation_svd",
-            field,
-            residual_evaluator=HeatResidualEvaluator(),
-        )
+    result = run_symmetry_method(
+        "polynomial_translation_svd",
+        field,
+        residual_evaluator=HeatResidualEvaluator(),
+    )
+
+    assert result.fit_diagnostics["boundary_condition_x"] == "dirichlet"
+    assert (
+        result.fit_diagnostics["boundary_condition_dispatch_reason"]
+        == "is_x_periodic_false_field_metadata"
+    )
+    assert result.fit_diagnostics["interior_only_reduction_applied"] is True
+    assert result.fit_diagnostics["symmetry_claim"] == "equation_symmetry_candidate"
+    # Frozen four score names are unchanged by the dispatch.
+    assert set(result.method_scores) == {
+        "span_distance",
+        "residual_l2",
+        "error_curve_max",
+        "svd_condition_number",
+    }
 
 
 def test_adapter_rejects_missing_residual_evaluator() -> None:

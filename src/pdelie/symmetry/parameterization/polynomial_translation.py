@@ -31,9 +31,10 @@ def build_translation_basis(field: FieldBatch) -> dict[str, np.ndarray]:
         raise ScopeValidationError("The stable translation basis only supports dims ('batch', 'time', 'x', 'var').")
     if len(field.var_names) != 1:
         raise ScopeValidationError("The stable translation basis only supports a single scalar variable.")
-    if not is_x_periodic(field):
-        raise ScopeValidationError("The stable translation basis requires periodic boundary conditions in x.")
 
+    # v0.33a: no boundary-condition gate. The basis {1, t, x, u} is built from
+    # coordinates and values alone and is boundary-condition-agnostic; the
+    # periodic requirement lived here only because every consumer was periodic.
     ones = np.ones_like(field.values)
     time_values = field.coords["time"][None, :, None, None]
     x_values = field.coords["x"][None, None, :, None]
@@ -76,29 +77,53 @@ def evaluate_translation_xi(field: FieldBatch, coefficients: np.ndarray) -> np.n
 
 
 def apply_pointwise_translation(field: FieldBatch, xi: np.ndarray, epsilon: float) -> FieldBatch:
+    """Translate a field pointwise by ``epsilon * xi``.
+
+    Dispatches on the x boundary condition (v0.33a):
+
+    * **Periodic** — unchanged. The query wraps modulo the period, so every
+      output row is interpolated from genuine in-domain data.
+    * **Nonperiodic** — no wrap. ``np.interp`` clamps to the edge values outside
+      ``[x[0], x[-1]]``, so rows within roughly ``epsilon * max|xi| / dx`` of a
+      boundary are extrapolated rather than translated. Those rows are **not**
+      trustworthy; ``fit_translation_generator`` discards them via the
+      interior-only shave before the SVD sees them. Callers using this helper
+      directly on nonperiodic data must apply their own shave.
+    """
     xi = np.asarray(xi, dtype=float)
     if xi.shape != field.values.shape:
         raise ScopeValidationError("Pointwise translation xi must match the FieldBatch shape.")
-    if not is_x_periodic(field):
-        raise ScopeValidationError("Pointwise translation requires periodic boundary conditions in x.")
 
     x = field.coords["x"]
-    dx = float(x[1] - x[0])
-    period = float(x[-1] - x[0] + dx)
-    x0 = float(x[0])
-
     transformed = np.empty_like(field.values)
-    xp = x
-    xp_ext = np.concatenate((xp - period, xp, xp + period))
 
-    for batch_index in range(field.values.shape[0]):
-        for time_index in range(field.values.shape[1]):
-            for var_index in range(field.values.shape[3]):
-                row = field.values[batch_index, time_index, :, var_index]
-                shift = epsilon * xi[batch_index, time_index, :, var_index]
-                query = ((x - shift - x0) % period) + x0
-                fp_ext = np.concatenate((row, row, row))
-                transformed[batch_index, time_index, :, var_index] = np.interp(query, xp_ext, fp_ext)
+    if is_x_periodic(field):
+        dx = float(x[1] - x[0])
+        period = float(x[-1] - x[0] + dx)
+        x0 = float(x[0])
+        xp_ext = np.concatenate((x - period, x, x + period))
+        for batch_index in range(field.values.shape[0]):
+            for time_index in range(field.values.shape[1]):
+                for var_index in range(field.values.shape[3]):
+                    row = field.values[batch_index, time_index, :, var_index]
+                    shift = epsilon * xi[batch_index, time_index, :, var_index]
+                    query = ((x - shift - x0) % period) + x0
+                    fp_ext = np.concatenate((row, row, row))
+                    transformed[batch_index, time_index, :, var_index] = np.interp(
+                        query, xp_ext, fp_ext
+                    )
+    else:
+        # v0.33a: no wrap. np.interp clamps to the edge values off-domain, so
+        # near-boundary rows are extrapolated rather than translated; callers
+        # must shave them (fit_translation_generator does).
+        for batch_index in range(field.values.shape[0]):
+            for time_index in range(field.values.shape[1]):
+                for var_index in range(field.values.shape[3]):
+                    row = field.values[batch_index, time_index, :, var_index]
+                    shift = epsilon * xi[batch_index, time_index, :, var_index]
+                    transformed[batch_index, time_index, :, var_index] = np.interp(
+                        x - shift, x, row
+                    )
 
     return FieldBatch(
         values=transformed,
