@@ -180,24 +180,60 @@ New fixture file: `tests/fixtures/v0_33e_golden_numbers.json` (strict-JSON). Str
   "batch_size": 1,
   "num_times": <int>,
   "num_points": <int>,
+  "last_regeneration_reason": <str>,
   "pdes": [
     {
-      "name": "heat_1d" | "burgers_1d" | "kdv_1d" | "fisher_kpp_1d"
+      "name": "heat_1d" | "burgers_1d" | "kdv_1d"
             | "advection_diffusion_1d" | "reaction_diffusion_1d",
+      "generator_kwargs": {"max_time": <float>},
+      "max_spatial_order": <int>,
+      "boundary_condition_x": "periodic" | "dirichlet" | "neumann" | "open_unknown",
       "residual_l2_norm": <float>,
       "residual_rms": <float>,
       "residual_max_abs": <float>,
       "derivative_u_x_l2_norm": <float>,
       "derivative_u_xx_l2_norm": <float>,
-      "derivative_u_t_l2_norm": <float>,
-      "boundary_condition_x": "periodic" | "dirichlet" | "neumann" | "open_unknown"
+      "derivative_u_t_l2_norm": <float>
     },
     ...
   ]
 }
 ```
 
-New test file: `tests/test_v0_33e_golden_numbers_regression_gate.py`. For each PDE, regenerate the reference FieldBatch under the pinned seed, run `compute_derivatives(field, backend="auto")` and the appropriate residual evaluator, and compare the resulting metrics against the fixture with a **tight** relative tolerance (`rtol=1e-6`, `atol=1e-12` — the float32 quantization limit of the underlying data). Any breach fails the release-gate with a diff message that names the drifted metric and the observed vs. expected values.
+**Five PDE entries, not six.** The planning draft listed `fisher_kpp_1d` and `reaction_diffusion_1d` as separate PDEs; they are the same generator. `generate_reaction_diffusion_1d_field_batch` stamps `parameter_tags["equation"] == "reaction_diffusion_fisher_kpp"`, and `docs/specs/SUPPORT_MATRIX.md` carries a single **Fisher-KPP** row for it. The fixture pins the five distinct generators with public runtime support; KS is excluded by the same matrix (`no public runtime`).
+
+**Per-PDE `generator_kwargs` and `max_spatial_order`.** Two parameters cannot live in the shared fixture header:
+
+- `max_time` is numerically load-bearing and differs by an order of magnitude across PDEs — KdV is normalized short-horizon-only at `0.03`, Heat runs to `0.6`. Recording it per entry keeps the fixture self-describing and regenerable.
+- `max_spatial_order` is per-PDE because `compute_derivatives` defaults to `2` while `KdVResidualEvaluator` requires `u_xxx`.
+
+The shared header pins only what genuinely is shared: `generator_seed`, `batch_size`, `num_times`, `num_points`.
+
+New test file: `tests/test_v0_33e_golden_numbers_regression_gate.py`. For each PDE, regenerate the reference FieldBatch under the pinned seed, run `compute_derivatives(field, backend="auto")` and the appropriate residual evaluator, and compare the resulting metrics against the fixture with a **tight** relative tolerance (`rtol=1e-6`, `atol=1e-12`). Any breach fails the release-gate with a diff message that names the drifted metric and the observed vs. expected values.
+
+**Tolerance rationale.** `rtol=1e-6` is a cross-BLAS margin. Measured empirically: the fixture is generated on macOS (Accelerate/OpenBLAS) and replayed on the Linux CI runners (manylinux OpenBLAS), where the worst observed relative deviation on an unchanged pipeline is **1.5e-9** — roughly 650× of headroom under the tolerance. Within a single platform the reproduction is bit-exact across py3.12 and py3.13; **across** platforms it is not, and must not be asserted as such. `atol=1e-12` keeps near-zero metrics (e.g. residuals of exactly-integrated fields) above float64 denormal-and-cancellation noise. The underlying pipeline is float64 throughout (`_to_numpy` → `dtype=float`); the tolerances are **not** tied to float32 quantization.
+
+Consequently **no test in the gate compares a pinned metric with `==`**, including the regeneration-integrity test. The only bit-exact comparisons are of non-metric structure (names, ordering, `generator_kwargs`, `max_spatial_order`, `boundary_condition_x`), of carried-over entries on the `--pde` path (which are copied, not recomputed), and of repeat evaluation within a single process.
+
+Only **aggregate norms** are pinned — never element-wise values. BLAS reduction order differs across the Linux and macOS wheels, so element-wise equality is not a portable invariant while aggregate norms at `rtol=1e-6` are. `np.random.default_rng(seed)` is stable across NumPy 2.x and is kept as the generators' seeding path.
+
+### Regeneration workflow
+
+`tests/_helpers/regenerate_golden_fixture.py` is the single source of truth: it holds the frozen spec table, the metric computation, and the regeneration CLI. The gate test imports the same table, so the fixture can never drift from the configuration the gate replays.
+
+```bash
+# Regenerate every entry.
+python -m tests._helpers.regenerate_golden_fixture --all \
+    --reason "v0.30d FD-backend stencil widened to 4th order"
+
+# Regenerate one PDE; the other four entries are carried over verbatim.
+python -m tests._helpers.regenerate_golden_fixture --pde kdv_1d \
+    --reason "KdV dealiasing cutoff changed from N/3 to 2N/5"
+```
+
+`--reason` is mandatory and is recorded in the fixture's `last_regeneration_reason` field. The gate asserts the field is non-empty, and `test_full_regeneration_reproduces_the_committed_fixture` asserts a no-op `--all` regeneration reproduces the committed numbers exactly — so the fixture cannot be hand-edited into agreement.
+
+**`--all` vs `--pde`.** For cross-cutting numerical changes (FD backend, residual formulas, generator schemes), use `--all` so every PDE lands on the new code state atomically. Use `--pde <name>` only for isolated changes to a single PDE's generator or evaluator. If unsure, use `--all` — a full regeneration is cheap. A targeted regeneration against a cross-cutting change is not silently wrong: the carried-over entries fail on the next CI run with a named metric and drift value.
 
 ### Update policy
 

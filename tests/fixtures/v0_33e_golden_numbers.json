@@ -1,0 +1,81 @@
+{
+  "summary_schema_version": "0.1",
+  "summary_type": "pdelie_golden_numbers_fixture",
+  "generator_seed": 20330,
+  "batch_size": 1,
+  "num_times": 33,
+  "num_points": 64,
+  "last_regeneration_reason": "v0.33e initial fixture creation: first pinning of the derivative + residual numerical pipeline.",
+  "pdes": [
+    {
+      "name": "heat_1d",
+      "generator_kwargs": {
+        "max_time": 0.6
+      },
+      "max_spatial_order": 2,
+      "boundary_condition_x": "periodic",
+      "residual_l2_norm": 0.0006458512783359673,
+      "residual_rms": 1.4053534578589519e-05,
+      "residual_max_abs": 5.2847824907553687e-05,
+      "derivative_u_x_l2_norm": 87.81253622779643,
+      "derivative_u_xx_l2_norm": 185.1095421215774,
+      "derivative_u_t_l2_norm": 18.51133280510375
+    },
+    {
+      "name": "burgers_1d",
+      "generator_kwargs": {
+        "max_time": 0.25
+      },
+      "max_spatial_order": 2,
+      "boundary_condition_x": "periodic",
+      "residual_l2_norm": 0.00023951587102707456,
+      "residual_rms": 5.211795174072548e-06,
+      "residual_max_abs": 4.381603244733856e-05,
+      "derivative_u_x_l2_norm": 14.06622525682931,
+      "derivative_u_xx_l2_norm": 30.22219112211854,
+      "derivative_u_t_l2_norm": 4.304008899427061
+    },
+    {
+      "name": "kdv_1d",
+      "generator_kwargs": {
+        "max_time": 0.03
+      },
+      "max_spatial_order": 3,
+      "boundary_condition_x": "periodic",
+      "residual_l2_norm": 0.00939152744453941,
+      "residual_rms": 0.00020435688542362818,
+      "residual_max_abs": 0.0009367940924378537,
+      "derivative_u_x_l2_norm": 7.9653863668368174,
+      "derivative_u_xx_l2_norm": 17.428545262970566,
+      "derivative_u_t_l2_norm": 41.9462594776631
+    },
+    {
+      "name": "advection_diffusion_1d",
+      "generator_kwargs": {
+        "max_time": 0.4
+      },
+      "max_spatial_order": 2,
+      "boundary_condition_x": "periodic",
+      "residual_l2_norm": 0.002954839732647347,
+      "residual_rms": 6.429644679800138e-05,
+      "residual_max_abs": 0.0002794631401520087,
+      "derivative_u_x_l2_norm": 10.87540416905157,
+      "derivative_u_xx_l2_norm": 43.41697541020024,
+      "derivative_u_t_l2_norm": 8.43902830022111
+    },
+    {
+      "name": "reaction_diffusion_1d",
+      "generator_kwargs": {
+        "max_time": 0.3
+      },
+      "max_spatial_order": 2,
+      "boundary_condition_x": "periodic",
+      "residual_l2_norm": 0.00014721330026296834,
+      "residual_rms": 3.2033182794099807e-06,
+      "residual_max_abs": 1.8116143204655044e-05,
+      "derivative_u_x_l2_norm": 8.2739530091317,
+      "derivative_u_xx_l2_norm": 34.17039733361846,
+      "derivative_u_t_l2_norm": 11.207033743402611
+    }
+  ]
+}

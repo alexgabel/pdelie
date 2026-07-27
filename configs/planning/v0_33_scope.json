@@ -113,17 +113,19 @@
       "focus": "golden_numbers_regression_gate_parallel_hygiene",
       "target_files": [
         "tests/fixtures/v0_33e_golden_numbers.json",
-        "tests/test_v0_33e_golden_numbers_regression_gate.py"
+        "tests/test_v0_33e_golden_numbers_regression_gate.py",
+        "tests/_helpers/regenerate_golden_fixture.py"
       ],
       "fixture_summary_type": "pdelie_golden_numbers_fixture",
       "fixture_pdes": [
         "heat_1d",
         "burgers_1d",
         "kdv_1d",
-        "fisher_kpp_1d",
         "advection_diffusion_1d",
         "reaction_diffusion_1d"
       ],
+      "fixture_pde_count": 5,
+      "fisher_kpp_resolution": "fisher_kpp_is_not_a_separate_entry_generate_reaction_diffusion_1d_field_batch_stamps_equation_reaction_diffusion_fisher_kpp_and_support_matrix_carries_a_single_fisher_kpp_row",
       "pinned_metrics_per_pde": [
         "residual_l2_norm",
         "residual_rms",
@@ -132,6 +134,9 @@
         "derivative_u_xx_l2_norm",
         "derivative_u_t_l2_norm"
       ],
+      "per_pde_generator_kwargs_recorded": true,
+      "per_pde_max_spatial_order_recorded": true,
+      "shared_grid_header_fields": ["generator_seed", "batch_size", "num_times", "num_points"],
       "tolerance_rtol": 1e-06,
       "tolerance_atol": 1e-12,
       "initial_fixture_boundary_condition_scope": "periodic_only",
