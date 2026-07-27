@@ -1,0 +1,129 @@
+{
+  "summary_schema_version": "0.1",
+  "summary_type": "pdelie_v0_33_scope",
+  "decision_label": "v0_33_nonperiodic_generators_and_mask_preserving_bridge",
+  "design_document": "docs/design/V0_33_NONPERIODIC_GENERATORS_AND_MASK_PRESERVING_BRIDGE.md",
+  "status": "FROZEN",
+  "target_release": "v0.33.0",
+  "consolidation_policy": "solo_dev_single_tag_per_release_close",
+  "sub_milestones": [
+    {
+      "name": "v0.33a",
+      "focus": "nonperiodic_dispatch_in_fit_translation_generator_and_polynomial_translation_svd",
+      "target_files": [
+        "src/pdelie/symmetry/fitting/translation_baseline.py",
+        "src/pdelie/symmetry/methods/polynomial_translation_svd.py"
+      ],
+      "adds_diagnostic_keys": [
+        "boundary_condition_x",
+        "boundary_condition_dispatch_reason",
+        "interior_only_reduction_applied",
+        "interior_only_row_count"
+      ],
+      "byte_preserved_periodic_path": true
+    },
+    {
+      "name": "v0.33b",
+      "focus": "overlap_crop_verify_translation_generator",
+      "target_files": [
+        "src/pdelie/verification/finite_transform.py"
+      ],
+      "adds_diagnostic_keys": [
+        "boundary_condition_x",
+        "dispatch_path",
+        "overlap_fraction",
+        "overlap_row_count"
+      ],
+      "verification_report_classification_vocabulary_invariant": [
+        "exact",
+        "approximate",
+        "failed"
+      ],
+      "byte_preserved_periodic_path": true,
+      "supersedes_v0_31_5_deferral": true
+    },
+    {
+      "name": "v0.33c",
+      "focus": "mask_preserving_discovery_bridge",
+      "target_files": [
+        "src/pdelie/tasks/discovery.py"
+      ],
+      "adds_kwargs": [
+        {
+          "name": "mask_application",
+          "vocabulary": ["before_differentiation", "after_differentiation"],
+          "default": "after_differentiation"
+        }
+      ],
+      "adds_fit_diagnostics_keys": [
+        "mask_application_stage",
+        "mask_row_count",
+        "unmasked_row_count",
+        "mask_row_count_reduction_from_derivative_stencil"
+      ],
+      "discovery_task_result_top_level_key_count_invariant": 22,
+      "pysindy_discovery_unsupported_boundary_error_still_fires_on_nonperiodic": true
+    },
+    {
+      "name": "v0.33.0",
+      "focus": "release_close_consolidation",
+      "artifacts": [
+        "docs/releases/V0_33_RELEASE_READINESS.md",
+        "docs/specs/support_matrix.v0_33.json",
+        "release_gate_manifest consolidated 0.33 row",
+        "CI job rename v0_32_0-release-gate -> v0_33_0-release-gate",
+        "pyproject version 0.32.0 -> 0.33.0"
+      ]
+    }
+  ],
+  "hard_constraints": [
+    "no_new_pde",
+    "no_new_symmetry_method",
+    "no_new_symmetry_candidate_discriminator",
+    "no_new_summary_type",
+    "no_discovery_task_result_top_level_schema_change",
+    "no_pdelie_weak_pde_library_diagnostic_schema_change",
+    "no_new_root_pdelie_export",
+    "no_confidence_labels_change",
+    "no_noise_robustness_claim",
+    "no_wsindy_claim",
+    "no_multi_channel_or_2d_contract_widening",
+    "no_pyproject_version_bump_until_release_close",
+    "no_hidden_train_test_policy_invented"
+  ],
+  "boundary_condition_vocabulary_invariant": [
+    "periodic",
+    "dirichlet",
+    "neumann",
+    "open_unknown"
+  ],
+  "verification_report_classification_vocabulary_invariant": [
+    "exact",
+    "approximate",
+    "failed"
+  ],
+  "confidence_labels_invariant": [
+    "strong",
+    "qualified",
+    "failed",
+    "insufficient_evidence"
+  ],
+  "polynomial_translation_svd_frozen_score_names_invariant": [
+    "span_distance",
+    "residual_l2",
+    "error_curve_max",
+    "svd_condition_number"
+  ],
+  "explicit_non_unlocks": [
+    "nonperiodic_kdv",
+    "nonperiodic_pysindy_discovery",
+    "nonperiodic_weak_form_residual",
+    "additional_pdes",
+    "additional_symmetry_methods",
+    "additional_external_data_cookbooks",
+    "multi_channel_or_2d",
+    "trained_model_extraction",
+    "external_symmetry_method_ports",
+    "column_normalized_weak_stlsq_v0_34"
+  ]
+}

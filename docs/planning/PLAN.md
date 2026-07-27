@@ -1,3 +1,24 @@
+# PDELie - Execution Plan (V0.33 — Nonperiodic Generators + Mask-Preserving Bridge, planning kickoff)
+
+**Status:** PLANNING_FROZEN
+
+`v0.33` closes two long-standing wedge gaps that the v0.30–v0.32 arc did not reach: the **nonperiodic generator gap** (`fit_translation_generator`, `verify_translation_generator`, and `polynomial_translation_svd` remain periodic-only despite v0.30 shipping nonperiodic `FieldBatch` readiness + boundary-condition metadata + strong-form nonperiodic residuals) and the **discovery-bridge mask leakage** (`run_pysindy_pde_task` applies the input mask before differentiation, so the derivative stencil widens the effective mask and the row-set the optimizer sees no longer matches the row-set PDELie audited). Both fit the wedge (empirical diagnostics on scalar 1D data) and do not require multi-D or new PDEs.
+
+Decision label: `v0_33_nonperiodic_generators_and_mask_preserving_bridge`.
+
+Design freeze: [`docs/design/V0_33_NONPERIODIC_GENERATORS_AND_MASK_PRESERVING_BRIDGE.md`](../design/V0_33_NONPERIODIC_GENERATORS_AND_MASK_PRESERVING_BRIDGE.md). Machine-readable scope: [`configs/planning/v0_33_scope.json`](../../configs/planning/v0_33_scope.json).
+
+Sub-milestone structure (mirrors the v0.32 arc):
+
+- **v0.33a** — Nonperiodic dispatch in `fit_translation_generator` and `polynomial_translation_svd`. Periodic path byte-preserved. New `boundary_condition_x` / `boundary_condition_dispatch_reason` / `interior_only_reduction_applied` / `interior_only_row_count` diagnostic keys.
+- **v0.33b** — Overlap-crop finite-transform verification. `verify_translation_generator` grows a nonperiodic dispatch path; `VerificationReport.diagnostics` reports `dispatch_path`, `overlap_fraction`, `overlap_row_count`. Classification vocabulary unchanged (`{exact, approximate, failed}`). Delivers what v0.31.5 previously deferred.
+- **v0.33c** — Mask-preserving discovery bridge. `run_pysindy_pde_task` gains `mask_application: Literal["before_differentiation", "after_differentiation"]` (default `"after_differentiation"`). New `fit_diagnostics.mask_application_stage` / `mask_row_count` / `unmasked_row_count` / `mask_row_count_reduction_from_derivative_stencil` keys. `discovery_task_result` top-level 22-key schema preserved.
+- **v0.33.0** — Release close consolidation. Version bump `0.32.0` → `0.33.0`. `V0_33_RELEASE_READINESS.md`. `support_matrix.v0_33.json`. Release-gate manifest consolidated `0.33` row. CI job rename `v0_32_0-release-gate` → `v0_33_0-release-gate`.
+
+Non-goals: no new PDE; no new symmetry method (Ko-sparse moves to v0.34+); no new `SymmetryCandidate` discriminator; no new `summary_type`; no `discovery_task_result` schema change (still 22 keys); no root export; no noise / WSINDy claim; no multi-D / 2D contract widening; no package version bump until v0.33.0 release close.
+
+---
+
 # PDELie - Execution Plan (V0.32.0 Release Close — Consolidated)
 
 **Status:** COMPLETE
