@@ -1,0 +1,111 @@
+{
+  "summary_schema_version": "0.1",
+  "summary_type": "pdelie_admissibility_dose_response_fixture",
+  "profile_family": "nu_0*(1+alpha*sin(2*pi*x/L))",
+  "diffusivity_form": "conservative_divergence",
+  "generator_seed": 0,
+  "num_points": 64,
+  "alphas": [
+    0.0,
+    0.1,
+    0.25,
+    0.5,
+    0.75
+  ],
+  "last_regeneration_reason": "v0.33d initial dose-response measurement on the frozen sinusoidal nu(x) family.",
+  "pdes": [
+    {
+      "name": "heat_1d",
+      "constant_reference_residual_l2": 0.0009031939871942286,
+      "dose_response": [
+        {
+          "alpha": 0.0,
+          "residual_l2": 0.000903193987197546,
+          "ratio_to_constant_reference": 1.0000000000036728
+        },
+        {
+          "alpha": 0.1,
+          "residual_l2": 0.33642091536766927,
+          "ratio_to_constant_reference": 372.4791353104116
+        },
+        {
+          "alpha": 0.25,
+          "residual_l2": 0.8312488848030609,
+          "ratio_to_constant_reference": 920.3436876117111
+        },
+        {
+          "alpha": 0.5,
+          "residual_l2": 1.6428667406863202,
+          "ratio_to_constant_reference": 1818.9522560816467
+        },
+        {
+          "alpha": 0.75,
+          "residual_l2": 2.4598085878711227,
+          "ratio_to_constant_reference": 2723.455451151215
+        }
+      ]
+    },
+    {
+      "name": "burgers_1d",
+      "constant_reference_residual_l2": 1.763699006596257e-05,
+      "dose_response": [
+        {
+          "alpha": 0.0,
+          "residual_l2": 1.763699007130617e-05,
+          "ratio_to_constant_reference": 1.000000000302977
+        },
+        {
+          "alpha": 0.1,
+          "residual_l2": 0.07883438483413699,
+          "ratio_to_constant_reference": 4469.832127777778
+        },
+        {
+          "alpha": 0.25,
+          "residual_l2": 0.1958923468671336,
+          "ratio_to_constant_reference": 11106.903509867258
+        },
+        {
+          "alpha": 0.5,
+          "residual_l2": 0.38846211482270415,
+          "ratio_to_constant_reference": 22025.420061464618
+        },
+        {
+          "alpha": 0.75,
+          "residual_l2": 0.5789495681793871,
+          "ratio_to_constant_reference": 32825.87142217058
+        }
+      ]
+    },
+    {
+      "name": "advection_diffusion_1d",
+      "constant_reference_residual_l2": 0.0003788223336631113,
+      "dose_response": [
+        {
+          "alpha": 0.0,
+          "residual_l2": 0.00037882233364992546,
+          "ratio_to_constant_reference": 0.9999999999651925
+        },
+        {
+          "alpha": 0.1,
+          "residual_l2": 0.11493411080396486,
+          "ratio_to_constant_reference": 303.3984551348453
+        },
+        {
+          "alpha": 0.25,
+          "residual_l2": 0.29002824062036925,
+          "ratio_to_constant_reference": 765.6049151481467
+        },
+        {
+          "alpha": 0.5,
+          "residual_l2": 0.591242638338591,
+          "ratio_to_constant_reference": 1560.738599072108
+        },
+        {
+          "alpha": 0.75,
+          "residual_l2": 0.9072448586567499,
+          "ratio_to_constant_reference": 2394.9085838839887
+        }
+      ]
+    }
+  ]
+}

@@ -158,7 +158,68 @@ The generator's numerical scheme uses the sampled `nu(x)` array (the callable pa
 - `diffusivity_profile=callable` records `nu_profile_kind="callable"` + `nu_profile_callable_repr`.
 - Shape mismatch on the array path raises `ShapeValidationError` before any generator call.
 - Non-finite / non-positive `nu(x)` raises `ScopeValidationError`.
-- Constant-coefficient `polynomial_translation_svd` on a variable-coefficient field runs to completion (does not raise), reports a **higher** `span_distance` / `residual_l2` than the constant-coefficient baseline, and is a documented `valid_but_not_useful` diagnostic in the resulting confidence report — the crash test.
+- Constant-coefficient `polynomial_translation_svd` on a variable-coefficient field runs to completion (does not raise) and reports a **`residual_l2` at least 10× the constant-coefficient baseline** — the crash test.
+
+### The crash test asserts `residual_l2`, not `span_distance`
+
+The planning draft specified `span_distance` for this assertion. Measurement before implementation showed it cannot carry it, for two compounding reasons:
+
+1. **`span_distance` is bounded.** `normalize_translation_coefficients` returns a unit vector with a non-negative leading component and the reference is `[1,0,0,0]`, so `span_distance = sqrt(2 - 2·a[0]) ∈ [0, √2]`. Any multiplicative gate has a hard ceiling at 1.4142.
+2. **The reference fallback zeroes it.** `_select_translation_coefficients` discards the SVD result and returns the reference coefficients when the SVD drifts *and* the constant basis is the least-sensitive direction. `span_distance` is then exactly `0.0` — the method reports a **perfect** translation generator precisely where it should fail hardest. A `span_distance`-based gate does not merely miss the failure; it asserts the opposite of the truth.
+
+Measured across grid `{32, 64, 128}` × seed `{0, 1, 7}` × batch `{1, 2}` on the frozen profile:
+
+| Candidate gate | Configurations separated | Worst ratio |
+|---|---|---|
+| `span_distance ≥ 10×` | 8 / 18 | **0.0** (inverted) |
+| `reference_fallback_used` | 12 / 18 | — |
+| `svd_span_distance ≥ 10×` | 18 / 18 | 1402× |
+| **`residual_l2 ≥ 10×`** | **18 / 18** | **1772×** |
+
+`residual_l2` is the chosen gate: it separates every configuration with ~177× of headroom, and it is already one of the frozen four score names on the public `polynomial_translation_svd` surface, so the assertion needs no new diagnostic. (`svd_span_distance` is also robust but is not forwarded into the method's `fit_diagnostics`; exposing it would widen a surface this sub-milestone's non-goals put out of scope.)
+
+`tests/test_v0_33d_variable_coefficient_generators.py::test_span_distance_is_not_a_usable_crash_gate` pins the inverted behaviour, so a future selection-policy change that makes `span_distance` usable will fail that test and prompt revisiting this choice.
+
+### Frozen crash-test profile
+
+`nu(x) = nu_0 · (1 + 0.5 · sin(2πx/L))` — slowly varying, strictly positive, and with mean equal to the constant reference, so the measured failure is attributable to x-dependence rather than to a shifted average coefficient. Observed `residual_l2` ratios with the shipped generators: Heat 1819×, Burgers 22025×, advection-diffusion 1561×.
+
+### Equation form is selected, not assumed
+
+The equation form is an explicit kwarg and a recorded tag, because `∂ₓ(ν(x) ∂ₓu)` and `ν(x)·u_xx` are different operators for any `ν(x)` and a residual evaluator cannot recover which one produced the data:
+
+| Kwarg | Values | Tag | Default |
+|---|---|---|---|
+| `diffusivity_form` | `conservative_divergence`, `nonconservative_nu_uxx` | `parameter_tags["nu_form"]` | `conservative_divergence` |
+| `advection_form` (advection-diffusion only) | `conservative_divergence`, `nonconservative_c_ux` | `parameter_tags["c_form"]` | `nonconservative_c_ux` |
+
+Both values of each selector are implemented, not merely recorded. Divergence form is the diffusive default because it is conservative — it preserves the spatial integral of `u` for periodic data at any `ν(x)`. The advective default is non-conservative because that is what `AdvectionDiffusionResidualEvaluator` models with a scalar `c`. Unknown values raise `ScopeValidationError` before any numerical work. **This tag is the v0.34a residual-evaluator dispatch key.**
+
+The two diffusive forms coincide analytically for constant `ν`, so selecting either leaves the byte-preserved constant path untouched — asserted per-PDE in `test_form_selection_does_not_disturb_the_constant_path`.
+
+### Coefficient treatment policy
+
+`parameter_tags["nu_treatment_policy"]` is emitted with the single v0.33d value `"fixed_background"`: the coefficient field is a fixed background that does **not** co-transform under a symmetry transformation. v0.34b extends the vocabulary with `"co_transforming_equivalence_target"` for the symmetry-breaking-versus-equivalence benchmark. It is emitted now rather than retrofitted so that v0.33d-generated payloads are already self-describing when that benchmark lands.
+
+### Constant paths are left literally unchanged
+
+Heat and advection-diffusion have closed-form constant-coefficient paths (an analytic Fourier series and an exact spectral multiplier respectively) that do not generalise to `ν(x)`, so their variable paths integrate with RK4 from the same initial condition. Those constant-coefficient paths are left literally unchanged rather than re-expressed as a special case of the variable path — routing a constant array through the variable scheme is not bit-identical, and byte-preservation is an exit gate.
+
+### Dose-response
+
+`tests/fixtures/v0_33d_admissibility_dose_response.json` pins the curve behind the binary gate, so the admissibility claim can be cited rather than merely asserted. Family `ν_α(x) = ν₀(1 + α·sin(2πx/L))`, `α ∈ {0, 0.1, 0.25, 0.5, 0.75}`, measured as `residual_l2` ratio against the constant-coefficient reference:
+
+| α | Heat | Burgers | Advection-diffusion |
+|---|---|---|---|
+| 0.00 | 1.0× | 1.0× | 1.0× |
+| 0.10 | 372× | 4470× | 303× |
+| 0.25 | 920× | 11107× | 766× |
+| 0.50 | **1819×** | **22025×** | **1561×** |
+| 0.75 | 2724× | 32826× | 2395× |
+
+`α = 0` is the control: the profile is a constant *array*, so it routes through the RK4 variable path rather than the closed-form path. Its ratio of 1.0× shows the variable-coefficient scheme reproduces the closed-form result when `ν` is constant — which is what makes the growth at `α > 0` attributable to x-dependence rather than to having switched numerical schemes. The curve is asserted strictly increasing per PDE.
+
+This is a separate fixture from `v0_33e_golden_numbers.json` by design: the dose-response *requires* the v0.33d generators, so it cannot live in a v0.33e artifact that pins the constant-coefficient pipeline. The v0.33e fixture, schema, and regeneration CLI are untouched. Regenerate with `python -m tests._helpers.admissibility_dose_response --reason "<named cause>"`.
 
 ## v0.33e — Golden-numbers regression gate (parallel hygiene)
 
