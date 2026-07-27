@@ -286,7 +286,7 @@ class PolynomialTranslationSvdMethod:
         """
         try:
             residual = residual_evaluator.evaluate(field).residual
-        except Exception:  # degrade gracefully
+        except Exception:  # noqa: BLE001 — degrade gracefully to None
             return None
         residual_array = np.asarray(residual, dtype=float).reshape(-1)
         if residual_array.size == 0:
@@ -495,7 +495,7 @@ def bootstrap_uncertainty(
             resample_result = method.fit(
                 resampled, residual_evaluator=residual_evaluator
             )
-        except Exception:
+        except Exception:  # noqa: BLE001 — count failed resamples explicitly
             failed_resamples += 1
             continue
         for name in _BOOTSTRAP_SCORE_NAMES:

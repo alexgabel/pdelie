@@ -126,16 +126,14 @@ class BoundaryConditionSpec:
         left = None if raw_left is None else BoundaryFace.from_dict(raw_left)
         right = None if raw_right is None else BoundaryFace.from_dict(raw_right)
 
-        if bc_type == "periodic":
-            if left is not None or right is not None:
-                raise SchemaValidationError(
-                    "Periodic boundary spec must have left=None and right=None."
-                )
-        elif bc_type == "open_unknown":
-            if left is not None or right is not None:
-                raise SchemaValidationError(
-                    "open_unknown boundary spec must have left=None and right=None."
-                )
+        if bc_type == "periodic" and (left is not None or right is not None):
+            raise SchemaValidationError(
+                "Periodic boundary spec must have left=None and right=None."
+            )
+        if bc_type == "open_unknown" and (left is not None or right is not None):
+            raise SchemaValidationError(
+                "open_unknown boundary spec must have left=None and right=None."
+            )
 
         if "specified" in value:
             raw_specified = value["specified"]

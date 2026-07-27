@@ -77,8 +77,8 @@ def _import_from_xarray(field):
 
 def _assert_numeric_mapping_allclose(first: dict[str, Any], second: dict[str, Any]) -> None:
     assert first.keys() == second.keys()
-    for key in first:
-        np.testing.assert_allclose(first[key], second[key], rtol=1e-9, atol=1e-12)
+    for key, value in first.items():
+        np.testing.assert_allclose(value, second[key], rtol=1e-9, atol=1e-12)
 
 
 def _assert_field_parity(native, imported, *, importer_name: str) -> None:

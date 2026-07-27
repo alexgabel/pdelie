@@ -194,9 +194,10 @@ def _is_dataset_data_var_candidate(data_array: object) -> bool:
         return False
     if values_array.ndim != len(normalized_dims):
         return False
-    if "var" in normalized_dims and values_array.shape[normalized_dims.index("var")] != 1:
-        return False
-    return True
+    return not (
+        "var" in normalized_dims
+        and values_array.shape[normalized_dims.index("var")] != 1
+    )
 
 
 def _compatible_dataset_data_vars(dataset: object, *, mask_var: str | None) -> list[str]:
