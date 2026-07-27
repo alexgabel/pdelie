@@ -78,10 +78,20 @@ def test_spectral_fd_still_rejects_nonperiodic() -> None:
         compute_spectral_fd_derivatives(field)
 
 
-def test_polynomial_translation_basis_still_rejects_nonperiodic() -> None:
+def test_polynomial_translation_basis_accepts_nonperiodic_since_v0_33a() -> None:
+    """v0.33a removed the boundary gate from ``build_translation_basis``.
+
+    The basis {1, t, x, u} is built from coordinates and values alone and is
+    boundary-condition-agnostic; the periodic requirement lived there only
+    because every consumer happened to be periodic. The boundary-aware logic
+    now sits in ``fit_translation_generator``'s interior-only shave.
+    """
     field = _make_nonperiodic_field("dirichlet")
-    with pytest.raises(ScopeValidationError, match="periodic"):
-        build_translation_basis(field)
+    basis = build_translation_basis(field)
+
+    assert set(basis) == {"1", "t", "x", "u"}
+    for array in basis.values():
+        assert array.shape == field.values.shape
 
 
 def test_weak_heat_residual_still_rejects_nonperiodic() -> None:

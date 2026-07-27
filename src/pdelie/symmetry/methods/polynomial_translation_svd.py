@@ -19,8 +19,13 @@ Architectural notes
   ``method_scores`` carries SVD span distance, condition number, and
   the l2 norms of the finite-difference deltas — all method-native and
   finite (or None).
-- Periodic scalar 1D input only. Nonperiodic inputs raise a
-  :class:`ScopeValidationError` before any expensive computation.
+- Scalar 1D input only. Since v0.33a **nonperiodic** input is accepted and
+  dispatches through the interior-only branch of ``fit_translation_generator``
+  (finite-difference derivatives, boundary rows shaved by the residual
+  evaluator's ``boundary_trim_width``). Acceptance is **not** a claim of
+  boundary-value-problem preservation: the nonperiodic branch establishes
+  interior differential-operator covariance only, and the narrower claim is
+  carried by the ``symmetry_claim`` entry in ``fit_diagnostics``.
 
 Public callable: :func:`build_method`. The registry factory resolves
 ``pdelie.symmetry.methods.polynomial_translation_svd:build_method`` and
@@ -38,7 +43,6 @@ from typing import Any, ClassVar
 
 import numpy as np
 
-from pdelie._boundary import is_x_periodic
 from pdelie.contracts import FieldBatch
 from pdelie.errors import ScopeValidationError
 from pdelie.residuals.base import ResidualEvaluator
@@ -155,12 +159,11 @@ class PolynomialTranslationSvdMethod:
                 f"{_METHOD_NAME}.fit requires a residual_evaluator; the "
                 "closed-form SVD fit is defined against a residual measure."
             )
-        if not is_x_periodic(field):
-            raise ScopeValidationError(
-                f"{_METHOD_NAME}.fit requires a periodic-x FieldBatch. "
-                "Nonperiodic inputs are out of scope for v0.30.1; see "
-                "docs/design/PYSINDY_COMPATIBILITY_POLICY.md."
-            )
+        # v0.33a: nonperiodic inputs dispatch through the interior-only branch of
+        # fit_translation_generator. The claim they support is narrower than the
+        # periodic one -- interior differential-operator covariance, not
+        # boundary-value-problem preservation -- and is carried by the
+        # `symmetry_claim` diagnostic rather than by acceptance alone.
         normalized_config: dict[str, Any] = (
             {} if config is None else dict(config)
         )
@@ -225,6 +228,20 @@ class PolynomialTranslationSvdMethod:
             "min_delta_basis": diag.get("min_delta_basis"),
             "basis": list(diag.get("basis", [])),
             "singular_values": list(diag.get("singular_values", [])),
+            # v0.33a boundary-dispatch diagnostics, forwarded verbatim.
+            "boundary_condition_x": diag.get("boundary_condition_x"),
+            "boundary_condition_dispatch_reason": diag.get(
+                "boundary_condition_dispatch_reason"
+            ),
+            "interior_only_reduction_applied": bool(
+                diag.get("interior_only_reduction_applied", False)
+            ),
+            "interior_only_row_count": diag.get("interior_only_row_count"),
+            "interior_only_trim_width": diag.get("interior_only_trim_width"),
+            "symmetry_claim": diag.get("symmetry_claim"),
+            # Pre-fallback span, so callers can see the honest fit quality even
+            # on the periodic branch where the reference fallback may fire.
+            "svd_span_distance": _finite_float_or_none(diag.get("svd_span_distance")),
         }
         warnings_out: list[str] = []
         if fit_diagnostics["reference_fallback_used"]:

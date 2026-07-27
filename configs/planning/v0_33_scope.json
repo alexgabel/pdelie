@@ -11,8 +11,11 @@
       "name": "v0.33a",
       "focus": "nonperiodic_dispatch_in_fit_translation_generator_and_polynomial_translation_svd",
       "target_files": [
+        "src/pdelie/symmetry/parameterization/polynomial_translation.py",
         "src/pdelie/symmetry/fitting/translation_baseline.py",
-        "src/pdelie/symmetry/methods/polynomial_translation_svd.py"
+        "src/pdelie/symmetry/methods/polynomial_translation_svd.py",
+        "tests/test_v0_33a_nonperiodic_translation_generator.py",
+        "tests/fixtures/v0_33e_golden_numbers.json"
       ],
       "adds_diagnostic_keys": [
         "boundary_condition_x",
@@ -24,7 +27,36 @@
       "new_diagnostic_keys": [
         "symmetry_claim"
       ],
-      "symmetry_claim_key_added": true
+      "symmetry_claim_key_added": true,
+      "interior_shave_policy": {
+        "width": "read_from_residual_diagnostics_boundary_trim_width",
+        "not_hardcoded_reason": "a_fixed_constant_can_silently_diverge_from_the_fd_stencil",
+        "interior_only_row_count_formula": "num_points_minus_two_times_boundary_trim_width",
+        "superseded_draft": "one_row_shave_num_points_minus_two",
+        "measurement": "shave_of_1_or_2_leaves_span_distance_near_the_sqrt_2_ceiling_on_all_four_pdes_1_13_to_1_40_collapsing_to_0_0043_for_heat_at_shave_equal_boundary_trim_width"
+      },
+      "reference_fallback_policy": {
+        "periodic_branch": "unchanged_fallback_retained_byte_preserved",
+        "nonperiodic_branch": "suppressed",
+        "fallback_reason_value": "reference_fallback_suppressed_on_nonperiodic_branch",
+        "reason": "the_fallback_drives_emitted_span_distance_to_exactly_zero_regardless_of_true_drift",
+        "measurement": "fired_on_3_of_4_pdes_at_num_points_128_reporting_0_0_where_honest_svd_span_was_0_24_to_0_64"
+      },
+      "additional_diagnostic_keys": [
+        "interior_only_trim_width",
+        "svd_span_distance"
+      ],
+      "blocking_gates_removed": [
+        "polynomial_translation.build_translation_basis",
+        "polynomial_translation.apply_pointwise_translation",
+        "polynomial_translation_svd.PolynomialTranslationSvdMethod.fit"
+      ],
+      "resolution_caveat": "convergence_is_pde_dependent_only_heat_is_well_resolved_below_num_points_256_no_hard_resolution_gate_is_imposed_the_honest_span_distance_plus_a_low_row_warning_are_emitted_instead",
+      "nonperiodic_golden_entries": [
+        "heat_1d_dirichlet",
+        "burgers_1d_neumann",
+        "advection_diffusion_1d_open_unknown"
+      ]
     },
     {
       "name": "v0.33b",

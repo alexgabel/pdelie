@@ -5,7 +5,7 @@
   "batch_size": 1,
   "num_times": 33,
   "num_points": 64,
-  "last_regeneration_reason": "v0.33e initial fixture creation: first pinning of the derivative + residual numerical pipeline.",
+  "last_regeneration_reason": "v0.33a: add nonperiodic golden entries (dirichlet heat, neumann burgers, open_unknown advection-diffusion) exercising the finite_difference backend and interior-only residual policy.",
   "pdes": [
     {
       "name": "heat_1d",
@@ -14,6 +14,7 @@
       },
       "max_spatial_order": 2,
       "boundary_condition_x": "periodic",
+      "nonperiodic_window_keep": null,
       "residual_l2_norm": 0.0006458512783359673,
       "residual_rms": 1.4053534578589519e-05,
       "residual_max_abs": 5.2847824907553687e-05,
@@ -28,6 +29,7 @@
       },
       "max_spatial_order": 2,
       "boundary_condition_x": "periodic",
+      "nonperiodic_window_keep": null,
       "residual_l2_norm": 0.00023951587102707456,
       "residual_rms": 5.211795174072548e-06,
       "residual_max_abs": 4.381603244733856e-05,
@@ -42,6 +44,7 @@
       },
       "max_spatial_order": 3,
       "boundary_condition_x": "periodic",
+      "nonperiodic_window_keep": null,
       "residual_l2_norm": 0.00939152744453941,
       "residual_rms": 0.00020435688542362818,
       "residual_max_abs": 0.0009367940924378537,
@@ -56,6 +59,7 @@
       },
       "max_spatial_order": 2,
       "boundary_condition_x": "periodic",
+      "nonperiodic_window_keep": null,
       "residual_l2_norm": 0.002954839732647347,
       "residual_rms": 6.429644679800138e-05,
       "residual_max_abs": 0.0002794631401520087,
@@ -70,12 +74,58 @@
       },
       "max_spatial_order": 2,
       "boundary_condition_x": "periodic",
+      "nonperiodic_window_keep": null,
       "residual_l2_norm": 0.00014721330026296834,
       "residual_rms": 3.2033182794099807e-06,
       "residual_max_abs": 1.8116143204655044e-05,
       "derivative_u_x_l2_norm": 8.2739530091317,
       "derivative_u_xx_l2_norm": 34.17039733361846,
       "derivative_u_t_l2_norm": 11.207033743402611
+    },
+    {
+      "name": "heat_1d_dirichlet",
+      "generator_kwargs": {
+        "max_time": 0.6
+      },
+      "max_spatial_order": 2,
+      "boundary_condition_x": "dirichlet",
+      "nonperiodic_window_keep": 0.6,
+      "residual_l2_norm": 0.9511721834048772,
+      "residual_rms": 0.026860269932817076,
+      "residual_max_abs": 0.18163665652127783,
+      "derivative_u_x_l2_norm": 71.38656376475721,
+      "derivative_u_xx_l2_norm": 144.74924006069097,
+      "derivative_u_t_l2_norm": 14.664842059849775
+    },
+    {
+      "name": "burgers_1d_neumann",
+      "generator_kwargs": {
+        "max_time": 0.25
+      },
+      "max_spatial_order": 2,
+      "boundary_condition_x": "neumann",
+      "nonperiodic_window_keep": 0.6,
+      "residual_l2_norm": 0.13446242094025962,
+      "residual_rms": 0.003797101077269507,
+      "residual_max_abs": 0.028612133723322476,
+      "derivative_u_x_l2_norm": 11.541432975576052,
+      "derivative_u_xx_l2_norm": 23.82718542038955,
+      "derivative_u_t_l2_norm": 3.644109136105127
+    },
+    {
+      "name": "advection_diffusion_1d_open_unknown",
+      "generator_kwargs": {
+        "max_time": 0.4
+      },
+      "max_spatial_order": 2,
+      "boundary_condition_x": "open_unknown",
+      "nonperiodic_window_keep": 0.6,
+      "residual_l2_norm": 0.3361131041812526,
+      "residual_rms": 0.009491539874460988,
+      "residual_max_abs": 0.06616196753429356,
+      "derivative_u_x_l2_norm": 9.242520870494413,
+      "derivative_u_xx_l2_norm": 30.560604807317407,
+      "derivative_u_t_l2_norm": 7.159854778535781
     }
   ]
 }

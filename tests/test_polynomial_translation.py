@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from pdelie import GeneratorFamily, ScopeValidationError, ShapeValidationError
+from pdelie import GeneratorFamily, ShapeValidationError
 from pdelie.contracts import _translation_generator_basis_spec
 from pdelie.data import generate_burgers_1d_field_batch, generate_heat_1d_field_batch
 from pdelie.residuals import BurgersResidualEvaluator, HeatResidualEvaluator
@@ -97,15 +97,38 @@ def test_wrong_length_translation_coefficients_raise_typed_error() -> None:
         normalize_translation_coefficients(np.array([1.0, 0.0, 0.0], dtype=float))
 
 
-def test_translation_fitter_rejects_nonperiodic_boundary_conditions() -> None:
+def test_translation_fitter_dispatches_nonperiodic_since_v0_33a() -> None:
+    """v0.33a: nonperiodic input dispatches to the interior-only branch.
+
+    Supersedes the pre-v0.33a rejection. The claim the nonperiodic branch
+    supports is narrower than the periodic one and is carried by
+    ``symmetry_claim``, not by acceptance alone.
+    """
     field = generate_heat_1d_field_batch(batch_size=4, num_times=33, num_points=64, seed=13)
     field.metadata["boundary_conditions"] = {"x": "dirichlet"}
-    with pytest.raises(ScopeValidationError):
-        fit_translation_generator(field, HeatResidualEvaluator(), epsilon=1e-4)
+
+    diagnostics = fit_translation_generator(
+        field, HeatResidualEvaluator(), epsilon=1e-4
+    ).diagnostics
+
+    assert diagnostics["boundary_condition_x"] == "dirichlet"
+    assert diagnostics["boundary_condition_dispatch_reason"] == "is_x_periodic_false_field_metadata"
+    assert diagnostics["interior_only_reduction_applied"] is True
+    assert diagnostics["interior_only_row_count"] < 64
+    # The reference fallback is suppressed off the periodic branch, so the
+    # emitted span is the honest SVD value rather than a masked 0.0.
+    assert diagnostics["reference_fallback_used"] is False
+    assert diagnostics["selected_span_distance"] == diagnostics["svd_span_distance"]
 
 
-def test_translation_fitter_rejects_nonperiodic_burgers_inputs() -> None:
+def test_translation_fitter_dispatches_nonperiodic_burgers_inputs_since_v0_33a() -> None:
     field = generate_burgers_1d_field_batch(batch_size=4, num_times=33, num_points=64, seed=15)
     field.metadata["boundary_conditions"] = {"x": "dirichlet"}
-    with pytest.raises(ScopeValidationError):
-        fit_translation_generator(field, BurgersResidualEvaluator(), epsilon=1e-4)
+
+    diagnostics = fit_translation_generator(
+        field, BurgersResidualEvaluator(), epsilon=1e-4
+    ).diagnostics
+
+    assert diagnostics["boundary_condition_x"] == "dirichlet"
+    assert diagnostics["interior_only_reduction_applied"] is True
+    assert diagnostics["reference_fallback_used"] is False

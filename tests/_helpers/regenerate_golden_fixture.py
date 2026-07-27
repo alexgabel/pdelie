@@ -99,8 +99,15 @@ PDE_ENTRY_KEYS: tuple[str, ...] = (
     "generator_kwargs",
     "max_spatial_order",
     "boundary_condition_x",
+    "nonperiodic_window_keep",
     *PINNED_METRIC_NAMES,
 )
+
+#: Fraction of the periodic domain retained when manufacturing a nonperiodic
+#: entry (v0.33a). The restriction of a periodic solution to an interior window
+#: is a genuine solution of the same PDE on that sub-domain, which is exactly
+#: the situation of a caller holding nonperiodic data.
+DEFAULT_NONPERIODIC_WINDOW_KEEP = 0.6
 
 
 @dataclass(frozen=True)
@@ -121,15 +128,48 @@ class GoldenPdeSpec:
     evaluator: Callable[[], ResidualEvaluator]
     max_spatial_order: int
     generator_kwargs: dict[str, Any] = dataclass_field(default_factory=dict)
+    #: ``"periodic"`` builds the generator output directly. Any other value
+    #: restricts it to an interior window and relabels the boundary metadata,
+    #: pinning the v0.33a nonperiodic dispatch path.
+    boundary_type: str = "periodic"
+    window_keep: float | None = None
 
     def build_field(self) -> FieldBatch:
-        return self.generator(
+        field = self.generator(
             batch_size=BATCH_SIZE,
             num_times=NUM_TIMES,
             num_points=NUM_POINTS,
             seed=GENERATOR_SEED,
             **self.generator_kwargs,
         )
+        if self.boundary_type == "periodic":
+            return field
+        return _restrict_to_nonperiodic_window(
+            field,
+            self.boundary_type,
+            keep=self.window_keep or DEFAULT_NONPERIODIC_WINDOW_KEEP,
+        )
+
+
+def _restrict_to_nonperiodic_window(
+    field: FieldBatch, boundary_type: str, *, keep: float
+) -> FieldBatch:
+    num_points = field.values.shape[2]
+    width = int(num_points * keep)
+    low = (num_points - width) // 2
+    metadata = dict(field.metadata)
+    metadata["boundary_conditions"] = {"x": boundary_type}
+    return FieldBatch(
+        values=field.values[:, :, low : low + width, :].copy(),
+        dims=field.dims,
+        coords={
+            "time": field.coords["time"].copy(),
+            "x": field.coords["x"][low : low + width].copy(),
+        },
+        var_names=list(field.var_names),
+        metadata=metadata,
+        preprocess_log=[],
+    )
 
 
 #: The five distinct PDE generators with public runtime support.
@@ -174,6 +214,33 @@ GOLDEN_PDE_SPECS: tuple[GoldenPdeSpec, ...] = (
         max_spatial_order=2,
         generator_kwargs={"max_time": 0.3},
     ),
+    # v0.33a nonperiodic entries. These exercise the finite_difference backend
+    # and the interior-only residual policy, which the periodic entries above
+    # never reach -- the periodic path resolves to spectral_fd and full_grid.
+    GoldenPdeSpec(
+        name="heat_1d_dirichlet",
+        generator=generate_heat_1d_field_batch,
+        evaluator=HeatResidualEvaluator,
+        max_spatial_order=2,
+        generator_kwargs={"max_time": 0.6},
+        boundary_type="dirichlet",
+    ),
+    GoldenPdeSpec(
+        name="burgers_1d_neumann",
+        generator=generate_burgers_1d_field_batch,
+        evaluator=BurgersResidualEvaluator,
+        max_spatial_order=2,
+        generator_kwargs={"max_time": 0.25},
+        boundary_type="neumann",
+    ),
+    GoldenPdeSpec(
+        name="advection_diffusion_1d_open_unknown",
+        generator=generate_advection_diffusion_1d_field_batch,
+        evaluator=AdvectionDiffusionResidualEvaluator,
+        max_spatial_order=2,
+        generator_kwargs={"max_time": 0.4},
+        boundary_type="open_unknown",
+    ),
 )
 
 GOLDEN_PDE_NAMES: tuple[str, ...] = tuple(spec.name for spec in GOLDEN_PDE_SPECS)
@@ -193,6 +260,11 @@ def compute_golden_entry(spec: GoldenPdeSpec) -> dict[str, Any]:
         "generator_kwargs": dict(spec.generator_kwargs),
         "max_spatial_order": spec.max_spatial_order,
         "boundary_condition_x": get_x_boundary_type(field),
+        "nonperiodic_window_keep": (
+            None
+            if spec.boundary_type == "periodic"
+            else (spec.window_keep or DEFAULT_NONPERIODIC_WINDOW_KEEP)
+        ),
         "residual_l2_norm": float(np.linalg.norm(residual)),
         "residual_rms": float(np.sqrt(np.mean(np.square(residual)))),
         "residual_max_abs": float(np.max(np.abs(residual))),

@@ -70,6 +70,35 @@ New keys added to the diagnostics dict returned by `fit_translation_generator` (
 - `interior_only_reduction_applied`: `bool`. `True` on the nonperiodic branch (one-row shave each side); `False` on the periodic branch.
 - `interior_only_row_count`: `int`. The number of rows retained after the interior-only shave. On the periodic branch this equals the full spatial row count.
 
+### Amended by measurement: shave width and fallback suppression
+
+Two items in the v0.33a draft did not survive measurement against all four supported PDEs. Both were re-frozen before implementation.
+
+**1. The interior shave is `boundary_trim_width`, not one row.** The draft froze a 1-row shave and `interior_only_row_count = num_points - 2`. Measured `span_distance` against shave width (ceiling `√2` ≈ 1.4142):
+
+| shave | Heat | Burgers | Reaction-diffusion | Advection-diffusion |
+|---|---|---|---|---|
+| 1 (drafted) | 1.13 | 1.40 | 1.25 | 0.78 |
+| 2 | 1.13 | 1.40 | 0.98 | 0.81 |
+| **4 (= `boundary_trim_width`)** | **0.0043** | 0.24 | 0.27 | 0.64 |
+
+At a 1-row shave every PDE sits near the ceiling — the SVD recovers a direction nearly orthogonal to translation. The residual evaluator already trims `boundary_trim_width` rows on the FD path and translation corrupts the edge further, so a 1-row shave leaves contaminated rows dominating the design matrix. The shave is therefore **read from the residual diagnostics** rather than hardcoded, so it tracks the FD stencil rather than duplicating a constant that could silently diverge from it. `interior_only_row_count = num_points - 2 * boundary_trim_width`, and `interior_only_trim_width` is emitted so the reduction is auditable.
+
+**2. The reference fallback is suppressed on the nonperiodic branch.** `_select_translation_coefficients` returns the reference coefficients when the SVD drifts *and* the constant basis is least-sensitive, which drives the emitted `span_distance` to exactly `0.0` — reporting a *perfect* translation generator regardless of the true drift. Measured at `num_points = 128` with the shave at `boundary_trim_width`:
+
+| PDE | honest `svd_span_distance` | fallback fires? | emitted without suppression |
+|---|---|---|---|
+| Heat | 0.0043 | no | 0.0043 |
+| Burgers | 0.242 | **yes** | **0.0** |
+| Reaction-diffusion | 0.272 | **yes** | **0.0** |
+| Advection-diffusion | 0.638 | **yes** | **0.0** |
+
+Three of four PDEs would have reported a perfect fit on a substantially drifted one — the same inversion that made `span_distance` unusable as v0.33d's crash-test gate. On the nonperiodic branch the fallback is therefore skipped entirely: `fit_mode` stays `"svd"`, `reference_fallback_used` is `False`, and `fallback_reason` records `"reference_fallback_suppressed_on_nonperiodic_branch"`. **The periodic branch keeps the fallback unchanged**, so periodic behaviour is byte-preserved.
+
+**Resolution caveat.** Convergence is real but PDE-dependent: Heat reaches `3.3e-4` by `num_points = 512` (clean second order), while Burgers is still at `0.12` at `num_points = 256`. Only Heat is well resolved below `num_points = 256`. v0.33a emits the honest number and a low-row warning rather than a hard resolution gate; callers must read `span_distance`, which is now trustworthy on both branches.
+
+**Files.** Two of the three blocking gates live in `src/pdelie/symmetry/parameterization/polynomial_translation.py` (`build_translation_basis`, `apply_pointwise_translation`), which the draft's file list omitted; `translation_baseline.py` itself carried no gate.
+
 ### Frozen claim-label vocabulary
 
 A fifth diagnostic key, `symmetry_claim`, records **what the run actually established** — orthogonal to the pass/fail classification, which is unchanged. Frozen vocabulary, exactly six values:
