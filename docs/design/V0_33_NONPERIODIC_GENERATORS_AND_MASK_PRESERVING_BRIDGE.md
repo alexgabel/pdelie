@@ -1,8 +1,24 @@
-# V0.33 — Nonperiodic Generators + Mask-Preserving Bridge (design freeze)
+# V0.33 — Nonperiodic Interior-Symmetry and Mask-Validity Support (design freeze)
 
-**Status:** FROZEN by v0.33 planning kickoff. Machine-readable form: [`configs/planning/v0_33_scope.json`](../../configs/planning/v0_33_scope.json). This document is the design freeze; the runtime lands under sub-milestones v0.33a / v0.33b / v0.33c and consolidates at v0.33.0 per the solo-dev consolidation policy.
+**Status:** FROZEN by v0.33 planning kickoff; **amended** before v0.33a implementation — see the "Claim scope" section below (claim-scope narrowing) and the v0.33c section (three-mask decomposition). Machine-readable form: [`configs/planning/v0_33_scope.json`](../../configs/planning/v0_33_scope.json). This document is the design freeze; the runtime lands under sub-milestones v0.33a / v0.33b / v0.33c and consolidates at v0.33.0 per the solo-dev consolidation policy.
 
-**Decision label:** `v0_33_nonperiodic_generators_and_mask_preserving_bridge`.
+**Decision label:** `v0_33_nonperiodic_generators_and_mask_preserving_bridge` (unchanged — a stable identifier, not a claim; the file path is likewise retained so existing cross-references keep resolving).
+
+## Claim scope
+
+v0.33 was originally titled "Nonperiodic generator support." That overclaims, and the title is now narrowed to **nonperiodic interior-symmetry and mask-validity support**.
+
+What v0.33a/b actually establish, and what they do not:
+
+| Established | **Not** established |
+|---|---|
+| The candidate is a symmetry of the **differential equation** as evaluated on interior rows. | That the candidate preserves the **boundary-value problem**. |
+| The transformed and original fields agree on their **physical overlap** after an overlap crop. | That the transformation maps the domain to itself, or that boundary data is carried correctly. |
+| Interior differential-operator covariance under the fitted generator. | Anything about the boundary rows the interior-only shave and the overlap crop discard. |
+
+A uniform translation on a bounded domain is a **domain-changing action**: it maps `[0, L]` to `[ε, L + ε]`. Verifying residual agreement on the overlap says the differential operator is covariant there. It says nothing about whether the Dirichlet or Neumann data at the original boundary is respected — the overlap crop has removed exactly the rows that would answer that.
+
+Reporting this as "nonperiodic symmetry supported" would therefore be an overclaim. v0.33a/b emit an explicit claim label (below) so the distinction is machine-readable rather than buried in prose.
 
 ## Purpose
 
@@ -54,6 +70,23 @@ New keys added to the diagnostics dict returned by `fit_translation_generator` (
 - `interior_only_reduction_applied`: `bool`. `True` on the nonperiodic branch (one-row shave each side); `False` on the periodic branch.
 - `interior_only_row_count`: `int`. The number of rows retained after the interior-only shave. On the periodic branch this equals the full spatial row count.
 
+### Frozen claim-label vocabulary
+
+A fifth diagnostic key, `symmetry_claim`, records **what the run actually established** — orthogonal to the pass/fail classification, which is unchanged. Frozen vocabulary, exactly six values:
+
+| Value | Meaning |
+|---|---|
+| `equation_symmetry_candidate` | A generator was fitted against the differential equation. No verification has been run. |
+| `interior_overlap_verified` | The candidate was verified on the interior/overlap rows. The differential operator is covariant there. **This is not a BVP claim.** |
+| `boundary_value_problem_preserved` | The transformation additionally preserves the boundary-value problem. **v0.33 never emits this** — no code path can currently establish it; reserved for v0.34+. |
+| `boundary_value_problem_not_preserved` | The transformation demonstrably violates the boundary conditions. |
+| `domain_changing_action` | The action maps the domain off itself (any nonzero translation on a bounded domain). Emitted alongside the overlap-crop path. |
+| `inconclusive_boundary_metadata` | Boundary metadata is `open_unknown` or otherwise insufficient to classify. |
+
+`boundary_value_problem_preserved` is reserved-but-unemittable in v0.33 on purpose: naming it now fixes the vocabulary so v0.34 does not have to widen a frozen set, while the absence of an emitting path makes it impossible to claim accidentally. A v0.33a test asserts no v0.33 code path emits it.
+
+This key is **orthogonal metadata**. It does not alter `VerificationReport.classification`, whose vocabulary stays exactly `{exact, approximate, failed}`, and it introduces no new `summary_type` and no new `SymmetryCandidate` discriminator.
+
 ### Frozen invariant on `SymmetryCandidate`
 
 The emitted `SymmetryCandidate` payload is unchanged — the seven reserved discriminators from v0.30.1 continue to apply. The candidate's `payload` remains a `GeneratorFamily` on both branches. Only the containing `SymmetryMethodResult.fit_diagnostics` grows.
@@ -83,10 +116,13 @@ New keys added to `VerificationReport.diagnostics` (already `dict[str, Any]`):
 - `dispatch_path`: `"periodic_fft_wrap"` | `"overlap_crop"`.
 - `overlap_fraction`: `float` in `[0.0, 1.0]`. On the periodic branch: always `1.0`. On the nonperiodic branch: `1.0 - abs(shift) / domain_length` clamped to `[0.0, 1.0]`.
 - `overlap_row_count`: `int`. On the nonperiodic branch: the number of spatial rows retained per epsilon in the overlap comparison.
+- `symmetry_claim`: one of the six frozen values above. The overlap-crop branch emits `interior_overlap_verified` on success (never `boundary_value_problem_preserved`), `domain_changing_action` when the shift is nonzero on a bounded domain, `boundary_value_problem_not_preserved` on a demonstrated boundary violation, and `inconclusive_boundary_metadata` when the boundary type is `open_unknown`.
 
 ### Frozen invariant on `VerificationReport`
 
-`classification` vocabulary unchanged: `"exact"` / `"approximate"` / `"failed"`. No new labels. The classification is computed the same way; only its inputs change (nonperiodic classification is based on the overlap-crop residual, not a full-domain residual). This is a documented weakening of the classification's meaning on nonperiodic data — the diagnostic-only note on `dispatch_path` makes it explicit.
+`classification` vocabulary unchanged: `"exact"` / `"approximate"` / `"failed"`. No new labels. The classification is computed the same way; only its inputs change (nonperiodic classification is based on the overlap-crop residual, not a full-domain residual). This is a documented weakening of the classification's meaning on nonperiodic data — `dispatch_path` and `symmetry_claim` together make it explicit.
+
+A `classification == "exact"` on the overlap-crop path therefore means *"exact on the overlap"*, not *"exact as a symmetry of the boundary-value problem"*. `symmetry_claim` is the field that carries that distinction; consumers that report a symmetry as supported must read it.
 
 ## v0.33c — Mask-preserving discovery bridge
 
@@ -101,12 +137,35 @@ New keys added to `VerificationReport.diagnostics` (already `dict[str, Any]`):
 - New kwarg `mask_application: Literal["before_differentiation", "after_differentiation"] = "after_differentiation"`. Default flips to the correct-by-construction "after" path. Callers who need the pre-v0.33 behavior for reproducibility can pass `"before_differentiation"` explicitly and get a warning.
 - The differentiation call sees the full (unmasked) field values. After differentiation, the mask is applied to the design matrix — the row-set that reaches the optimizer is exactly the row-set the mask declares.
 
+### The three-mask decomposition
+
+The original freeze carried a single `mask_row_count` / `unmasked_row_count` pair. That is too coarse: it conflates *"the value is missing"* with *"the value is present but its derivative is not trustworthy"* with *"the row was dropped by split policy."* Three distinct masks are tracked instead, each strictly contained in the previous:
+
+| Mask | Definition |
+|---|---|
+| **observation** | Points where the field value is actually available. |
+| **derivative validity** | Points whose *full stencil footprint* lies inside the observation set — the observation mask eroded by the FD stencil half-width. |
+| **regression row** | The derivative-validity mask after task/split policy filtering. This is the row-set the optimizer actually sees. |
+
+Nesting is an invariant: `regression_row ⊆ derivative_validity ⊆ observation`. A v0.33c test asserts it directly.
+
 New keys added inside `discovery_task_result.fit_diagnostics` (which is `dict[str, Any]`; adding keys does NOT change the outer 22-key schema):
 
 - `mask_application_stage`: `"before_differentiation"` | `"after_differentiation"` | `"none"` (when no mask).
-- `mask_row_count`: `int`. Rows retained after mask application.
-- `unmasked_row_count`: `int`. Rows the derivative operator saw.
-- `mask_row_count_reduction_from_derivative_stencil`: `int`. `unmasked_row_count - mask_row_count` on the "after" path when the derivative stencil widens; used to catch silent leakage regressions in the release-gate.
+- `observation_mask_row_count`: `int`. Points where the field value is available.
+- `derivative_validity_mask_row_count`: `int`. Points whose full stencil footprint lies inside the observation set.
+- `regression_row_mask_row_count`: `int`. The above after task/split policy filtering; the row-set the optimizer receives.
+- `mask_row_count_reduction_from_derivative_stencil`: `int`. `observation_mask_row_count - derivative_validity_mask_row_count` — the erosion attributable to the stencil, kept as the release-gate's leakage-regression signal.
+
+This supersedes the drafted `mask_row_count` / `unmasked_row_count` pair, which are **not** shipped: they have no unambiguous meaning under the three-mask model, and v0.33c has not shipped, so there is no compatibility cost to dropping them before they exist.
+
+### Spectral derivatives on partially-observed fields are hard-rejected
+
+A spectral derivative is globally coupled: every output point depends on every input point through the FFT. On a partially-observed field this leaks unobserved values back into rows the mask declares "observed," which is precisely what the mask contract exists to prevent — and it does so invisibly, since the output array is fully populated and finite.
+
+`run_pysindy_pde_task` therefore raises `ScopeValidationError` when a field carries a mask **and** the resolved derivative backend is `spectral_fd`. This is a hard rejection, not a warning: there is no correct way to interpret the resulting design matrix, so silently accepting it would produce a confidently wrong answer. Callers on masked data must use the finite-difference backend, whose stencil footprint is local and therefore erodible in a well-defined way — which is exactly what the derivative-validity mask records.
+
+Note this interacts with `compute_derivatives(backend="auto")`, which selects `spectral_fd` for periodic data. A masked periodic field consequently hits the rejection; the caller must request `finite_difference` explicitly. That is the intended behaviour, not an oversight.
 
 ### Non-goals for v0.33c
 

@@ -20,7 +20,11 @@
         "interior_only_reduction_applied",
         "interior_only_row_count"
       ],
-      "byte_preserved_periodic_path": true
+      "byte_preserved_periodic_path": true,
+      "new_diagnostic_keys": [
+        "symmetry_claim"
+      ],
+      "symmetry_claim_key_added": true
     },
     {
       "name": "v0.33b",
@@ -40,7 +44,11 @@
         "failed"
       ],
       "byte_preserved_periodic_path": true,
-      "supersedes_v0_31_5_deferral": true
+      "supersedes_v0_31_5_deferral": true,
+      "new_diagnostic_keys": [
+        "symmetry_claim"
+      ],
+      "overlap_crop_never_emits_boundary_value_problem_preserved": true
     },
     {
       "name": "v0.33c",
@@ -51,7 +59,10 @@
       "adds_kwargs": [
         {
           "name": "mask_application",
-          "vocabulary": ["before_differentiation", "after_differentiation"],
+          "vocabulary": [
+            "before_differentiation",
+            "after_differentiation"
+          ],
           "default": "after_differentiation"
         }
       ],
@@ -62,7 +73,32 @@
         "mask_row_count_reduction_from_derivative_stencil"
       ],
       "discovery_task_result_top_level_key_count_invariant": 22,
-      "pysindy_discovery_unsupported_boundary_error_still_fires_on_nonperiodic": true
+      "pysindy_discovery_unsupported_boundary_error_still_fires_on_nonperiodic": true,
+      "three_mask_model": {
+        "masks": [
+          "observation",
+          "derivative_validity",
+          "regression_row"
+        ],
+        "nesting_invariant": "regression_row_subset_of_derivative_validity_subset_of_observation",
+        "diagnostic_keys": [
+          "mask_application_stage",
+          "observation_mask_row_count",
+          "derivative_validity_mask_row_count",
+          "regression_row_mask_row_count",
+          "mask_row_count_reduction_from_derivative_stencil"
+        ],
+        "superseded_draft_keys_not_shipped": [
+          "mask_row_count",
+          "unmasked_row_count"
+        ]
+      },
+      "spectral_derivatives_on_masked_field": {
+        "policy": "hard_reject",
+        "error": "ScopeValidationError",
+        "reason": "globally_coupled_fft_leaks_unobserved_values_into_observed_rows",
+        "note": "backend_auto_selects_spectral_fd_for_periodic_data_so_masked_periodic_fields_must_request_finite_difference_explicitly"
+      }
     },
     {
       "name": "v0.33d",
@@ -75,14 +111,28 @@
       "adds_kwargs": [
         {
           "name": "diffusivity_profile",
-          "vocabulary": ["array", "callable", "None"],
-          "applies_to": ["heat_1d", "burgers_1d", "advection_diffusion_1d"],
+          "vocabulary": [
+            "array",
+            "callable",
+            "None"
+          ],
+          "applies_to": [
+            "heat_1d",
+            "burgers_1d",
+            "advection_diffusion_1d"
+          ],
           "default": "None"
         },
         {
           "name": "advection_profile",
-          "vocabulary": ["array", "callable", "None"],
-          "applies_to": ["advection_diffusion_1d"],
+          "vocabulary": [
+            "array",
+            "callable",
+            "None"
+          ],
+          "applies_to": [
+            "advection_diffusion_1d"
+          ],
           "default": "None"
         }
       ],
@@ -110,24 +160,44 @@
           "kwarg": "diffusivity_form",
           "tag": "nu_form",
           "default": "conservative_divergence",
-          "allowed": ["conservative_divergence", "nonconservative_nu_uxx"],
-          "generators": ["heat_1d", "burgers_1d", "advection_diffusion_1d"],
+          "allowed": [
+            "conservative_divergence",
+            "nonconservative_nu_uxx"
+          ],
+          "generators": [
+            "heat_1d",
+            "burgers_1d",
+            "advection_diffusion_1d"
+          ],
           "purpose": "v0_34a_residual_evaluator_dispatch_key"
         },
         {
           "kwarg": "advection_form",
           "tag": "c_form",
           "default": "nonconservative_c_ux",
-          "allowed": ["conservative_divergence", "nonconservative_c_ux"],
-          "generators": ["advection_diffusion_1d"],
+          "allowed": [
+            "conservative_divergence",
+            "nonconservative_c_ux"
+          ],
+          "generators": [
+            "advection_diffusion_1d"
+          ],
           "purpose": "v0_34a_residual_evaluator_dispatch_key"
         }
       ],
       "coefficient_treatment_policy_tag": "nu_treatment_policy",
-      "coefficient_treatment_policy_vocabulary_v0_33d": ["fixed_background"],
+      "coefficient_treatment_policy_vocabulary_v0_33d": [
+        "fixed_background"
+      ],
       "coefficient_treatment_policy_v0_34b_extension": "co_transforming_equivalence_target",
       "dose_response_fixture": "tests/fixtures/v0_33d_admissibility_dose_response.json",
-      "dose_response_alphas": [0.0, 0.1, 0.25, 0.5, 0.75],
+      "dose_response_alphas": [
+        0.0,
+        0.1,
+        0.25,
+        0.5,
+        0.75
+      ],
       "dose_response_alpha_zero_is_integrator_control": true,
       "dose_response_strictly_increasing_per_pde": true,
       "explicit_non_goals": [
@@ -168,7 +238,12 @@
       ],
       "per_pde_generator_kwargs_recorded": true,
       "per_pde_max_spatial_order_recorded": true,
-      "shared_grid_header_fields": ["generator_seed", "batch_size", "num_times", "num_points"],
+      "shared_grid_header_fields": [
+        "generator_seed",
+        "batch_size",
+        "num_times",
+        "num_points"
+      ],
       "tolerance_rtol": 1e-06,
       "tolerance_atol": 1e-12,
       "initial_fixture_boundary_condition_scope": "periodic_only",
@@ -185,7 +260,13 @@
     {
       "name": "v0.33.0",
       "focus": "release_close_consolidation",
-      "consolidates": ["v0.33a", "v0.33b", "v0.33c", "v0.33d", "v0.33e"],
+      "consolidates": [
+        "v0.33a",
+        "v0.33b",
+        "v0.33c",
+        "v0.33d",
+        "v0.33e"
+      ],
       "artifacts": [
         "docs/releases/V0_33_RELEASE_READINESS.md",
         "docs/specs/support_matrix.v0_33.json",
@@ -244,5 +325,26 @@
     "trained_model_extraction",
     "external_symmetry_method_ports",
     "column_normalized_weak_stlsq_v0_34"
-  ]
+  ],
+  "scope_title": "Nonperiodic Interior-Symmetry and Mask-Validity Support",
+  "scope_title_amendment_reason": "original_title_nonperiodic_generator_support_overclaimed_v0_33a_b_establish_interior_differential_operator_covariance_on_the_overlap_not_boundary_value_problem_preservation",
+  "symmetry_claim_vocabulary_invariant": {
+    "diagnostic_key": "symmetry_claim",
+    "orthogonal_to_classification": true,
+    "allowed_values": [
+      "equation_symmetry_candidate",
+      "interior_overlap_verified",
+      "boundary_value_problem_preserved",
+      "boundary_value_problem_not_preserved",
+      "domain_changing_action",
+      "inconclusive_boundary_metadata"
+    ],
+    "reserved_but_never_emitted_in_v0_33": [
+      "boundary_value_problem_preserved"
+    ],
+    "emitted_by": [
+      "v0.33a fit diagnostics",
+      "v0.33b VerificationReport.diagnostics"
+    ]
+  }
 }
