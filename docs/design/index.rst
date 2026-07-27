@@ -19,3 +19,4 @@ Once a design is implemented and validated it is folded into the specs.
    SYMMETRY_METHOD_REGISTRY
    THE_WELL_FEASIBILITY_REPORT
    V0_30_HYGIENE_AUDIT
+   V0_33_NONPERIODIC_GENERATORS_AND_MASK_PRESERVING_BRIDGE
