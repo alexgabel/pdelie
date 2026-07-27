@@ -1,5 +1,40 @@
 # Changelog
 
+## 0.32.0
+
+Release-close for the v0.32 arc: four internal sub-milestones (v0.32a modern-runtime migration, v0.32b strict method-score / uncertainty / calibration reporting, v0.32c candidate-to-discovery workflow example, v0.32d external-data readiness cookbooks) consolidated into a single tag per the solo-dev consolidation policy. Submodule-only surface — no root `pdelie` export added. Periodic scalar 1D only. No recovery-benchmark claim, no generic symmetry-discovery claim.
+
+Release decision: `v0_32_0_consolidated_modernization_and_external_readiness`.
+
+### Added
+
+- `pdelie.reporting.summarize_generator_confidence` gains three additive optional fields (`method_scores`, `uncertainty_report`, `calibration_report`) and moves to the strict-JSON boundary. All three default to `None`; existing callers unchanged. `_CONFIDENCE_LABELS` frozen four-vocabulary invariant preserved.
+- `pdelie.reporting.enrich_method_scores(values, metadata)` — pairs a plain `dict[str, float | None]` with a method's frozen `SCORE_METADATA` into the enriched-form entry.
+- `pdelie.symmetry.methods.polynomial_translation_svd.SCORE_METADATA` and `bootstrap_uncertainty(field, residual_evaluator, *, seed, num_resamples=64, interval_level=0.95, min_units=8, resampling_unit="batch")`. Batch-only resampling; row-level bootstrap refused with `ScopeValidationError`; percentile intervals; deterministic under seed; fit-per-resample; `diagnostic_only=True`. Frozen four-score names: `{span_distance, residual_l2, error_curve_max, svd_condition_number}`.
+- `pdelie.reporting.summarize_candidate_to_discovery_workflow(...)` — composed strict-JSON summary carrying 15 explicit ordered stages: `field_readiness`, `derivative_residual_evidence`, `symmetry_method_result`, `candidate_summary`, `generator_confidence`, `candidate_validation`, `finite_transform_verification`, `action_policy`, `orbit_or_coverage_diagnostics`, `split_leakage_provenance`, `baseline_discovery_task`, `candidate_guided_discovery_task`, `downstream_comparison`, `evidence_conclusion`, `scope_boundaries`. Blocked/skipped/unavailable stages carry a `candidate_to_discovery_workflow_stage_marker` payload — never silently omitted.
+- `pdelie.examples.candidate_to_discovery_workflow.run_candidate_to_discovery_workflow_example(scenario=...)` and CLI `python -m pdelie.examples.candidate_to_discovery_workflow`. Two deterministic scenarios: `"successful"` fully executable end-to-end; `"valid_but_not_useful_static"` a provenance-backed static illustration. Feeds the FULL training FieldBatch (`batch_size>1`) to `run_pysindy_pde_task` — no silent first-trajectory slicing. `evidence_conclusion.reasons` name the exact `downstream_comparison.metric_key` (`heldout_residual_l2_norm`).
+- `pdelie.examples.pdebench_burgers_1d_readiness.run_pdebench_burgers_1d_readiness_cookbook(...)` + CLI. Narrow readiness cookbook pinned to a single DaRUS shard: `1D_Burgers_Sols_Nu0.001.hdf5`, DOI `10.18419/darus-2986`, CC-BY-4.0, MD5 `b4be2fc3383f737c76033073e6d2ccfb`. Emits strict-JSON `pdelie_external_data_readiness` reports with conclusions in a frozen 9-label vocabulary. Optional-dependency extra: `pip install 'pdelie[pdebench]'` (h5py only). Absent the extra, an `ImportError` names the extra explicitly.
+- `pdelie.examples.the_well_feasibility_scan.run_the_well_feasibility_scan()` + CLI. Metadata-only scan; no network I/O in default CI. Distinguishes the Ohana et al. 2024 paper count (`paper_dataset_count = 16`) from the current PolymathicAI catalogue count (`catalogue_entry_count = 23`, with hosted variants like `mhd_64` / `mhd_256` split). Every entry is `scalar_1d_extractable=False`; frozen conclusion `blocked_multichannel_required`.
+- Frozen strict-JSON configs shipped both in-tree (`configs/external_data/`) and inside the package (`src/pdelie/examples/_external_data/`) so a clean wheel install can load them.
+- New optional extra `[pdebench]` (h5py-only). No implication of broad PDEBench support; scoped strictly to the frozen v0.32d cookbook.
+- Runtime rebase (v0.32a): Python `>=3.12`, NumPy 2.x, PySINDy 2.1.x. Six PySINDy-2.x API-break sites migrated. `_pysindy2_prototype.py` deleted. `setuptools<82` co-install workaround retired. `SymmetryCandidate` reserved-representation construction hardened from warning-gate to `ScopeValidationError`. New CI matrix (py3.12 + py3.13 blocking; py3.14 core-only advisory).
+
+### Compatibility
+
+- Python: `>=3.12`. Python 3.11 is no longer supported on the active line.
+- Dependencies: `numpy>=2,<3`, `pysindy>=2.1,<3`, `scikit-learn>=1.4,<2`, `scipy>=1.14,<2`.
+- Optional extras: `downstream`, `xarray`, `viz`, `test`, and (new) `pdebench` (h5py-only).
+- Legacy Python 3.11 + PySINDy 1.7.5 users track the `release/v0.31.x` maintenance branch cut from the `v0.31.0` tag. Maintenance-end policy: security-only fixes for 12 months from the v0.32.0 tag, then archived.
+
+### Explicit non-claims
+
+- No new PDE. No new symmetry method. No new `SymmetryCandidate` discriminator.
+- No `discovery_task_result` schema change (still 22 keys). No `pdelie_weak_pde_library_diagnostic` schema change (still 27 keys).
+- No root `pdelie` export.
+- No generic symmetry-discovery claim: PDELie continues to score and verify caller-supplied candidates, not to discover symmetries autonomously.
+- No external-data recovery-benchmark claim. The v0.32d cookbooks report readiness and feasibility only.
+- No noise-robustness claim. No WSINDy claim. No nonperiodic finite-transform verification (deferred). No multi-channel / 2D contract widening (deferred).
+
 ## 0.31.0
 
 Final release for the v0.31 downstream discovery task-bridge slice. Submodule-only surface — no root `pdelie` export added. Periodic scalar 1D only.

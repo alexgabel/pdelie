@@ -18,7 +18,7 @@ Records: [polymathic-ai.org/the_well](https://polymathic-ai.org/the_well/) and [
 
 **Conclusion: `blocked_multichannel_required`.**
 
-The scan enumerates 23 datasets in The Well v1 release. Every dataset is either 2D or 3D on a structured grid and either carries multiple physically coupled channels or is coupled through the geometry itself. **No dataset in the release admits a scientifically honest scalar 1D slice.**
+The Ohana et al. 2024 paper reports **16 datasets** in The Well v1 release; the current PolymathicAI catalogue splits some of those into distinct hosted variants (e.g. `rayleigh_benard` vs `rayleigh_benard_uniform`, `mhd_64` vs `mhd_256`, `supernova_explosion_64` vs `_128`, `turbulent_radiative_layer_2D` vs `_3D`, `euler_multi_quadrants_periodic` vs `_open_bc`) for a total of **23 catalogue entries**. This report enumerates all 23 catalogue entries; the emitted payload records both `paper_dataset_count = 16` and `catalogue_entry_count = 23` verbatim, and no conclusion depends on the count. Every entry is either 2D or 3D on a structured grid and either carries multiple physically coupled channels or is coupled through the geometry itself. **No entry admits a scientifically honest scalar 1D slice.**
 
 This is the correct v0.32d result — it is not a solvable gap. PDELie's scalar 1D contract does not accept "drop channels" tricks, "select one component" tricks, dimensional flattening, or averaging as valid scalar-1D reductions of coupled physics.
 

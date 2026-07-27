@@ -114,7 +114,15 @@ def run_the_well_feasibility_scan() -> dict[str, Any]:
         "code_url": config["code_url"],
         "policy": dict(config["policy"]),
         "datasets": datasets_out,
-        "dataset_count": len(datasets_out),
+        # v0.32.0 release-close: distinguish the paper-reported dataset
+        # count (Ohana et al. 2024) from the current catalogue count,
+        # which enumerates hosted variants separately (e.g. rayleigh_benard
+        # vs rayleigh_benard_uniform, mhd_64 vs mhd_256). No conclusion
+        # depends on the count; both are recorded for provenance.
+        "paper_dataset_count": int(config["paper_dataset_count"]),
+        "paper_dataset_count_source": str(config["paper_dataset_count_source"]),
+        "catalogue_entry_count": len(datasets_out),
+        "catalogue_entry_count_note": str(config["catalogue_entry_count_note"]),
         "scalar_1d_extractable_count": scalar_1d_count,
         "conclusion": conclusion,
         "conclusion_reason": config["conclusion_reason"],

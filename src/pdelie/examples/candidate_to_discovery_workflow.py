@@ -179,31 +179,6 @@ def _build_caller_configured_sindy() -> Any:
     )
 
 
-def _slice_first_trajectory(field: FieldBatch) -> FieldBatch:
-    """Return a batch_size=1 view of ``field`` (first trajectory only).
-
-    Preserves the periodic-x contract and all metadata; used to feed the
-    single-trajectory PySINDy 2.x adapter path from the discovery-task
-    stages of the v0.32c workflow example.
-    """
-    from copy import deepcopy
-
-    if field.values.shape[field.dims.index("batch")] < 1:
-        raise SchemaValidationError(
-            "cannot slice first trajectory from an empty FieldBatch."
-        )
-    return FieldBatch(
-        schema_version=field.schema_version,
-        values=field.values[0:1].copy(),
-        dims=field.dims,
-        coords={k: v.copy() for k, v in field.coords.items()},
-        var_names=list(field.var_names),
-        metadata=deepcopy(field.metadata),
-        preprocess_log=[dict(entry) for entry in field.preprocess_log],
-        mask=None if field.mask is None else field.mask[0:1].copy(),
-    )
-
-
 def _generate_train_and_heldout(
     seed: int,
 ) -> tuple[FieldBatch, FieldBatch]:
@@ -305,29 +280,39 @@ def _label_from_measurement(
 ) -> dict[str, Any]:
     """Choose evidence_conclusion label from the measured comparison.
 
-    - ``successful_composition`` when the candidate-guided task's fit
-      residual is strictly better than the baseline (by more than the
-      absolute threshold).
-    - ``valid_but_not_useful`` otherwise — including ties and cases
-      where the augmentation does not measurably help. NO
-      universal-benefit claim in either case.
+    v0.32.0 release-close: every ``reasons`` entry NAMES the exact metric
+    key that drove the label. There is no unlabeled/generic delta reason;
+    ``metric_key`` from ``comparison`` is baked into every reason string
+    so a reader never has to guess which metric the evidence label speaks
+    to.
+
+    - ``successful_composition`` when the candidate-guided task's metric
+      is strictly better than the baseline (by more than the absolute
+      threshold), for the exact metric named on ``comparison.metric_key``.
+    - ``valid_but_not_useful`` otherwise -- including ties and cases where
+      the augmentation does not measurably help. NO universal-benefit
+      claim in either case.
     """
+    metric_key = str(comparison.get("metric_key", "unnamed_metric"))
     reasons: list[str] = []
     delta = comparison.get("absolute_delta")
     improved = comparison.get("improved")
     if delta is None or improved is None:
         reasons.append(
-            "downstream_comparison_incomplete_defaulting_to_valid_but_not_useful"
+            f"downstream_comparison_incomplete_for_metric:{metric_key}"
+        )
+        reasons.append(
+            "defaulting_to_valid_but_not_useful"
         )
         label = "valid_but_not_useful"
     elif improved:
         reasons.append(
-            "candidate_guided_fit_residual_strictly_below_baseline"
+            f"candidate_guided_{metric_key}_strictly_below_baseline"
         )
         label = "successful_composition"
     else:
         reasons.append(
-            "candidate_guided_fit_residual_did_not_strictly_beat_baseline"
+            f"candidate_guided_{metric_key}_did_not_strictly_beat_baseline"
         )
         label = "valid_but_not_useful"
     return {
@@ -534,22 +519,24 @@ def run_candidate_to_discovery_workflow_example(
             reason="static_illustration_no_runtime_task_executed",
         )
     else:
-        # For the discovery-task stages, use a single-trajectory slice of the
-        # training FieldBatch (and the same for orbit output) so every fit
-        # takes the single-trajectory PySINDy 2.x adapter path.
-        train_slice = _slice_first_trajectory(train)
-        orbit_slice = _slice_first_trajectory(orbit_batch_for_split.field)
+        # v0.32.0 release-close: feed the FULL training FieldBatch and the
+        # FULL orbit output to run_pysindy_pde_task. PySINDy 2.1.x natively
+        # accepts a list-of-trajectories in SINDy.fit(x, t=...), and the
+        # v0.31b1 adapter path forwards the list unchanged (see
+        # src/pdelie/discovery/pysindy_adapter.py::_fit_caller_supplied_model).
+        # Silent first-trajectory slicing is forbidden by the v0.32.0
+        # release-close policy.
         baseline_model = _build_caller_configured_sindy()
         candidate_guided_model = _build_caller_configured_sindy()
         with _legacy_numpy_rng_seed_scope(effective_seed):
             baseline_discovery_task = run_pysindy_pde_task(
-                train_slice,
+                train,
                 task_name=_TASK_NAME_BASELINE,
                 pysindy_model=baseline_model,
                 heldout_field=heldout,
             )
             candidate_guided_discovery_task = run_pysindy_pde_task(
-                orbit_slice,
+                orbit_batch_for_split.field,
                 task_name=_TASK_NAME_CANDIDATE_GUIDED,
                 pysindy_model=candidate_guided_model,
                 heldout_field=heldout,

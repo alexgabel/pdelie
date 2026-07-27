@@ -97,7 +97,7 @@ def test_case_01_example_imports_only_public_submodule_apis() -> None:
                 )
         elif isinstance(node, ast.Import):
             for alias in node.names:
-                assert not alias.name == "pdelie", (
+                assert alias.name != "pdelie", (
                     "Example must not `import pdelie` (root import)."
                 )
 
@@ -357,6 +357,61 @@ def test_case_12_split_leakage_provenance_recorded(
     # partition — heldout is never transformed by the orbit step.
     assert set(split_stage["partition_counts"].keys()) == {"train"}
     assert split_stage["policy"]["partitions_are_user_supplied"] is True
+
+
+# ---------------------------------------------------------------------------
+# Case 12b (v0.32.0 release-close): baseline + candidate-guided discovery
+# tasks are fed the FULL training FieldBatch (batch_size > 1), not a silent
+# first-trajectory slice.
+# ---------------------------------------------------------------------------
+
+
+def test_case_12b_no_silent_first_trajectory_slicing_in_discovery_tasks(
+    scenario_a_result: dict,
+) -> None:
+    workflow = scenario_a_result["workflow"]
+    baseline = workflow["baseline_discovery_task"]
+    candidate_guided = workflow["candidate_guided_discovery_task"]
+    if _is_stage_marker(baseline) or _is_stage_marker(candidate_guided):
+        pytest.skip("scenario A ran with static illustration; no runtime tasks")
+    # The baseline task is fed the full training FieldBatch; its
+    # train_residual.size therefore reflects batch_size * time * x samples,
+    # not a single-trajectory slice.
+    field_readiness = workflow["field_readiness"]
+    train_batch_size = field_readiness["field"]["shape"][
+        field_readiness["field"]["dims"].index("batch")
+    ]
+    assert train_batch_size > 1, (
+        "workflow example must exercise batch_size>1 so the "
+        "silent-first-trajectory-slicing regression is caught."
+    )
+    baseline_size = baseline["train_residual"]["size"]
+    assert baseline_size >= train_batch_size, (
+        f"baseline_discovery_task train_residual.size={baseline_size} < "
+        f"train_batch_size={train_batch_size}; silent first-trajectory "
+        "slicing may have been reintroduced."
+    )
+
+
+# ---------------------------------------------------------------------------
+# Case 12c (v0.32.0 release-close): evidence_conclusion.reasons NAME the
+# exact metric_key used by downstream_comparison. No unlabeled/generic
+# absolute-delta reason survives.
+# ---------------------------------------------------------------------------
+
+
+def test_case_12c_evidence_conclusion_reasons_name_metric_key(
+    scenario_a_result: dict,
+) -> None:
+    workflow = scenario_a_result["workflow"]
+    metric_key = workflow["downstream_comparison"]["metric_key"]
+    reasons = workflow["evidence_conclusion"]["reasons"]
+    if workflow["extra_metrics"].get("static_illustration") is True:
+        pytest.skip("static-illustration scenario uses fixed reasons")
+    assert any(metric_key in r for r in reasons), (
+        f"evidence_conclusion.reasons must name the exact metric_key "
+        f"{metric_key!r}; got reasons={reasons!r}."
+    )
 
 
 # ---------------------------------------------------------------------------

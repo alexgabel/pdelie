@@ -341,14 +341,13 @@ def test_3_missing_pysindy_raises_actionable_scope_error(
     field = _build_heat_field()
     monkeypatch.setitem(sys.modules, "pysindy", None)  # type: ignore[arg-type]
 
-    with pytest.raises(ScopeValidationError):
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", category=UserWarning)
-            warnings.simplefilter("ignore", category=DeprecationWarning)
-            inspect_pysindy_weak_pde_library(
-                field,
-                task_name="v0_31b2_missing_pysindy",
-            )
+    with pytest.raises(ScopeValidationError), warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=UserWarning)
+        warnings.simplefilter("ignore", category=DeprecationWarning)
+        inspect_pysindy_weak_pde_library(
+            field,
+            task_name="v0_31b2_missing_pysindy",
+        )
 
 
 def test_4_unsupported_weak_pde_library_signature_raises_scope_error(
@@ -374,14 +373,13 @@ def test_4_unsupported_weak_pde_library_signature_raises_scope_error(
     monkeypatch.setattr(pysindy, "WeakPDELibrary", _StubWeakPDELibrary, raising=True)
 
     field = _build_heat_field()
-    with pytest.raises(ScopeValidationError):
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", category=UserWarning)
-            warnings.simplefilter("ignore", category=DeprecationWarning)
-            inspect_pysindy_weak_pde_library(
-                field,
-                task_name="v0_31b2_signature_drift",
-            )
+    with pytest.raises(ScopeValidationError), warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=UserWarning)
+        warnings.simplefilter("ignore", category=DeprecationWarning)
+        inspect_pysindy_weak_pde_library(
+            field,
+            task_name="v0_31b2_signature_drift",
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -550,19 +548,18 @@ def test_19_too_small_grid_rejected_with_actionable_message() -> None:
         num_points=6,  # under the wrapper's 8-x-sample lower bound
         seed=1919,
     )
-    with pytest.raises(ScopeValidationError) as excinfo:
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", category=UserWarning)
-            warnings.simplefilter("ignore", category=DeprecationWarning)
-            inspect_pysindy_weak_pde_library(
-                field,
-                task_name="v0_31b2_too_small_grid",
-                library_configuration=WeakPDELibraryDiagnostic(
-                    polynomial_degree=2,
-                    derivative_order=2,
-                    num_domain_centers_K=16,
-                ),
-            )
+    with pytest.raises(ScopeValidationError) as excinfo, warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=UserWarning)
+        warnings.simplefilter("ignore", category=DeprecationWarning)
+        inspect_pysindy_weak_pde_library(
+            field,
+            task_name="v0_31b2_too_small_grid",
+            library_configuration=WeakPDELibraryDiagnostic(
+                polynomial_degree=2,
+                derivative_order=2,
+                num_domain_centers_K=16,
+            ),
+        )
     message = str(excinfo.value).lower()
     # The message must mention the deficient dimension AND a concrete lower bound.
     assert "x-samples" in message or "x samples" in message, message

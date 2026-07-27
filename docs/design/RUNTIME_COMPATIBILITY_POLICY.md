@@ -41,7 +41,16 @@ Applied to the v0.32 target window (release target: mid-2026):
 
 ### Legacy lanes (v0.31.x maintenance branch)
 
-- **Python 3.11** + NumPy 1.26.x + PySINDy 1.7.5 + `setuptools<82` — retained on the v0.31.x maintenance branch during the transition window. Removed at v0.32 release close.
+- **Python 3.11** + NumPy 1.26.x + PySINDy 1.7.5 + `setuptools<82` — retained on the `release/v0.31.x` maintenance branch (cut from the `v0.31.0` tag at commit `d5e614e` during the v0.32.0 release close). See the **v0.31.x maintenance-end policy** below for the retirement window.
+
+### v0.31.x maintenance-end policy (v0.32.0 release close)
+
+- **Cut point:** `release/v0.31.x` branched from the `v0.31.0` tag (commit `d5e614e`) at v0.32.0 release close. No feature backports.
+- **Support window:** **security-only fixes for 12 months from the v0.32.0 tag date.** After that window the branch is archived (no further pushes; the branch remains readable at `refs/heads/release/v0.31.x` in the origin remote for historical reference).
+- **What counts as a security fix:** a CVE affecting `pdelie` code (not a transitive dependency issue that upstream itself must fix); an incorrect residual / verification / discovery result that could silently mislead a downstream consumer; a licensing / provenance breakage in the frozen v0.31.0 external-data cookbooks. Everything else — perf improvements, additional PDEs, additional symmetry methods, PySINDy 1.7.x quality-of-life patches — is declined.
+- **What is NOT backported:** every v0.32 arc surface (`enrich_method_scores`, `bootstrap_uncertainty`, `SCORE_METADATA`, `summarize_candidate_to_discovery_workflow`, `run_candidate_to_discovery_workflow_example`, `run_pdebench_burgers_1d_readiness_cookbook`, `run_the_well_feasibility_scan`, `[pdebench]` optional extra). Users needing these must upgrade to the modern line.
+- **How to file a v0.31.x maintenance patch:** open an issue tagged `release/v0.31.x` describing the security-classified regression; the maintainer opens a PR against `release/v0.31.x` (never against `main`); merged as a squash commit; a matching `v0.31.z` tag (`z = 1, 2, …`) is cut from the squash-merge commit; CI runs against the frozen v0.31.x compat matrix (py3.11 + PySINDy 1.7.5 + `setuptools<82` + `numpy<2`).
+- **End of maintenance:** at the 12-month anniversary of the v0.32.0 tag, the branch is left in place (readable) but no further pushes are accepted. This document is amended with the actual archival date at that time.
 
 ## Retirement plan for temporary exceptions
 

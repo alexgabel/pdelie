@@ -161,9 +161,9 @@ def test_v0_30e_pyproject_now_configures_ruff_mypy_coverage() -> None:
     assert ">=3.11" in requires_python or ">=3.12" in requires_python
 
     # Package version is 0.29.0 during the v0.30a-f arc, 0.30.0 at v0.30 close
-    # (which held through the v0.31a-c1 runtime sub-releases), and 0.31.0 at
-    # the v0.31.0 release close.
-    assert pyproject["project"]["version"] in {"0.29.0", "0.30.0", "0.31.0"}
+    # (which held through the v0.31a-c1 runtime sub-releases), 0.31.0 at the
+    # v0.31.0 release close, and 0.32.0 at the v0.32.0 release close.
+    assert pyproject["project"]["version"] in {"0.29.0", "0.30.0", "0.31.0", "0.32.0"}
 
 
 def test_v0_30e_ci_workflow_now_has_lint_typecheck_coverage_jobs_nonblocking() -> None:
@@ -214,18 +214,26 @@ def test_v0_30e_ci_workflow_now_has_lint_typecheck_coverage_jobs_nonblocking() -
             f"v0.30.1a advisory CI job {job!r} must remain non-blocking pending its own promotion"
         )
 
-    # Release-gate job name across the v0.30 / v0.31 arcs:
+    # Release-gate job name across the v0.30 / v0.31 / v0.32 arcs:
     # v0.29 shipped ``v0_29-release-gate``; v0.30f renamed it to
     # ``v0_30f-release-gate``; the v0.30 release close renamed it to
     # ``v0_30-release-gate``; the v0.31.0 release close renamed it to
-    # ``v0_31-release-gate``. This guard tracks the current name.
-    release_gate_jobs = re.findall(r"^  (v0_\d+[a-z]?-release-gate):", workflow, flags=re.MULTILINE)
+    # ``v0_31-release-gate``; the v0.32a-d arc renamed it to
+    # ``v0_32-release-gate``; the v0.32.0 consolidated release close
+    # renamed it to ``v0_32_0-release-gate``. This guard tracks the
+    # current name.
+    release_gate_jobs = re.findall(
+        r"^  (v0_\d+(?:_\d+)?[a-z]?-release-gate):",
+        workflow,
+        flags=re.MULTILINE,
+    )
     assert release_gate_jobs in (
         ["v0_31-release-gate"],
         ["v0_32-release-gate"],
+        ["v0_32_0-release-gate"],
     ), (
-        f"expected the current v0.31.x or v0.32 release-gate job; got: "
-        f"{release_gate_jobs}"
+        f"expected the current v0.31.x, v0.32 arc, or v0.32.0 release "
+        f"close release-gate job; got: {release_gate_jobs}"
     )
 
 
@@ -239,12 +247,23 @@ def test_v0_30_release_gate_file_count_matches_audit() -> None:
 
 
 def test_v0_30_no_new_optional_dependency_added() -> None:
-    """v0.30a must not declare any new optional dependency."""
+    """v0.30a fixed the extras vocabulary at {downstream, xarray, viz, test}.
+    v0.32.0 release-close adds ONE narrowly-scoped extra: ``pdebench`` (h5py
+    only), needed for the frozen v0.32d PDEBench 1D Burgers readiness
+    cookbook so that ``pip install 'pdelie[pdebench]'`` is a documented,
+    public packaging path -- not a test-only extra. Any further extra
+    requires an explicit release-close-scope decision.
+    """
     pyproject = tomllib.loads(_repo_text("pyproject.toml"))
     optional = pyproject["project"].get("optional-dependencies", {})
-    expected_extras = {"downstream", "xarray", "viz", "test"}
+    expected_extras = {"downstream", "xarray", "viz", "test", "pdebench"}
     assert set(optional.keys()) == expected_extras, (
         f"unexpected optional-dependency extras: {sorted(optional.keys())}"
+    )
+    # Pin ``pdebench`` extra to h5py only; anything else would silently
+    # broaden the v0.32d cookbook's optional-dep surface.
+    assert optional["pdebench"] == ["h5py>=3.10"], (
+        f"pdebench extra must be h5py-only; got {optional['pdebench']!r}."
     )
 
 
@@ -276,12 +295,13 @@ def test_v0_30f_release_gate_consolidation_manifest_exists() -> None:
     assert manifest["summary_type"] == "pdelie_declarative_release_gate_manifest"
     assert manifest["scope"] == "declarative_release_gate_checks_only"
     # Release-gate job name lineage: v0_30-release-gate (v0.30 close) →
-    # v0_31-release-gate (v0.31.0 close) → v0_32-release-gate (v0.32a
-    # migration).
+    # v0_31-release-gate (v0.31.0 close) → v0_32-release-gate (v0.32a-d
+    # arc) → v0_32_0-release-gate (v0.32.0 consolidated release close).
     assert manifest["current_release_gate_job_name"] in {
         "v0_30-release-gate",
         "v0_31-release-gate",
         "v0_32-release-gate",
+        "v0_32_0-release-gate",
     }
     assert manifest["release_count"] == len(manifest["releases"])
 

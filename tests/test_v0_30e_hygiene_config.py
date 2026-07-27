@@ -116,7 +116,7 @@ def test_package_version_matches_v0_30_close() -> None:
     release-close transitions. numpy<2 and requires-python>=3.11 remain
     unchanged (asserted by the sibling guards below).
     """
-    assert _pyproject()["project"]["version"] in {"0.29.0", "0.30.0", "0.31.0"}
+    assert _pyproject()["project"]["version"] in {"0.29.0", "0.30.0", "0.31.0", "0.32.0"}
 
 
 # --- CI workflow: lint / typecheck / coverage jobs ------------------------
@@ -195,12 +195,16 @@ def test_ci_workflow_release_gate_job_matches_v0_30_close() -> None:
     guard, which asserted that v0.30e had not preempted v0.30f.
     """
     jobs = _ci_workflow()["jobs"]
-    release_gate_jobs = [n for n in jobs if re.match(r"^v0_\d+[a-z]?-release-gate$", n)]
-    # v0.31.0 close: v0_31-release-gate. v0.32a: v0_32-release-gate.
+    release_gate_jobs = [
+        n for n in jobs if re.match(r"^v0_\d+(?:_\d+)?[a-z]?-release-gate$", n)
+    ]
+    # v0.31.0 close: v0_31-release-gate. v0.32a-d arc: v0_32-release-gate.
+    # v0.32.0 consolidated release close: v0_32_0-release-gate.
     assert release_gate_jobs in (
         ["v0_31-release-gate"],
         ["v0_32-release-gate"],
+        ["v0_32_0-release-gate"],
     ), (
-        f"expected the current v0.31.x or v0.32 release-gate job; got: "
-        f"{release_gate_jobs}"
+        f"expected the current v0.31.x, v0.32 arc, or v0.32.0 release "
+        f"close release-gate job; got: {release_gate_jobs}"
     )

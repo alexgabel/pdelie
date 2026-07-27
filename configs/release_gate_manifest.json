@@ -2,8 +2,8 @@
   "summary_schema_version": "0.1",
   "summary_type": "pdelie_declarative_release_gate_manifest",
   "scope": "declarative_release_gate_checks_only",
-  "current_release_gate_job_name": "v0_32-release-gate",
-  "release_count": 23,
+  "current_release_gate_job_name": "v0_32_0-release-gate",
+  "release_count": 21,
   "excluded_functional_release_gate_files": [
     {
       "file": "tests/test_v0_4_release_gate.py",
@@ -1603,8 +1603,8 @@
       }
     },
     {
-      "release": "0.32b",
-      "source_file": "tests/test_v0_32b_method_scores_uncertainty.py",
+      "release": "0.32",
+      "source_file": "docs/releases/V0_32_RELEASE_READINESS.md",
       "required_submodule_attributes": [
         {
           "submodule": "pdelie.reporting",
@@ -1621,73 +1621,7 @@
         {
           "submodule": "pdelie.symmetry.methods.polynomial_translation_svd",
           "name": "bootstrap_uncertainty"
-        }
-      ],
-      "forbidden_root_attributes": {
-        "names": [
-          "SCORE_METADATA",
-          "bootstrap_uncertainty",
-          "enrich_method_scores"
-        ]
-      },
-      "forbidden_submodule_attributes": {
-        "submodules": [
-          "pdelie.tasks",
-          "pdelie.discovery"
-        ],
-        "names": [
-          "SCORE_METADATA",
-          "bootstrap_uncertainty",
-          "enrich_method_scores"
-        ]
-      },
-      "required_phrases_in_api_stability": {
-        "doc_path": "docs/specs/API_STABILITY.md",
-        "phrases": [
-          "Stable public-surface note for the v0.32b strict method-score, uncertainty, and calibration reporting",
-          "method_scores",
-          "uncertainty_report",
-          "calibration_report",
-          "enrich_method_scores",
-          "bootstrap_uncertainty",
-          "span_distance",
-          "residual_l2",
-          "error_curve_max",
-          "svd_condition_number",
-          "v0_32b_generator_confidence_additive_method_scores_uncertainty_calibration"
-        ]
-      },
-      "required_phrases_in_plan": {
-        "doc_path": "docs/planning/PLAN.md",
-        "phrases": [
-          "V0.32b Strict Method-Score, Uncertainty, and Calibration Reporting",
-          "v0_32b_generator_confidence_additive_method_scores_uncertainty_calibration",
-          "method_scores",
-          "uncertainty_report",
-          "calibration_report",
-          "bootstrap_uncertainty",
-          "enrich_method_scores"
-        ]
-      },
-      "required_phrases_in_roadmap": {
-        "doc_path": "docs/planning/ROADMAP.md",
-        "phrases": [
-          "v0.32b",
-          "method_scores",
-          "uncertainty_report",
-          "calibration_report"
-        ]
-      },
-      "strict_json_manifests": [
-        {
-          "path": "configs/planning/v0_32_method_scores_scope.json"
-        }
-      ]
-    },
-    {
-      "release": "0.32c",
-      "source_file": "tests/test_v0_32c_candidate_to_task_workflow.py",
-      "required_submodule_attributes": [
+        },
         {
           "submodule": "pdelie.reporting",
           "name": "summarize_candidate_to_discovery_workflow"
@@ -1699,63 +1633,7 @@
         {
           "submodule": "pdelie.examples.candidate_to_discovery_workflow",
           "name": "main"
-        }
-      ],
-      "forbidden_root_attributes": {
-        "names": [
-          "run_candidate_to_discovery_workflow_example",
-          "summarize_candidate_to_discovery_workflow"
-        ]
-      },
-      "forbidden_submodule_attributes": {
-        "submodules": [
-          "pdelie.tasks",
-          "pdelie.discovery"
-        ],
-        "names": [
-          "run_candidate_to_discovery_workflow_example",
-          "summarize_candidate_to_discovery_workflow"
-        ]
-      },
-      "required_phrases_in_api_stability": {
-        "doc_path": "docs/specs/API_STABILITY.md",
-        "phrases": [
-          "v0.32c candidate-to-discovery workflow",
-          "summarize_candidate_to_discovery_workflow",
-          "run_candidate_to_discovery_workflow_example",
-          "candidate_to_discovery_workflow_stage_marker",
-          "v0_32c_candidate_to_discovery_workflow_example",
-          "explicitly_configured_by_caller",
-          "orbit_train_only_heldout_untransformed",
-          "downstream_gain_claimed",
-          "periodic_scalar_1d_only"
-        ]
-      },
-      "required_phrases_in_plan": {
-        "doc_path": "docs/planning/PLAN.md",
-        "phrases": [
-          "V0.32c Candidate-to-Discovery Workflow Example",
-          "v0_32c_candidate_to_discovery_workflow_example",
-          "summarize_candidate_to_discovery_workflow",
-          "run_candidate_to_discovery_workflow_example",
-          "action_policy",
-          "downstream_comparison",
-          "evidence_conclusion",
-          "scope_boundaries"
-        ]
-      },
-      "required_phrases_in_roadmap": {
-        "doc_path": "docs/planning/ROADMAP.md",
-        "phrases": [
-          "v0.32c",
-          "candidate_to_discovery_workflow"
-        ]
-      }
-    },
-    {
-      "release": "0.32d",
-      "source_file": "tests/test_v0_32d_external_data_readiness.py",
-      "required_submodule_attributes": [
+        },
         {
           "submodule": "pdelie.examples.pdebench_burgers_1d_readiness",
           "name": "run_pdebench_burgers_1d_readiness_cookbook"
@@ -1783,69 +1661,97 @@
       ],
       "forbidden_root_attributes": {
         "names": [
+          "SCORE_METADATA",
+          "bootstrap_uncertainty",
+          "enrich_method_scores",
           "from_pdebench",
           "from_the_well",
           "from_thewell",
           "load_pdebench",
           "load_the_well",
+          "run_candidate_to_discovery_workflow_example",
           "run_pdebench_burgers_1d_readiness_cookbook",
-          "run_the_well_feasibility_scan"
+          "run_the_well_feasibility_scan",
+          "summarize_candidate_to_discovery_workflow"
         ]
       },
       "forbidden_submodule_attributes": {
         "submodules": [
-          "pdelie.data",
-          "pdelie.reporting",
-          "pdelie.tasks",
-          "pdelie.discovery"
+          "pdelie.discovery",
+          "pdelie.tasks"
         ],
         "names": [
+          "SCORE_METADATA",
+          "bootstrap_uncertainty",
+          "enrich_method_scores",
           "from_pdebench",
           "from_the_well",
           "from_thewell",
           "load_pdebench",
-          "load_the_well"
+          "load_the_well",
+          "run_candidate_to_discovery_workflow_example",
+          "summarize_candidate_to_discovery_workflow"
         ]
       },
       "strict_json_manifests": [
+        {
+          "path": "configs/planning/v0_32_method_scores_scope.json"
+        },
         {
           "path": "configs/external_data/pdebench_burgers_1d_readiness.json"
         },
         {
           "path": "configs/external_data/the_well_feasibility_scan.json"
+        },
+        {
+          "path": "docs/specs/support_matrix.v0_32.json"
         }
       ],
       "required_phrases_in_api_stability": {
         "doc_path": "docs/specs/API_STABILITY.md",
         "phrases": [
-          "v0.32d external-data readiness cookbooks",
-          "v0_32d_pdebench_1d_burgers_readiness_and_the_well_feasibility_scan",
-          "pdebench_burgers_1d_readiness",
-          "the_well_feasibility_scan",
+          "Stable public-surface note for the v0.32.0 release close",
+          "v0_32_0_consolidated_modernization_and_external_readiness",
+          "release/v0.31.x",
+          "summarize_candidate_to_discovery_workflow",
+          "summarize_generator_confidence",
+          "run_pdebench_burgers_1d_readiness_cookbook",
+          "run_the_well_feasibility_scan",
           "1D_Burgers_Sols_Nu0.001.hdf5",
           "10.18419/darus-2986",
           "CC-BY-4.0",
           "blocked_multichannel_required",
-          "unavailable_no_cached_dataset"
+          "paper_dataset_count",
+          "catalogue_entry_count"
         ]
       },
       "required_phrases_in_plan": {
         "doc_path": "docs/planning/PLAN.md",
         "phrases": [
-          "V0.32d External-Data Readiness Cookbooks",
-          "v0_32d_pdebench_1d_burgers_readiness_and_the_well_feasibility_scan",
-          "PDEBench",
-          "The Well",
-          "1D_Burgers_Sols_Nu0.001.hdf5",
-          "blocked_multichannel_required"
+          "V0.32.0 Release Close",
+          "v0_32_0_consolidated_modernization_and_external_readiness",
+          "release/v0.31.x",
+          "paper_dataset_count",
+          "silent first-trajectory slicing"
         ]
       },
       "required_phrases_in_roadmap": {
         "doc_path": "docs/planning/ROADMAP.md",
         "phrases": [
-          "v0.32d",
-          "PDEBench",
-          "The Well"
+          "v0.32.0",
+          "release/v0.31.x"
+        ]
+      },
+      "required_phrases_in_readiness_doc": {
+        "doc_path": "docs/releases/V0_32_RELEASE_READINESS.md",
+        "phrases": [
+          "0.32.0",
+          "v0_32_0_consolidated_modernization_and_external_readiness",
+          "release/v0.31.x",
+          "1D_Burgers_Sols_Nu0.001.hdf5",
+          "paper_dataset_count",
+          "catalogue_entry_count",
+          "b4be2fc3383f737c76033073e6d2ccfb"
         ]
       }
     }

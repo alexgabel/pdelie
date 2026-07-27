@@ -48,7 +48,7 @@ These helpers are stable public APIs under their submodules. They remain runtime
 
 ## External data readiness (v0.32d, submodule-only)
 
-- `pdelie.examples.pdebench_burgers_1d_readiness` — narrow readiness cookbook for exactly one PDEBench 1D Burgers shard (`1D_Burgers_Sols_Nu0.001.hdf5`, DaRUS `10.18419/darus-2986`, CC-BY-4.0, MD5 `b4be2fc3383f737c76033073e6d2ccfb`). Not a broad PDEBench adapter. No recovery benchmark claim. `h5py` is an optional dependency — users install it directly.
+- `pdelie.examples.pdebench_burgers_1d_readiness` — narrow readiness cookbook for exactly one PDEBench 1D Burgers shard (`1D_Burgers_Sols_Nu0.001.hdf5`, DaRUS `10.18419/darus-2986`, CC-BY-4.0, MD5 `b4be2fc3383f737c76033073e6d2ccfb`). Not a broad PDEBench adapter. No recovery benchmark claim. `h5py` is installed via the narrow `[pdebench]` extra (`pip install 'pdelie[pdebench]'`; h5py-only).
 - `pdelie.examples.the_well_feasibility_scan` — metadata-only scan of The Well v1 (Ohana et al., NeurIPS 2024). No network I/O. Every dataset is 2D or 3D on a structured grid with coupled channels or geometry; frozen conclusion is `blocked_multichannel_required`. Not a broad The Well adapter.
 
 ## Boundary Statement

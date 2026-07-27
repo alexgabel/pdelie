@@ -401,6 +401,23 @@ def test_case_14_the_well_conclusion_is_blocked_multichannel_required() -> None:
 
 
 # ---------------------------------------------------------------------------
+# Case 14b (v0.32.0 release-close): The Well report distinguishes the
+# original paper's dataset count from the current repository catalogue
+# entry count. The paper reports 16; the catalogue splits hosted variants
+# into 23.
+# ---------------------------------------------------------------------------
+
+
+def test_case_14b_the_well_distinguishes_paper_count_from_catalogue_count() -> None:
+    scan = run_the_well_feasibility_scan()
+    assert scan["paper_dataset_count"] == 16
+    assert scan["catalogue_entry_count"] == 23
+    assert scan["paper_dataset_count"] != scan["catalogue_entry_count"]
+    assert "Ohana" in scan["paper_dataset_count_source"]
+    assert "hosted variants" in scan["catalogue_entry_count_note"]
+
+
+# ---------------------------------------------------------------------------
 # Case 15: no broad from_pdebench / from_the_well root or data API appears.
 # ---------------------------------------------------------------------------
 
@@ -521,11 +538,17 @@ def test_case_19_cli_emits_strict_json_only() -> None:
 
 
 def test_case_20_release_gate_manifest_pins_narrow_surface() -> None:
+    """v0.32.0 release close consolidates the 0.32b / 0.32c / 0.32d rows
+    into a single ``0.32`` row. This test accepts either the pre-consolidation
+    ``0.32d`` row or the consolidated ``0.32`` row so it stays green across
+    the release-close transition."""
     repo_root = Path(__file__).resolve().parents[1]
     manifest_path = repo_root / "configs" / "release_gate_manifest.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    releases = [r for r in manifest["releases"] if r["release"] == "0.32d"]
-    assert releases, "release-gate manifest missing v0.32d row"
+    releases = [
+        r for r in manifest["releases"] if r["release"] in {"0.32d", "0.32"}
+    ]
+    assert releases, "release-gate manifest missing v0.32d or v0.32 row"
     row = releases[0]
     submod_names = {
         item["name"] for item in row["required_submodule_attributes"]

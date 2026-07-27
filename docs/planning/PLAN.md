@@ -1,6 +1,27 @@
+# PDELie - Execution Plan (V0.32.0 Release Close — Consolidated)
+
+**Status:** COMPLETE
+
+Decision label: `v0_32_0_consolidated_modernization_and_external_readiness`.
+
+`v0.32.0` consolidates the four v0.32 sub-milestones (v0.32a modern-runtime migration, v0.32b strict method-score/uncertainty/calibration reporting, v0.32c candidate-to-discovery workflow example, v0.32d external-data readiness cookbooks) under a single tag per the solo-dev consolidation policy. Version `0.31.0` → `0.32.0`. Release-close artifacts: `docs/releases/V0_32_RELEASE_READINESS.md`, `docs/specs/support_matrix.v0_32.json`, consolidated release-gate manifest row, CHANGELOG entry, CI job rename `v0_32-release-gate` → `v0_32_0-release-gate`, `release/v0.31.x` maintenance branch cut from the `v0.31.0` tag with a documented security-only 12-month maintenance-end policy.
+
+Non-goals for the release-close pass itself: no new runtime feature, no new `summary_type`, no root export, no external-data recovery-benchmark claim, no generic symmetry-discovery claim, no PyPI/TestPyPI publication.
+
+Release-close preflight (all done):
+
+1. Modern env recreated on py3.12.13 (also py3.13.14); NumPy 2.5.1; PySINDy 2.1.0; h5py 3.16.0; scipy 1.18.0; sklearn 1.9.0.
+2. Full pytest under modern env — 1430/1430 pass on py3.12 (post-preflight-additions), 1427/1427 pass on py3.13 (pre-preflight-additions run).
+3. `run_pysindy_pde_task` multi-trajectory path verified end-to-end on `batch_size=4`; v0.32c workflow no longer performs silent first-trajectory slicing.
+4. `[pdebench]` extra (h5py-only) added; v0.30 hygiene invariant vocabulary relaxed to include it; loader ImportError names the extra.
+5. `evidence_conclusion.reasons` name the exact `downstream_comparison.metric_key`.
+6. The Well scan distinguishes `paper_dataset_count = 16` from `catalogue_entry_count = 23`.
+
+---
+
 # PDELie - Execution Plan (V0.32d External-Data Readiness Cookbooks)
 
-**Status:** IN_PROGRESS
+**Status:** COMPLETE (rolled into v0.32.0)
 
 `v0.32d` ships two narrow external-data readiness cookbooks required for the v0.32 milestone: (1) an honest PDEBench 1D Burgers slice cookbook, and (2) a metadata-only The Well feasibility scan. Neither is a broad dataset adapter framework; neither makes a recovery benchmark claim.
 
@@ -9,10 +30,10 @@ Decision label: `v0_32d_pdebench_1d_burgers_readiness_and_the_well_feasibility_s
 Substantive changes:
 
 - Preflight audit: PDEBench 1D Burgers V8 shard `1D_Burgers_Sols_Nu0.001.hdf5` (DaRUS `doi:10.18419/darus-2986`, CC-BY-4.0) with MD5 `b4be2fc3383f737c76033073e6d2ccfb`. Layout `(n_traj, T, X)` float32; datasets `/tensor`, `/x-coordinate`, `/t-coordinate`; periodic-in-x boundary; equation convention `u_t + u u_x = nu u_xx` — exact match with `pdelie.residuals.BurgersResidualEvaluator`. Frozen at `configs/external_data/pdebench_burgers_1d_readiness.json`.
-- Preflight audit: The Well v1 (Ohana et al., NeurIPS 2024) — 23 datasets enumerated. Every dataset is 2D or 3D on a structured grid and either carries multiple physically coupled channels or is coupled through the geometry itself. NO honest scalar 1D slice exists. Frozen at `configs/external_data/the_well_feasibility_scan.json` with `conclusion = "blocked_multichannel_required"`.
+- Preflight audit: The Well v1 (Ohana et al., NeurIPS 2024) — paper reports **16 datasets**; current PolymathicAI catalogue enumerates them as **23 hosted variants** (splits like `rayleigh_benard` + `rayleigh_benard_uniform`, `mhd_64` + `mhd_256`, `supernova_explosion_64` + `_128`, `turbulent_radiative_layer_2D` + `_3D`, `euler_multi_quadrants_periodic` + `_open_bc`). Every entry is 2D or 3D on a structured grid and either carries multiple physically coupled channels or is coupled through the geometry itself. NO honest scalar 1D slice exists. Frozen at `configs/external_data/the_well_feasibility_scan.json` with `conclusion = "blocked_multichannel_required"`; the emitted payload records both `paper_dataset_count` and `catalogue_entry_count` verbatim.
 - New submodule-only cookbook `pdelie.examples.pdebench_burgers_1d_readiness` with `run_pdebench_burgers_1d_readiness_cookbook(cached_file_path=..., residual_preflight=...)` and a `__main__` CLI. Narrow loader: exact expected filename + MD5 checksum + HDF5 dataset-path verification + axis-shape validation + uniformity check + optional Burgers residual preflight (interior-only + full-grid diagnostics, `diagnostic_only=True`). Emits a strict-JSON `pdelie_external_data_readiness` report.
 - New submodule-only scan `pdelie.examples.the_well_feasibility_scan` with `run_the_well_feasibility_scan()` and a `__main__` CLI. Metadata-only — no network I/O — emits a strict-JSON `pdelie_the_well_feasibility_scan` report with `conclusion = "blocked_multichannel_required"`.
-- Optional dependency: `h5py`. v0.32d does NOT add a broad `pdelie[pdebench]` extra — users install `h5py` directly. Absent `h5py`, all non-file paths of the cookbook (unavailable / config validation / checksum-mismatch on the wrong file) still work.
+- Optional dependency: `h5py`, installed via the narrow `[pdebench]` extra (`pip install 'pdelie[pdebench]'`). The extra is scoped to `h5py` only and does NOT imply broad PDEBench support. Absent the extra, all non-file paths of the cookbook (unavailable / config validation / checksum-mismatch on the wrong file) still work, and the loader raises an `ImportError` that names the extra explicitly.
 - 20 v0.32d contract tests in `tests/test_v0_32d_external_data_readiness.py` covering: strict-JSON config + output; exact dataset identifier and checksum enforcement; wrong-checksum rejection; unknown-variable rejection; axis-mismatch rejection; missing-boundary-metadata blocks residual; missing-coefficient-metadata blocks residual; supported-cached-slice FieldBatch construction; no-train-test-policy-invented; no-recovery-claim in conclusion; optional-dataset absence nonfatal; no-bulk-network-download; The Well scan metadata-only; The Well conclusion `blocked_multichannel_required`; no broad root/data API leaks; citation/license/provenance present; strict-JSON NaN/Inf rejection; docs do NOT use broad "PDEBench support" / "The Well support" phrases; CLI JSON-only; release-gate manifest pins the narrow surface.
 
 Non-goals: no broad `from_pdebench` / `from_the_well` adapter; no adapter registry; no automatic dataset-name inference; no broad PDEBench support claim; no recovery benchmark claim; no model training; no FNO/U-Net/PINN comparison; no external-data symmetry discovery claim; no The Well full-data download in CI; no multi-channel or 2D widening; no root API; no hidden train/test redefinition; no package version bump; no PyPI/TestPyPI publication.

@@ -20,12 +20,13 @@ Non-goals:
 - no train/test policy invented on the caller's behalf;
 - no root ``pdelie`` re-export.
 
-Optional dependency: ``h5py``. Users install it directly
-(``pip install h5py``) — v0.32d does NOT add a broad ``pdelie[pdebench]``
-extra, because doing so would imply broad PDEBench support, which is
-explicitly out of scope. On a plain install, calling the loader with a
-real cached file raises a helpful ``ImportError``. All other readiness
-paths (config validation, checksum enforcement,
+Optional dependency: ``h5py``. Install via the ``[pdebench]`` extra:
+``pip install 'pdelie[pdebench]'``. The extra is narrow (h5py only) and
+does NOT imply broad PDEBench support -- it exists solely so that the
+one frozen shard this cookbook targets can be read from disk. On a
+plain install, calling the loader with a real cached file raises an
+:class:`ImportError` that names the extra explicitly. All other
+readiness paths (config validation, checksum enforcement,
 unavailable-no-cached-dataset) work without ``h5py``.
 """
 
@@ -196,9 +197,11 @@ def _load_h5py() -> Any:
     except ImportError as exc:  # pragma: no cover — surfaced via test
         raise ImportError(
             "pdelie.examples.pdebench_burgers_1d_readiness requires h5py "
-            "for reading the PDEBench HDF5 shard. Install it directly with "
-            "`pip install h5py`. v0.32d does not add a broad "
-            "pdelie[pdebench] extra."
+            "for reading the PDEBench HDF5 shard. Install the narrow "
+            "PDELie optional extra with:\n"
+            "    pip install 'pdelie[pdebench]'\n"
+            "The extra is h5py-only and does not imply broad PDEBench "
+            "support."
         ) from exc
     return h5py
 

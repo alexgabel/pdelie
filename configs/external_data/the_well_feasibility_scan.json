@@ -9,6 +9,9 @@
   "citation": "Ohana, Ruben; McCabe, Michael; Meyer, Lucas; Morel, Rudy; Agocs, Fruzsina J.; Beneitez, Miguel; Berger, Marsha; Burkhart, Blakesley; Dalziel, Stuart B.; Fielding, Drummond B.; et al. 2024. The Well: a Large-Scale Collection of Diverse Physics Simulations for Machine Learning. NeurIPS 2024 Datasets & Benchmarks Track.",
   "record_url": "https://polymathic-ai.org/the_well/",
   "code_url": "https://github.com/PolymathicAI/the_well",
+  "paper_dataset_count": 16,
+  "paper_dataset_count_source": "Ohana et al. 2024, NeurIPS 2024 Datasets & Benchmarks Track, abstract and Table 1.",
+  "catalogue_entry_count_note": "The current catalogue (below) enumerates 23 entries because it splits paper-level datasets that ship as distinct hosted variants: rayleigh_benard vs rayleigh_benard_uniform; euler_multi_quadrants_periodic vs euler_multi_quadrants_open_bc; mhd_64 vs mhd_256; supernova_explosion_64 vs supernova_explosion_128; turbulent_radiative_layer_2D vs turbulent_radiative_layer_3D. The distinction (paper: 16, catalogue: 23) is preserved verbatim in the emitted report.",
   "policy": {
     "downloads_in_ci": false,
     "metadata_only_scan": true,
