@@ -28,7 +28,17 @@ For the full stable surface and PDE support matrix, see [`docs/specs/API_STABILI
 
 ## Install
 
-Core editable install:
+**Direct install from the public GitHub repository at a tagged release** (recommended for third parties who want to depend on PDELie by version):
+
+```bash
+python -m pip install "git+https://github.com/alexgabel/pdelie.git@v0.32.0"
+python -m pip install "git+https://github.com/alexgabel/pdelie.git@v0.32.0#egg=pdelie[pdebench]"       # optional PDEBench cookbook extra (h5py)
+python -m pip install "git+https://github.com/alexgabel/pdelie.git@v0.32.0#egg=pdelie[downstream]"    # optional PySINDy bridge extra
+```
+
+The repository is public and MIT-licensed, so `pip install git+https://…` works without SSH keys, personal access tokens, or a package-index account. Pin a specific tag (e.g. `@v0.32.0`) for reproducibility. TestPyPI and PyPI publication remain deferred (currently targeted at `v0.36`); see [`docs/releases/PUBLISHING.md`](docs/releases/PUBLISHING.md).
+
+**Local development install** (editable, from a working tree):
 
 ```bash
 python -m pip install -e .
@@ -46,9 +56,10 @@ Focused optional extras:
 python -m pip install -e .[viz]         # Matplotlib plotting helpers
 python -m pip install -e .[xarray]      # xarray DataArray/Dataset ingestion
 python -m pip install -e .[downstream]  # narrow PySINDy bridge path
+python -m pip install -e .[pdebench]    # narrow PDEBench 1D Burgers readiness cookbook (h5py-only)
 ```
 
-The downstream path is intentionally narrow and currently validated on the PySINDy 1.x / scikit-learn 1.2.x line under Python `<3.12`.
+`v0.32.0` supports Python `>=3.12` with NumPy 2.x, PySINDy 2.1.x, scikit-learn 1.4+, SciPy 1.14+. Legacy Python 3.11 + PySINDy 1.7.x users track the `release/v0.31.x` maintenance branch cut from the `v0.31.0` tag; see [`docs/design/RUNTIME_COMPATIBILITY_POLICY.md`](docs/design/RUNTIME_COMPATIBILITY_POLICY.md) for the security-only maintenance window.
 
 ## 60-Second Example
 
