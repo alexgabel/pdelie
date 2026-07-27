@@ -1,6 +1,6 @@
 # PDELie - Execution Plan (V0.32.0 Release Close — Consolidated)
 
-**Status:** COMPLETE
+**Status:** COMPLETE — tag `v0.32.0` @ `8ec6e4e` on `origin/main`, cut 2026-07-27. See [`docs/releases/V0_32_RELEASE_READINESS.md`](../releases/V0_32_RELEASE_READINESS.md). No PyPI publication (Git-tag-only per policy).
 
 Decision label: `v0_32_0_consolidated_modernization_and_external_readiness`.
 
