@@ -25,13 +25,21 @@ Stable public import path for the invariant canonical object:
 
 - `pdelie.InvariantMapSpec`
 
+Stable public-surface note for the v0.32.0 release close:
+
+- Decision label: `v0_32_0_consolidated_modernization_and_external_readiness`.
+- `v0.32.0` consolidates four sub-milestones (v0.32a runtime rebase; v0.32b additive reporting fields on `generator_confidence`; v0.32c candidate-to-discovery workflow example; v0.32d external-data readiness cookbooks) under a single Git tag. Package version `0.31.0` → `0.32.0`. Support matrix at `docs/specs/support_matrix.v0_32.json`.
+- Release-close hardening on top of the sub-milestones: the v0.32c workflow feeds the FULL training FieldBatch to `run_pysindy_pde_task` (no silent first-trajectory slicing on `batch_size > 1`); `evidence_conclusion.reasons` name the exact `downstream_comparison.metric_key`; the v0.32d PDEBench cookbook's optional dependency is installed via a narrow `[pdebench]` extra (`pip install 'pdelie[pdebench]'`, `h5py>=3.10` only); the v0.32d The Well feasibility scan distinguishes `paper_dataset_count = 16` (Ohana et al. 2024) from `catalogue_entry_count = 23` (current PolymathicAI catalogue).
+- Legacy line: `release/v0.31.x` maintenance branch cut from the `v0.31.0` tag; security-only fixes for 12 months from the v0.32.0 tag, then archived. See `docs/design/RUNTIME_COMPATIBILITY_POLICY.md`.
+- Explicit v0.32.0 non-claims: no new PDE; no new symmetry method; no new `SymmetryCandidate` discriminator; no new `summary_type`; no `discovery_task_result` schema change; no `pdelie_weak_pde_library_diagnostic` schema change; no root `pdelie` export; no generic symmetry-discovery claim; no external-data recovery-benchmark claim; no noise-robustness claim; no WSINDy claim; no nonperiodic finite-transform verification; no multi-channel / 2D contract widening; no PyPI / TestPyPI publication.
+
 Stable public-surface note for the v0.32d external-data readiness cookbooks:
 
 - Decision label: `v0_32d_pdebench_1d_burgers_readiness_and_the_well_feasibility_scan`.
 - `v0.32d` adds two submodule-only readiness cookbooks: `pdelie.examples.pdebench_burgers_1d_readiness` (with `run_pdebench_burgers_1d_readiness_cookbook`, `load_pdebench_burgers_1d_readiness_config`, and a `__main__` CLI) and `pdelie.examples.the_well_feasibility_scan` (with `run_the_well_feasibility_scan`, `load_the_well_feasibility_scan_config`, and a `__main__` CLI).
 - PDEBench cookbook is pinned to the single DaRUS V8 shard `1D_Burgers_Sols_Nu0.001.hdf5` (`10.18419/darus-2986`, `CC-BY-4.0`, MD5 `b4be2fc3383f737c76033073e6d2ccfb`). Emits a strict-JSON `pdelie_external_data_readiness` report with conclusion vocabulary: `ready_scalar_1d_readiness_only`, `ready_residual_preflight_only`, `blocked_boundary_metadata_unverified`, `blocked_parameter_convention_mismatch`, `blocked_nonuniform_grid`, `blocked_schema_mismatch`, `blocked_multichannel_required`, `blocked_download_or_checksum_failure`, `unavailable_no_cached_dataset`. No conclusion label implies recovery success.
 - The Well scan is metadata-only; no network I/O in default CI. Emits `conclusion = "blocked_multichannel_required"` — every dataset in The Well v1 release is either 2D or 3D and either carries multiple physically coupled channels or is coupled through the geometry itself. This is the correct v0.32d result.
-- Optional dependency: `h5py`. v0.32d does NOT add a broad `pdelie[pdebench]` extra — users install `h5py` directly. Absent `h5py`, all non-file paths of the cookbook still work.
+- Optional dependency: `h5py`, installed via the narrow `[pdebench]` extra (`pip install 'pdelie[pdebench]'`; h5py-only, no broad PDEBench support implied). Absent the extra, all non-file paths of the cookbook still work; the loader raises an `ImportError` that names the extra explicitly.
 - No broad `from_pdebench` / `from_the_well` / `load_pdebench` / `load_the_well` adapter. No adapter registry. No dataset-name inference. No recovery benchmark claim. No model training. No `discovery_task_result` schema change. No root `pdelie` export. No package version bump. No hidden train/test policy invented.
 
 Stable public-surface note for the v0.32c candidate-to-discovery workflow example:

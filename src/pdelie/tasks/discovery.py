@@ -648,7 +648,7 @@ def _compute_residual_over_trajectories(
         if not pieces:
             return None
         return cast("np.ndarray[Any, Any]", np.concatenate(pieces))
-    except Exception:  # degrade gracefully, warning surfaced upstream
+    except Exception:  # noqa: BLE001 — degrade gracefully, warning surfaced upstream
         return None
 
 

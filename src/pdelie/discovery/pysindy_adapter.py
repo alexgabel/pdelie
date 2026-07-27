@@ -290,7 +290,7 @@ def fit_pysindy_discovery(
                 trajectories=normalized_trajectories,
                 time_values=normalized_time_values,
             )
-        except Exception as exc:  # mirror default-path degrade behavior
+        except Exception as exc:  # noqa: BLE001 — mirror default-path degrade behavior
             return _failed_result(
                 feature_names=normalized_feature_names,
                 fit_config={
@@ -325,7 +325,7 @@ def fit_pysindy_discovery(
             )
             coefficients = np.asarray(model.coefficients(), dtype=float)
             library_feature_names = list(model.get_feature_names())
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 — degrade to structured failed result
             return _failed_result(
                 feature_names=normalized_feature_names,
                 fit_config=fit_config,

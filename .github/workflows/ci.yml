@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  v0_32-release-gate:
+  v0_32_0-release-gate:
     # v0.32a: modern-runtime release gate. Python 3.12/3.13 blocking (via
     # matrix), Python 3.14 advisory-only in a separate job below.
     # PySINDy is resolved by the [test] extra directly to the declared
@@ -41,7 +41,7 @@ jobs:
           retry 3 python -m pip install -e .[test]
       - name: Check dependencies
         run: python -m pip check
-      - name: Run v0.32 release gate (declarative manifest + retained per-version gates + v0.32a modern runtime tests)
+      - name: Run v0.32.0 release gate (declarative manifest + retained per-version gates + v0.32a modern runtime tests)
         run: >
           python -m pytest
           tests/test_current_release_gate.py

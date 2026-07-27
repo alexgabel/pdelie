@@ -38,10 +38,10 @@ Cite: Takamoto et al., *PDEBench Datasets*, DaRUS V8, 2022.
 
 ## How to use it
 
-Users install `h5py` directly (v0.32d intentionally does not add a broad `pdelie[pdebench]` extra, because doing so would imply broad PDEBench support that is out of scope):
+Users install the narrow `[pdebench]` extra (h5py only). The extra is intentionally scoped to the single dependency this cookbook needs — it does NOT imply broad PDEBench support:
 
 ```bash
-pip install h5py
+pip install 'pdelie[pdebench]'
 ```
 
 Download the shard from DaRUS (CC-BY-4.0; obey the license) and note its path:

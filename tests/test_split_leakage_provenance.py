@@ -24,7 +24,7 @@ from pdelie.reporting import (
 def _assert_json_safe_plain(value: Any) -> None:
     json.loads(json.dumps(value, allow_nan=False))
     if isinstance(value, FieldBatch):
-        raise AssertionError("reports must not contain FieldBatch objects")
+        raise TypeError("reports must not contain FieldBatch objects")
     if isinstance(value, Mapping):
         for item in value.values():
             _assert_json_safe_plain(item)

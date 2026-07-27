@@ -23,7 +23,7 @@ def _cell_source(cell: dict[str, object]) -> str:
 def _markdown_text(notebook: dict[str, object]) -> str:
     cells = notebook.get("cells", [])
     if not isinstance(cells, list):
-        raise AssertionError("notebook cells must be a list")
+        raise TypeError("notebook cells must be a list")
     return "\n".join(
         _cell_source(cell)
         for cell in cells
@@ -34,7 +34,7 @@ def _markdown_text(notebook: dict[str, object]) -> str:
 def _first_markdown_title(notebook: dict[str, object]) -> str | None:
     cells = notebook.get("cells", [])
     if not isinstance(cells, list):
-        raise AssertionError("notebook cells must be a list")
+        raise TypeError("notebook cells must be a list")
     for cell in cells:
         if not isinstance(cell, dict) or cell.get("cell_type") != "markdown":
             continue
@@ -47,7 +47,7 @@ def _first_markdown_title(notebook: dict[str, object]) -> str | None:
 def _code_cells(notebook: dict[str, object]) -> list[dict[str, object]]:
     cells = notebook.get("cells", [])
     if not isinstance(cells, list):
-        raise AssertionError("notebook cells must be a list")
+        raise TypeError("notebook cells must be a list")
     return [
         cell
         for cell in cells

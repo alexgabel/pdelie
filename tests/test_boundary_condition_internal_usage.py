@@ -210,9 +210,11 @@ def test_no_new_direct_periodic_compares_outside_boundary_helper() -> None:
     violations: list[str] = []
     for path in sorted(_SRC_ROOT.rglob("*.py")):
         text = path.read_text(encoding="utf-8")
-        if _DIRECT_COMPARE_PATTERN.search(text):
-            if str(path) not in _ALLOWED_DIRECT_PERIODIC_COMPARE_FILES:
-                violations.append(str(path.relative_to(_REPO_ROOT)))
+        if (
+            _DIRECT_COMPARE_PATTERN.search(text)
+            and str(path) not in _ALLOWED_DIRECT_PERIODIC_COMPARE_FILES
+        ):
+            violations.append(str(path.relative_to(_REPO_ROOT)))
     assert violations == [], (
         "v0.30b policy: new sites must use is_x_periodic() / get_x_boundary_type() "
         "from pdelie._boundary. Direct compares found in: " + ", ".join(violations)

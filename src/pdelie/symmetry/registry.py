@@ -602,7 +602,6 @@ def _snapshot_registry() -> dict[str, SymmetryMethodSpec]:
 
 def _restore_registry(snapshot: Mapping[str, SymmetryMethodSpec]) -> None:
     """Replace the registry with ``snapshot`` — private test helper."""
-    global _REGISTRY
     _REGISTRY.clear()
     for name, spec in snapshot.items():
         _REGISTRY[name] = spec

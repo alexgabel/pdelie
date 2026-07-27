@@ -447,12 +447,11 @@ def test_19_no_broad_except_typeerror_swallowing_pysindy_api() -> None:
     adapter_path = _REPO_ROOT / "src" / "pdelie" / "discovery" / "pysindy_adapter.py"
     tree = ast.parse(adapter_path.read_text(encoding="utf-8"))
     for node in ast.walk(tree):
-        if isinstance(node, ast.ExceptHandler):
-            if node.type is None:
-                pytest.fail(
-                    f"{adapter_path}:{node.lineno}: bare `except:` — a "
-                    "pysindy 2.x TypeError could be silently swallowed"
-                )
+        if isinstance(node, ast.ExceptHandler) and node.type is None:
+            pytest.fail(
+                f"{adapter_path}:{node.lineno}: bare `except:` — a "
+                "pysindy 2.x TypeError could be silently swallowed"
+            )
 
 
 # ---------------------------------------------------------------------------

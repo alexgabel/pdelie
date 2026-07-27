@@ -139,7 +139,7 @@ def _render_row(
         return "0"
 
     head, *tail = rendered_terms
-    expression = head[1:] if head.startswith("+") else head
+    expression = head.removeprefix("+")
     for term in tail:
         expression += f" {'-' if term.startswith('-') else '+'} {term[1:]}"
     return expression
