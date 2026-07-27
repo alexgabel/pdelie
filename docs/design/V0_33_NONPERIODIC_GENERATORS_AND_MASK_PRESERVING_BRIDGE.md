@@ -27,12 +27,16 @@ Both gaps have been named as reviewer objections. Both fit the wedge (empirical 
 
 ## Sub-milestone structure
 
+The v0.33 arc has three focus sub-milestones (a/b/c), two parallel scope-widenings (d/e), and one consolidation (v0.33.0):
+
 | Sub-milestone | Focus | Rough scope |
 |---|---|---|
 | **v0.33a** | Nonperiodic dispatch in `fit_translation_generator` + `polynomial_translation_svd` | Boundary-condition-aware fit path; interior-only residual diagnostics; `bc_type` metadata on the diagnostics dict; periodic path byte-preserved. |
 | **v0.33b** | Overlap-crop finite-transform verification | Nonperiodic dispatch in `verify_translation_generator`; overlap-fraction diagnostic; overlap-crop residual comparator. Delivers what v0.31.5 previously deferred. |
 | **v0.33c** | Mask-preserving discovery bridge | `run_pysindy_pde_task` masks **after** differentiation; new `fit_diagnostics.mask_application_stage` + `mask_row_count` + `unmasked_row_count` fields. `discovery_task_result` schema key-count invariant preserved (22 keys). |
-| **v0.33.0** | Release close consolidation | Single tag consolidating v0.33a-c. Version bump `0.32.0` → `0.33.0`. `V0_33_RELEASE_READINESS.md`. `support_matrix.v0_33.json`. Release-gate manifest consolidated `0.33` row. |
+| **v0.33d** (parallel scope-widening) | Variable-coefficient data-generator support | Add `diffusivity_profile: array \| callable \| None` (and analogous `advection_profile` for advection-diffusion) to the data generators. Profile recorded in `field.metadata["parameter_tags"]`. Constant-coefficient residuals + generators run unchanged against variable-coefficient data — the **admissibility crash test** — with no residual-side changes required. The residual-side ν(x) support is v0.34a. |
+| **v0.33e** (parallel hygiene) | Golden-numbers regression gate | Frozen per-PDE derivative + residual + vertical-slice numerical fixtures pinned into the release-gate. Verifies that v0.30's FD-backend change, v0.30's `compute_derivatives(backend="auto")`, and v0.30's interior-only diagnostics did not silently shift numeric results downstream — and that no future release does either. Any drift emits a named cause on the diff. |
+| **v0.33.0** | Release close consolidation | Single tag consolidating v0.33a-e. Version bump `0.32.0` → `0.33.0`. `V0_33_RELEASE_READINESS.md`. `support_matrix.v0_33.json`. Release-gate manifest consolidated `0.33` row. |
 
 ## v0.33a — Nonperiodic `fit_translation_generator` + `polynomial_translation_svd`
 
@@ -110,9 +114,106 @@ New keys added inside `discovery_task_result.fit_diagnostics` (which is `dict[st
 - No modification to `discovery_task_result` schema outside `fit_diagnostics`. The 22-key top-level count is a v0.31 invariant.
 - No mask-propagation into `heldout_field`. Callers still supply an explicitly-masked heldout FieldBatch.
 
-## Test-case surface (to be authored in v0.33a-c)
+## v0.33d — Variable-coefficient data-generator support (parallel scope-widening)
 
-At consolidation the v0.33.0 release-gate must include:
+### Motivation
+
+PDELie's data generators (`generate_heat_1d_field_batch`, `generate_burgers_1d_field_batch`, `generate_advection_diffusion_1d_field_batch`, `generate_reaction_diffusion_1d_field_batch`) all take a **constant** coefficient today (`nu`, `c`, etc.). Extending them to accept a variable-coefficient profile (`nu(x)`, `c(x)`) is a small, self-contained data-side widening that unlocks two things independent of any residual-side change:
+
+1. It gives PDELie a first-class way to generate variable-coefficient PDE data — a useful library primitive in its own right, and the natural next step after v0.30's boundary-condition metadata.
+2. It exposes an **admissibility crash test**: constant-coefficient generators (like the built-in `polynomial_translation_svd`, whose ansatz assumes translation invariance) run **unchanged** against variable-coefficient data and are expected to fail. That failure is the diagnostic — empirical evidence that applying a translation candidate without first checking against x-dependent coefficients is worse than not augmenting at all. No residual-side changes are required to observe it.
+
+The residual-side variable-coefficient support (a `HeatResidualEvaluator` that consumes `nu(x)`, similarly for Burgers / advection-diffusion) is the completing half of this story and lands in v0.34a as a separate sub-milestone. Splitting the data half here delivers the admissibility diagnostic in v0.33 without waiting for the residual-side rework.
+
+### Frozen shape
+
+New kwarg on the data generators (existing signatures byte-preserved when the kwarg is omitted):
+
+- `generate_heat_1d_field_batch(..., diffusivity_profile: np.ndarray | Callable[[np.ndarray], np.ndarray] | None = None)` — `array` samples on the generator's `x`-grid; `callable` invoked as `diffusivity_profile(x)` and validated for finiteness and shape.
+- `generate_burgers_1d_field_batch(..., diffusivity_profile: np.ndarray | Callable | None = None)` — same shape.
+- `generate_advection_diffusion_1d_field_batch(..., advection_profile: np.ndarray | Callable | None = None, diffusivity_profile: np.ndarray | Callable | None = None)`.
+- `generate_reaction_diffusion_1d_field_batch(...)` — deferred (its coefficient set is larger; the v0.33d scope is Heat / Burgers / advection-diffusion only).
+
+`FieldBatch.metadata["parameter_tags"]` records the profile provenance:
+
+- `nu_profile_kind: "constant" | "array" | "callable"`.
+- `nu_profile_shape: [int]` (`array` case only).
+- `nu_profile_hash: str` (`array` case only; SHA-256 of the values for deterministic provenance).
+- `nu_profile_callable_repr: str` (`callable` case only; `repr(profile)`).
+- `nu_min: float`, `nu_max: float`, `nu_l2_norm: float` — same three fields the `constant` case surfaces, so downstream diagnostics have a uniform read path.
+
+The generator's numerical scheme uses the sampled `nu(x)` array (the callable path samples once, up-front). All finiteness / positivity / dimensionality checks fire the same way they do for the constant path.
+
+### Non-goals for v0.33d
+
+- No residual-side `nu(x)` support. `HeatResidualEvaluator` etc. still consume a scalar `nu`; feeding it a variable-coefficient FieldBatch is a documented misuse (`ScopeValidationError` on shape mismatch). The residual-side rework is v0.34a.
+- No `polynomial_translation_svd` extension for variable-coefficient admissibility scoring. The built-in method runs unchanged; the failure IS the diagnostic.
+- No `KdV` support (KdV has a more complex coefficient structure; deferred).
+- No new `summary_type`, no new `SymmetryCandidate` discriminator, no root export.
+
+### Test-case surface (v0.33d)
+
+- Constant `diffusivity_profile=None` byte-preserves the constant-coefficient path.
+- `diffusivity_profile=np.array([...])` records `nu_profile_kind="array"` + `nu_profile_hash` + `nu_min`/`nu_max`/`nu_l2_norm`.
+- `diffusivity_profile=callable` records `nu_profile_kind="callable"` + `nu_profile_callable_repr`.
+- Shape mismatch on the array path raises `ShapeValidationError` before any generator call.
+- Non-finite / non-positive `nu(x)` raises `ScopeValidationError`.
+- Constant-coefficient `polynomial_translation_svd` on a variable-coefficient field runs to completion (does not raise), reports a **higher** `span_distance` / `residual_l2` than the constant-coefficient baseline, and is a documented `valid_but_not_useful` diagnostic in the resulting confidence report — the crash test.
+
+## v0.33e — Golden-numbers regression gate (parallel hygiene)
+
+### Motivation
+
+v0.30 shipped three numerically-load-bearing changes: a `finite_difference` derivative backend, the `compute_derivatives(backend="auto")` dispatcher, and interior-only residual diagnostics for Heat / Burgers / advection-diffusion / reaction-diffusion. The existing per-version release-gate tests (`tests/test_v0_*_release_gate.py`) enforce **structural** invariants (schema shapes, forbidden root attributes, phrase presence) but do not pin the **numerical** outputs of the derivative / residual / vertical-slice pipelines. Downstream users who depend on a specific reproducible number (a residual RMS at a fixed seed, a verification `first_error` at a fixed epsilon) have no protection against silent drift.
+
+v0.33e adds golden-numbers fixtures across every supported PDE and pins them into the release-gate. Any drift emits a named cause on the diff, so the release-close review can accept the change explicitly or investigate it as a regression.
+
+### Frozen shape
+
+New fixture file: `tests/fixtures/v0_33e_golden_numbers.json` (strict-JSON). Structure:
+
+```text
+{
+  "summary_schema_version": "0.1",
+  "summary_type": "pdelie_golden_numbers_fixture",
+  "generator_seed": <int>,
+  "batch_size": 1,
+  "num_times": <int>,
+  "num_points": <int>,
+  "pdes": [
+    {
+      "name": "heat_1d" | "burgers_1d" | "kdv_1d" | "fisher_kpp_1d"
+            | "advection_diffusion_1d" | "reaction_diffusion_1d",
+      "residual_l2_norm": <float>,
+      "residual_rms": <float>,
+      "residual_max_abs": <float>,
+      "derivative_u_x_l2_norm": <float>,
+      "derivative_u_xx_l2_norm": <float>,
+      "derivative_u_t_l2_norm": <float>,
+      "boundary_condition_x": "periodic" | "dirichlet" | "neumann" | "open_unknown"
+    },
+    ...
+  ]
+}
+```
+
+New test file: `tests/test_v0_33e_golden_numbers_regression_gate.py`. For each PDE, regenerate the reference FieldBatch under the pinned seed, run `compute_derivatives(field, backend="auto")` and the appropriate residual evaluator, and compare the resulting metrics against the fixture with a **tight** relative tolerance (`rtol=1e-6`, `atol=1e-12` — the float32 quantization limit of the underlying data). Any breach fails the release-gate with a diff message that names the drifted metric and the observed vs. expected values.
+
+### Update policy
+
+- On a legitimate numerical change (a bug fix in the FD backend, a new spectral cutoff), the release-close PR regenerates the fixture and records the cause in the CHANGELOG entry.
+- No unnamed drift. If a metric moves by more than the tolerance without a named cause in the diff, the release-gate fails and the PR must document why.
+
+### Non-goals for v0.33e
+
+- No coverage-goal change. The existing `coverage` CI job stays advisory.
+- No new `summary_type`.
+- No new PDE (Heat / Burgers / KdV / Fisher-KPP / advection-diffusion / reaction-diffusion — the existing set).
+- No golden fixtures on nonperiodic-x boundary conditions **until** v0.33a lands; the initial v0.33e fixture is periodic-only. Nonperiodic golden fixtures land alongside v0.33a as part of the same sub-milestone.
+
+## Test-case surface (to be authored in v0.33a-e)
+
+At consolidation the v0.33.0 release-gate must include the 20 cases below plus the v0.33d and v0.33e test surfaces documented in those sections:
 
 1. Periodic fit_translation_generator byte-preserved (regression guard on the periodic branch).
 2. Nonperiodic Dirichlet Heat: `boundary_condition_x = "dirichlet"` in `fit_diagnostics`.

@@ -65,8 +65,90 @@
       "pysindy_discovery_unsupported_boundary_error_still_fires_on_nonperiodic": true
     },
     {
+      "name": "v0.33d",
+      "focus": "variable_coefficient_data_generator_support_parallel_scope_widening",
+      "target_files": [
+        "src/pdelie/data/heat_1d.py",
+        "src/pdelie/data/burgers_1d.py",
+        "src/pdelie/data/advection_diffusion_1d.py"
+      ],
+      "adds_kwargs": [
+        {
+          "name": "diffusivity_profile",
+          "vocabulary": ["array", "callable", "None"],
+          "applies_to": ["heat_1d", "burgers_1d", "advection_diffusion_1d"],
+          "default": "None"
+        },
+        {
+          "name": "advection_profile",
+          "vocabulary": ["array", "callable", "None"],
+          "applies_to": ["advection_diffusion_1d"],
+          "default": "None"
+        }
+      ],
+      "adds_field_metadata_parameter_tags_keys": [
+        "nu_profile_kind",
+        "nu_profile_shape",
+        "nu_profile_hash",
+        "nu_profile_callable_repr",
+        "nu_min",
+        "nu_max",
+        "nu_l2_norm"
+      ],
+      "byte_preserved_constant_coefficient_path": true,
+      "residual_side_nu_of_x_support": "deferred_to_v0_34a",
+      "admissibility_crash_test_delivered_without_residual_side_changes": true,
+      "explicit_non_goals": [
+        "no_residual_side_variable_coefficient_support",
+        "no_polynomial_translation_svd_variable_coefficient_scoring",
+        "no_kdv_variable_coefficient_support",
+        "no_reaction_diffusion_variable_coefficient_support",
+        "no_new_summary_type",
+        "no_new_symmetry_candidate_discriminator",
+        "no_root_export"
+      ]
+    },
+    {
+      "name": "v0.33e",
+      "focus": "golden_numbers_regression_gate_parallel_hygiene",
+      "target_files": [
+        "tests/fixtures/v0_33e_golden_numbers.json",
+        "tests/test_v0_33e_golden_numbers_regression_gate.py"
+      ],
+      "fixture_summary_type": "pdelie_golden_numbers_fixture",
+      "fixture_pdes": [
+        "heat_1d",
+        "burgers_1d",
+        "kdv_1d",
+        "fisher_kpp_1d",
+        "advection_diffusion_1d",
+        "reaction_diffusion_1d"
+      ],
+      "pinned_metrics_per_pde": [
+        "residual_l2_norm",
+        "residual_rms",
+        "residual_max_abs",
+        "derivative_u_x_l2_norm",
+        "derivative_u_xx_l2_norm",
+        "derivative_u_t_l2_norm"
+      ],
+      "tolerance_rtol": 1e-06,
+      "tolerance_atol": 1e-12,
+      "initial_fixture_boundary_condition_scope": "periodic_only",
+      "nonperiodic_golden_fixtures_land_alongside_v0_33a": true,
+      "update_policy": "release_close_pr_may_regenerate_the_fixture_but_must_record_named_cause_in_changelog",
+      "no_unnamed_drift_permitted": true,
+      "explicit_non_goals": [
+        "no_coverage_ci_job_promotion",
+        "no_new_pde",
+        "no_new_summary_type",
+        "no_new_symmetry_method"
+      ]
+    },
+    {
       "name": "v0.33.0",
       "focus": "release_close_consolidation",
+      "consolidates": ["v0.33a", "v0.33b", "v0.33c", "v0.33d", "v0.33e"],
       "artifacts": [
         "docs/releases/V0_33_RELEASE_READINESS.md",
         "docs/specs/support_matrix.v0_33.json",
