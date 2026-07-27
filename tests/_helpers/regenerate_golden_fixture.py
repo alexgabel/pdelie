@@ -71,12 +71,15 @@ BATCH_SIZE = 1
 NUM_TIMES = 33
 NUM_POINTS = 64
 
-#: Tolerances for the regression gate. ``rtol`` is a cross-BLAS margin,
-#: empirically verified by exact-value reproduction of the committed fixture
-#: between py3.12 and py3.13 on modern NumPy 2 + BLAS. ``atol`` keeps near-zero
-#: metrics (e.g. residuals of exactly-integrated fields) above float64
-#: denormal-and-cancellation noise. The pipeline is float64 throughout
-#: (``_to_numpy`` -> ``dtype=float``); these are not float32 quantization limits.
+#: Tolerances for the regression gate. ``rtol`` is a cross-BLAS margin: the
+#: fixture is generated on macOS and replayed on the Linux CI runners, where the
+#: worst observed relative deviation on an unchanged pipeline is 1.5e-9 (~650x
+#: of headroom). Within one platform the reproduction is bit-exact across py3.12
+#: and py3.13; across platforms it is not, so no pinned metric is ever compared
+#: with ``==``. ``atol`` keeps near-zero metrics (e.g. residuals of
+#: exactly-integrated fields) above float64 denormal-and-cancellation noise. The
+#: pipeline is float64 throughout (``_to_numpy`` -> ``dtype=float``); these are
+#: not float32 quantization limits.
 GOLDEN_RTOL = 1e-6
 GOLDEN_ATOL = 1e-12
 
