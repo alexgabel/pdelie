@@ -98,6 +98,38 @@
       "byte_preserved_constant_coefficient_path": true,
       "residual_side_nu_of_x_support": "deferred_to_v0_34a",
       "admissibility_crash_test_delivered_without_residual_side_changes": true,
+      "admissibility_crash_test_metric": "residual_l2",
+      "admissibility_crash_test_min_ratio": 10.0,
+      "admissibility_crash_test_metric_rationale": "span_distance_is_bounded_by_sqrt_2_and_the_reference_fallback_drives_it_to_exactly_zero_inverting_the_assertion_measured_8_of_18_configurations_separated_versus_18_of_18_for_residual_l2",
+      "admissibility_crash_test_measured_worst_ratio": 1772.0,
+      "admissibility_crash_test_frozen_profile": "nu_0*(1+0.5*sin(2*pi*x/L))",
+      "variable_coefficient_diffusion_form": "divergence_form_d_dx_nu_of_x_du_dx",
+      "variable_coefficient_advection_form": "non_conservative_minus_c_of_x_u_x",
+      "equation_form_selectors": [
+        {
+          "kwarg": "diffusivity_form",
+          "tag": "nu_form",
+          "default": "conservative_divergence",
+          "allowed": ["conservative_divergence", "nonconservative_nu_uxx"],
+          "generators": ["heat_1d", "burgers_1d", "advection_diffusion_1d"],
+          "purpose": "v0_34a_residual_evaluator_dispatch_key"
+        },
+        {
+          "kwarg": "advection_form",
+          "tag": "c_form",
+          "default": "nonconservative_c_ux",
+          "allowed": ["conservative_divergence", "nonconservative_c_ux"],
+          "generators": ["advection_diffusion_1d"],
+          "purpose": "v0_34a_residual_evaluator_dispatch_key"
+        }
+      ],
+      "coefficient_treatment_policy_tag": "nu_treatment_policy",
+      "coefficient_treatment_policy_vocabulary_v0_33d": ["fixed_background"],
+      "coefficient_treatment_policy_v0_34b_extension": "co_transforming_equivalence_target",
+      "dose_response_fixture": "tests/fixtures/v0_33d_admissibility_dose_response.json",
+      "dose_response_alphas": [0.0, 0.1, 0.25, 0.5, 0.75],
+      "dose_response_alpha_zero_is_integrator_control": true,
+      "dose_response_strictly_increasing_per_pde": true,
       "explicit_non_goals": [
         "no_residual_side_variable_coefficient_support",
         "no_polynomial_translation_svd_variable_coefficient_scoring",
