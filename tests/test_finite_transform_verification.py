@@ -83,7 +83,13 @@ def test_translation_verification_reports_custom_heldout_requirement() -> None:
         )
 
 
-def test_translation_verification_rejects_nonperiodic_boundary_conditions() -> None:
+def test_translation_verification_dispatches_nonperiodic_since_v0_33b() -> None:
+    """v0.33b: nonperiodic input takes the overlap-crop path instead of raising.
+
+    Supersedes the pre-v0.33b rejection. The classification vocabulary is
+    unchanged; the narrower claim the overlap-crop path supports is carried by
+    the ``symmetry_claim`` diagnostic.
+    """
     heldout = generate_heat_1d_field_batch(batch_size=3, num_times=33, num_points=64, seed=30)
     heldout.metadata["boundary_conditions"] = {"x": "dirichlet"}
     generator = GeneratorFamily(
@@ -93,8 +99,12 @@ def test_translation_verification_rejects_nonperiodic_boundary_conditions() -> N
         normalization="l2_unit",
         diagnostics={},
     )
-    with pytest.raises(ScopeValidationError, match="periodic boundary conditions in x"):
-        verify_translation_generator(heldout, generator, HeatResidualEvaluator())
+    report = verify_translation_generator(heldout, generator, HeatResidualEvaluator())
+
+    assert report.diagnostics["dispatch_path"] == "overlap_crop"
+    assert report.diagnostics["boundary_condition_x"] == "dirichlet"
+    assert report.classification in {"exact", "approximate", "failed"}
+    assert report.diagnostics["symmetry_claim"] != "boundary_value_problem_preserved"
 
 
 def test_translation_verification_is_exact_on_heldout_burgers_data() -> None:

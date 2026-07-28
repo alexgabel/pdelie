@@ -125,7 +125,7 @@ def test_heat_residual_evaluator_now_handles_nonperiodic_via_fd_dispatch() -> No
     assert "full_grid_diagnostic" in residual.diagnostics
 
 
-def test_finite_transform_verification_still_rejects_nonperiodic() -> None:
+def test_finite_transform_verification_dispatches_nonperiodic_since_v0_33b() -> None:
     # Build a periodic generator on a periodic field
     periodic = generate_heat_1d_field_batch(batch_size=3, num_times=5, num_points=16, seed=0)
     from pdelie.symmetry import fit_translation_generator
@@ -143,8 +143,10 @@ def test_finite_transform_verification_still_rejects_nonperiodic() -> None:
         var_name="u",
         metadata=_nonperiodic_metadata(x_boundary="dirichlet"),
     )
-    with pytest.raises(ScopeValidationError, match="periodic"):
-        verify_translation_generator(nonperiodic, generator, HeatResidualEvaluator())
+    # v0.33b: the overlap-crop path replaces the rejection.
+    report = verify_translation_generator(nonperiodic, generator, HeatResidualEvaluator())
+    assert report.diagnostics["dispatch_path"] == "overlap_crop"
+    assert report.diagnostics["boundary_condition_x"] == "dirichlet"
 
 
 # --- Adapters accept structured nonperiodic --------------------------------

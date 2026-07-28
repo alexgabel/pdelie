@@ -62,7 +62,8 @@
       "name": "v0.33b",
       "focus": "overlap_crop_verify_translation_generator",
       "target_files": [
-        "src/pdelie/verification/finite_transform.py"
+        "src/pdelie/verification/finite_transform.py",
+        "tests/test_v0_33b_overlap_crop_verification.py"
       ],
       "adds_diagnostic_keys": [
         "boundary_condition_x",
@@ -80,7 +81,44 @@
       "new_diagnostic_keys": [
         "symmetry_claim"
       ],
-      "overlap_crop_never_emits_boundary_value_problem_preserved": true
+      "overlap_crop_never_emits_boundary_value_problem_preserved": true,
+      "domain_length_convention": {
+        "formula": "x_last_minus_x_first_plus_dx",
+        "equals": "num_points_times_dx",
+        "reason": "only_this_convention_makes_overlap_fraction_exactly_equal_retained_rows_over_num_points",
+        "rejected": "x_last_minus_x_first_which_gives_1_minus_k_over_n_minus_1_and_disagrees_with_the_reported_row_count"
+      },
+      "comparison_row_set": {
+        "policy": "overlap_intersect_interior_trim",
+        "trim_source": "residual_evaluator_boundary_trim_width",
+        "reason": "nonperiodic_boundary_residual_is_dominated_by_fd_stencil_error",
+        "measured_binding_constraint_at_default_epsilons": "interior_trim",
+        "overlap_crop_first_binds_above": "abs_shift_greater_than_boundary_trim_width_times_dx_which_is_twice_the_largest_default_epsilon"
+      },
+      "diagnostic_keys": [
+        "boundary_condition_x",
+        "dispatch_path",
+        "overlap_fraction",
+        "overlap_fraction_by_epsilon",
+        "overlap_row_count",
+        "compared_row_count",
+        "interior_only_row_count",
+        "interior_only_trim_width",
+        "symmetry_claim"
+      ],
+      "scalar_diagnostics_are_worst_case_across_epsilon_sweep": true,
+      "shift_sign_convention": {
+        "overlap_fraction_depends_only_on_absolute_shift": true,
+        "retained_region_flips_with_sign": true,
+        "public_api_can_only_produce_non_negative_shifts": true,
+        "reason": "coefficient_sign_normalization_plus_strictly_increasing_epsilon_values"
+      },
+      "boundary_value_problem_labels_unemittable": [
+        "boundary_value_problem_preserved",
+        "boundary_value_problem_not_preserved"
+      ],
+      "failed_classification_reports": "equation_symmetry_candidate",
+      "invalid_generator_fails_via": "pre_existing_span_distance_gate_not_the_overlap_crop_error_curve"
     },
     {
       "name": "v0.33c",
