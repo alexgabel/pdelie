@@ -58,6 +58,9 @@ from pdelie.residuals import (
     ResidualEvaluator,
 )
 
+#: Base diffusivity per generator, used to build the v0.34a variable profiles.
+_BASE_DIFFUSIVITY = {"heat_1d": 0.1, "burgers_1d": 0.1, "advection_diffusion_1d": 0.05}
+
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 GOLDEN_FIXTURE_PATH = _REPO_ROOT / "tests" / "fixtures" / "v0_33e_golden_numbers.json"
 
@@ -99,6 +102,7 @@ PDE_ENTRY_KEYS: tuple[str, ...] = (
     "generator_kwargs",
     "max_spatial_order",
     "boundary_condition_x",
+    "diffusivity_profile_amplitude",
     "nonperiodic_window_keep",
     *PINNED_METRIC_NAMES,
 )
@@ -133,14 +137,35 @@ class GoldenPdeSpec:
     #: pinning the v0.33a nonperiodic dispatch path.
     boundary_type: str = "periodic"
     window_keep: float | None = None
+    #: v0.34a: when set, the field is generated with this variable-coefficient
+    #: profile and the residual evaluator is handed the same sampled array, so
+    #: the pinned metrics exercise the array dispatch path end to end.
+    diffusivity_profile_amplitude: float | None = None
+
+    def diffusivity_profile(self) -> np.ndarray | None:
+        """Sampled nu(x) for the v0.34a entries, or None on the constant path."""
+        if self.diffusivity_profile_amplitude is None:
+            return None
+        from pdelie.data.heat_1d import DEFAULT_DOMAIN_LENGTH
+
+        x = np.linspace(0.0, DEFAULT_DOMAIN_LENGTH, NUM_POINTS, endpoint=False, dtype=float)
+        base = float(_BASE_DIFFUSIVITY[self.name.split("_variable")[0]])
+        return base * (
+            1.0
+            + self.diffusivity_profile_amplitude
+            * np.sin(2.0 * np.pi * x / DEFAULT_DOMAIN_LENGTH)
+        )
 
     def build_field(self) -> FieldBatch:
+        kwargs = dict(self.generator_kwargs)
+        if self.diffusivity_profile_amplitude is not None:
+            kwargs["diffusivity_profile"] = self.diffusivity_profile()
         field = self.generator(
             batch_size=BATCH_SIZE,
             num_times=NUM_TIMES,
             num_points=NUM_POINTS,
             seed=GENERATOR_SEED,
-            **self.generator_kwargs,
+            **kwargs,
         )
         if self.boundary_type == "periodic":
             return field
@@ -233,6 +258,32 @@ GOLDEN_PDE_SPECS: tuple[GoldenPdeSpec, ...] = (
         generator_kwargs={"max_time": 0.25},
         boundary_type="neumann",
     ),
+    # v0.34a variable-coefficient entries: these pin the ARRAY dispatch path,
+    # which no constant-coefficient entry reaches.
+    GoldenPdeSpec(
+        name="heat_1d_variable_nu",
+        generator=generate_heat_1d_field_batch,
+        evaluator=HeatResidualEvaluator,
+        max_spatial_order=2,
+        generator_kwargs={"max_time": 0.6},
+        diffusivity_profile_amplitude=0.5,
+    ),
+    GoldenPdeSpec(
+        name="burgers_1d_variable_nu",
+        generator=generate_burgers_1d_field_batch,
+        evaluator=BurgersResidualEvaluator,
+        max_spatial_order=2,
+        generator_kwargs={"max_time": 0.25},
+        diffusivity_profile_amplitude=0.5,
+    ),
+    GoldenPdeSpec(
+        name="advection_diffusion_1d_variable_nu",
+        generator=generate_advection_diffusion_1d_field_batch,
+        evaluator=AdvectionDiffusionResidualEvaluator,
+        max_spatial_order=2,
+        generator_kwargs={"max_time": 0.4},
+        diffusivity_profile_amplitude=0.5,
+    ),
     GoldenPdeSpec(
         name="advection_diffusion_1d_open_unknown",
         generator=generate_advection_diffusion_1d_field_batch,
@@ -252,7 +303,13 @@ def compute_golden_entry(spec: GoldenPdeSpec) -> dict[str, Any]:
     derivatives = compute_derivatives(
         field, backend="auto", max_spatial_order=spec.max_spatial_order
     )
-    residual_batch = spec.evaluator().evaluate(field, derivatives)
+    profile = spec.diffusivity_profile()
+    evaluator = (
+        spec.evaluator()
+        if profile is None
+        else spec.evaluator(diffusivity=profile)
+    )
+    residual_batch = evaluator.evaluate(field, derivatives)
     residual = np.asarray(residual_batch.residual, dtype=float)
 
     entry: dict[str, Any] = {
@@ -260,6 +317,7 @@ def compute_golden_entry(spec: GoldenPdeSpec) -> dict[str, Any]:
         "generator_kwargs": dict(spec.generator_kwargs),
         "max_spatial_order": spec.max_spatial_order,
         "boundary_condition_x": get_x_boundary_type(field),
+        "diffusivity_profile_amplitude": spec.diffusivity_profile_amplitude,
         "nonperiodic_window_keep": (
             None
             if spec.boundary_type == "periodic"
