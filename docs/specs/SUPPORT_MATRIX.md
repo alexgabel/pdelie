@@ -23,6 +23,33 @@ The machine-readable version for the current `v0.31` release is `support_matrix.
 | Advection-diffusion | yes | yes | yes | yes | no | yes |
 | KS | no public runtime | no | no | diagnostic/no-go | no | no |
 
+## Nonperiodic Generator Layer (v0.33)
+
+| Stage | Periodic | Nonperiodic |
+| --- | --- | --- |
+| `fit_translation_generator` | unchanged (spectral_fd, full-domain SVD) | finite_difference + interior-only shave at `boundary_trim_width`; reference fallback suppressed |
+| `polynomial_translation_svd` | unchanged | accepts; forwards dispatch diagnostics; frozen four score names unchanged |
+| `verify_translation_generator` | unchanged (FFT wrap) | overlap-crop ∩ interior trim |
+| `run_pysindy_pde_task` | supported | **blocked** — `PySINDyDiscoveryUnsupportedBoundaryError` |
+
+Boundary types dispatched: `periodic`, `dirichlet`, `neumann`, `open_unknown`.
+
+**Claim scope.** v0.33a/b establish interior differential-operator covariance on the overlap. They do **not** establish boundary-value-problem preservation — the interior shave and the overlap crop discard exactly the rows that would settle it. The `symmetry_claim` diagnostic carries the distinction; `boundary_value_problem_preserved` and `boundary_value_problem_not_preserved` are reserved but never emitted.
+
+**Resolution caveat.** Nonperiodic fit quality is PDE-dependent. Only Heat is well resolved below `num_points = 256`. The honest `span_distance` plus a low-row warning are emitted rather than a hard resolution gate.
+
+## Variable-Coefficient Data Generators (v0.33d)
+
+| PDE | `diffusivity_profile` | `advection_profile` |
+| --- | --- | --- |
+| Heat | yes | n/a |
+| Burgers | yes | n/a |
+| Advection-diffusion | yes | yes |
+| KdV | no | n/a |
+| Fisher-KPP | no | n/a |
+
+Constant-coefficient path byte-preserved. Residual-side ν(x) support is deferred to v0.34a; feeding a variable-coefficient FieldBatch to a constant-coefficient evaluator is a documented misuse and is the mechanism of the admissibility crash test.
+
 ## Selected Runtime Helpers
 
 These helpers are stable public APIs under their submodules. They remain runtime supportability tools, not canonical objects or manuscript artifact schemas.

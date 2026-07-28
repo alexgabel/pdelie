@@ -1,6 +1,10 @@
-# PDELie - Execution Plan (V0.33 — Nonperiodic Generators + Mask-Preserving Bridge, planning kickoff)
+# PDELie - Execution Plan (V0.33.0 Release Close — Nonperiodic Interior-Symmetry and Mask-Validity Support)
 
-**Status:** PLANNING_FROZEN
+**Status:** V0.33.0 Release Close — complete. Tag `v0.33.0`; readiness `docs/releases/V0_33_RELEASE_READINESS.md`.
+
+All five sub-milestones plus the scope-freeze amendment are merged: v0.33e (#110), v0.33d (#111), scope amendment (#112), v0.33a (#113), v0.33b (#114), v0.33c (#115).
+
+**Five of six frozen contracts required amendment on contact with measurement**, three of which would otherwise have shipped as silent defects. Each amendment and the measurement that forced it is recorded in the design freeze. See the readiness doc's "Process note".
 
 `v0.33` closes two long-standing wedge gaps that the v0.30–v0.32 arc did not reach: the **nonperiodic generator gap** (`fit_translation_generator`, `verify_translation_generator`, and `polynomial_translation_svd` remain periodic-only despite v0.30 shipping nonperiodic `FieldBatch` readiness + boundary-condition metadata + strong-form nonperiodic residuals) and the **discovery-bridge mask leakage** (`run_pysindy_pde_task` applies the input mask before differentiation, so the derivative stencil widens the effective mask and the row-set the optimizer sees no longer matches the row-set PDELie audited). Both fit the wedge (empirical diagnostics on scalar 1D data) and do not require multi-D or new PDEs.
 

@@ -1,5 +1,48 @@
 # Changelog
 
+## 0.33.0
+
+Release-close for the v0.33 arc: five internal sub-milestones (v0.33a nonperiodic generator dispatch, v0.33b overlap-crop finite-transform verification, v0.33c mask-preserving discovery bridge, v0.33d variable-coefficient data generators, v0.33e golden-numbers regression gate) plus one scope-freeze amendment, consolidated into a single tag per the solo-dev consolidation policy. Submodule-only surface — no root `pdelie` export added. No new PDE, no new symmetry method.
+
+Release decision: `v0_33_0_nonperiodic_interior_symmetry_and_mask_validity`.
+
+**Scope narrowing.** v0.33 was planned as "nonperiodic generator support" and ships as **nonperiodic interior-symmetry and mask-validity support**. v0.33a/b establish that a candidate is a symmetry of the differential equation on interior/overlap rows; they do **not** establish boundary-value-problem preservation. A uniform translation on a bounded domain is a domain-changing action, and the overlap crop discards exactly the rows that would settle the boundary question. The `symmetry_claim` diagnostic carries the distinction over a frozen six-value vocabulary; both `boundary_value_problem_preserved` and `boundary_value_problem_not_preserved` are reserved-but-never-emitted, asserted by test.
+
+### Added
+
+- **Nonperiodic generator fit (v0.33a).** `fit_translation_generator` and `polynomial_translation_svd` dispatch on `is_x_periodic`. The nonperiodic branch uses finite-difference derivatives and an interior-only shave; the periodic branch is byte-preserved. Six new diagnostic keys, forwarded verbatim by the method adapter: `boundary_condition_x`, `boundary_condition_dispatch_reason`, `interior_only_reduction_applied`, `interior_only_row_count`, `interior_only_trim_width`, `symmetry_claim`. `svd_span_distance` is also forwarded so the pre-fallback value is visible on both branches.
+- **Overlap-crop verification (v0.33b).** `verify_translation_generator` dispatches on `is_x_periodic`; the nonperiodic branch compares on overlap ∩ interior via the new `_apply_overlap_crop_translation` helper. Nine new `VerificationReport.diagnostics` keys including `dispatch_path`, `overlap_fraction`, `overlap_row_count`, and `compared_row_count`. Delivers what v0.31.5 deferred.
+- **Mask-preserving discovery bridge (v0.33c).** `run_pysindy_pde_task` gains `mask_application: "before_differentiation" | "after_differentiation"`, defaulting to `"after_differentiation"`. Seven mask diagnostics under the namespaced key `fit_diagnostics["pdelie_mask_diagnostics"]`, including the three-mask decomposition (`observation_mask_row_count`, `derivative_validity_mask_row_count`, `regression_row_mask_row_count`).
+- **Variable-coefficient data generators (v0.33d).** `diffusivity_profile` on Heat / Burgers / advection-diffusion and `advection_profile` on advection-diffusion, each accepting an array, a callable, or `None`. `diffusivity_form` and `advection_form` selectors, recorded as `parameter_tags["nu_form"]` / `["c_form"]` — the v0.34a residual-evaluator dispatch key. `parameter_tags["nu_treatment_policy"] = "fixed_background"`. Full profile provenance (`nu_profile_kind`, `nu_profile_hash`, `nu_min` / `nu_max` / `nu_l2_norm` for all three kinds).
+- **Golden-numbers regression gate (v0.33e).** `tests/fixtures/v0_33e_golden_numbers.json` pins six aggregate metrics per PDE at `rtol=1e-6`, `atol=1e-12`, across five periodic and three nonperiodic entries. Regeneration requires a named cause via `python -m tests._helpers.regenerate_golden_fixture`.
+- **Admissibility dose-response fixture (v0.33d).** `tests/fixtures/v0_33d_admissibility_dose_response.json` pins the `residual_l2` curve at α ∈ {0, 0.1, 0.25, 0.5, 0.75} on the frozen ν(x) = ν₀(1 + α·sin(2πx/L)) family, with an α=0 integrator control.
+
+### Changed
+
+- **`polynomial_translation_svd` accepts nonperiodic input.** Acceptance is not a claim of boundary-value-problem preservation; the narrower claim is carried by `symmetry_claim`. The frozen four `method_scores` names are unchanged on both branches.
+- **`build_translation_basis` no longer gates on boundary condition.** The basis `{1, t, x, u}` is built from coordinates and values alone and is boundary-condition-agnostic.
+- **`apply_pointwise_translation` dispatches.** The periodic path wraps as before; the nonperiodic path does not wrap and clamps off-domain.
+- **`underlying_discovery_result` verbatim guarantee narrowed.** Since v0.33c the task attaches mask diagnostics under exactly one namespaced key, `fit_diagnostics["pdelie_mask_diagnostics"]`. Every other field of the embedded sibling — including every backend-native `fit_diagnostics` entry — remains byte-for-byte what the backend summarizer produced. The regression guard strips only that key before comparing.
+- **CI release-gate job renamed** `v0_32_0-release-gate` → `v0_33_0-release-gate`.
+
+### Amended during implementation
+
+Five of six frozen sub-milestone contracts required amendment on contact with measurement. Each amendment is recorded in `docs/design/V0_33_NONPERIODIC_GENERATORS_AND_MASK_PRESERVING_BRIDGE.md` with the measurement that forced it. Three would otherwise have shipped as silent defects.
+
+- **v0.33e** — the fixture was specified with six PDEs; Fisher-KPP and reaction-diffusion are the same generator, so five ship. The `atol` rationale claimed a float32 quantization limit; the pipeline is float64 throughout. Bit-exact fixture comparison was replaced by tolerance comparison after it failed on Linux BLAS (worst cross-platform deviation 1.5e-9 against `rtol=1e-6`).
+- **v0.33d** — the admissibility crash test was specified against `span_distance`. That metric is bounded by √2 and collapses to exactly `0.0` through the `reference_fallback` path, reporting a *perfect* translation generator on a failing candidate in 10 of 18 measured configurations. The shipped gate is `residual_l2 ≥ 10×`, which separated 18/18 with 177× headroom.
+- **v0.33a** — the interior shave was specified as one row. Measured, a 1-row shave leaves `span_distance` near its √2 ceiling on all four PDEs (1.13–1.40); the shave must equal the residual evaluator's `boundary_trim_width`, at which point Heat collapses to 4.3e-3. The `reference_fallback` is additionally suppressed on the nonperiodic branch, where it fired on 3 of 4 PDEs and masked honest spans of 0.24–0.64 as `0.0`.
+- **v0.33b** — `domain_length` must be `x[-1] - x[0] + dx` (N·dx), not the (N−1)·dx span; only that convention makes `overlap_fraction` equal `retained_rows / num_points` exactly. The comparison is overlap ∩ interior, not overlap alone. At every default epsilon the interior trim, not the crop, is the binding constraint.
+- **v0.33c** — the bridge maps each x point to a PySINDy *feature* and each time step to a design-matrix *row*, so mask erosion is temporal and a spatial mask drives the observation row count to zero. Such masks are rejected. The correct path requires precomputed `x_dot`; differentiating a row-selected array computes derivatives across the removed rows (measured leakage 7.2e-5 relative). The spectral hard-reject inspects the caller's `pysindy_model.differentiation_method`, because `compute_derivatives` is never called in this code path.
+
+### Invariants preserved
+
+Frozen four `method_scores` names; `_CONFIDENCE_LABELS` vocabulary; `discovery_task_result` 22-key top-level schema; `pdelie_weak_pde_library_diagnostic` 27-key schema; `VerificationReport.classification` vocabulary `{exact, approximate, failed}`; `SymmetryCandidate` reserved discriminators; root `pdelie` namespace surface. No new `summary_type`.
+
+### Not unlocked
+
+Nonperiodic KdV; nonperiodic PySINDy discovery (`PySINDyDiscoveryUnsupportedBoundaryError` still fires); nonperiodic weak-form residuals; residual-side ν(x) support (v0.34a); spatial masks in the discovery bridge; boundary-value-problem preservation claims of any kind.
+
 ## 0.32.0
 
 Release-close for the v0.32 arc: four internal sub-milestones (v0.32a modern-runtime migration, v0.32b strict method-score / uncertainty / calibration reporting, v0.32c candidate-to-discovery workflow example, v0.32d external-data readiness cookbooks) consolidated into a single tag per the solo-dev consolidation policy. Submodule-only surface — no root `pdelie` export added. Periodic scalar 1D only. No recovery-benchmark claim, no generic symmetry-discovery claim.
