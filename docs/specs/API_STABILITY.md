@@ -25,6 +25,13 @@ Stable public import path for the invariant canonical object:
 
 - `pdelie.InvariantMapSpec`
 
+Stable public-surface note for the v0.33.0 release close:
+
+- `v0.33` ships **nonperiodic interior-symmetry and mask-validity support**. `fit_translation_generator`, `polynomial_translation_svd`, and `verify_translation_generator` accept nonperiodic input and dispatch to interior-only / overlap-crop paths. Acceptance is **not** a boundary-value-problem preservation claim; the `symmetry_claim` diagnostic carries the narrower claim over a frozen six-value vocabulary, and both BVP labels are reserved-but-never-emitted.
+- `run_pysindy_pde_task` gains `mask_application` (default `"after_differentiation"`). Mask support is scoped to **whole-time-row selections**; spatial masks and spectral differentiation on masked fields raise `ScopeValidationError`. The nonperiodic boundary gate is unchanged.
+- Data generators gain `diffusivity_profile` / `advection_profile` and the `diffusivity_form` / `advection_form` selectors. The constant-coefficient path is byte-preserved.
+- Frozen four `method_scores` names, `_CONFIDENCE_LABELS`, the 22-key `discovery_task_result` schema, the 27-key weak diagnostic schema, `VerificationReport.classification`, and the `SymmetryCandidate` discriminators are all unchanged.
+
 Stable public-surface note for the v0.32.0 release close:
 
 - Decision label: `v0_32_0_consolidated_modernization_and_external_readiness`.

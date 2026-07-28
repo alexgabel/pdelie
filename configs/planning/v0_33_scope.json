@@ -371,7 +371,7 @@
         "docs/releases/V0_33_RELEASE_READINESS.md",
         "docs/specs/support_matrix.v0_33.json",
         "release_gate_manifest consolidated 0.33 row",
-        "CI job rename v0_32_0-release-gate -> v0_33_0-release-gate",
+        "CI job rename v0_33_0-release-gate -> v0_33_0-release-gate",
         "pyproject version 0.32.0 -> 0.33.0"
       ]
     }
