@@ -124,7 +124,9 @@
       "name": "v0.33c",
       "focus": "mask_preserving_discovery_bridge",
       "target_files": [
-        "src/pdelie/tasks/discovery.py"
+        "src/pdelie/tasks/discovery.py",
+        "src/pdelie/discovery/pysindy_adapter.py",
+        "tests/test_v0_33c_mask_preserving_bridge.py"
       ],
       "adds_kwargs": [
         {
@@ -168,7 +170,35 @@
         "error": "ScopeValidationError",
         "reason": "globally_coupled_fft_leaks_unobserved_values_into_observed_rows",
         "note": "backend_auto_selects_spectral_fd_for_periodic_data_so_masked_periodic_fields_must_request_finite_difference_explicitly"
-      }
+      },
+      "design_matrix_row_axis": "time_samples_not_spatial_points_each_x_point_is_a_pysindy_feature",
+      "mask_support_scope": "whole_time_row_selections_only",
+      "non_row_masks_policy": {
+        "policy": "reject",
+        "error": "ScopeValidationError",
+        "reason": "a_partial_or_spatial_mask_is_feature_removal_not_row_selection_and_would_change_model_shape_feature_names_and_coefficient_dimensions",
+        "measurement": "a_single_fully_masked_x_column_drives_the_observation_row_count_to_zero"
+      },
+      "precomputed_x_dot_required": {
+        "reason": "differentiating_a_row_selected_array_computes_a_derivative_across_the_removed_rows",
+        "measured_leakage_relative": 7.2e-05,
+        "mechanism": "pysindy_2_1_accepts_x_dot_on_fit_so_the_task_differentiates_on_the_full_trajectory_and_row_selects_afterwards",
+        "additional_file_touched": "src/pdelie/discovery/pysindy_adapter.py"
+      },
+      "diagnostics_placement": {
+        "key": "underlying_discovery_result.fit_diagnostics.pdelie_mask_diagnostics",
+        "reason": "discovery_task_result_has_22_top_level_keys_and_no_top_level_fit_diagnostics",
+        "verbatim_guarantee": "narrowed_to_exclude_exactly_this_one_namespaced_key",
+        "top_level_key_count_preserved": 22
+      },
+      "spectral_rejection_detection_point": {
+        "corrected": true,
+        "specified": "resolved_derivative_backend_is_spectral_fd",
+        "actual": "callers_pysindy_model_differentiation_method_is_SpectralDerivative",
+        "reason": "compute_derivatives_is_never_called_in_run_pysindy_pde_task",
+        "backend_auto_consequence_does_not_apply": true
+      },
+      "stencil_half_width_source": "pysindy_model_differentiation_method_order_floordiv_2_default_1"
     },
     {
       "name": "v0.33d",

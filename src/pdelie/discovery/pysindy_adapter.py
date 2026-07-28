@@ -214,6 +214,7 @@ def _fit_caller_supplied_model(
     *,
     trajectories: list[np.ndarray],
     time_values: np.ndarray,
+    x_dot: np.ndarray | None = None,
 ) -> tuple[np.ndarray, list[str], dict[str, object]]:
     """Fit a caller-configured ``pysindy.SINDy`` instance and extract the
     same coefficients / library_feature_names / fit_config surface the
@@ -238,7 +239,15 @@ def _fit_caller_supplied_model(
     # element directly and preserve the list form for the future
     # multi-trajectory extension.
     fit_input = trajectories[0] if len(trajectories) == 1 else trajectories
-    pysindy_model.fit(fit_input, t=time_values)
+    # v0.33c mask-preserving path: when ``x_dot`` is supplied the caller
+    # differentiated on the FULL (unmasked) trajectory and row-selected
+    # afterwards, so PySINDy must not re-differentiate the row-selected array --
+    # doing so would compute a derivative across the removed rows, which is
+    # exactly the leakage the mask-preserving path exists to prevent.
+    fit_kwargs: dict[str, object] = {"t": time_values}
+    if x_dot is not None:
+        fit_kwargs["x_dot"] = x_dot
+    pysindy_model.fit(fit_input, **fit_kwargs)
     coefficients = np.asarray(pysindy_model.coefficients(), dtype=float)
     library_feature_names = [str(name) for name in pysindy_model.get_feature_names()]
     fit_config_record: dict[str, object] = {
@@ -258,6 +267,7 @@ def fit_pysindy_discovery(
     *,
     config: object | None = None,
     pysindy_model: object | None = None,
+    x_dot: object | None = None,
 ) -> dict[str, object]:
     """Fit PySINDy against a bridge-emitted (trajectories, time_values, feature_names)
     triple.
@@ -287,6 +297,7 @@ def fit_pysindy_discovery(
         try:
             coefficients, library_feature_names, fit_config = _fit_caller_supplied_model(
                 pysindy_model,
+                x_dot=None if x_dot is None else np.asarray(x_dot, dtype=float),
                 trajectories=normalized_trajectories,
                 time_values=normalized_time_values,
             )
