@@ -39,16 +39,19 @@ The wrapper enforces the same two-layer periodic-only guard as the v0.31b1
 
 from __future__ import annotations
 
+import contextlib as _contextlib
 import importlib.metadata as _importlib_metadata
 import warnings as _warnings
-from collections.abc import Mapping
+from collections.abc import Iterator, Mapping
 from dataclasses import dataclass, field
 from typing import Any, cast
 
 import numpy as np
+import numpy.random as _np_random
 
 from pdelie._boundary import is_x_periodic
 from pdelie.contracts import FieldBatch
+from pdelie.discovery.column_normalize import summarize_column_normalization
 from pdelie.errors import SchemaValidationError, ScopeValidationError
 from pdelie.reporting.summaries import _validate_strict_json_compatible
 from pdelie.tasks.discovery import PySINDyDiscoveryUnsupportedBoundaryError
@@ -98,6 +101,16 @@ _SUMMARY_TOP_LEVEL_KEYS: tuple[str, ...] = (
     "compatibility_notes",
     "provenance",
 )
+
+#: v0.34c: keys permitted on the payload but NOT required.
+#:
+#: The 27-key ``_SUMMARY_TOP_LEVEL_KEYS`` set above is a frozen invariant and
+#: remains exactly what the default path emits. ``column_normalization`` is
+#: emitted only when a caller explicitly opts in via
+#: ``inspect_pysindy_weak_pde_library(..., column_normalize=True)``, so every
+#: payload that could be produced before v0.34c still has exactly 27 keys and no
+#: existing consumer sees a shape change.
+_SUMMARY_OPTIONAL_TOP_LEVEL_KEYS: tuple[str, ...] = ("column_normalization",)
 
 
 # ---------------------------------------------------------------------------
@@ -153,6 +166,34 @@ class WeakPDELibraryDiagnostic:
 # ---------------------------------------------------------------------------
 # Backend-version resolution (opportunistic — sklearn/scipy are optional)
 # ---------------------------------------------------------------------------
+
+
+@_contextlib.contextmanager
+def _seeded_global_numpy_random(seed: int | None) -> Iterator[None]:
+    """Temporarily seed the legacy global NumPy RNG, then restore it.
+
+    PySINDy's ``WeakPDELibrary`` places its ``K`` domain centers using
+    ``np.random`` and exposes **no seed parameter**, which makes the emitted
+    diagnostic nondeterministic run-to-run: ``column_norms`` and
+    ``matrix_condition_number`` both move. Seeding around the library build is
+    the only way to make the report reproducible without forking PySINDy.
+
+    The prior RNG state is saved and restored so a caller's global random
+    stream is not perturbed as a side effect of asking for a reproducible
+    diagnostic.
+    """
+    if seed is None:
+        yield
+        return
+    # NPY002 suppressed deliberately: PySINDy's WeakPDELibrary draws from the
+    # LEGACY global RNG, so a np.random.Generator cannot control it. Seeding the
+    # legacy global stream is the only lever that reaches PySINDy.
+    state = _np_random.get_state()  # noqa: NPY002
+    try:
+        _np_random.seed(int(seed))  # noqa: NPY002
+        yield
+    finally:
+        _np_random.set_state(state)  # noqa: NPY002
 
 
 def _resolve_backend_version() -> dict[str, str]:
@@ -308,6 +349,7 @@ def summarize_pysindy_weak_pde_library_diagnostic(
     warnings: list[str],
     compatibility_notes: list[str],
     provenance: Mapping[str, Any],
+    column_normalization: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Assemble and strict-JSON-validate the diagnostic summary payload.
 
@@ -358,10 +400,18 @@ def summarize_pysindy_weak_pde_library_diagnostic(
         "provenance": dict(provenance),
     }
 
-    # Design-frozen top-level keyset invariant.
-    if set(payload) != set(_SUMMARY_TOP_LEVEL_KEYS):
-        missing = sorted(set(_SUMMARY_TOP_LEVEL_KEYS) - set(payload))
-        extra = sorted(set(payload) - set(_SUMMARY_TOP_LEVEL_KEYS))
+    # v0.34c: emitted only on the opt-in normalization path, so the default
+    # payload keeps exactly the frozen 27 keys.
+    if column_normalization is not None:
+        payload["column_normalization"] = dict(column_normalization)
+
+    # Design-frozen top-level keyset invariant: the 27 required keys must all be
+    # present, and nothing beyond the documented optional set may appear.
+    required = set(_SUMMARY_TOP_LEVEL_KEYS)
+    permitted = required | set(_SUMMARY_OPTIONAL_TOP_LEVEL_KEYS)
+    if not required.issubset(payload) or not set(payload).issubset(permitted):
+        missing = sorted(required - set(payload))
+        extra = sorted(set(payload) - permitted)
         raise SchemaValidationError(
             "pysindy weak pde library diagnostic summary has unexpected keys; "
             f"missing={missing} extra={extra}."
@@ -522,6 +572,8 @@ def inspect_pysindy_weak_pde_library(
     *,
     task_name: str,
     library_configuration: WeakPDELibraryDiagnostic | Mapping[str, Any] | None = None,
+    column_normalize: bool = False,
+    seed: int | None = None,
 ) -> dict[str, Any]:
     """Run the diagnostic wrapper and return the strict-JSON summary.
 
@@ -534,6 +586,18 @@ def inspect_pysindy_weak_pde_library(
     library_configuration:
         A :class:`WeakPDELibraryDiagnostic` instance or a mapping with the
         same fields. Defaults to :class:`WeakPDELibraryDiagnostic()`.
+    column_normalize:
+        v0.34c. When ``False`` (the default) the emitted report is byte-for-byte
+        what pre-v0.34c produced, with exactly the frozen 27 top-level keys.
+        When ``True`` the weak design matrix is column-normalized to unit L2
+        norm and a ``column_normalization`` block is added, reporting the
+        conditioning before and after.
+
+        This is a **conditioning** fix. It is not WSINDy and makes no
+        noise-robustness claim. The measured improvement is fixture-dependent:
+        across the six fixtures pinned in
+        ``tests/fixtures/v0_34c_conditioning_ratios.json`` the condition-number
+        ratio ranges 1.77x-66.75x with a median of 4.52x.
     """
     if not isinstance(task_name, str) or not task_name:
         raise SchemaValidationError("task_name must be a non-empty string.")
@@ -569,10 +633,6 @@ def inspect_pysindy_weak_pde_library(
     x_coord = np.asarray(field_batch.coords["x"], dtype=float)
     t_coord = np.asarray(field_batch.coords["time"], dtype=float)
 
-    library, spatiotemporal_grid = _build_weak_library(
-        config, x_coord=x_coord, t_coord=t_coord
-    )
-
     # Collapse the (batch, time, x, var=1) tensor into the (X, T, 1) input
     # PySINDy expects for spatiotemporal_grid of shape (X, T, 2).
     values = np.asarray(field_batch.values, dtype=float)
@@ -583,23 +643,31 @@ def inspect_pysindy_weak_pde_library(
     u_input = np.asarray(single.T[..., None], dtype=float)  # (X, T, 1)
     input_field_shape = list(u_input.shape)
 
-    # Fit the library on the input, then transform to get the weak matrix
-    # and target. All PySINDy warnings are silenced within this scope.
-    with _warnings.catch_warnings():
-        _warnings.simplefilter("ignore", category=UserWarning)
-        _warnings.simplefilter("ignore", category=DeprecationWarning)
-        try:
-            library.fit(u_input)
-            weak_matrix = np.asarray(library.transform(u_input), dtype=float)
-            weak_target = np.asarray(
-                library.convert_u_dot_integral(u_input), dtype=float
-            )
-            feature_names = list(library.get_feature_names())
-        except Exception as exc:
-            raise ScopeValidationError(
-                "PySINDy WeakPDELibrary fit/transform failed inside "
-                f"inspect_pysindy_weak_pde_library: {exc!s}"
-            ) from exc
+    # v0.34c: the library construction AND the fit both draw domain centers from
+    # the global NumPy RNG, so both must sit inside the seeded scope for the
+    # emitted diagnostic to be reproducible.
+    with _seeded_global_numpy_random(seed):
+        library, spatiotemporal_grid = _build_weak_library(
+            config, x_coord=x_coord, t_coord=t_coord
+        )
+
+        # Fit the library on the input, then transform to get the weak matrix
+        # and target. All PySINDy warnings are silenced within this scope.
+        with _warnings.catch_warnings():
+            _warnings.simplefilter("ignore", category=UserWarning)
+            _warnings.simplefilter("ignore", category=DeprecationWarning)
+            try:
+                library.fit(u_input)
+                weak_matrix = np.asarray(library.transform(u_input), dtype=float)
+                weak_target = np.asarray(
+                    library.convert_u_dot_integral(u_input), dtype=float
+                )
+                feature_names = list(library.get_feature_names())
+            except Exception as exc:
+                raise ScopeValidationError(
+                    "PySINDy WeakPDELibrary fit/transform failed inside "
+                    f"inspect_pysindy_weak_pde_library: {exc!s}"
+                ) from exc
 
     weak_matrix_shape = list(weak_matrix.shape)
     weak_target_shape = list(weak_target.shape)
@@ -659,6 +727,10 @@ def inspect_pysindy_weak_pde_library(
 
     library_configuration_payload = config.as_dict()
 
+    column_normalization_block: dict[str, Any] | None = None
+    if column_normalize:
+        column_normalization_block = summarize_column_normalization(weak_matrix)
+
     return summarize_pysindy_weak_pde_library_diagnostic(
         backend_version=backend_version,
         library_configuration=library_configuration_payload,
@@ -677,6 +749,7 @@ def inspect_pysindy_weak_pde_library(
         warnings=warnings_out,
         compatibility_notes=compatibility_notes,
         provenance=provenance,
+        column_normalization=column_normalization_block,
     )
 
 
