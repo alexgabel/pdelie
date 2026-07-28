@@ -1,0 +1,59 @@
+{
+  "summary_schema_version": "0.1",
+  "summary_type": "pdelie_column_normalization_conditioning_fixture",
+  "seed": 20340,
+  "seed_is_required_for_reproducibility": true,
+  "seed_rationale": "pysindy.WeakPDELibrary draws its K domain centers from the global NumPy RNG and exposes no seed parameter; without an explicit seed the diagnostic is nondeterministic and none of these values can be pinned.",
+  "minimum_improvement_ratio": 1.0,
+  "last_regeneration_reason": "v0.34c initial measurement at the fixed seed introduced by the seed kwarg; the planned 87x/111.8/3.77 figures were one draw from a nondeterministic process and are not reproducible.",
+  "fixtures": [
+    {
+      "name": "canonical",
+      "column_scale_ratio": 4.741152473894514,
+      "condition_number_before_normalization": 6.664284706987904,
+      "condition_number_after_normalization": 3.7262647597880645,
+      "condition_number_improvement_ratio": 1.7884624782719258,
+      "scaling_zero_column_count": 0
+    },
+    {
+      "name": "heat_short_horizon",
+      "column_scale_ratio": 4.580160013842841,
+      "condition_number_before_normalization": 8.695951552172525,
+      "condition_number_after_normalization": 3.6717637187582484,
+      "condition_number_improvement_ratio": 2.3683309216621935,
+      "scaling_zero_column_count": 0
+    },
+    {
+      "name": "heat_degree3",
+      "column_scale_ratio": 4.741152473894514,
+      "condition_number_before_normalization": 6.664284706987904,
+      "condition_number_after_normalization": 3.7262647597880645,
+      "condition_number_improvement_ratio": 1.7884624782719258,
+      "scaling_zero_column_count": 0
+    },
+    {
+      "name": "heat_derivative4",
+      "column_scale_ratio": 34.51904619233044,
+      "condition_number_before_normalization": 452.9713821387307,
+      "condition_number_after_normalization": 68.19782811263572,
+      "condition_number_improvement_ratio": 6.642020643100275,
+      "scaling_zero_column_count": 0
+    },
+    {
+      "name": "burgers",
+      "column_scale_ratio": 30.780281746761005,
+      "condition_number_before_normalization": 39.29753081657973,
+      "condition_number_after_normalization": 3.465325340255521,
+      "condition_number_improvement_ratio": 11.340213964926614,
+      "scaling_zero_column_count": 0
+    },
+    {
+      "name": "advection_diffusion",
+      "column_scale_ratio": 139.21302344517332,
+      "condition_number_before_normalization": 200.57484591762358,
+      "condition_number_after_normalization": 4.148907086546841,
+      "condition_number_improvement_ratio": 48.344019698103956,
+      "scaling_zero_column_count": 0
+    }
+  ]
+}
