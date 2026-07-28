@@ -213,13 +213,25 @@ New keys added inside `discovery_task_result.fit_diagnostics` (which is `dict[st
 
 This supersedes the drafted `mask_row_count` / `unmasked_row_count` pair, which are **not** shipped: they have no unambiguous meaning under the three-mask model, and v0.33c has not shipped, so there is no compatibility cost to dropping them before they exist.
 
+### Amended by measurement: rows are time samples, and placement is constrained
+
+**1. Design-matrix rows are TIME samples, not spatial points.** `to_pysindy_trajectories` emits `(num_times, num_points)` arrays in which each x point is a PySINDy **feature**. The three-mask decomposition therefore erodes along time, and the stencil in question is the model's temporal differentiation stencil (`FiniteDifference(order=2)` → half-width 1; an impulse at row *i* produces nonzero derivative at rows *i*±1).
+
+Measured, the nesting invariant `regression_row ⊆ derivative_validity ⊆ observation` holds across interior, leading, trailing, and scattered masks.
+
+**2. Masks that are not whole-time-row selections are rejected.** A row is observable only when every one of its (batch, x, var) cells is observed, so a single fully-masked x column drives the observation row count to **zero** — measured. Dropping a masked x column is *feature* removal, which would change the model shape, `feature_names`, and the coefficient dimensions. `ScopeValidationError` names the offending time indices and explains why. This narrows v0.33c's mask support to **temporal masks**.
+
+**3. The correct path requires precomputed `x_dot`.** Differentiating a row-selected array computes a derivative across the removed rows — the exact leakage being closed; measured at 7.2e-5 relative on smooth heat data. PySINDy 2.1 accepts `x_dot` on `fit`, so the task differentiates on the full trajectory and row-selects both `x` and `x_dot` afterwards. This required plumbing `x_dot` through `fit_pysindy_discovery`, a file the draft's list omitted.
+
+**4. Diagnostics placement was constrained from three sides.** `discovery_task_result` has exactly 22 top-level keys and **no top-level `fit_diagnostics`**; the only `fit_diagnostics` lives inside `underlying_discovery_result`, which `docs/specs/API_STABILITY.md` guarantees is embedded verbatim. The draft's stated location does not exist. Resolution: a single namespaced key `fit_diagnostics["pdelie_mask_diagnostics"]`, with the verbatim guarantee narrowed to exclude exactly that key. The 22-key invariant is preserved and the guard still covers every backend-native field.
+
 ### Spectral derivatives on partially-observed fields are hard-rejected
 
 A spectral derivative is globally coupled: every output point depends on every input point through the FFT. On a partially-observed field this leaks unobserved values back into rows the mask declares "observed," which is precisely what the mask contract exists to prevent — and it does so invisibly, since the output array is fully populated and finite.
 
-`run_pysindy_pde_task` therefore raises `ScopeValidationError` when a field carries a mask **and** the resolved derivative backend is `spectral_fd`. This is a hard rejection, not a warning: there is no correct way to interpret the resulting design matrix, so silently accepting it would produce a confidently wrong answer. Callers on masked data must use the finite-difference backend, whose stencil footprint is local and therefore erodible in a well-defined way — which is exactly what the derivative-validity mask records.
+`run_pysindy_pde_task` therefore raises `ScopeValidationError` when a field carries a mask **and** the differentiation method is spectral. This is a hard rejection, not a warning: there is no correct way to interpret the resulting design matrix, so silently accepting it would produce a confidently wrong answer. Callers on masked data must use a finite-difference method, whose stencil footprint is local and therefore erodible in a well-defined way — which is exactly what the derivative-validity mask records.
 
-Note this interacts with `compute_derivatives(backend="auto")`, which selects `spectral_fd` for periodic data. A masked periodic field consequently hits the rejection; the caller must request `finite_difference` explicitly. That is the intended behaviour, not an oversight.
+**Correction (v0.33c implementation).** The scope amendment described this check as firing when "the resolved derivative backend is `spectral_fd`", and noted a consequence for masked *periodic* fields via `compute_derivatives(backend="auto")`. That was wrong: **`compute_derivatives` is never called in `run_pysindy_pde_task`** — PDELie's backend resolution is not in this code path at all. Differentiation is performed by the caller's `pysindy_model.differentiation_method`. The check therefore inspects the caller's model and fires on `pysindy.SpectralDerivative`. The hazard and the policy are unchanged; only the detection point differs, and the `backend="auto"` consequence does not apply here.
 
 ### Non-goals for v0.33c
 

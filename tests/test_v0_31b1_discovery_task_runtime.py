@@ -16,6 +16,7 @@ memo review flagged as absent in v0.31a.
 
 from __future__ import annotations
 
+from copy import deepcopy
 from typing import Any
 from unittest.mock import MagicMock
 
@@ -31,6 +32,7 @@ from pdelie.tasks.discovery import (
     _SUMMARY_TYPE,
     _TASK_RESULT_TOP_LEVEL_KEYS,
     _UNDERLYING_KEY,
+    PDELIE_MASK_DIAGNOSTICS_KEY,
     PySINDyDiscoveryUnsupportedBoundaryError,
     run_pysindy_pde_task,
     summarize_discovery_task_result,
@@ -212,12 +214,18 @@ def test_all_required_sibling_fields_are_present() -> None:
 
 
 def test_underlying_discovery_result_is_embedded_verbatim() -> None:
-    """The embedded payload equals ``summarize_discovery_result`` byte-for-byte.
+    """The embedded payload equals ``summarize_discovery_result`` byte-for-byte,
+    except for the single namespaced v0.33c key.
 
     The task runtime composes with the existing v0.22 summarizer as a sibling
     wrapper. Any divergence between the embedded payload and a freshly-computed
     ``summarize_discovery_result`` on the same inputs indicates the composition
     is silently rewriting the sibling.
+
+    v0.33c narrowing: the task attaches its mask diagnostics under exactly one
+    namespaced key, ``fit_diagnostics["pdelie_mask_diagnostics"]``. That key is
+    stripped before comparison so the guard still covers every backend-native
+    field; nothing else in the sibling may be rewritten.
     """
     run = _run_live_task()
     field = run["field"]
@@ -237,7 +245,13 @@ def test_underlying_discovery_result_is_embedded_verbatim() -> None:
     # Fit determinism: PySINDy's FiniteDifference + STLSQ is deterministic for
     # a fixed seed / dataset, so the embedded payload should equal a fresh
     # summarization of a fresh fit on the same trajectories.
-    assert run["result"][_UNDERLYING_KEY] == expected_underlying
+    embedded = deepcopy(run["result"][_UNDERLYING_KEY])
+    namespaced = embedded.get("fit_diagnostics", {}).pop(
+        PDELIE_MASK_DIAGNOSTICS_KEY, None
+    )
+    # The namespaced block must be present and must be the ONLY difference.
+    assert namespaced is not None
+    assert embedded == expected_underlying
 
 
 def test_pysindy_bridge_variant_is_periodic_only_v1() -> None:

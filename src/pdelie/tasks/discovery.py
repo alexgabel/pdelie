@@ -34,6 +34,7 @@ return.
 from __future__ import annotations
 
 import importlib.metadata as _importlib_metadata
+import warnings as _warnings
 from collections.abc import Mapping, Sequence
 from typing import Any, cast
 
@@ -657,6 +658,127 @@ def _compute_residual_over_trajectories(
 # ---------------------------------------------------------------------------
 
 
+#: v0.33c: the single namespaced key under which pdelie-level mask diagnostics
+#: are attached to the embedded backend summary. Everything outside this key in
+#: ``underlying_discovery_result`` remains the backend's own output, verbatim.
+PDELIE_MASK_DIAGNOSTICS_KEY = "pdelie_mask_diagnostics"
+
+#: v0.33c mask-application stages.
+MASK_APPLICATION_BEFORE = "before_differentiation"
+MASK_APPLICATION_AFTER = "after_differentiation"
+MASK_APPLICATION_NONE = "none"
+ALLOWED_MASK_APPLICATIONS = frozenset({MASK_APPLICATION_BEFORE, MASK_APPLICATION_AFTER})
+
+
+def _time_row_observation_mask(field: FieldBatch) -> np.ndarray:
+    """Reduce the elementwise mask to a per-time-row observation mask.
+
+    This bridge maps each x point to a **feature** and each time step to a
+    design-matrix **row** (see ``to_pysindy_trajectories``), so a row is
+    observable only when every one of its (batch, x, var) cells is observed.
+    """
+    num_times = int(field.values.shape[field.dims.index("time")])
+    if field.mask is None:
+        return np.ones(num_times, dtype=bool)
+    return np.asarray(field.mask, dtype=bool).all(axis=(0, 2, 3))
+
+
+def _validate_mask_is_whole_time_row_selection(field: FieldBatch) -> None:
+    """Reject masks that cannot be expressed as a whole-time-row selection.
+
+    A mask that removes some but not all cells of a time row is a *feature*
+    removal in this bridge, not a row selection: dropping an x point would
+    change the model shape, ``feature_names``, and the coefficient dimensions.
+    Silently keeping such a row would hand the optimizer a row whose declared
+    mask and actual contents disagree, which is exactly what the mask contract
+    exists to prevent -- so it is refused rather than approximated.
+    """
+    if field.mask is None:
+        return
+    mask = np.asarray(field.mask, dtype=bool)
+    fully_observed = mask.all(axis=(0, 2, 3))
+    fully_masked = (~mask).all(axis=(0, 2, 3))
+    partial = ~(fully_observed | fully_masked)
+    if bool(partial.any()):
+        offending = np.flatnonzero(partial)[:5].tolist()
+        raise ScopeValidationError(
+            "run_pysindy_pde_task supports masks that select whole time rows. "
+            f"Time indices {offending} are partially masked. This bridge maps each "
+            "x point to a PySINDy feature and each time step to a design-matrix "
+            "row, so a partial (spatial) mask is feature removal, not row "
+            "selection: honoring it would change the model shape, feature_names, "
+            "and coefficient dimensions. Mask whole time rows, or drop the "
+            "unwanted x points from the FieldBatch before calling."
+        )
+
+
+def _derivative_validity_mask(
+    observation: np.ndarray, *, stencil_half_width: int
+) -> np.ndarray:
+    """Erode the observation mask by the differentiation stencil footprint.
+
+    A row is derivative-valid only when its own value and its full stencil
+    footprint are observed. Nesting
+    (``derivative_validity`` subset of ``observation``) holds by construction
+    and is asserted in the v0.33c tests.
+    """
+    num_rows = observation.size
+    valid = np.zeros(num_rows, dtype=bool)
+    for index in range(num_rows):
+        if not observation[index]:
+            continue
+        low = max(0, index - stencil_half_width)
+        high = min(num_rows, index + stencil_half_width + 1)
+        valid[index] = bool(observation[low:high].all())
+    return valid
+
+
+def _resolve_stencil_half_width(pysindy_model: Any) -> int:
+    """Half-width of the model's temporal differentiation stencil.
+
+    ``FiniteDifference(order=k)`` uses a centered stencil of half-width
+    ``k // 2`` (order 2 -> 1). Unknown methods fall back to 1, the narrowest
+    non-trivial footprint, which is the conservative choice for *reporting*;
+    the globally-coupled spectral case is rejected outright before reaching here.
+    """
+    method = getattr(pysindy_model, "differentiation_method", None)
+    order = getattr(method, "order", None)
+    if isinstance(order, int) and order >= 2:
+        return max(1, order // 2)
+    return 1
+
+
+def _reject_spectral_differentiation_on_masked_field(
+    field: FieldBatch, pysindy_model: Any
+) -> None:
+    """Hard-reject globally-coupled differentiation on partially-observed data.
+
+    A spectral derivative couples every output row to every input row, so on a
+    masked field it leaks unobserved values into rows the mask declares
+    observed -- invisibly, since the output array is fully populated and finite.
+    There is no correct interpretation of the resulting design matrix, so this
+    is a rejection rather than a warning.
+
+    Note the check inspects the **caller's model**. PDELie's own
+    ``compute_derivatives`` backend resolution is not in this code path; the
+    differentiation here is performed by ``pysindy_model.differentiation_method``.
+    """
+    if field.mask is None:
+        return
+    method = getattr(pysindy_model, "differentiation_method", None)
+    if method is None:
+        return
+    if type(method).__name__ == "SpectralDerivative":
+        raise ScopeValidationError(
+            "run_pysindy_pde_task refuses a masked FieldBatch with a spectral "
+            "differentiation method. Spectral differentiation is globally "
+            "coupled: every output row depends on every input row, so it leaks "
+            "unobserved values into rows the mask declares observed. Use a "
+            "finite-difference differentiation method, whose stencil footprint "
+            "is local and therefore erodible in a well-defined way."
+        )
+
+
 def run_pysindy_pde_task(
     field: FieldBatch,
     *,
@@ -668,6 +790,7 @@ def run_pysindy_pde_task(
     backend_version: Mapping[str, str] | None = None,
     warnings: Sequence[str] = (),
     support_epsilon: float = 1e-8,
+    mask_application: str = MASK_APPLICATION_AFTER,
 ) -> dict[str, Any]:
     """Run a PySINDy-backed PDE discovery task and return a ``discovery_task_result``.
 
@@ -716,16 +839,102 @@ def run_pysindy_pde_task(
             "FD-nonperiodic extension is explicitly deferred to v0.32.5+."
         )
 
+    if mask_application not in ALLOWED_MASK_APPLICATIONS:
+        raise ScopeValidationError(
+            f"mask_application must be one of {sorted(ALLOWED_MASK_APPLICATIONS)}; "
+            f"got {mask_application!r}."
+        )
+
+    # v0.33c: all mask validation fires before any differentiation or fitting.
+    _validate_mask_is_whole_time_row_selection(field)
+    _reject_spectral_differentiation_on_masked_field(field, pysindy_model)
+
     # Layer 2 (existing) periodic-only enforcement lives inside to_pysindy_trajectories.
     trajectories, time_values, feature_names = to_pysindy_trajectories(field)
 
+    observation_mask = _time_row_observation_mask(field)
+    stencil_half_width = _resolve_stencil_half_width(pysindy_model)
+    full_row_count = int(observation_mask.size)
+
+    if field.mask is None:
+        mask_application_stage = MASK_APPLICATION_NONE
+        derivative_validity_mask = observation_mask
+    else:
+        mask_application_stage = mask_application
+        if mask_application == MASK_APPLICATION_AFTER:
+            derivative_validity_mask = _derivative_validity_mask(
+                observation_mask, stencil_half_width=stencil_half_width
+            )
+        else:
+            # Legacy path: the mask is applied before differentiation, so the
+            # derivative stencil then reaches across the removed rows and widens
+            # the effective mask beyond what the caller declared.
+            derivative_validity_mask = observation_mask
+            _warnings.warn(
+                "mask_application='before_differentiation' applies the mask "
+                "before the derivative is computed, so the differentiation "
+                "stencil reaches across the removed rows and the row-set the "
+                "optimizer sees no longer matches the row-set the mask "
+                "declares. This is a leakage risk; "
+                "'after_differentiation' (the default) is correct by "
+                "construction. Retained as opt-in for reproducibility.",
+                UserWarning,
+                stacklevel=2,
+            )
+
+    regression_row_mask = derivative_validity_mask
+    regression_rows = np.flatnonzero(regression_row_mask)
+
+    precomputed_x_dot: np.ndarray | None = None
+    fit_trajectories = trajectories
+    fit_time_values = time_values
+    if field.mask is not None and mask_application == MASK_APPLICATION_AFTER:
+        # Differentiate on the FULL trajectory, then row-select both x and
+        # x_dot. Selecting first and differentiating after would compute the
+        # derivative across the removed rows -- the leakage being closed.
+        method = getattr(pysindy_model, "differentiation_method", None)
+        if method is not None and len(trajectories) == 1:
+            full_x_dot = np.asarray(method(trajectories[0], time_values), dtype=float)
+            precomputed_x_dot = full_x_dot[regression_rows]
+            fit_trajectories = [trajectories[0][regression_rows]]
+            fit_time_values = time_values[regression_rows]
+    elif field.mask is not None:
+        fit_trajectories = [trajectory[regression_rows] for trajectory in trajectories]
+        fit_time_values = time_values[regression_rows]
+
     # Fit through the (loosened in v0.31b1) adapter with the caller-configured model.
     result_dict = fit_pysindy_discovery(
-        trajectories,
-        time_values,
+        fit_trajectories,
+        fit_time_values,
         feature_names,
         pysindy_model=pysindy_model,
+        x_dot=precomputed_x_dot,
     )
+
+    # v0.33c mask diagnostics, under a single namespaced key.
+    #
+    # Placement is constrained from three sides: discovery_task_result has
+    # exactly 22 top-level keys and no top-level ``fit_diagnostics``; the only
+    # ``fit_diagnostics`` lives inside ``underlying_discovery_result``, which
+    # ``docs/specs/API_STABILITY.md`` guarantees is embedded verbatim. Namespacing
+    # under one key keeps the 22-key invariant intact and confines the addition
+    # to a single auditable entry, so the verbatim guard still covers every
+    # backend-native field.
+    existing_fit_diagnostics = dict(
+        cast(Mapping[str, Any], result_dict.get("fit_diagnostics", {}))
+    )
+    existing_fit_diagnostics[PDELIE_MASK_DIAGNOSTICS_KEY] = {
+        "mask_application_stage": mask_application_stage,
+        "observation_mask_row_count": int(observation_mask.sum()),
+        "derivative_validity_mask_row_count": int(derivative_validity_mask.sum()),
+        "regression_row_mask_row_count": int(regression_row_mask.sum()),
+        "mask_row_count_reduction_from_derivative_stencil": int(
+            observation_mask.sum() - derivative_validity_mask.sum()
+        ),
+        "unmasked_row_count": full_row_count,
+        "derivative_stencil_half_width": int(stencil_half_width),
+    }
+    result_dict["fit_diagnostics"] = existing_fit_diagnostics
 
     if result_dict.get("status") != "success":
         raise SchemaValidationError(
