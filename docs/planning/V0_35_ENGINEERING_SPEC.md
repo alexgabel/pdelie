@@ -347,6 +347,45 @@ Two reasons this is v0.35a's own work rather than a borrowed input:
 
 **A-4 · Degenerate cases return documented sentinels.** Precedent for the shape: `column_normalize_design_matrix` sets zero-norm column scale to `1.0` and *reports* `scaling_zero_column_count` rather than dividing by zero. `ρ_IR` with `support = all indices` must return a documented sentinel with a warning — never `NaN`, never a silent `inf`.
 
+### 5.2a v0.35c gate results — **all four passed; C-2 and C-3 changed the contract** ✅
+
+Run 2026-07-29 before implementation.
+
+| Gate | Outcome |
+|---|---|
+| **C-1** | Hand-rolled Householder pivoted QR matches `scipy.linalg.qr(pivoting=True)` **on 8/8 canonical matrices** — including rank-deficient, tied-norm, graded-scale, wide, and the real weak-form matrix. Tie-break is lowest-index-first and agrees with SciPy. Deterministic across 5 repeat runs on every case. |
+| **C-2** | Exchange is **repeat-stable** (no hidden RNG) but **start-dependent**: 5 random starts reached **4–5 distinct optima** on all three matrices. |
+| **C-3** | QR-pivot and D-optimal each beat **100%** of 40 random draws. **Leverage beat 8%** — worse than random. |
+| **C-4** | Exchange converges in **0–1 iterations** from the QR start at n_rows = 50/200/800. The iteration cap is not load-bearing. |
+
+**C-1 finding — the norm-downdate safeguard is load-bearing, not boilerplate.** Across twelve adversarial matrices (Kahan, high-order Hilbert, near-dependent blocks) it changed the permutation in **eight**, and in every one the *guarded* result matched the oracle while the unguarded result did not. Requirement #2 in the C-1 resolution is now empirically justified rather than cited from a textbook.
+
+**C-1 finding — the SciPy agreement has a boundary, and the spec should not have implied otherwise.** On the Kahan matrix — built specifically to defeat column pivoting, with *every* column norm exactly 1.0 — agreement holds through order 28 and breaks at 30 and above. There the late pivots are separated by rounding rather than signal, and the two implementations break a genuine tie differently. **The selection is not worse:** condition number is identical (1.4008e+05 at order 30). The frozen claim is therefore "matches SciPy where pivoting has signal to act on", tested at both ends.
+
+**C-2 finding — the starting set is part of the contract.** The exchange has no RNG and is repeat-stable, so it *looks* deterministic. But it is a local search, and measured across three matrices × five random starts it reached four to five distinct optima depending only on where it began:
+
+| matrix | distinct optima from 5 random starts |
+|---|---|
+| canonical weak matrix (16×5) | **4** |
+| random 40×6 | **5** |
+| Hilbert(12) | **5** |
+
+**Frozen:** `initial_rows` defaults to the deterministic `qr_pivot` selection, never a random subset, and the resolved start is reported as `initial_row_indices` / `initial_rows_source` so any result can be reproduced. This is the same class of finding as v0.34c — a function that looks deterministic and whose output silently depends on something unstated.
+
+**C-3 finding — one of the three methods is not a conditioning method.** Against 40 random draws per matrix:
+
+| method | canonical weak matrix | random 40×6 |
+|---|---|---|
+| `qr_pivot` | cond 5513 — beats **100%** | cond 3.201 — beats **100%** |
+| `d_optimal_exchange` | cond 5513 — beats **100%** | cond 3.201 — beats **100%** |
+| `leverage` | cond 2.52e+05 — beats **8%** | cond 5.334 — beats 98% |
+
+Random median on the weak matrix is 4.52e+04, so leverage selection is **worse than a coin flip** there. It answers a different question — which rows individually carry the most influence — and the report now carries `leverage_selection_does_not_target_conditioning` so a reader cannot assume all three methods share an objective.
+
+**Frozen threshold:** `qr_pivot` and `d_optimal_exchange` must beat the **random median** over ≥40 draws — a distributional claim, not a fixed ratio and not a single draw. A fixed "≥20× reduction" would have been unmeetable on the weak matrix and trivially met on others, exactly the v0.34c trap.
+
+**C-4 finding — maximizing the determinant is not minimizing the condition number.** On a 200×5 matrix the exchange improved log-det while leaving a slightly *worse* condition number (2.499) than its QR starting point (2.384). Expected — the objectives differ — and now documented rather than left for a user to discover.
+
 ### 5.2 v0.35c gates — detail
 
 > ### C-1 — **RESOLVED at day 0: hand-roll the pivoted QR** ✅
