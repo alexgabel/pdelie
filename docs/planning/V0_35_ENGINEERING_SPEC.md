@@ -267,6 +267,53 @@ No sub-milestone may freeze its contract until its gates pass. Gates produce **n
              measurement, it does NOT get waived
 ```
 
+### 5.1a v0.35a gate results — **all four passed, three changed the contract** ✅
+
+Run 2026-07-29 before any implementation. Recorded here because the numbers are the contract.
+
+| Gate | Outcome |
+|---|---|
+| **A-1** | Four metrics computed by two independent routes on five canonical matrices. Agreement ≤ 6e-15 everywhere **except leverage** — see below. Closed forms confirmed: `coherence(I₄) = 0`, `leverage(I₄) = 1` everywhere, `RE(I₄, S={0,1}) = 1/4`, `Σhᵢ = rank` on all five. |
+| **A-2** | Canonical matrix built at `seed=20340`: **16×5, rank 5, cond 5232.86**. Bit-identical across two builds; `seed+1` gives cond 5945.46, confirming the seed is load-bearing. `.npz` round-trips bit-identically. Landed as `tests/fixtures/v0_35a_canonical_design_matrix.npz`. |
+| **A-3** | **Two of the four metrics are scale-dependent, and the verdict moves with them.** See below. |
+| **A-4** | Four degenerate cases found that returned well-formed wrong answers. See below. |
+
+**A-1 finding — the hat-matrix route for leverage is not merely imprecise, it is wrong.** On a square full-rank matrix every leverage is exactly 1.0. Measured error against that analytic value:
+
+| matrix | cond(A) | `diag(A(AᵀA)⁻¹Aᵀ)` | thin-SVD route |
+|---|---|---|---|
+| Hilbert(5) | 4.766e+05 | 1.387e-06 | 8.882e-16 |
+| Hilbert(8) | 1.526e+10 | **5.634e-01** | 6.661e-16 |
+| Hilbert(10) | 1.603e+13 | **6.258e-01** | 4.441e-16 |
+
+An error of 0.56 on a quantity bounded in `[0,1]`. Forming `AᵀA` squares the condition number. **Frozen: thin SVD, never the hat matrix**, with a parametrized regression test over all three sizes.
+
+**A-3 finding — the scale-dependence flips the science.** On the canonical matrix, whose column norms span 1158×:
+
+| metric | raw | column-normalized | arbitrary rescale |
+|---|---|---|---|
+| mutual coherence | 0.9084512121 | 0.9084512121 | 0.9084512121 |
+| max leverage | 0.9640848878 | 0.9640848878 | 0.9640848878 |
+| irrepresentability | 1.129160013 | 2.742717168 | **0.2955377896** |
+| restricted eigenvalue | 8.556977e-10 | 6.509027e-03 | 6.899429e-08 |
+
+Coherence and leverage are scale-invariant. The other two are not — and an arbitrary but perfectly legitimate rescaling carries the irrepresentability constant **across the 1.0 threshold**, turning "recovery not guaranteed" into "recovery guaranteed" on identical data. A diagnostic whose conclusion depends on an unstated scaling is worse than none.
+
+**Frozen: every metric is computed on the column-normalized matrix (`‖aⱼ‖₂ = 1`), reported in every payload as `column_scaling`.** Implemented by reusing v0.34c's `column_normalize_design_matrix`, verified **bit-identical** (0.000e+00) to a hand-written normalization. The `‖aⱼ‖₂ = √n` convention differs by exactly `n`; the payload carries `sqrt_n_convention_multiplier` rather than auto-dispatching.
+
+**A-4 findings — four silent-wrong-answer paths, now sentinels:**
+
+| Case | Measured behaviour | Resolution |
+|---|---|---|
+| support = ∅ | summed over an empty axis → **0.0**, reads as "perfectly recoverable" | `ScopeValidationError` — there is no condition to report |
+| support = all columns | no columns outside the support | `metric_value = None` + `irrepresentability_support_covers_all_columns` |
+| rank-deficient support | `lstsq` silently returned the minimum-norm solution → **0.4956551696**, reads as "recovery guaranteed" from a singular system | `metric_value = None` + `irrepresentability_support_is_rank_deficient` |
+| degenerate vs merely ill-conditioned RE | both near zero (0.0 vs 2.162100e-12) — indistinguishable by value | rank check emits `restricted_eigenvalue_support_is_rank_deficient` |
+
+The third is the dangerous one: a finite, plausible, sub-threshold number from a system that determines nothing.
+
+**Scientific note.** On the canonical weak-form matrix the irrepresentability constant is **2.74 > 1** — Lasso support recovery is *not* guaranteed on that design. That is a property of the matrix worth reporting, not a defect.
+
 ### 5.1 v0.35a gates — detail
 
 **A-1 · Hand-computation is the gate, not library agreement.** The team's instruction is right and the reason is worth stating: freezing against library output means a NumPy release can silently move the "reference." Compute ρ_IR, leverage, coherence, and RE **by hand** (or by an independent symbolic route) on:
