@@ -323,11 +323,42 @@ def test_restricted_eigenvalue_never_reports_a_negative_value() -> None:
 # --- A-2: the canonical fixture --------------------------------------------
 
 
-def test_fixture_reloads_bit_identically_to_a_fresh_build() -> None:
+def test_fixture_reloads_bit_identically_from_disk() -> None:
+    """The .npz round-trip is a pure file operation and IS bit-exact."""
+    first = load_fixture()["design_matrix"]
+    second = load_fixture()["design_matrix"]
+    assert np.array_equal(first, second)
+    assert first.dtype == np.float64
+
+
+def test_fresh_build_reproduces_the_fixture_within_cross_platform_tolerance() -> None:
+    """A rebuild matches the committed fixture, but NOT bit-for-bit.
+
+    The fixture was generated on macOS and is replayed on manylinux, where a
+    different BLAS orders floating-point reductions differently. Asserting
+    ``array_equal`` here passed locally and failed on both CI Python versions --
+    the same mistake v0.33e made and the reason the repo's standing invariant
+    forbids comparing a pinned numeric artifact with ``==``.
+
+    The rebuild is checked at the repo-wide ``rtol=1e-6`` floor instead, and the
+    observed drift is asserted to stay far below it so a real regression cannot
+    hide inside the tolerance.
+    """
     fixture = load_fixture()
     rebuilt, _target, names = build_design_matrix()
-    assert np.array_equal(fixture["design_matrix"], rebuilt)
+
     assert fixture["feature_names"] == names
+    assert rebuilt.shape == fixture["design_matrix"].shape
+    assert np.allclose(fixture["design_matrix"], rebuilt, rtol=RTOL, atol=1e-12)
+
+    # Margin check: the drift must not be doing the work the tolerance is there
+    # for. A genuine regression is O(1) relative, so a 10x margin below the gate
+    # detects one just as well as a tighter bound while leaving room for BLAS
+    # variation this platform cannot measure. The comparable v0.33e golden
+    # metrics hold at 1.5e-9 cross-platform, four orders inside this bound.
+    scale = np.abs(fixture["design_matrix"]).max()
+    drift = float(np.abs(fixture["design_matrix"] - rebuilt).max() / scale)
+    assert drift < RTOL / 10.0, f"relative drift {drift:.3e} is close to the tolerance"
 
 
 def test_fixture_properties_match_the_pinned_values() -> None:
