@@ -17,8 +17,8 @@ else:
 project = "PDELie"
 author = "Alex Gabel"
 copyright = f"{datetime.now(tz=UTC).date().year}, {author}"
-release = "0.34.0"
-version = "0.34"
+release = "0.35.0"
+version = "0.35"
 
 extensions = [
     "myst_parser",
