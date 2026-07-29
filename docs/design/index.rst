@@ -9,6 +9,7 @@ Once a design is implemented and validated it is folded into the specs.
    :maxdepth: 1
 
    BOUNDARY_CONDITION_SPEC
+   COEFFICIENT_FIELD_DEFERRAL
    DERIVATIVE_BACKEND_POLICY
    DISCOVERY_TASK_RESULT_SCHEMA
    GENERATOR_CONFIDENCE_ADDITIVE_FIELDS

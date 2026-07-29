@@ -50,6 +50,23 @@ For nontrivial changes:
 
 Do not conflate report-only diagnostics with policy. PDELie may summarize readiness, confidence, provenance, and downstream contracts, but it does not decide benchmark success, train/test validity, or manuscript claims.
 
+### Deleting merged branches — verify by patch identity, not by diff
+
+Sub-milestone branches are **squash-merged**, so a merged branch is never an ancestor of `main` and its tip commit SHA never appears in `main`'s history. Two common checks give the wrong answer here:
+
+- `git branch --merged` omits squash-merged branches entirely — they look unmerged.
+- `git diff main..<branch>` is actively misleading. It reports `main`'s *subsequent* work as deletions on the branch side. A fully-merged `feat/v0.34a` showed **24 files changed, 1322 deletions** against `main` — none of it unmerged work, all of it later milestones read backwards.
+
+Use patch identity instead. `git cherry` marks a commit `-` when an equivalent patch already exists upstream, which is exactly the squash-merge case:
+
+```bash
+git fetch origin main
+git cherry -v origin/main <branch>     # every line starts with '-'  ->  safe to delete
+                                       # any line starts with '+'    ->  unique work, stop
+```
+
+Delete only when **every** line is `-`. Branches named `backup/*` or carrying unique commits are audited individually rather than swept — those names usually indicate a deliberate stash.
+
 ## Useful Commands
 
 Install the test environment:

@@ -79,7 +79,10 @@ def test_pyproject_has_coverage_sections_with_expected_shape() -> None:
 
 def test_pyproject_test_extras_include_ruff_mypy_pytest_cov() -> None:
     test_deps = _pyproject()["project"]["optional-dependencies"]["test"]
-    names = [re.split(r"[<>=; ]", dep, maxsplit=1)[0].lower() for dep in test_deps]
+    # Split on the full PEP 440/508 operator set. The previous class omitted
+    # "~" and "!", so a compatible-release pin ("ruff~=0.16.0") parsed as the
+    # name "ruff~" and this guard failed on a correctly-specified dependency.
+    names = [re.split(r"[<>=!~; ]", dep, maxsplit=1)[0].lower() for dep in test_deps]
     assert "ruff" in names
     assert "mypy" in names
     assert "pytest-cov" in names
