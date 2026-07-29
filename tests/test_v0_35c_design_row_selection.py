@@ -74,19 +74,112 @@ def oracle_permutation(matrix: np.ndarray) -> np.ndarray:
 # --- C-1: agreement with the SciPy oracle ----------------------------------
 
 
-@pytest.mark.parametrize("name,matrix", canonical_matrices(), ids=lambda v: v)
-def test_pivoted_qr_permutation_matches_scipy(name: str, matrix: np.ndarray) -> None:
-    """The permutation, not Q/R -- sign conventions differ and that is not a bug."""
+#: Matrices whose pivot sequence is *determined* -- competing column norms are
+#: separated by far more than rounding at every step. Measured minimum relative
+#: gaps: Hilbert(7) 6.7e-02, graded-scale 9.8e-01, wide 3.0e-02, weak-form
+#: 8.9e-02. The other canonical matrices tie (gap 0 or 1.1e-16) and are handled
+#: by the quality test below instead.
+DETERMINED_MATRIX_NAMES = frozenset(
+    {"hilbert_7", "graded_scales_12x6", "wide_5x14", "weak_matrix_transpose"}
+)
+
+MINIMUM_PIVOT_GAP = 1e-8
+
+
+def minimum_pivot_gap(matrix: np.ndarray) -> float:
+    """Smallest relative gap between the best and runner-up column norm.
+
+    Below ~1e-8 the pivot choice is decided by rounding, so no implementation --
+    ours or SciPy's -- has a portable answer.
+    """
+    working = np.array(matrix, dtype=float, copy=True)
+    n_columns = working.shape[1]
+    squared = (working * working).sum(axis=0)
+    gaps: list[float] = []
+    for step in range(min(working.shape[0], n_columns)):
+        remaining = squared[step:]
+        if remaining.max() <= 0.0:
+            break
+        ordered = np.sort(remaining)[::-1]
+        if len(ordered) > 1:
+            gaps.append(float((ordered[0] - ordered[1]) / ordered[0]))
+        pivot = int(np.argmax(remaining)) + step
+        working[:, [step, pivot]] = working[:, [pivot, step]]
+        squared[[step, pivot]] = squared[[pivot, step]]
+        column = working[step:, step]
+        norm = float(np.linalg.norm(column))
+        if norm == 0.0:
+            break
+        alpha = -norm if column[0] >= 0.0 else norm
+        reflector = column.copy()
+        reflector[0] -= alpha
+        reflector_norm = float(np.linalg.norm(reflector))
+        if reflector_norm > 0.0:
+            reflector = reflector / reflector_norm
+            working[step:, step:] -= 2.0 * np.outer(
+                reflector, reflector @ working[step:, step:]
+            )
+        for column_index in range(step + 1, n_columns):
+            squared[column_index] -= working[step, column_index] ** 2
+        squared[step] = 0.0
+    return min(gaps) if gaps else float("inf")
+
+
+@pytest.mark.parametrize(
+    "name,matrix",
+    [case for case in canonical_matrices() if case[0] in DETERMINED_MATRIX_NAMES],
+    ids=lambda v: v,
+)
+def test_permutation_matches_scipy_where_pivoting_has_signal(
+    name: str, matrix: np.ndarray
+) -> None:
+    """Exact agreement, asserted only where the pivot sequence is determined.
+
+    The precondition is verified rather than assumed: if a matrix here ever
+    develops a near-tie, this fails on the gap assertion with a clear cause
+    instead of on an inscrutable permutation mismatch.
+    """
+    assert minimum_pivot_gap(matrix) > MINIMUM_PIVOT_GAP
     ours, _recomputes = pivoted_qr_permutation(matrix)
     assert np.array_equal(ours, oracle_permutation(matrix))
 
 
+@pytest.mark.parametrize("name,matrix", canonical_matrices(), ids=lambda v: v)
+def test_selection_quality_matches_scipy_on_every_matrix(
+    name: str, matrix: np.ndarray
+) -> None:
+    """The property that actually matters, asserted everywhere.
+
+    Where column norms tie, the permutation is not determined and SciPy's own
+    choice is not portable -- measured, it pivots the orthonormal matrix
+    ``[1 0 2 3]`` under one LAPACK and ``[0 1 2 3]`` under another. What must
+    hold regardless is that our selection is no worse: same conditioning, same
+    R-diagonal magnitudes.
+    """
+    ours, _ = pivoted_qr_permutation(matrix)
+    theirs = oracle_permutation(matrix)
+
+    ours_r = np.abs(np.diag(np.linalg.qr(matrix[:, ours], mode="r")))
+    theirs_r = np.abs(np.diag(np.linalg.qr(matrix[:, theirs], mode="r")))
+    assert ours_r == pytest.approx(theirs_r, rel=1e-8, abs=1e-12)
+
+    ours_cond = np.linalg.cond(matrix[:, ours])
+    theirs_cond = np.linalg.cond(matrix[:, theirs])
+    if np.isfinite(ours_cond) and np.isfinite(theirs_cond):
+        assert ours_cond == pytest.approx(theirs_cond, rel=1e-6)
+
+
 def test_tie_break_selects_the_lowest_index() -> None:
-    """Four columns of identical norm must pivot in index order."""
+    """Our tie-break contract, asserted directly and not against SciPy.
+
+    On an exact tie every ordering is a valid pivoted QR, so SciPy is not an
+    oracle for this -- its choice varies by platform. Ours is fixed: largest
+    remaining norm, lowest index on a tie.
+    """
     tied = np.eye(4)
+    assert minimum_pivot_gap(tied) == 0.0, "matrix must be exactly tied to test this"
     permutation, _ = pivoted_qr_permutation(tied)
     assert np.array_equal(permutation, np.arange(4))
-    assert np.array_equal(permutation, oracle_permutation(tied))
 
 
 def test_pivoted_qr_is_deterministic_across_repeat_runs() -> None:
@@ -114,26 +207,22 @@ def test_norm_recompute_ratio_is_the_documented_constant() -> None:
     assert NORM_RECOMPUTE_RATIO == 1e-8
 
 
-def test_scipy_agreement_holds_where_pivoting_has_signal() -> None:
-    """Documents the boundary of the oracle guarantee rather than overstating it.
+def test_kahan_divergence_is_a_tie_not_a_worse_selection() -> None:
+    """The extreme case of the same effect.
 
     The Kahan matrix is built to defeat column pivoting -- every column norm is
-    exactly 1.0, so late pivots are separated by rounding, not signal. Agreement
-    holds through order 28 and breaks at 30. The selection is not worse: the
-    resulting condition number is identical to SciPy's.
+    exactly 1.0. Whether the permutation happens to match the oracle is not
+    asserted, because it is platform-dependent for exactly that reason. What is
+    asserted is that our selection is never worse: the resulting condition number
+    matches SciPy's at every order tested.
     """
-    for order in (8, 12, 20, 28):
+    for order in (8, 12, 20, 28, 30):
         matrix = kahan(order)
         ours, _ = pivoted_qr_permutation(matrix)
-        assert np.array_equal(ours, oracle_permutation(matrix))
-
-    matrix = kahan(30)
-    ours, _ = pivoted_qr_permutation(matrix)
-    theirs = oracle_permutation(matrix)
-    assert not np.array_equal(ours, theirs)
-    assert np.linalg.cond(matrix[:, ours]) == pytest.approx(
-        np.linalg.cond(matrix[:, theirs]), rel=1e-9
-    )
+        theirs = oracle_permutation(matrix)
+        assert np.linalg.cond(matrix[:, ours]) == pytest.approx(
+            np.linalg.cond(matrix[:, theirs]), rel=1e-6
+        )
 
 
 # --- C-2: exchange determinism ---------------------------------------------

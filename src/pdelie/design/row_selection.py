@@ -18,18 +18,38 @@ of this package (core is ``numpy>=2,<3``; scipy appears only in the
 So :func:`qr_pivot_row_selection` implements Householder QR with column pivoting
 directly (Golub & Van Loan, *Matrix Computations*, 4th ed., Algorithm 5.4.1).
 SciPy is retained as a **test-side reference oracle**, where it is already
-available. Measured: the permutation is identical to
-``scipy.linalg.qr(pivoting=True)`` on all eight canonical matrices, including a
-rank-deficient case, a tied-norm case, a graded-scale case, a wide case, and the
-real weak-form design matrix.
+available.
+
+What agreement with the oracle can and cannot mean
+--------------------------------------------------
+
+The pivot sequence is only *determined* where the competing column norms are
+separated by more than rounding. Measured across the eight canonical matrices,
+four are determined (minimum relative gap between the best and runner-up norm at
+every step: Hilbert(7) 6.7e-02, graded-scale 9.8e-01, wide 3.0e-02, weak-form
+8.9e-02) and four are not (identity, orthonormal, rank-deficient, tied-norm --
+gaps of 0 or 1.1e-16).
+
+On the undetermined four **every tie-break is equally valid, and SciPy's own
+choice is not portable**: on the orthonormal matrix it pivots ``[1 0 2 3]`` under
+one LAPACK and ``[0 1 2 3]`` under another. So the contract is split:
+
+* on matrices where pivoting has strict signal, the permutation is **identical**
+  to ``scipy.linalg.qr(pivoting=True)``;
+* on every matrix, determined or not, the **selection quality** matches -- the
+  resulting condition number and the magnitudes of the R diagonal agree with the
+  oracle, which is the property that actually matters;
+* our own output is **deterministic** in all cases, which SciPy's is not across
+  platforms.
 
 Two implementation details are contracts, not accidents
 -------------------------------------------------------
 
 **Tie-break.** Pivot on the largest remaining column norm; on an exact tie the
 *lowest column index* wins. ``np.argmax`` returns the first maximal index, which
-is that rule; it is asserted with a deliberately tied matrix rather than left to
-coincide.
+is that rule. This is *our* contract and is asserted directly against a
+deliberately tied matrix -- deliberately not against SciPy, whose tie-break
+varies by platform.
 
 **Norm-downdate safeguard.** Trailing column norms are downdated incrementally
 and recomputed from scratch when a downdated value falls below ``1e-8`` times its
@@ -39,17 +59,11 @@ adversarial matrices (Kahan, high-order Hilbert, near-dependent blocks) the
 safeguard changed the permutation in **eight**, and in every one of those the
 guarded result matched the SciPy oracle while the unguarded result did not.
 
-Known limit of the SciPy agreement
-----------------------------------
-
-Agreement is not unconditional, and the boundary is worth stating. On the Kahan
-matrix -- constructed specifically to defeat column pivoting, with *every* column
-norm exactly 1.0 -- the permutation matches through order 28 and diverges at 30
-and above. There the late pivots are separated by rounding rather than by signal,
-and the two implementations break a genuine tie differently. The selection is not
-worse: the resulting condition number is identical to SciPy's
-(1.4008e+05 at order 30). Agreement is guaranteed where pivoting has signal to
-act on, which is the regime the diagnostics run in.
+The Kahan matrix is the extreme case of the same effect: built specifically to
+defeat column pivoting, with *every* column norm exactly 1.0, it agrees with the
+oracle through order 28 and diverges at 30 and above -- while the resulting
+condition number stays identical (1.4008e+05 at order 30). Divergence there is a
+tie broken differently, not a worse selection.
 
 Choosing between the methods
 ============================
