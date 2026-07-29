@@ -1,0 +1,420 @@
+{
+  "summary_schema_version": "0.1",
+  "summary_type": "pdelie_support_matrix",
+  "release": "0.34.0",
+  "release_decision": "v0_34_0_variable_coefficient_residuals_and_weak_form_conditioning",
+  "carried_forward_from": "docs/specs/support_matrix.v0_33.json",
+  "columns": [
+    "pde",
+    "generator",
+    "residual",
+    "vertical_slice",
+    "candidate_validation",
+    "weak_support",
+    "external_data_readiness"
+  ],
+  "pdes": [
+    {
+      "pde": "Heat",
+      "generator": "yes",
+      "residual": "yes",
+      "vertical_slice": "yes",
+      "candidate_validation": "yes",
+      "weak_support": "frozen weak slice",
+      "external_data_readiness": "readiness-only (no v0.32d external cookbook; synthetic FieldBatch supported)"
+    },
+    {
+      "pde": "Burgers",
+      "generator": "yes",
+      "residual": "yes",
+      "vertical_slice": "yes",
+      "candidate_validation": "yes",
+      "weak_support": "frozen weak slice",
+      "external_data_readiness": "yes (PDEBench 1D Burgers V8 shard 1D_Burgers_Sols_Nu0.001.hdf5, DOI 10.18419/darus-2986, CC-BY-4.0, MD5 b4be2fc3383f737c76033073e6d2ccfb; narrow cookbook only)"
+    },
+    {
+      "pde": "KdV",
+      "generator": "normalized short-horizon only",
+      "residual": "yes",
+      "vertical_slice": "yes",
+      "candidate_validation": "yes",
+      "weak_support": "no",
+      "external_data_readiness": "readiness-only (no v0.32d external cookbook)"
+    },
+    {
+      "pde": "Fisher-KPP",
+      "generator": "yes",
+      "residual": "yes",
+      "vertical_slice": "yes",
+      "candidate_validation": "yes",
+      "weak_support": "internal weak diagnostic only",
+      "external_data_readiness": "readiness-only (no v0.32d external cookbook)"
+    },
+    {
+      "pde": "Advection-diffusion",
+      "generator": "yes",
+      "residual": "yes",
+      "vertical_slice": "yes",
+      "candidate_validation": "yes",
+      "weak_support": "no",
+      "external_data_readiness": "readiness-only (no v0.32d external cookbook)"
+    },
+    {
+      "pde": "KS",
+      "generator": "no public runtime",
+      "residual": "no",
+      "vertical_slice": "no",
+      "candidate_validation": "diagnostic/no-go",
+      "weak_support": "no",
+      "external_data_readiness": "no"
+    }
+  ],
+  "boundary_condition_support": {
+    "scalar_1d_periodic": "supported (strong path, frozen weak slice, v0.31 downstream discovery task bridge, and v0.32c composed candidate-to-discovery workflow example)",
+    "scalar_1d_nonperiodic_canonical_field_batch_readiness": "supported (dirichlet, neumann, open_unknown)",
+    "scalar_1d_nonperiodic_strong_residual": "supported for Heat, Burgers, advection-diffusion, reaction-diffusion via compute_derivatives(backend=\"auto\") + interior-only diagnostics",
+    "scalar_1d_nonperiodic_kdv": "not supported (KdV remains periodic-only)",
+    "scalar_1d_nonperiodic_weak": "not supported",
+    "scalar_1d_nonperiodic_pysindy_discovery": "not supported (both v0.31 task paths raise PySINDyDiscoveryUnsupportedBoundaryError on nonperiodic-x)",
+    "scalar_1d_nonperiodic_translation_finite_transform_verification": "not supported (deferred to v0.31.5 overlap-crop design)",
+    "multidimensional_grids": "not supported",
+    "nonuniform_grids": "not supported"
+  },
+  "downstream_discovery_task_bridge": {
+    "pysindy_pdelibrary_task": {
+      "status": "supported",
+      "scope": "periodic scalar 1D only",
+      "input_layout": "scalar_1d_uniform",
+      "backend": "pysindy>=2.1,<3 on python_version >= '3.12'",
+      "public_names": [
+        "pdelie.tasks.run_pysindy_pde_task",
+        "pdelie.tasks.summarize_discovery_task_result",
+        "pdelie.tasks.PySINDyDiscoveryUnsupportedBoundaryError"
+      ],
+      "report_summary_type": "discovery_task_result",
+      "report_key_count": 22,
+      "pysindy_bridge_variant": "periodic_only_v1",
+      "root_export": "no",
+      "multi_trajectory_execution": "supported (batch_size>1 flows through the v0.31b1 adapter to PySINDy 2.1.x list-of-trajectories fit; no silent first-trajectory slicing)"
+    },
+    "pysindy_weak_pde_library_diagnostic": {
+      "status": "diagnostic_only",
+      "scope": "periodic scalar 1D only",
+      "backend": "pysindy>=2.1,<3 on python_version >= '3.12'",
+      "public_names": [
+        "pdelie.tasks.inspect_pysindy_weak_pde_library",
+        "pdelie.tasks.summarize_pysindy_weak_pde_library_diagnostic",
+        "pdelie.tasks.WeakPDELibraryDiagnostic"
+      ],
+      "report_summary_type": "pdelie_weak_pde_library_diagnostic",
+      "report_key_count": 27,
+      "diagnostic_only": true,
+      "method_family": "pysindy_weak_pde_library_polynomial_gauss_v1",
+      "test_function_family": "pysindy_weak_pde_library_polynomial_bump_v1",
+      "quadrature_rule": "pysindy_weak_pde_library_composite_gauss_v1",
+      "wsindy_benchmark_claim": false,
+      "noise_robustness_claim": false,
+      "numerical_equivalence_with_weak_1d_claim": false,
+      "root_export": "no"
+    },
+    "composed_candidate_to_discovery_workflow_example": {
+      "public_name": "pdelie.examples.run_candidate_to_discovery_workflow_example",
+      "cli": "python -m pdelie.examples.candidate_to_discovery_workflow",
+      "composed_summary_type": "candidate_to_discovery_workflow",
+      "explicit_stage_count": 15,
+      "stage_marker_summary_type": "candidate_to_discovery_workflow_stage_marker",
+      "scenarios": [
+        "successful",
+        "valid_but_not_useful_static"
+      ],
+      "silent_first_trajectory_slicing": false,
+      "downstream_comparison_metric_key": "heldout_residual_l2_norm",
+      "evidence_conclusion_reasons_name_metric_key": true,
+      "downstream_gain_claim": false,
+      "generic_symmetry_discovery_claim": false,
+      "universal_downstream_benefit_claim": false,
+      "root_export": "no"
+    }
+  },
+  "additive_reporting_extensions_v0_32b": {
+    "target_summary": "pdelie.reporting.summarize_generator_confidence",
+    "additive_field_defaults": "None (backward compatible)",
+    "confidence_labels_invariant": [
+      "strong",
+      "qualified",
+      "failed",
+      "insufficient_evidence"
+    ],
+    "method_scores": {
+      "shape": "dict[str, {value, direction, description, units}] | None",
+      "direction_vocabulary": [
+        "lower_is_better",
+        "higher_is_better",
+        "diagnostic_only"
+      ]
+    },
+    "uncertainty_report": {
+      "shape": "dict | None",
+      "method_vocabulary": [
+        "bootstrap",
+        "point_estimate"
+      ],
+      "resampling_unit_vocabulary": [
+        "batch",
+        "trajectory",
+        "not_applicable"
+      ],
+      "row_level_bootstrap_refused": true,
+      "diagnostic_only_invariant": true
+    },
+    "calibration_report": {
+      "shape": "dict | None",
+      "diagnostic_only_invariant": true,
+      "builtin_svd_populates": false
+    },
+    "enrich_helper": "pdelie.reporting.enrich_method_scores",
+    "builtin_svd_score_metadata": {
+      "method": "pdelie.symmetry.methods.polynomial_translation_svd",
+      "frozen_score_names": [
+        "span_distance",
+        "residual_l2",
+        "error_curve_max",
+        "svd_condition_number"
+      ],
+      "bootstrap_helper": "pdelie.symmetry.methods.polynomial_translation_svd.bootstrap_uncertainty"
+    }
+  },
+  "external_data_readiness_v0_32d": {
+    "pdebench_burgers_1d_readiness_cookbook": {
+      "public_name": "pdelie.examples.run_pdebench_burgers_1d_readiness_cookbook",
+      "cli": "python -m pdelie.examples.pdebench_burgers_1d_readiness",
+      "config_summary_type": "pdelie_external_data_readiness_config",
+      "report_summary_type": "pdelie_external_data_readiness",
+      "pinned_shard": "1D_Burgers_Sols_Nu0.001.hdf5",
+      "data_doi_or_record": "10.18419/darus-2986",
+      "license": "CC-BY-4.0",
+      "checksum_algorithm": "md5",
+      "checksum_value": "b4be2fc3383f737c76033073e6d2ccfb",
+      "conclusion_vocabulary": [
+        "ready_scalar_1d_readiness_only",
+        "ready_residual_preflight_only",
+        "blocked_boundary_metadata_unverified",
+        "blocked_parameter_convention_mismatch",
+        "blocked_nonuniform_grid",
+        "blocked_schema_mismatch",
+        "blocked_multichannel_required",
+        "blocked_download_or_checksum_failure",
+        "unavailable_no_cached_dataset"
+      ],
+      "residual_preflight_diagnostic_only": true,
+      "recovery_benchmark_claim": false,
+      "broad_pdebench_support_claim": false,
+      "optional_dependency_extra": "pdebench (h5py-only)",
+      "network_io_in_default_ci": false,
+      "root_export": "no"
+    },
+    "the_well_feasibility_scan": {
+      "public_name": "pdelie.examples.run_the_well_feasibility_scan",
+      "cli": "python -m pdelie.examples.the_well_feasibility_scan",
+      "config_summary_type": "pdelie_the_well_feasibility_scan_config",
+      "report_summary_type": "pdelie_the_well_feasibility_scan",
+      "paper_dataset_count": 16,
+      "catalogue_entry_count": 23,
+      "scalar_1d_extractable_count": 0,
+      "conclusion": "blocked_multichannel_required",
+      "broad_the_well_support_claim": false,
+      "downloads_in_default_ci": false,
+      "root_export": "no"
+    }
+  },
+  "compatibility_policy": {
+    "python_min": ">=3.12",
+    "python_matrix": [
+      "3.12",
+      "3.13"
+    ],
+    "python_advisory": [
+      "3.14"
+    ],
+    "numpy_pin": "numpy>=2,<3",
+    "pysindy_pin": "pysindy>=2.1,<3",
+    "sklearn_pin": "scikit-learn>=1.4,<2",
+    "scipy_pin": "scipy>=1.14,<2",
+    "optional_extras": [
+      "downstream",
+      "xarray",
+      "viz",
+      "test",
+      "pdebench"
+    ],
+    "pdebench_extra_dependency": "h5py>=3.10",
+    "python_311_legacy_line": "release/v0.31.x maintenance branch cut from the v0.31.0 tag; security-only fixes for 12 months from the v0.32.0 tag, then archived",
+    "hidden_manual_install_step": false
+  },
+  "deferred": [
+    "root pdelie.discover_symmetries (v1.0 scope decision)",
+    "external symmetry-method ports (Ko-sparse deferred to v0.33; LieGAN/LaLiGAN to v0.33.1)",
+    "trained-model extraction layer (LieGG deferred to v0.35a)",
+    "multi-channel / 2D contract widening (deferred to v0.34+)",
+    "nonperiodic finite-transform verification via overlap-crop (deferred to v0.31.5 design revisit)",
+    "The Well scalar 1D adapter (blocked_multichannel_required; unblocks only when The Well ships a scientifically-honest scalar 1D slice)",
+    "additional PDEBench readiness cookbooks beyond the frozen 1D Burgers shard",
+    "PDEBench / The Well recovery benchmarks",
+    "FD-nonperiodic PySINDy discovery",
+    "WSINDy benchmark claim",
+    "noise robustness claim",
+    "public weak derivative backend",
+    "u_xxx / u_xxxx on nonperiodic data",
+    "public KS runtime APIs",
+    "KdV nonperiodic",
+    "weak nonperiodic",
+    "file loaders",
+    "broad adapters",
+    "load_field_batch",
+    "from_pdebench",
+    "from_the_well",
+    "from_netcdf",
+    "from_zarr",
+    "multidimensional grids",
+    "nonuniform grids",
+    "neural or callable generator APIs",
+    "train/test split enforcement or leakage prevention",
+    "PyPI publication (deferred to v1.0)",
+    "nonperiodic KdV",
+    "nonperiodic PySINDy discovery",
+    "nonperiodic weak-form residuals",
+    "spatial masks in the discovery bridge",
+    "boundary-value-problem preservation claims",
+    "residual-side variable-coefficient support (v0.34a)",
+    "conservative advection evaluation",
+    "callable coefficient profiles in residual evaluators",
+    "KdV / reaction-diffusion variable-coefficient support",
+    "deterministic-by-default weak diagnostic"
+  ],
+  "scope_title": "Variable-Coefficient Residuals and Weak-Form Conditioning",
+  "nonperiodic_generator_layer_v0_33": {
+    "fit_translation_generator": "dispatches on is_x_periodic; nonperiodic uses finite_difference + interior-only shave at boundary_trim_width",
+    "polynomial_translation_svd": "accepts nonperiodic input; frozen four score names unchanged on both branches",
+    "verify_translation_generator": "dispatches on is_x_periodic; nonperiodic compares on overlap intersect interior",
+    "claim_established": "interior differential-operator covariance on the overlap",
+    "claim_NOT_established": "boundary-value-problem preservation",
+    "symmetry_claim_vocabulary": [
+      "equation_symmetry_candidate",
+      "interior_overlap_verified",
+      "boundary_value_problem_preserved",
+      "boundary_value_problem_not_preserved",
+      "domain_changing_action",
+      "inconclusive_boundary_metadata"
+    ],
+    "reserved_but_never_emitted": [
+      "boundary_value_problem_preserved",
+      "boundary_value_problem_not_preserved"
+    ],
+    "boundary_types_supported": [
+      "periodic",
+      "dirichlet",
+      "neumann",
+      "open_unknown"
+    ],
+    "resolution_caveat": "only Heat is well resolved below num_points=256; honest span_distance plus a low-row warning are emitted rather than a hard gate"
+  },
+  "variable_coefficient_generators_v0_33d": {
+    "generators": [
+      "heat_1d",
+      "burgers_1d",
+      "advection_diffusion_1d"
+    ],
+    "kwargs": [
+      "diffusivity_profile",
+      "advection_profile (advection-diffusion only)",
+      "diffusivity_form",
+      "advection_form"
+    ],
+    "profile_kinds": [
+      "constant",
+      "array",
+      "callable"
+    ],
+    "constant_path_byte_preserved": true,
+    "residual_side_nu_of_x": "deferred_to_v0_34a",
+    "admissibility_crash_test_metric": "residual_l2",
+    "admissibility_crash_test_min_ratio": 10.0,
+    "admissibility_crash_test_measured_worst_ratio": 1772.0,
+    "not_supported": [
+      "kdv_1d",
+      "reaction_diffusion_1d"
+    ]
+  },
+  "mask_preserving_discovery_bridge_v0_33c": {
+    "kwarg": "mask_application",
+    "default": "after_differentiation",
+    "legacy_opt_in": "before_differentiation (warns, retained for at least one release cycle)",
+    "diagnostics_key": "underlying_discovery_result.fit_diagnostics.pdelie_mask_diagnostics",
+    "mask_support_scope": "whole_time_row_selections_only",
+    "spatial_masks": "rejected with ScopeValidationError",
+    "spectral_differentiation_on_masked_field": "rejected with ScopeValidationError",
+    "nonperiodic_discovery": "still blocked by PySINDyDiscoveryUnsupportedBoundaryError",
+    "top_level_key_count_preserved": 22
+  },
+  "golden_numbers_gate_v0_33e": {
+    "fixture": "tests/fixtures/v0_33e_golden_numbers.json",
+    "periodic_entries": 5,
+    "nonperiodic_entries": 3,
+    "tolerances": {
+      "rtol": 1e-06,
+      "atol": 1e-12
+    },
+    "comparison": "aggregate norms only; no pinned metric is compared bit-exactly",
+    "measured_worst_cross_platform_deviation": 1.5e-09
+  },
+  "variable_coefficient_residuals_v0_34a": {
+    "evaluators": [
+      "HeatResidualEvaluator",
+      "BurgersResidualEvaluator",
+      "AdvectionDiffusionResidualEvaluator"
+    ],
+    "coefficient_kinds_accepted": [
+      "scalar",
+      "pre_sampled_array",
+      "None_reads_parameter_tags"
+    ],
+    "callable_profiles": "refused",
+    "form_dispatch_tag": "parameter_tags.nu_form",
+    "measured_cost_of_form_mismatch": "approximately_300x_residual_l2_inflation",
+    "scalar_path_byte_preserved": true,
+    "conservative_advection": "generated_by_v0_33d_but_not_evaluated_refused",
+    "residual_batch_top_level_shape_unchanged": true
+  },
+  "admissibility_scoring_v0_34b": {
+    "entry_point": "polynomial_translation_svd.fit(reference_generator_family=..., reference_generator_family_id=...)",
+    "block": "fit_diagnostics.variable_coefficient_admissibility",
+    "relative_error_l2_bounded_by": "sqrt(2)",
+    "scale_invariant": true,
+    "sign_invariant": true,
+    "frozen_four_score_names_unchanged": true,
+    "background_treatment_labels": [
+      "fixed_background_same_target_symmetry_failed",
+      "co_transforming_background_equivalence",
+      "inconclusive_background_separation"
+    ],
+    "measured_separation_ratio_min": 77.45,
+    "measured_separation_ratio_median": 1048.53,
+    "minimum_separation_bar": 5.0
+  },
+  "weak_form_conditioning_v0_34c": {
+    "kwarg": "column_normalize",
+    "seed_kwarg_added": true,
+    "seed_default": null,
+    "seed_rationale": "pysindy_WeakPDELibrary_draws_domain_centers_from_the_global_numpy_rng_with_no_seed_parameter",
+    "default_top_level_key_count": 27,
+    "opt_in_top_level_key_count": 28,
+    "planned_figures_87x_111_8_3_77": "do_not_reproduce_one_draw_from_a_nondeterministic_process",
+    "measured_improvement_range": "1.79x_to_48.34x_median_4.51x_at_the_pinned_seed",
+    "universal_gate": "condition_ratio_never_below_1_0",
+    "explicit_non_claims": [
+      "no_wsindy",
+      "no_noise_robustness",
+      "no_dataset_recovery"
+    ]
+  }
+}
