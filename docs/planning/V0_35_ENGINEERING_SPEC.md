@@ -431,6 +431,39 @@ Random median on the weak matrix is 4.52e+04, so leverage selection is **worse t
 
 **C-3 · Freeze the reduction threshold from data.** The spec says "strictly reduces condition number vs a random-selection baseline." Measure the *distribution* over ≥20 random baselines per matrix and freeze against a percentile, not a single draw — the v0.34c lesson.
 
+### 5.3a v0.35b gate results — **B-3 and B-4 changed the contract** ✅
+
+Run 2026-07-29 before implementation.
+
+| Gate | Outcome |
+|---|---|
+| **B-1** | **Risk W-2 does not materialize.** All 13 catalogue entries construct, validate, and strict-JSON round-trip, executing 5267 lines of `formula.py` and **zero lines of `symbolic.py`**. |
+| **B-2** | **No public write-up exists** — no arXiv/DOI/Zenodo/preprint reference anywhere in the repo. Private-by-default applies. |
+| **B-3** | The proposed a+c composition **does not classify symmetries**. See below. |
+| **B-4** | **Catalogue data, not `SymmetryMethod` adapters** — and the v0.36 precondition had to be amended. See below. |
+
+**B-1 detail.** `symbolic.py`'s uncovered region 197–226 is `to_sympy_component_expressions`, which takes a `GeneratorFamily` (polynomial-basis form) and requires sympy. `PointSymmetryEntry` uses `FormulaGeneratorFamily`, which lives in `formula.py` and carries its own evaluator. Different type, different path — the registry never reaches the weak module. Registry coverage is **100%**.
+
+**B-3 finding — the usefulness metric never consults the symmetry.** Keying the classification on `ρ_IR < 1` put **all three supported PDEs in the same bucket**, and sweeping all ten two-element supports of the canonical heat design, only **1 of 10** reached the useful branch:
+
+| PDE | ρ_IR at the canonical support | verdict |
+|---|---|---|
+| heat_1d | 2.743 | valid_but_not_useful |
+| burgers_1d | 2.194 | valid_but_not_useful |
+| advection_diffusion_1d | 1.178 | valid_but_not_useful |
+
+The cause is structural: **ρ_IR is a property of the design matrix and support — it never consults the symmetry at all.** v0.35a and v0.35c classify *designs*, not *symmetries*. A classification whose verdict does not depend on the thing being classified is a constant.
+
+**Frozen:** the two axes come from different places. **Validity is a property of the symmetry** and is a *required caller input* from the existing verification machinery — never inferred. **Usefulness is a property of the design** and comes from v0.35a. This is exactly the structure of the wedge example (`validation.conclusion`, then `downstream_workflow`), so it composes what exists rather than adding scope. Both branches are reachable and tested — the useful branch at the measured ρ_IR = 0.9634.
+
+Expect the wedge to be wide: at the canonical weak-form configuration every supported PDE reports ρ_IR > 1, so a symmetry that validates there is `valid_but_not_useful`. That is a finding about the design, not a defect.
+
+**B-4 finding — the v0.36 precondition could not be satisfied as written.** `SymmetryMethod` requires `fit(field, ...)`: an algorithm that *discovers* a generator from data. A catalogued point symmetry is analytically known and discovers nothing. Registering the catalogue would mean a `fit()` that ignores its input, and would make `list_symmetry_methods()` report 14 methods of which 13 never read the data they are handed.
+
+**Resolved (team decision):** catalogue ships as data in `pdelie.symmetry._point_symmetry_registry`; `SymmetryMethod` keeps exactly one built-in and its `fit()` semantics intact.
+
+Consequence, recorded rather than papered over: **v0.35.0 success criterion 4 — "the `SymmetryMethod` contract now has multiple entries" — is NOT met**, and [`ROADMAP.md`](ROADMAP.md) has been amended. The v0.36 line previously gated the Ko-sparse port on the registry "having proven the multi-method contract"; that precondition is dropped, and **the Ko-sparse port is itself what proves it**. v0.36 is unblocked — it is the proof, not the beneficiary of one.
+
 ### 5.3 v0.35b gates — detail
 
 **B-1 · Coverage probe before schema freeze.** `PointSymmetryEntry.generator_formula` is typed as `FormulaGeneratorFamily` (`symmetry/formula.py:265`, module at 79%, backed by `symbolic.py` at 67%). Construct one entry per planned catalogue symmetry and confirm the construction path is exercised. If it lands in `symbolic.py:197-226` (uncovered), that region needs tests **before** the registry depends on it.
