@@ -1,5 +1,40 @@
 # Changelog
 
+## 0.35.0
+
+Release-close for the v0.35 arc: three internal sub-milestones (v0.35a design-matrix diagnostics, v0.35c deterministic row selection, v0.35b private point-symmetry catalogue) plus a day-0 polish PR, consolidated into a single tag per the solo-dev consolidation policy. Submodule-only surface — no root `pdelie` export added. No new PDE, no new symmetry method, no change to any existing payload shape.
+
+Release decision: `v0_35_0_design_diagnostics_row_selection_and_point_symmetry_catalogue`.
+
+**Process note.** All three sub-milestones were prototyped and measured *before* their contracts were frozen; eight of the twelve gates changed what shipped. Three defects would otherwise have shipped silently: a leverage route that errs by 0.56 on a quantity bounded in `[0, 1]`, a classification whose verdict flipped under an arbitrary column rescaling, and an irrepresentability constant returning a plausible sub-threshold number from a singular system where `lstsq` had quietly substituted a minimum-norm solution.
+
+Two errors were caught by CI rather than inspection, both the same class — a claim measured on macOS and recorded as universal, then failing on Linux. Both are documented in `docs/releases/V0_35_RELEASE_READINESS.md`.
+
+### Added
+
+- **`pdelie.diagnostics` (v0.35a).** Four report-only design-matrix metrics: `mutual_coherence`, `leverage_scores`, `irrepresentability_constant`, `restricted_eigenvalue`, plus `summarize_design_matrix_diagnostics`. New `summary_type`: `pdelie_design_matrix_diagnostic`. All metrics are computed on the column-normalized matrix (`||a_j||_2 = 1`) and every payload reports its `column_scaling` — coherence and leverage are scale-invariant, the other two are not, and an arbitrary rescaling moved the irrepresentability constant across the 1.0 recovery threshold on identical data. Leverage is computed from the thin SVD, never the hat matrix. Undefined cases return `None` with a named warning; no NaN, no Inf.
+- **`pdelie.design` (v0.35c).** Three deterministic row-selection methods: `qr_pivot_row_selection`, `d_optimal_exchange_row_selection`, `leverage_row_selection`, plus `summarize_row_selection`. New `summary_type`: `pdelie_row_selection_diagnostic`. Pure NumPy and core-installable — `numpy.linalg.qr` has no `pivoting` parameter and scipy is not a core dependency, so the Householder QR with column pivoting is hand-rolled (Golub & Van Loan Alg. 5.4.1) with scipy retained as a test-side oracle only.
+- **`pdelie.symmetry._point_symmetry_registry` (v0.35b).** Thirteen catalogued Lie point symmetries across heat / Burgers / advection-diffusion, with `classify_point_symmetry` emitting the frozen vocabulary `{exact_and_useful, valid_but_not_useful, invalid}`. New `summary_type`s: `pdelie_point_symmetry_catalogue`, `pdelie_point_symmetry_classification`. **Underscore-private on purpose:** no public write-up exists to cite for the taxonomy.
+- **`tests/fixtures/v0_35a_canonical_design_matrix.npz`.** The canonical weak-form design matrix at `seed=20340` (16x5, rank 5, condition 5232.86), with a named-cause regeneration CLI. The v0.34c fixture stores scalars only, so the matrix the v0.35 plan referred to did not previously exist on disk.
+
+### Changed
+
+- **Blocking toolchain pinned (day-0).** `[test]` moves from `ruff>=0.6` to `ruff~=0.16.0` and from `mypy>=1.11` to `mypy~=2.3.0`. `lint` is a blocking CI job, so the linter version is part of the merge gate: on the unchanged v0.34.0 tree, ruff 0.9.10 reported 102 errors, 0.14.5-0.15.20 reported 5, and 0.16.0 reported none. `mypy`'s floor had already drifted to 2.3.0 in CI, unnoticed because `typecheck` is advisory.
+- **README/release alignment guard tightened (day-0).** Now derived from `pyproject["project"]["version"]` and asserting both the prose release line and the pip-install pins. The prior form accepted four version strings across two release lines, which is how v0.33.0 shipped with a README advertising v0.32.0.
+- **`docs/planning/ROADMAP.md` v0.36 precondition dropped.** It gated the Ko-sparse port on the point-symmetry registry "having proven the multi-method contract with more than one built-in". That cannot be satisfied by a catalogue-data registry; the Ko-sparse port is itself what proves the contract. v0.36 is unblocked.
+
+### Not changed
+
+- `SymmetryMethod` still has exactly one built-in, and its `fit(field, ...)` semantics are intact. Catalogued point symmetries are analytically known and discover nothing, so they ship as data rather than as registered methods. **v0.35.0 success criterion 4 is recorded as not met** rather than restated into a pass.
+- Frozen four `method_scores` names; `_CONFIDENCE_LABELS`; `discovery_task_result` 22-key schema; `pdelie_weak_pde_library_diagnostic` 27-key default schema; `VerificationReport.classification`; `SymmetryCandidate` discriminators; `ResidualBatch` top-level shape; `pdelie.__all__`.
+
+### Known limitations
+
+- `leverage_row_selection` is not a conditioning method: it beat 8% of 40 random draws on the canonical weak matrix where the other two beat 100%. It reports influence, and says so in its own warnings.
+- `d_optimal_exchange_row_selection` is a local search reaching four to five distinct optima across five random starting sets. The start defaults to the deterministic QR selection and is reported.
+- The pivoted-QR permutation agrees with SciPy only where pivoting has signal; on tied-norm designs every tie-break is valid and SciPy's own choice varies by LAPACK build. Selection *quality* agrees everywhere.
+- `classify_point_symmetry` requires caller-supplied validity and cannot determine on its own whether a symmetry holds on given data.
+
 ## 0.34.0
 
 Release-close for the v0.34 arc: three internal sub-milestones (v0.34a variable-coefficient residual evaluators, v0.34b admissibility scoring, v0.34c column-normalized weak-form design matrices) consolidated into a single tag per the solo-dev consolidation policy. Submodule-only surface — no root `pdelie` export added. No new PDE, no new symmetry method, no new `summary_type`.

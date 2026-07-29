@@ -1,6 +1,6 @@
 # PDELie - Execution Plan (V0.34.0 Release Close — Variable-Coefficient Residuals and Weak-Form Conditioning)
 
-**Status:** V0.34.0 Release Close — complete. Tag `v0.34.0`; readiness `docs/releases/V0_34_RELEASE_READINESS.md`.
+**Status:** V0.35.0 Release Close — complete. Tag `v0.35.0`; readiness `docs/releases/V0_35_RELEASE_READINESS.md`.
 
 Three sub-milestones merged: v0.34c (#117), v0.34a (#118), v0.34b (#119). All three were prototyped and measured before their contracts were frozen, and all three measurements changed what shipped — most consequentially v0.34c, where the target function proved nondeterministic.
 

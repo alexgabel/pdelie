@@ -25,6 +25,21 @@ Stable public import path for the invariant canonical object:
 
 - `pdelie.InvariantMapSpec`
 
+Stable public-surface note for the v0.35.0 release close: the v0.35 arc adds design-matrix diagnostics (`pdelie.diagnostics`), deterministic row selection (`pdelie.design`), and a private point-symmetry catalogue (`pdelie.symmetry._point_symmetry_registry`). Every addition is submodule-only and diagnostic-only; `pdelie.__all__` is unchanged and no existing payload changed shape. Three new `summary_type` values appear, all on new payloads produced by new functions.
+
+Design-matrix diagnostics (`v0.35a`) and row selection (`v0.35c`):
+
+- Both packages are core-installable: neither imports scipy nor pysindy, asserted by test. `pdelie.design` hand-rolls Householder QR with column pivoting because `numpy.linalg.qr` has no `pivoting` parameter and scipy is not a core dependency; `scipy.linalg.qr(pivoting=True)` is a test-side oracle only.
+- Every diagnostic is computed on the column-normalized matrix and reports its `column_scaling`. This is part of the contract, not an implementation detail: the irrepresentability constant and restricted eigenvalue are scale-dependent, and an arbitrary rescaling moves the reported recovery verdict on identical data.
+- `restricted_eigenvalue` reports the support-restricted minimum Gram eigenvalue over `n`, **not** the cone-constrained Bickel-Ritov-Tsybakov constant. The payload carries `restricted_eigenvalue_definition` so the distinction cannot be lost.
+- `leverage_row_selection` is not a conditioning method and warns that it is not.
+
+Point-symmetry catalogue (`v0.35b`):
+
+- The module is **underscore-private** and is not a stable public API. No public write-up exists to cite for the taxonomy it encodes; it may be promoted, renamed, or restructured without a deprecation cycle.
+- Catalogue entries are **not** registered through `pdelie.symmetry.registry`. `SymmetryMethod` requires `fit(field, ...)`, which discovers a generator from data; a catalogued symmetry is analytically known and discovers nothing. `list_symmetry_methods()` continues to report exactly one built-in.
+- `classify_point_symmetry` requires caller-supplied validity. It does not and cannot determine on its own whether a symmetry holds on given data.
+
 Stable public-surface note for the v0.34.0 release close: the v0.34 arc adds variable-coefficient residual evaluation, reference-relative admissibility scoring, background-treatment classification, and opt-in weak-form column normalization with a reproducibility seed. Every addition is additive and diagnostic-only; no frozen vocabulary, score name, or schema key count changed, with one documented exception (the weak diagnostic emits a 28th top-level key on the opt-in `column_normalize=True` path only).
 
 Admissibility scoring and background-treatment classification (`v0.34b`):

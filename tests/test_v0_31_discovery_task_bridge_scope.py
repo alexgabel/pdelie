@@ -167,7 +167,7 @@ def test_v0_31_version_pin_matches_scope_config() -> None:
     config = _load_scope_config()
     pyproject_version = tomllib.loads(_repo_text("pyproject.toml"))["project"]["version"]
     assert config["guard_no_version_bump"] == "0.30.0"
-    assert pyproject_version in {"0.30.0", "0.31.0", "0.32.0", "0.33.0", "0.34.0"}, (
+    assert pyproject_version in {"0.30.0", "0.31.0", "0.32.0", "0.33.0", "0.34.0", "0.35.0"}, (
         f"pdelie version must be 0.30.0 (pre-close), 0.31.0 (release "
         f"close), or 0.32.0 (v0.32.0 consolidated release close); got "
         f"{pyproject_version!r}"

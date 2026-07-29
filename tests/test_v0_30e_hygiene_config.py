@@ -119,7 +119,7 @@ def test_package_version_matches_v0_30_close() -> None:
     release-close transitions. numpy<2 and requires-python>=3.11 remain
     unchanged (asserted by the sibling guards below).
     """
-    assert _pyproject()["project"]["version"] in {"0.29.0", "0.30.0", "0.31.0", "0.32.0", "0.33.0", "0.34.0"}
+    assert _pyproject()["project"]["version"] in {"0.29.0", "0.30.0", "0.31.0", "0.32.0", "0.33.0", "0.34.0", "0.35.0"}
 
 
 # --- CI workflow: lint / typecheck / coverage jobs ------------------------
@@ -206,7 +206,7 @@ def test_ci_workflow_release_gate_job_matches_v0_30_close() -> None:
     assert release_gate_jobs in (
         ["v0_31-release-gate"],
         ["v0_32-release-gate"],
-        ["v0_34_0-release-gate"],
+        ["v0_35_0-release-gate"],
     ), (
         f"expected the current v0.31.x, v0.32 arc, or v0.32.0 release "
         f"close release-gate job; got: {release_gate_jobs}"
