@@ -25,6 +25,8 @@ Stable public import path for the invariant canonical object:
 
 - `pdelie.InvariantMapSpec`
 
+Stable public-surface note for the v0.34.0 release close: the v0.34 arc adds variable-coefficient residual evaluation, reference-relative admissibility scoring, background-treatment classification, and opt-in weak-form column normalization with a reproducibility seed. Every addition is additive and diagnostic-only; no frozen vocabulary, score name, or schema key count changed, with one documented exception (the weak diagnostic emits a 28th top-level key on the opt-in `column_normalize=True` path only).
+
 Admissibility scoring and background-treatment classification (`v0.34b`):
 
 - `polynomial_translation_svd.fit()` gains optional `reference_generator_family` and `reference_generator_family_id`. Both or neither; an unidentified reference is refused because the resulting score would not be traceable. The result lands in `fit_diagnostics["variable_coefficient_admissibility"]` as a nested block and is `None` when no reference is supplied. **The frozen four `method_scores` names are unchanged — admissibility is deliberately not a fifth score.**

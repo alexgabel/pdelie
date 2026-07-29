@@ -1,5 +1,42 @@
 # Changelog
 
+## 0.34.0
+
+Release-close for the v0.34 arc: three internal sub-milestones (v0.34a variable-coefficient residual evaluators, v0.34b admissibility scoring, v0.34c column-normalized weak-form design matrices) consolidated into a single tag per the solo-dev consolidation policy. Submodule-only surface — no root `pdelie` export added. No new PDE, no new symmetry method, no new `summary_type`.
+
+Release decision: `v0_34_0_variable_coefficient_residuals_and_weak_form_conditioning`.
+
+**Process note.** All three sub-milestones were prototyped and measured *before* their contracts were frozen, and all three measurements changed what shipped. The most consequential was v0.34c, where measurement showed the target function was nondeterministic — the planned threshold was not wrong so much as unmeasurable.
+
+### Added
+
+- **Variable-coefficient residual evaluators (v0.34a).** `HeatResidualEvaluator`, `BurgersResidualEvaluator`, and `AdvectionDiffusionResidualEvaluator` accept `diffusivity` (and `advection_speed`) as a scalar, a pre-sampled `(num_points,)` array, or `None`. The array path dispatches on `parameter_tags["nu_form"]` recorded by the v0.33d generators. Additive `ResidualBatch.diagnostics` keys: `variable_coefficient_evaluator_dispatch`, `nu_form`, `coefficient_matches_field_provenance`, plus `nu_min`/`nu_max`/`nu_l2_norm`. `ResidualBatch` top-level shape unchanged.
+- **Reference-relative admissibility (v0.34b).** `polynomial_translation_svd.fit()` gains optional `reference_generator_family` and `reference_generator_family_id`; the result lands in `fit_diagnostics["variable_coefficient_admissibility"]`, `None` when absent. `relative_error_l2` compares unit-normalized coefficient directions and is therefore scale-invariant, sign-invariant, and bounded above by `sqrt(2)`.
+- **`pdelie.symmetry.admissibility.classify_background_treatment` (v0.34b).** Distinguishes a *symmetry* of a variable-coefficient problem from an *equivalence* mapping it to a different one. Frozen three-value vocabulary: `fixed_background_same_target_symmetry_failed`, `co_transforming_background_equivalence`, `inconclusive_background_separation`.
+- **Column normalization (v0.34c).** `inspect_pysindy_weak_pde_library(..., column_normalize=True)` normalizes the weak design matrix to unit column L2 norm and emits a `column_normalization` block. New pure-NumPy module `pdelie.discovery.column_normalize`.
+- **Reproducibility seed (v0.34c).** `inspect_pysindy_weak_pde_library(..., seed=...)`. `pysindy.WeakPDELibrary` places its `K` domain centers from the global NumPy RNG and exposes no seed parameter, so the diagnostic had been nondeterministic since v0.31b2. Default `None` preserves that behaviour exactly; a seed makes the report reproducible, with the caller's global RNG state saved and restored.
+- **Golden fixture extensions.** Three variable-coefficient entries in `v0_33e_golden_numbers.json` exercising the array dispatch path. New `v0_34c_conditioning_ratios.json` pinning per-fixture conditioning at a fixed seed.
+
+### Changed
+
+- `inspect_pysindy_weak_pde_library` may now emit a 28th top-level key, `column_normalization`, **only** on the opt-in path. The default path keeps exactly the frozen 27 keys, so every payload producible before v0.34c is unchanged in shape.
+- CI release-gate job renamed `v0_33_0-release-gate` → `v0_34_0-release-gate`.
+
+### Amended during implementation
+
+- **v0.34c — the planned figures do not reproduce.** An 87× column-scale ratio and a condition number of 111.8 → 3.77 could not be matched on any of 48 swept configurations. `WeakPDELibrary` is nondeterministic: across 12 unseeded draws of the canonical fixture, the pre-normalization condition number ranged 5.03–14.44 and the column-scale ratio 3.93–6.64. The planned figures were one draw from a distribution. The requirement that the default path "byte-preserve the v0.31b2 golden report" was likewise unachievable, because the report did not reproduce against itself. The ≥20× threshold is unsupported — only 1 of 6 fixtures clears it, and the canonical fixture improves by 1.79×.
+- **v0.34a — `nu_form` dispatch is mandatory.** The planned residual formula `u_t + u·u_x − ν(x)·u_xx` is the non-conservative one, but the v0.33d generators default to conservative divergence form. Measured, evaluating the wrong operator against matched data inflates the residual L2 by roughly 300×, so the planned formula alone would have mismatched default-generated data by that factor.
+- **v0.34a — a coefficient/provenance mismatch is reported, not refused.** A first implementation raised on "scalar coefficient, array-profile field" as a configuration error, which broke the released v0.33d admissibility crash test — that combination is precisely what the crash test performs.
+- **v0.34b — the classification vocabulary was frozen only after measurement.** Across three PDEs and shifts of 1–16 grid points, the fixed-background residual exceeds the co-transforming residual by 77×–15437× (median 1049×), all 15 measurements above the 5× separation bar. The co-transforming residual equals the untranslated baseline *exactly* at every shift, and the fixed-background residual grows monotonically with displacement.
+
+### Invariants preserved
+
+Frozen four `method_scores` names; `_CONFIDENCE_LABELS` vocabulary; `discovery_task_result` 22-key top-level schema; `pdelie_weak_pde_library_diagnostic` 27-key default schema; `VerificationReport.classification` vocabulary; `SymmetryCandidate` discriminators; root `pdelie` namespace surface; `ResidualBatch` top-level shape. No new `summary_type`.
+
+### Not unlocked
+
+No WSINDy claim. No noise-robustness claim. No dataset-recovery claim. Conservative *advection* is generated by v0.33d but not evaluated by v0.34a. Callable coefficient profiles are refused by the residual evaluators. KdV and reaction-diffusion variable-coefficient support remain out of scope.
+
 ## 0.33.0
 
 Release-close for the v0.33 arc: five internal sub-milestones (v0.33a nonperiodic generator dispatch, v0.33b overlap-crop finite-transform verification, v0.33c mask-preserving discovery bridge, v0.33d variable-coefficient data generators, v0.33e golden-numbers regression gate) plus one scope-freeze amendment, consolidated into a single tag per the solo-dev consolidation policy. Submodule-only surface — no root `pdelie` export added. No new PDE, no new symmetry method.

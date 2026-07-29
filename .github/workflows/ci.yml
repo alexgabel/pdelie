@@ -5,8 +5,8 @@ on:
   pull_request:
 
 jobs:
-  v0_33_0-release-gate:
-    # v0.33.0: consolidated release gate. Python 3.12/3.13 blocking (via
+  v0_34_0-release-gate:
+    # v0.34.0: consolidated release gate. Python 3.12/3.13 blocking (via
     # matrix), Python 3.14 advisory-only in a separate job below.
     # PySINDy is resolved by the [test] extra directly to the declared
     # >=2.1,<3 pin; no explicit setuptools workaround (pysindy 2.x uses
@@ -41,7 +41,7 @@ jobs:
           retry 3 python -m pip install -e .[test]
       - name: Check dependencies
         run: python -m pip check
-      - name: Run v0.33.0 release gate (declarative manifest + retained per-version gates + v0.32a modern runtime + v0.33 sub-milestone tests)
+      - name: Run v0.34.0 release gate (declarative manifest + retained per-version gates + v0.32a modern runtime + v0.33/v0.34 sub-milestone tests)
         run: >
           python -m pytest
           tests/test_current_release_gate.py
@@ -77,6 +77,9 @@ jobs:
           tests/test_v0_33c_mask_preserving_bridge.py
           tests/test_v0_33d_variable_coefficient_generators.py
           tests/test_v0_33e_golden_numbers_regression_gate.py
+          tests/test_v0_34a_variable_coefficient_residuals.py
+          tests/test_v0_34b_admissibility_scoring.py
+          tests/test_v0_34c_column_normalized_weak_stlsq.py
   # v0.30e hygiene phase 1 landed lint/typecheck/coverage as advisory.
   # v0.30.1a hygiene phase 2 (this PR) promotes `lint` from advisory to
   # blocking: a red run now fails the workflow. `typecheck` and `coverage`

@@ -2,8 +2,8 @@
   "summary_schema_version": "0.1",
   "summary_type": "pdelie_declarative_release_gate_manifest",
   "scope": "declarative_release_gate_checks_only",
-  "current_release_gate_job_name": "v0_33_0-release-gate",
-  "release_count": 22,
+  "current_release_gate_job_name": "v0_34_0-release-gate",
+  "release_count": 23,
   "excluded_functional_release_gate_files": [
     {
       "file": "tests/test_v0_4_release_gate.py",
@@ -1774,6 +1774,24 @@
         {
           "submodule": "pdelie.data",
           "name": "generate_heat_1d_field_batch"
+        }
+      ]
+    },
+    {
+      "release": "0.34",
+      "source_file": "tests/test_v0_34a_variable_coefficient_residuals.py",
+      "required_submodule_attributes": [
+        {
+          "submodule": "pdelie.residuals",
+          "name": "HeatResidualEvaluator"
+        },
+        {
+          "submodule": "pdelie.symmetry.admissibility",
+          "name": "classify_background_treatment"
+        },
+        {
+          "submodule": "pdelie.discovery.column_normalize",
+          "name": "summarize_column_normalization"
         }
       ]
     }
