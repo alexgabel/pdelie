@@ -25,6 +25,14 @@ Stable public import path for the invariant canonical object:
 
 - `pdelie.InvariantMapSpec`
 
+Admissibility scoring and background-treatment classification (`v0.34b`):
+
+- `polynomial_translation_svd.fit()` gains optional `reference_generator_family` and `reference_generator_family_id`. Both or neither; an unidentified reference is refused because the resulting score would not be traceable. The result lands in `fit_diagnostics["variable_coefficient_admissibility"]` as a nested block and is `None` when no reference is supplied. **The frozen four `method_scores` names are unchanged — admissibility is deliberately not a fifth score.**
+- `relative_error_l2` compares unit-normalized coefficient directions, so it is scale- and sign-invariant and bounded above by `sqrt(2)`.
+- New `pdelie.symmetry.admissibility.classify_background_treatment(...)` answers whether a translation is a *symmetry* of a variable-coefficient problem or an *equivalence* mapping it to a different one. Frozen three-value vocabulary: `fixed_background_same_target_symmetry_failed`, `co_transforming_background_equivalence`, `inconclusive_background_separation`.
+- The vocabulary was frozen only after measurement: across three PDEs and shifts of 1–16 grid points, the fixed-background residual exceeds the co-transforming residual by 77×–15437× (median 1049×), all 15 measurements above the 5× separation bar. The co-transforming residual equals the untranslated baseline exactly, and the fixed-background residual grows monotonically with displacement.
+- Both blocks carry `diagnostic_only = True`. No new `summary_type`, no new `SymmetryCandidate` discriminator, no root export.
+
 Variable-coefficient residual evaluators (`v0.34a`):
 
 - `HeatResidualEvaluator`, `BurgersResidualEvaluator`, and `AdvectionDiffusionResidualEvaluator` accept `diffusivity` (and `advection_speed`) as a scalar, a pre-sampled `(num_points,)` array, or `None`. The scalar path is byte-preserved; the v0.33e golden gate pins it.

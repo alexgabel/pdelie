@@ -43,9 +43,10 @@ from typing import Any, ClassVar
 
 import numpy as np
 
-from pdelie.contracts import FieldBatch
+from pdelie.contracts import FieldBatch, GeneratorFamily
 from pdelie.errors import ScopeValidationError
 from pdelie.residuals.base import ResidualEvaluator
+from pdelie.symmetry.admissibility import score_against_reference
 from pdelie.symmetry.candidates import build_symmetry_candidate
 from pdelie.symmetry.fitting.translation_baseline import fit_translation_generator
 from pdelie.symmetry.registry import (
@@ -147,6 +148,8 @@ class PolynomialTranslationSvdMethod:
         *,
         residual_evaluator: ResidualEvaluator | None = None,
         config: Mapping[str, Any] | None = None,
+        reference_generator_family: GeneratorFamily | None = None,
+        reference_generator_family_id: str | None = None,
     ) -> SymmetryMethodResult:
         if not isinstance(field, FieldBatch):
             raise ScopeValidationError(
@@ -242,7 +245,33 @@ class PolynomialTranslationSvdMethod:
             # Pre-fallback span, so callers can see the honest fit quality even
             # on the periodic branch where the reference fallback may fire.
             "svd_span_distance": _finite_float_or_none(diag.get("svd_span_distance")),
+            # v0.34b: reference-relative admissibility. A nested block, NOT a
+            # fifth score name -- the frozen four are an invariant, and
+            # admissibility is a diagnostic about a caller-supplied reference
+            # rather than a property of this fit alone. None when no reference
+            # is supplied.
+            "variable_coefficient_admissibility": None,
         }
+
+        if reference_generator_family is not None:
+            if reference_generator_family_id is None:
+                raise ScopeValidationError(
+                    f"{_METHOD_NAME}.fit requires reference_generator_family_id "
+                    "whenever reference_generator_family is supplied; a score "
+                    "against an unidentified reference is not traceable."
+                )
+            fit_diagnostics["variable_coefficient_admissibility"] = (
+                score_against_reference(
+                    generator_family,
+                    reference_generator_family,
+                    reference_generator_family_id=reference_generator_family_id,
+                )
+            )
+        elif reference_generator_family_id is not None:
+            raise ScopeValidationError(
+                f"{_METHOD_NAME}.fit received reference_generator_family_id "
+                "without reference_generator_family; supply both or neither."
+            )
         warnings_out: list[str] = []
         if fit_diagnostics["reference_fallback_used"]:
             warnings_out.append("reference_fallback_used")
