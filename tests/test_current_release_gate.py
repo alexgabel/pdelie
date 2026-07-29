@@ -60,11 +60,33 @@ def test_current_release_metadata_docs_and_ci_are_aligned() -> None:
         )
 
     assert "## 0.34.0" in changelog
-    assert (
-        "V0.33" in readme
-        or "v0.33" in readme
-        or "V0.34" in readme
-        or "v0.34" in readme
+
+    # README/release alignment, derived from pyproject rather than hard-coded.
+    #
+    # The prior form accepted any of "V0.33"/"v0.33"/"V0.34"/"v0.34", so a README
+    # advertising the *previous* release line satisfied it. That is not
+    # hypothetical: v0.33.0 shipped with a README still advertising v0.32.0 and
+    # this assertion passed. Deriving the expected line from
+    # pyproject["project"]["version"] means the guard cannot drift out of step
+    # with the package again.
+    #
+    # The staleness was two-dimensional -- v0.33.0's README was behind in both
+    # the prose mention and the pip-install pins -- so both are checked.
+    current_version = pyproject["project"]["version"]
+    major_minor = ".".join(current_version.split(".")[:2])
+    assert f"v{major_minor}" in readme or f"V{major_minor}" in readme, (
+        f"README does not advertise the current release line v{major_minor}"
+    )
+
+    readme_install_pins = set(
+        re.findall(r"pdelie\.git@v(\d+\.\d+\.\d+)", readme)
+    )
+    assert readme_install_pins, (
+        "README must show at least one pinned git+https install example"
+    )
+    assert readme_install_pins == {current_version}, (
+        f"README pip-install examples pin {sorted(readme_install_pins)}; expected "
+        f"every pin to name the current release {current_version}"
     )
 
     assert "package version: `0.34.0`" in readiness
