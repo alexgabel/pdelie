@@ -196,9 +196,48 @@ been run on both platforms simultaneously. Under the v0.35 portability taxonomy:
 
 The `5e-11` residuals atol carries 22.1× margin over the worst macOS
 measurement. That is headroom, not a cross-platform proof. **A Linux run of the
-audit should be recorded before any of these tolerances is cited outside this
+audit must be recorded before any of these tolerances is cited outside this
 repository** — this is precisely the mistake made in v0.33e, v0.35a, v0.35c and
 α stage 1, and it is named here rather than left implicit.
+
+**This is a hard precondition on v0.36f**, not on β's merge. A TestPyPI release
+candidate is external in the strong sense: anyone who installs it gets
+tolerances calibrated on one platform.
+
+### Linux replay — attempt 1 (run 30651544238): infrastructure failure, no data
+
+The first `workflow_dispatch` run on `ubuntu-22.04` died before producing a
+single comparison, at `heat_1d`, the first PDE:
+
+```
+ImportError: PySINDy discovery adapter requires pdelie[downstream] or pdelie[test].
+```
+
+**Not a portability finding — an orchestrator defect, and the audit had never
+run on Linux before.** `uv venv --seed` seeds current setuptools (83.0.0 as
+measured), which removed `pkg_resources`. PySINDy 1.7.5 does
+`from pkg_resources import DistributionNotFound` at import time, so
+`import pysindy` raises `ModuleNotFoundError` and every PySINDy stage dies.
+`pip install <wheel>[downstream]` exits 0 regardless, and `-q` prints nothing,
+so the failure was silent until an exporter tried to use it.
+
+Measured: setuptools 80.9.0 and 81.0.0 still provide `pkg_resources` (with a
+deprecation warning), 83.0.0 does not — consistent with the `setuptools<82` cap
+in `docs/design/RUNTIME_COMPATIBILITY_POLICY.md`.
+
+**Why the macOS numbers are unaffected.** Two legacy venvs existed locally. Every
+β measurement in this document was produced under `setuptools 68.2.2`, where
+`pysindy 1.7.5` imports correctly and reports its version. The orchestrator-built
+venv is the one that lacked it. The legacy PySINDy coefficients in §3 are
+genuine 1.7.5 output, verified by re-running the import in the venv that produced
+them.
+
+**Fix.** `LEGACY_RUNTIME_PINS = ("setuptools==68.2.2",)` applied to the legacy
+*runtime* venv in both orchestrators — previously only the *build* venv was
+pinned — plus `verify_legacy_downstream()`, which probes `import pysindy` right
+after the install and fails there with an actionable message rather than several
+minutes and two wheel builds later. Both are asserted by unit tests so the next
+regression costs a test run rather than a CI hour.
 
 ---
 

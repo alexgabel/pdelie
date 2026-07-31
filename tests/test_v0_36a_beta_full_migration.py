@@ -301,6 +301,22 @@ def test_residuals_tolerance_actually_covers_every_measured_pde() -> None:
     assert atol / max(measured.values()) >= 10.0, "house style is a 10x margin or better"
 
 
+def test_alpha_policy_declares_its_calibration_domain() -> None:
+    """CONTRIBUTING's calibration policy, enforced on the config that motivated it.
+
+    A single-input tolerance under a generic name is indistinguishable at the
+    call site from one measured everywhere. Alpha's ``atol`` was heat-only; the
+    config now says so, so the next reader does not have to rediscover it by
+    running five PDEs.
+    """
+    alpha = _load(REPO_ROOT / "configs/alpha_migration/comparison_policy.json")
+    domain = alpha["calibration_domain"]
+    assert domain["pde_names"] == ["heat_1d"]
+    assert domain["platforms"], "a calibration domain must name its platforms"
+    assert "does NOT transfer" in domain["warning"]
+    assert (REPO_ROOT / domain["superseded_for_multi_pde_use_by"]).is_file()
+
+
 def test_alpha_tolerance_would_have_failed_on_kdv() -> None:
     """Why the override exists: alpha's value does not transfer, measurably."""
     policy = _load(POLICY_PATH)
@@ -319,3 +335,34 @@ def test_beta_margin_is_recorded_against_alphas_claimed_margin() -> None:
         policy["measured_worst_derivative_batch_drift_all_pdes"]
         > policy["alpha_measured_worst_heat_only"]
     )
+
+
+# --- orchestrator environment ----------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "script", ["scripts/run_full_migration.py", "scripts/run_alpha_migration.py"]
+)
+def test_legacy_runtime_venv_pins_setuptools(script: str) -> None:
+    """The first Linux run of the audit died here; a unit test is cheaper.
+
+    ``uv venv --seed`` seeds current setuptools, which removed ``pkg_resources``
+    in 81+. PySINDy 1.7.5 imports ``pkg_resources`` at module import, so the
+    legacy runtime venv -- not just the build venv -- must hold setuptools below
+    that. ``pip install`` exits 0 either way, so nothing else catches it.
+    """
+    source = (REPO_ROOT / script).read_text()
+    assert "LEGACY_RUNTIME_PINS" in source, script
+    marker = "LEGACY_RUNTIME_PINS = ("
+    pins = source.split(marker, 1)[1].split(")", 1)[0]
+    assert "setuptools==68.2.2" in pins, f"{script}: legacy runtime setuptools pin missing"
+    # And it must actually be passed to the install that builds legacy_venv.
+    assert "*LEGACY_RUNTIME_PINS" in source, f"{script}: pin declared but never applied"
+
+
+def test_full_migration_orchestrator_verifies_pysindy_imports() -> None:
+    """Fail fast at the venv, not five minutes later inside an exporter."""
+    source = (REPO_ROOT / "scripts/run_full_migration.py").read_text()
+    assert "def verify_legacy_downstream(" in source
+    assert "verify_legacy_downstream(legacy_python)" in source
+    assert "import pysindy, pkg_resources" in source

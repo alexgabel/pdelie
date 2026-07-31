@@ -2,6 +2,8 @@
 
 **Status:** IMPLEMENTED — v0.32a landed the migration. This document is retained as the historical record of the six API deltas and the per-call-site mapping used during migration.
 
+**Addendum, v0.36a-β:** the migration also changed *numbers*, not only APIs. See [Numerical finding](#numerical-finding-v036a-β-legacy-stlsq-conditioning) below before citing any coefficient magnitude produced under PySINDy 1.7.5.
+
 **Companion documents:**
 
 - `docs/design/RUNTIME_COMPATIBILITY_POLICY.md` — the SPEC 0 policy frame.
@@ -24,6 +26,62 @@ Full data lives in `configs/runtime_compatibility_matrix.json`. Summary:
 | H downstream | 3.14 | 2.1.0 | **fail (numpy floor)** | fail (TypeError) | fail (TypeError) | fail |
 
 Lanes F/G/H fail at the natural-resolver step because pdelie declares `numpy>=1.24,<2` core-dep and pysindy 2.1.0 requires `numpy>=2.0`. Under a `--no-deps` probe (informational only — NOT the supported install path), pdelie's core surface imports cleanly against numpy 2.5.1; the `numpy<2` cap is currently a resolver floor rather than a runtime floor.
+
+## Numerical finding (v0.36a-β): legacy STLSQ conditioning
+
+The six deltas below are API breaks. The v0.36a-β full migration audit measured the
+**numerical** consequence of the same version change, and it is not a formatting
+difference.
+
+Measured over five 1-D PDEs, 20 pipeline stages each, legacy `v0.22.0` on
+CPython 3.11 / NumPy 1.26.4 / PySINDy 1.7.5 against modern `v0.35.0` on CPython
+3.12 / NumPy 2.5.1 / PySINDy 2.1.0:
+
+| PDE | Legacy ‖c‖∞ | Modern ‖c‖∞ | Support agreement |
+|---|---:|---:|---|
+| `heat_1d` | — | — | identical (both all-zero after thresholding) |
+| `burgers_1d` | — | — | identical |
+| `reaction_diffusion_1d` | — | — | identical |
+| `advection_diffusion_1d` | `3.6695e+10` | `8.9725e+00` | differs on 0.067% of entries |
+| `kdv_1d` | `1.2885e+09` | `1.9405e+02` | differs on 0.177% of entries |
+
+**What is preserved.** Library construction is identical on both sides — same
+coefficient array shape `(64, 2145)`, same library size `2145`, same nonzero
+cardinality. The *regressor-selection* result is a qualitative agreement: the
+same number of terms survive thresholding, and on three of five PDEs the
+selected support is bit-identical.
+
+**What is not.** On `advection_diffusion_1d` and `kdv_1d` the legacy STLSQ solve
+produced coefficient magnitudes of order `1e9`–`1e10` to fit a 2145-column
+library. Coefficients that large against an O(1) target are the signature of an
+ill-conditioned solve, not of a physical model — the fitted magnitudes are
+**fit-conditioning artifacts**. The modern stack produces well-scaled
+coefficients (`8.97e+00`, `1.94e+02`) on the same input data and the same
+library.
+
+**Downstream implication.** Any *coefficient value* reported for
+`advection_diffusion_1d` or `kdv_1d` under the PySINDy 1.7.5 line rests on a
+numerically fragile solve and should not be re-cited as a magnitude.
+*Regressor-selection* results for those PDEs are not implicated: the structure
+is preserved on the modern stack. The difference is fit conditioning, not a
+modeling change — nothing about the library, the target, or the thresholding
+policy differs between the two sides.
+
+**Attribution, stated honestly.** The two environments differ in PySINDy *and*
+NumPy version, so a raw comparison cannot separate them. What separates them is
+v0.36a-α: it audited sixteen non-PySINDy stages across the same environment
+boundary — derivatives, design and Gram matrices, coefficients, residuals — and
+closed with every numeric stage agreeing to `~1e-8` or better. An environment
+that moves the shared numerical substrate by `1e-8` does not move a fitted
+coefficient by ten orders of magnitude. The divergence is therefore attributed
+to the PySINDy version delta, per the attribution rule in
+`docs/planning/V0_36A_ALPHA_TO_BETA_RUNBOOK.md`.
+
+This is a finding about the legacy line, not a defect to repair: `v0.22.0` is a
+frozen tag. Both affected stages are labelled `intentional_contract_change` in
+`configs/full_migration/comparison_policy.json`, never `unexplained_regression`.
+
+Full measurement: `docs/planning/V0_36A_BETA_MIGRATION_FREEZE.md` §3.
 
 ## PySINDy 1.7.5 → 2.1.0 API delta
 
