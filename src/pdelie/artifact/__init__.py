@@ -9,6 +9,30 @@ Submodule-only: nothing here is exported from the root ``pdelie`` namespace.
 
 from __future__ import annotations
 
+from pdelie.artifact.refs import (
+    ArtifactRef,
+    JSONValue,
+    RunManifest,
+    StageRecord,
+    content_artifact_id,
+)
 from pdelie.artifact.semantic_hash import semantic_hash
+from pdelie.artifact.store import (
+    ARTIFACT_ROOT_DIRECTORY_NAME,
+    ArtifactStore,
+    ContentAddressedFileStore,
+    MemoryArtifactStore,
+)
 
-__all__ = ["semantic_hash"]
+__all__ = [
+    "ARTIFACT_ROOT_DIRECTORY_NAME",
+    "ArtifactRef",
+    "ArtifactStore",
+    "ContentAddressedFileStore",
+    "JSONValue",
+    "MemoryArtifactStore",
+    "RunManifest",
+    "StageRecord",
+    "content_artifact_id",
+    "semantic_hash",
+]

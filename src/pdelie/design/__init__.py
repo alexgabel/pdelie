@@ -10,6 +10,12 @@ Submodule-only, per the v0.35 scope -- nothing is exported from the root
 
 from __future__ import annotations
 
+from pdelie.design.budget import BUDGET_UNITS, DUPLICATE_POLICIES, DesignBudget
+from pdelie.design.lineage import (
+    DesignRowLineage,
+    compute_numeric_design_hash,
+    compute_semantic_design_hash,
+)
 from pdelie.design.row_selection import (
     NORM_RECOMPUTE_RATIO,
     ROW_SELECTION_METHODS,
@@ -21,8 +27,14 @@ from pdelie.design.row_selection import (
 )
 
 __all__ = [
+    "BUDGET_UNITS",
+    "DUPLICATE_POLICIES",
     "NORM_RECOMPUTE_RATIO",
     "ROW_SELECTION_METHODS",
+    "DesignBudget",
+    "DesignRowLineage",
+    "compute_numeric_design_hash",
+    "compute_semantic_design_hash",
     "d_optimal_exchange_row_selection",
     "leverage_row_selection",
     "pivoted_qr_permutation",
