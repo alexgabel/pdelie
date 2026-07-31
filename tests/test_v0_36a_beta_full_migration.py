@@ -292,13 +292,69 @@ def test_residuals_tolerance_override_carries_its_measurement() -> None:
 
 
 def test_residuals_tolerance_actually_covers_every_measured_pde() -> None:
-    """The value is not merely justified in prose; it bounds what was measured."""
+    """The value is not merely justified in prose; it bounds what was measured.
+
+    Checked on **both** platforms. The binding margin is Linux's 19.6x, not
+    macOS's 22.1x -- quoting the looser one would restate the single-platform
+    mistake this release spent two amendments on.
+    """
     policy = _load(POLICY_PATH)
     atol = policy["stage_overrides"]["residuals"]["atol"]
-    measured = policy["residuals_tolerance_measurement"]["max_abs_delta_by_pde"]
-    for pde, delta in measured.items():
-        assert delta < atol, f"{pde}: measured {delta:g} >= chosen atol {atol:g}"
-    assert atol / max(measured.values()) >= 10.0, "house style is a 10x margin or better"
+    measurement = policy["residuals_tolerance_measurement"]
+
+    every_measurement: dict[str, float] = {}
+    for key in ("max_abs_delta_by_pde", "max_abs_delta_by_pde_linux"):
+        for pde, delta in measurement[key].items():
+            every_measurement[f"{key}:{pde}"] = delta
+
+    for label, delta in every_measurement.items():
+        assert delta < atol, f"{label}: measured {delta:g} >= chosen atol {atol:g}"
+
+    worst = max(every_measurement.values())
+    assert worst == measurement["worst_observed_any_platform"]
+    assert atol / worst >= 10.0, "house style is a 10x margin or better"
+
+
+def test_residuals_tolerance_is_calibrated_on_both_platforms() -> None:
+    """CONTRIBUTING's calibration policy: two inputs, and name the axis."""
+    measurement = _load(POLICY_PATH)["residuals_tolerance_measurement"]
+    assert len(measurement["platforms"]) == 2
+    assert set(measurement["max_abs_delta_by_pde_linux"]) == set(BETA_PDE_NAMES)
+    # The binding margin is the worse of the two platforms, not the better.
+    assert measurement["worst_observed_linux"] > measurement["worst_observed"]
+    assert measurement["worst_observed_any_platform"] == measurement["worst_observed_linux"]
+
+
+def test_legacy_pysindy_solve_is_recorded_as_platform_unstable() -> None:
+    """The evidence that the legacy magnitudes are solve artifacts, not data.
+
+    Same input, same library, same seed, only BLAS differs. The legacy solve
+    moves by 1e-3 to 1e-1; the modern solve by ~1e-11.
+    """
+    stability = _load(POLICY_PATH)["pysindy_cross_platform_stability"]
+    legacy = stability["legacy_relative_difference"]
+    modern = stability["modern_relative_difference"]
+    assert set(legacy) == set(modern) == {"advection_diffusion_1d", "kdv_1d"}
+    for pde in legacy:
+        assert legacy[pde] > 1e5 * modern[pde], (
+            f"{pde}: the legacy/modern stability gap is what makes this evidence"
+        )
+
+
+def test_alpha_policy_declares_its_calibration_domain() -> None:
+    """CONTRIBUTING's calibration policy, enforced on the config that motivated it.
+
+    A single-input tolerance under a generic name is indistinguishable at the
+    call site from one measured everywhere. Alpha's ``atol`` was heat-only; the
+    config now says so, so the next reader does not have to rediscover it by
+    running five PDEs.
+    """
+    alpha = _load(REPO_ROOT / "configs/alpha_migration/comparison_policy.json")
+    domain = alpha["calibration_domain"]
+    assert domain["pde_names"] == ["heat_1d"]
+    assert domain["platforms"], "a calibration domain must name its platforms"
+    assert "does NOT transfer" in domain["warning"]
+    assert (REPO_ROOT / domain["superseded_for_multi_pde_use_by"]).is_file()
 
 
 def test_alpha_tolerance_would_have_failed_on_kdv() -> None:
@@ -319,3 +375,34 @@ def test_beta_margin_is_recorded_against_alphas_claimed_margin() -> None:
         policy["measured_worst_derivative_batch_drift_all_pdes"]
         > policy["alpha_measured_worst_heat_only"]
     )
+
+
+# --- orchestrator environment ----------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "script", ["scripts/run_full_migration.py", "scripts/run_alpha_migration.py"]
+)
+def test_legacy_runtime_venv_pins_setuptools(script: str) -> None:
+    """The first Linux run of the audit died here; a unit test is cheaper.
+
+    ``uv venv --seed`` seeds current setuptools, which removed ``pkg_resources``
+    in 81+. PySINDy 1.7.5 imports ``pkg_resources`` at module import, so the
+    legacy runtime venv -- not just the build venv -- must hold setuptools below
+    that. ``pip install`` exits 0 either way, so nothing else catches it.
+    """
+    source = (REPO_ROOT / script).read_text()
+    assert "LEGACY_RUNTIME_PINS" in source, script
+    marker = "LEGACY_RUNTIME_PINS = ("
+    pins = source.split(marker, 1)[1].split(")", 1)[0]
+    assert "setuptools==68.2.2" in pins, f"{script}: legacy runtime setuptools pin missing"
+    # And it must actually be passed to the install that builds legacy_venv.
+    assert "*LEGACY_RUNTIME_PINS" in source, f"{script}: pin declared but never applied"
+
+
+def test_full_migration_orchestrator_verifies_pysindy_imports() -> None:
+    """Fail fast at the venv, not five minutes later inside an exporter."""
+    source = (REPO_ROOT / "scripts/run_full_migration.py").read_text()
+    assert "def verify_legacy_downstream(" in source
+    assert "verify_legacy_downstream(legacy_python)" in source
+    assert "import pysindy, pkg_resources" in source

@@ -35,6 +35,13 @@ LEGACY_PYTHON = "3.11"
 MODERN_PYTHON = "3.12"
 LEGACY_BUILD_PINS = ("setuptools==68.2.2", "wheel==0.38.4")
 
+#: The legacy runtime venv needs setuptools as well. PySINDy 1.7.5 imports
+#: ``pkg_resources``, which setuptools removed in 81+, and ``uv venv --seed``
+#: seeds a current setuptools. Alpha routes around PySINDy so it never trips
+#: this, but the venv is otherwise identical to beta's and the pin belongs in
+#: both. See scripts/run_full_migration.py for the measurement.
+LEGACY_RUNTIME_PINS = ("setuptools==68.2.2",)
+
 
 def run(command: list[str], *, cwd: Path | None = None) -> None:
     print(f"$ {' '.join(command)}")
@@ -79,7 +86,7 @@ def main(argv: list[str] | None = None) -> int:
     legacy_python = legacy_venv / "bin" / "python"
     run([
         str(legacy_python), "-m", "pip", "install", "-q", "--disable-pip-version-check",
-        f"{legacy_wheel}[downstream]",
+        *LEGACY_RUNTIME_PINS, f"{legacy_wheel}[downstream]",
     ])
 
     legacy_bundles = out / "legacy_bundles"

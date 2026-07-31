@@ -86,6 +86,31 @@ this is attributable to the **PySINDy version delta**, not to migration
 numerical drift. Both stages are labelled `intentional_contract_change` with a
 linked release note; neither is a regression.
 
+### Direct evidence for the conditioning diagnosis (Linux replay)
+
+The Linux run turned the ill-conditioning claim from an inference into a
+measurement. Comparing each side **against itself** across macOS and Linux —
+same data, same library, same seed, only BLAS differs:
+
+| PDE | Side | macOS ‖c‖∞ | Linux ‖c‖∞ | Relative difference |
+| --- | --- | ---: | ---: | ---: |
+| `advection_diffusion_1d` | legacy | `3.6695e+10` | `3.6869e+10` | **`4.74e-03`** |
+| `advection_diffusion_1d` | modern | `8.9725e+00` | `8.9725e+00` | `4.21e-11` |
+| `kdv_1d` | legacy | `1.2885e+09` | `1.6451e+09` | **`2.17e-01`** |
+| `kdv_1d` | modern | `1.9405e+02` | `1.9405e+02` | `9.86e-12` |
+
+The three all-zero PDEs are bit-identical on both sides on both platforms.
+
+**A solve whose answer moves 22% when the BLAS changes is ill-conditioned.** The
+legacy coefficients are not merely large, they are not reproducible; the modern
+coefficients agree across platforms to ~`1e-11`. This is independent of the
+α-baseline attribution argument and confirms it: the legacy magnitudes are
+artifacts of the solve, not properties of the data.
+
+It also sharpens the downstream warning. A legacy coefficient magnitude for
+these two PDEs is not a number that would survive being recomputed on different
+hardware.
+
 ---
 
 ## 4. Amendment 1 — α's residuals tolerance did not transfer
@@ -170,35 +195,80 @@ cannot silently return on a PDE nobody re-checked.
 | 1 | Every stage artifact traceable through `StageRecord`'s `parent_stage_ids` | **PASS** — asserted per PDE by `test_no_stage_is_its_own_ancestor_and_every_parent_exists`; every parent resolves, no cycles |
 | 2 | No unexplained regression remains | **PASS** — 0 of 100, all five experiments `all_stages_explained` |
 | 3 | Every intentional change linked to a release note | **PASS** — asserted by `test_every_intentional_contract_change_links_a_release_note`; enforced structurally by `StagePolicy.__post_init__` |
-| 4 | All portable claims pass Linux + macOS | **PASS with a stated limit** — see §8 |
+| 4 | All portable claims pass Linux + macOS | **PASS** — audit replayed on `ubuntu-22.04`, identical labels, see §8 |
 | 5 | Migration report reproducible from built wheels | **PASS** — both sides bit-identical across two full re-exports |
 | 6 | α conclusions remain valid under generalized tooling | **PASS, and it fired** — α replayed through `run_full_migration.py` reproduces `6 / 9 / 1` exactly; the gate also surfaced Amendment 1 |
 
 ---
 
-## 8. Gate 4 — the honest statement of the portability limit
+## 8. Gate 4 — the Linux replay
 
-Every measurement in this document was produced on **macOS 26.5.2 / arm64**,
-legacy CPython 3.11.14 + NumPy 1.26.4, modern CPython 3.12 + NumPy 2.x.
+The original measurements were produced on **macOS 26.5.2 / arm64**, legacy
+CPython 3.11.14 + NumPy 1.26.4, modern CPython 3.12 + NumPy 2.x. Under the v0.35
+portability taxonomy, 38 `exact_discrete` stages make cross-platform bit-equality
+claims and 53 `tolerance_numeric` stages make bounded-agreement claims — none of
+which a single-platform run can support. The audit was therefore replayed on
+`ubuntu-22.04`.
 
-The **contract tests** in `tests/test_v0_36a_beta_full_migration.py` are
-platform-independent — they read JSON and compare it to enumerated code — and
-run on Linux and macOS in the standard CI matrix.
+### Linux replay — attempt 2 (run 30653779754): PASS
 
-The **audit itself** is `workflow_dispatch`-only on `ubuntu-22.04` and has not
-been run on both platforms simultaneously. Under the v0.35 portability taxonomy:
+**Labels reproduce exactly.** 38 / 53 / 4 / 5, 0 unexplained, all five
+experiments `all_stages_explained`. Exit gate 6 reproduced α's frozen `6 / 9 / 1`
+on Linux as well.
 
-- `exact_discrete` stages (38) claim bit-exactness and **are** cross-platform
-  claims;
-- `tolerance_numeric` stages (53) claim agreement within a stated tolerance,
-  and the tolerances above were measured on one platform;
-- the 5 blocked stages claim nothing.
+**Tolerance margins hold, and are reported rather than assumed:**
 
-The `5e-11` residuals atol carries 22.1× margin over the worst macOS
-measurement. That is headroom, not a cross-platform proof. **A Linux run of the
-audit should be recorded before any of these tolerances is cited outside this
-repository** — this is precisely the mistake made in v0.33e, v0.35a, v0.35c and
-α stage 1, and it is named here rather than left implicit.
+| PDE | macOS Δresidual | Linux Δresidual | Linux/macOS | Margin vs `atol=5e-11` |
+| --- | ---: | ---: | ---: | ---: |
+| `heat_1d` | `1.829648e-13` | `2.045031e-13` | 1.12× | 244.5× |
+| `burgers_1d` | `1.317835e-13` | `1.529887e-13` | 1.16× | 326.8× |
+| `advection_diffusion_1d` | `4.396483e-14` | `4.041212e-14` | 0.92× | 1237.3× |
+| `reaction_diffusion_1d` | `5.614953e-14` | `6.081247e-14` | 1.08× | 822.2× |
+| `kdv_1d` | `2.260692e-12` | `2.555844e-12` | 1.13× | **19.6×** |
+
+The worst case is `kdv_1d` on Linux at `2.555844e-12`, 13% above the macOS worst.
+**The binding margin for the release is therefore 19.6×, not the 22.1× measured
+on macOS** — and per the calibration policy in `CONTRIBUTING.md`, that is the
+number to quote.
+
+The tolerance is now calibrated on ten measurements (five PDEs × two platforms)
+rather than one, and `configs/full_migration/comparison_policy.json` records the
+platform axis alongside the PDE axis.
+
+### Linux replay — attempt 1 (run 30651544238): infrastructure failure, no data
+
+The first `workflow_dispatch` run on `ubuntu-22.04` died before producing a
+single comparison, at `heat_1d`, the first PDE:
+
+```
+ImportError: PySINDy discovery adapter requires pdelie[downstream] or pdelie[test].
+```
+
+**Not a portability finding — an orchestrator defect, and the audit had never
+run on Linux before.** `uv venv --seed` seeds current setuptools (83.0.0 as
+measured), which removed `pkg_resources`. PySINDy 1.7.5 does
+`from pkg_resources import DistributionNotFound` at import time, so
+`import pysindy` raises `ModuleNotFoundError` and every PySINDy stage dies.
+`pip install <wheel>[downstream]` exits 0 regardless, and `-q` prints nothing,
+so the failure was silent until an exporter tried to use it.
+
+Measured: setuptools 80.9.0 and 81.0.0 still provide `pkg_resources` (with a
+deprecation warning), 83.0.0 does not — consistent with the `setuptools<82` cap
+in `docs/design/RUNTIME_COMPATIBILITY_POLICY.md`.
+
+**Why the macOS numbers are unaffected.** Two legacy venvs existed locally. Every
+β measurement in this document was produced under `setuptools 68.2.2`, where
+`pysindy 1.7.5` imports correctly and reports its version. The orchestrator-built
+venv is the one that lacked it. The legacy PySINDy coefficients in §3 are
+genuine 1.7.5 output, verified by re-running the import in the venv that produced
+them.
+
+**Fix.** `LEGACY_RUNTIME_PINS = ("setuptools==68.2.2",)` applied to the legacy
+*runtime* venv in both orchestrators — previously only the *build* venv was
+pinned — plus `verify_legacy_downstream()`, which probes `import pysindy` right
+after the install and fails there with an actionable message rather than several
+minutes and two wheel builds later. Both are asserted by unit tests so the next
+regression costs a test run rather than a CI hour.
 
 ---
 

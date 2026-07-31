@@ -68,6 +68,34 @@
     "margin_over_worst_observed": 22.1,
     "spread_across_pdes": "51x between best (4.396e-14) and worst (2.261e-12)",
     "alpha_value_did_not_transfer": true,
-    "propagation_model": "residual_delta <= |X|max * |dc|max * n_columns; covers kdv_1d (7.839e-12 >= 2.261e-12)"
+    "propagation_model": "residual_delta <= |X|max * |dc|max * n_columns; covers kdv_1d (7.839e-12 >= 2.261e-12)",
+    "platforms": [
+      "macOS-26.5.2-arm64",
+      "ubuntu-22.04-x86_64"
+    ],
+    "max_abs_delta_by_pde_linux": {
+      "heat_1d": 2.045031e-13,
+      "burgers_1d": 1.529887e-13,
+      "advection_diffusion_1d": 4.041212e-14,
+      "reaction_diffusion_1d": 6.081247e-14,
+      "kdv_1d": 2.555844e-12
+    },
+    "worst_observed_linux": 2.555844e-12,
+    "worst_observed_any_platform": 2.555844e-12,
+    "binding_margin": 19.6,
+    "binding_margin_note": "19.6x on Linux, not the 22.1x measured on macOS. Linux kdv_1d is 13% worse than macOS. Quote the binding margin, per CONTRIBUTING 'Calibrating a tolerance'. Calibrated on 10 measurements: 5 PDEs x 2 platforms.",
+    "linux_run_id": 30653779754
+  },
+  "pysindy_cross_platform_stability": {
+    "note": "Direct evidence that the legacy magnitudes are solve artifacts rather than properties of the data: comparing each side against ITSELF across macOS and Linux, with identical data, library and seed, only BLAS differing.",
+    "legacy_relative_difference": {
+      "advection_diffusion_1d": 0.004738,
+      "kdv_1d": 0.2168
+    },
+    "modern_relative_difference": {
+      "advection_diffusion_1d": 4.209e-11,
+      "kdv_1d": 9.86e-12
+    },
+    "conclusion": "The legacy solve moves 21.7% on kdv_1d when the BLAS changes; the modern solve agrees to ~1e-11. A legacy coefficient magnitude for these two PDEs would not survive being recomputed on different hardware."
   }
 }

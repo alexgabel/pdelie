@@ -60,9 +60,34 @@ Any change that adds a constant a test asserts against — a threshold, a tolera
 
 Keep the hypothesis after amending it. Across v0.33–v0.35, sixteen of twenty-one frozen contracts changed on contact with measurement, and the diff between hypothesis and confirmatory freeze is what every release-readiness note since has been written from.
 
+### Calibrating a tolerance: two inputs, or name the one
+
+**This repo's most durable failure mode: a number measured on one member of a set and recorded as if it held across the set.** Five instances in four releases, on two different axes:
+
+| Release | Calibrated on | Recorded as | Caught by |
+|---|---|---|---|
+| v0.33e | macOS-generated fixture | cross-platform golden | Linux CI |
+| v0.35a | macOS fixture vs Linux rebuild | `array_equal` | both CI versions |
+| v0.35c | macOS-only SciPy permutation | exact permutation equality | pre-merge review |
+| v0.36a-α | `heat_1d` residuals | universal `atol=1e-12` | v0.36a-β exit gate 6 |
+| v0.36a-β | — | — | *(the above, one release later)* |
+
+Platform and input datum are the same axis for this purpose: both are "the one thing it was measured on."
+
+**The policy.** Any numerical tolerance a test or config asserts against must satisfy one of:
+
+1. **Calibrated on at least two inputs**, with the spread reported next to the value. Two PDEs, two platforms, two seeds — whatever axis the tolerance is meant to hold across.
+2. **Named for its calibration input.** `HEAT_1D_RTOL`, `MACOS_ATOL`, `residuals_atol_measured_on_five_pdes`. The name states the domain, so a reader who applies it elsewhere knows they are extrapolating.
+
+A single-input tolerance under a generic name — `RTOL`, `NUMERICAL_ATOL`, a bare `atol` in a policy config — is a **review-blocking violation**. It is indistinguishable from a measured-everywhere tolerance at the call site, which is exactly how the five above survived to CI.
+
+**Margins are numbers too.** v0.36a-α reported 1,700× of headroom; measured across five PDEs it was 12.6×. A reported margin inherits the calibration domain of the measurement behind it and must be labelled the same way.
+
+**The mechanism worth remembering**, from the v0.36a-β amendment: *error scale is set by the largest intermediate; tolerance scale by the smallest output.* A stage whose output is small but whose inputs are large will fail an absolute tolerance that a stage carrying the same absolute error passes on `rtol` — so a tolerance that transfers on one stage of a pipeline may not transfer on the next.
+
 ### Comparing numbers across platforms
 
-Three CI failures in three releases had the same cause: a claim measured on one platform and recorded as universal. Every assertion comparing numeric artifacts must declare a class from `docs/design/CROSS_PLATFORM_PORTABILITY_CLASSES.md`:
+Three of the five failures above were the cross-platform form of it. Every assertion comparing numeric artifacts must declare a class from `docs/design/CROSS_PLATFORM_PORTABILITY_CLASSES.md`:
 
 | Class | Bit-equality | Examples |
 |---|---|---|
@@ -71,7 +96,7 @@ Three CI failures in three releases had the same cause: a claim measured on one 
 | `qualitative_invariant` | forbidden | SVD subspaces (compare principal angles), QR permutations on tied norms (compare the objective) |
 | `platform_specific_diagnostic` | never asserted | BLAS config, timings, iteration counts |
 
-**The rule that would have caught all three failures:** if any floating-point arithmetic happens between input and output, bit-equality is the wrong assertion. A `.npz` round-trip is `exact_discrete` because it is pure file I/O; comparing that file against a fresh *rebuild* is not, because the rebuild ran the computation again.
+**The rule that would have caught the three cross-platform failures:** if any floating-point arithmetic happens between input and output, bit-equality is the wrong assertion. A `.npz` round-trip is `exact_discrete` because it is pure file I/O; comparing that file against a fresh *rebuild* is not, because the rebuild ran the computation again.
 
 Any claim of equality between two implementations — or between a fixture and a rebuild — either runs in the portability lane on Linux **and** macOS (`@pytest.mark.portability`, budgeted at 30 tests) or is narrowed to a tolerance or invariant claim. On a cross-platform failure, reclassify rather than widen the tolerance: widening hides regressions, reclassifying states what is actually true.
 

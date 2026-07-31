@@ -3,7 +3,7 @@
   "config_type": "pdelie_alpha_migration_comparison_policy",
   "policy_id": "v0_36a_alpha_confirmatory",
   "frozen_by": "docs/planning/V0_36A_ALPHA_MIGRATION_FREEZE.md",
-  "tolerance_rationale": "Worst measured relative drift across all tolerance_numeric stages is 5.997790e-10 (per_seed_metrics / aggregate_metrics). rtol=1e-6 is the repo-wide floor and leaves roughly 1,700x of margin. It is NOT tightened below the floor: these stages have been measured on macOS only, and tightening an unmeasured cross-platform claim is the mistake v0.33e, v0.35a and v0.35c each made.",
+  "tolerance_rationale": "Worst measured relative drift across all tolerance_numeric stages is 5.997790e-10 (per_seed_metrics / aggregate_metrics). rtol=1e-6 is the repo-wide floor and leaves roughly 1,700x of margin. It is NOT tightened below the floor: these stages have been measured on macOS only, and tightening an unmeasured cross-platform claim is the mistake v0.33e, v0.35a and v0.35c each made. CALIBRATION DOMAIN: heat_1d on macOS only -- see calibration_domain. The 1,700x margin quoted here is a heat-only figure; across five PDEs the worst drift is 7.951155e-08, leaving 12.6x.",
   "measured_worst_relative_drift": 5.99779e-10,
   "measured_on": {
     "legacy": "py3.11.14 numpy1.26.4",
@@ -40,5 +40,18 @@
     "regression_row_mask",
     "selected_support"
   ],
-  "qualitative_invariants_note": "Empty by design. generated_field_statistics was reclassified to tolerance_numeric at the confirmatory freeze; no alpha stage is qualitative_invariant. See the freeze, amendment 3."
+  "qualitative_invariants_note": "Empty by design. generated_field_statistics was reclassified to tolerance_numeric at the confirmatory freeze; no alpha stage is qualitative_invariant. See the freeze, amendment 3.",
+  "calibration_domain": {
+    "inputs": [
+      "hard_heat_experiment"
+    ],
+    "pde_names": [
+      "heat_1d"
+    ],
+    "platforms": [
+      "macOS-26.5.2-arm64"
+    ],
+    "warning": "SINGLE-INPUT CALIBRATION. Both default_tolerance_numeric values and measured_worst_relative_drift were calibrated on heat_1d on macOS only. v0.36a-beta measured the same stages across five PDEs and found this atol does NOT transfer: kdv_1d/residuals needs 5e-11, because kdv's fitted coefficient magnitude is 440x heat's. Do not reuse these values outside heat_1d without re-measuring. See configs/full_migration/comparison_policy.json.",
+    "superseded_for_multi_pde_use_by": "configs/full_migration/comparison_policy.json"
+  }
 }

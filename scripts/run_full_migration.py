@@ -41,6 +41,18 @@ LEGACY_PYTHON = "3.11"
 MODERN_PYTHON = "3.12"
 LEGACY_BUILD_PINS = ("setuptools==68.2.2", "wheel==0.38.4")
 
+#: The legacy **runtime** venv needs setuptools too, not just the build venv.
+#: PySINDy 1.7.5 does ``from pkg_resources import DistributionNotFound`` at
+#: import time, and ``pkg_resources`` ships inside setuptools. ``uv venv --seed``
+#: seeds current setuptools (83.0.0 as measured), which removed ``pkg_resources``
+#: -- so ``import pysindy`` raises ModuleNotFoundError and every PySINDy stage
+#: dies. Measured: 80.9.0 and 81.0.0 still provide it (with a deprecation
+#: warning), 83.0.0 does not; consistent with the ``setuptools<82`` cap in
+#: docs/design/RUNTIME_COMPATIBILITY_POLICY.md. Pinned to the same 68.2.2 as the
+#: build env because that is the version every v0.36a-beta measurement was
+#: produced under.
+LEGACY_RUNTIME_PINS = ("setuptools==68.2.2",)
+
 #: What alpha froze, per ``docs/planning/V0_36A_ALPHA_MIGRATION_FREEZE.md``.
 #: Compared on non-zero entries only: ``label_counts`` reports all seven labels
 #: of the vocabulary, and the zeros are noise in an equality check.
@@ -54,6 +66,31 @@ ALPHA_EXPECTED_LABEL_COUNTS: dict[str, int] = {
 def nonzero(counts: dict[str, int]) -> dict[str, int]:
     """Drop zero-count labels so two label-count maps compare on substance."""
     return {label: count for label, count in counts.items() if count}
+
+
+def verify_legacy_downstream(interpreter: Path) -> None:
+    """Fail immediately if the legacy venv cannot import PySINDy.
+
+    ``pip install <wheel>[downstream]`` exits 0 whether or not the resulting
+    environment can actually *import* what it installed, and with ``-q`` it
+    prints nothing. Without this check the first symptom is an ImportError from
+    inside an exporter, several minutes and two wheel builds later, reported
+    against whichever PDE happened to run first.
+    """
+    probe = "import pysindy, pkg_resources; print(pysindy.__version__)"
+    result = subprocess.run(
+        [str(interpreter), "-c", probe], capture_output=True, text=True, check=False
+    )
+    if result.returncode != 0:
+        raise SystemExit(
+            "the legacy venv installed pdelie[downstream] but cannot import "
+            "pysindy:\n"
+            f"{result.stderr.strip()}\n"
+            "PySINDy 1.7.5 imports pkg_resources, which ships inside setuptools "
+            "and was removed in setuptools 81+. LEGACY_RUNTIME_PINS exists to "
+            "hold setuptools below that; check it was actually applied."
+        )
+    print(f"legacy venv verified: pysindy {result.stdout.strip()}")
 
 
 def run(command: list[str], *, cwd: Path | None = None) -> None:
@@ -195,8 +232,9 @@ def main(argv: list[str] | None = None) -> int:
     legacy_python = legacy_venv / "bin" / "python"
     run([
         str(legacy_python), "-m", "pip", "install", "-q",
-        "--disable-pip-version-check", f"{legacy_wheel}[downstream]",
+        "--disable-pip-version-check", *LEGACY_RUNTIME_PINS, f"{legacy_wheel}[downstream]",
     ])
+    verify_legacy_downstream(legacy_python)
 
     modern_dist = out / "modern_dist"
     modern_dist.mkdir(exist_ok=True)
