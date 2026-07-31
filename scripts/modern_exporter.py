@@ -199,7 +199,12 @@ def export(config_path: Path, output_dir: Path, wheel_path: Path | None) -> int:
         },
         build_provenance(wheel_path, "statistics"),
         [],
-        "qualitative_invariant",
+        # tolerance_numeric, not qualitative_invariant. These are unique-valued
+        # floats, which the portability taxonomy classes tolerance_numeric. The
+        # previous 'sign' invariant asserted one sign bit of a mean measured at
+        # -4.18e-17 -- numerical zero for a field of L2 38 -- so it tested
+        # rounding noise and would fail wherever that noise landed positive.
+        "tolerance_numeric",
     )
 
     # Modern entry point. The rename from compute_spectral_fd_derivatives is a

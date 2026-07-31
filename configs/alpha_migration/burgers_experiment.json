@@ -21,10 +21,11 @@
     {
       "stage_id": "generated_field_statistics",
       "stage_type": "statistics",
-      "comparison_class": "qualitative_invariant",
+      "comparison_class": "tolerance_numeric",
       "parent_stage_ids": [],
       "tolerance": null,
-      "tolerance_note": "UNSET by design; set by the v0.36a-alpha pilot."
+      "tolerance_note": "UNSET by design; set by the v0.36a-alpha pilot.",
+      "reclassified_note": "Reclassified from qualitative_invariant at the v0.36a-alpha confirmatory freeze. The exported statistics are unique-valued floats, which the portability taxonomy classes tolerance_numeric. The previous 'sign' invariant asserted one sign bit of a mean measured at -4.18e-17 -- numerical zero for a field of L2 38 -- so it tested rounding noise and would fail on any platform where that noise landed positive."
     },
     {
       "stage_id": "trajectory_ids",
