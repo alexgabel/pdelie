@@ -783,13 +783,33 @@ def _exporter_stage_ids(relative: str) -> set[str]:
     )
 
 
+#: The four PySINDy-routed stages. Alpha deliberately routed around them so its
+#: numerical baseline would not be confounded by the PySINDy 1.7.5 -> 2.1.x
+#: version delta; v0.36a-beta added them back as the axis it exists to audit.
+BETA_PYSINDY_STAGE_IDS = frozenset(
+    {
+        "pysindy_trajectories",
+        "pysindy_coefficients",
+        "pysindy_selected_support",
+        "pysindy_library_size",
+    }
+)
+
+
 def test_both_exporters_emit_the_same_stage_set() -> None:
     """The two sides share a format, never a serializer -- but they must agree
     on which stages exist, or every comparison is a missing-bundle report."""
     legacy = _exporter_stage_ids("scripts/legacy_exporter.py")
     modern = _exporter_stage_ids("scripts/modern_exporter.py")
     assert legacy == modern, legacy ^ modern
-    assert len(legacy) == 15
+    # Alpha's 15 emitted stages (16 declared, less the blocked
+    # normalization_vector) plus beta's 4 PySINDy stages. The exporters are
+    # config-driven, so carrying beta's stages does not change what an alpha run
+    # produces -- test_the_exporters_omit_exactly_the_blocked_stage still holds
+    # against the alpha config.
+    assert BETA_PYSINDY_STAGE_IDS <= legacy
+    assert len(legacy - BETA_PYSINDY_STAGE_IDS) == 15
+    assert len(legacy) == 19
 
 
 def test_the_exporters_omit_exactly_the_blocked_stage() -> None:
@@ -807,3 +827,67 @@ def test_the_modern_adapter_is_the_only_shared_serializer_touchpoint() -> None:
     for line in source.splitlines():
         stripped = line.strip()
         assert not stripped.startswith(("from pdelie.audit", "import pdelie.audit"))
+
+
+def test_stage_one_is_tolerance_numeric_not_a_sign_invariant() -> None:
+    """The frozen `sign` invariant was a latent cross-platform failure.
+
+    generated_field_statistics exports [mean, std, l2]. std and l2 are
+    non-negative by construction, so only the mean's sign could differ -- and it
+    measured -4.17959937e-17, numerical zero for a field of L2 38. The invariant
+    tested rounding noise, and would have reported unexplained_regression on any
+    platform where that noise landed positive.
+    """
+    for name in ("hard_heat_experiment", "burgers_experiment"):
+        config = json.loads(
+            (REPO_ROOT / f"configs/alpha_migration/{name}.json").read_text()
+        )
+        stage = next(
+            item for item in config["stages"]
+            if item["stage_id"] == "generated_field_statistics"
+        )
+        assert stage["comparison_class"] == "tolerance_numeric"
+        assert "rounding noise" in stage["reclassified_note"]
+
+
+def test_no_alpha_stage_is_qualitative_invariant() -> None:
+    config = json.loads(
+        (REPO_ROOT / "configs/alpha_migration/hard_heat_experiment.json").read_text()
+    )
+    assert not [
+        item for item in config["stages"]
+        if item["comparison_class"] == "qualitative_invariant"
+    ]
+    assert _policy_spec()["qualitative_invariants"] == {}
+
+
+def test_the_runbook_carries_the_three_beta_preconditions() -> None:
+    """They are what make a beta result interpretable; without them a beta delta
+    is ambiguous and the audit answers nothing."""
+    runbook = (REPO_ROOT / "docs/planning/V0_36A_ALPHA_TO_BETA_RUNBOOK.md").read_text()
+    assert "DerivativeBatch`-routed numerical baseline" in runbook
+    assert "MUST audit the PySINDy-routed stages 9" in runbook
+    assert "attributable to the PySINDy 1.7.5" in runbook
+    assert "this attribution rule is void" in runbook
+
+
+def test_the_runbook_names_the_blocked_stage_and_its_permanence() -> None:
+    runbook = (REPO_ROOT / "docs/planning/V0_36A_ALPHA_TO_BETA_RUNBOOK.md").read_text()
+    assert "**`normalization_vector`**" in runbook
+    assert "Permanent, not deferred" in runbook
+
+
+def test_the_runbook_states_the_macos_only_measurement_footprint() -> None:
+    """Otherwise alpha reads as universal when it is not."""
+    # Normalize wrapping: the assertion is about content, not line breaks.
+    runbook = " ".join(
+        (REPO_ROOT / "docs/planning/V0_36A_ALPHA_TO_BETA_RUNBOOK.md").read_text().split()
+    )
+    assert "macOS (arm64)" in runbook
+    assert "portability finding, not a regression" in runbook
+
+
+def test_the_runbook_caveats_the_stage_list_provenance() -> None:
+    """The 16 were supplied as alpha scope; this repo cannot verify exhaustiveness."""
+    runbook = (REPO_ROOT / "docs/planning/V0_36A_ALPHA_TO_BETA_RUNBOOK.md").read_text()
+    assert "cannot verify the" in runbook and "exhaustive" in runbook

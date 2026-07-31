@@ -190,8 +190,8 @@ All sixteen stages are explained; **zero unexplained regressions**.
 | label | count |
 |---|---|
 | `exactly_preserved` | 6 |
-| `numerically_equivalent_within_tolerance` | 8 |
-| `qualitatively_preserved` | 1 |
+| `numerically_equivalent_within_tolerance` | 9 |
+| `qualitatively_preserved` | 0 |
 | `blocked_missing_legacy_dependency` | 1 |
 | `unexplained_regression` | **0** |
 
@@ -203,3 +203,108 @@ remains not evaluable here.
 `configs/alpha_migration/comparison_policy.json`, fifteen working exporter
 stages to generalize, and a confirmatory freeze recording which labels were
 reached.
+
+---
+
+## β preconditions — normative, not advisory
+
+These three exist because they are what make a β result *interpretable*. Without
+them, a β delta is ambiguous and the audit answers nothing.
+
+### 1. Isolation rationale
+
+**α establishes a `DerivativeBatch`-routed numerical baseline; β audits the
+PySINDy-routed stages 9–16 against that baseline. β delta interpretation depends
+on α closing cleanly.**
+
+Routing stages 9–16 through PySINDy in α would have crossed two variables at
+once — the migration's numerics and the PySINDy 1.7.5 → 2.1.x version delta. A
+difference would have been unattributable. Splitting them means α answers "did
+the numerics survive" in isolation, and β inherits that answer as a control.
+
+### 2. β scope is non-negotiable
+
+**β MUST audit the PySINDy-routed stages 9–16. β close is blocked without it.**
+
+α deliberately did not audit that path. If β also skips it, the PySINDy path is
+never audited by anything, and the deferral becomes a permanent silent gap
+rather than a sequencing decision. This is the obligation α's scope choice
+creates, and it is recorded here so the choice cannot quietly become an omission.
+
+### 3. Failure attribution rule
+
+**Any β delta detected on the PySINDy path, given α's numerical preservation, is
+attributable to the PySINDy 1.7.5 → 2.1.x version delta, not to migration
+numerical drift.**
+
+This rule is only valid while α closes cleanly. α's measured result — every
+`tolerance_numeric` stage inside `rtol=1e-6`, worst drift `5.997790e-10`, zero
+unexplained regressions — is what licenses it. **If α is ever re-run and stops
+closing cleanly, this attribution rule is void** and β's findings must be
+re-interpreted before use.
+
+---
+
+## α close-time clarifications
+
+### The blocked stage, named
+
+**`normalization_vector`**, labelled `blocked_missing_legacy_dependency`.
+
+The frozen seven-value vocabulary has one blocked label, not the three-way split
+of `blocked_backend_reproduction` / `blocked_environment` / `blocked_scope`. The
+distinction those would draw is carried in the justification instead: column
+normalization of the weak-form design matrix arrived in **v0.34c**, and v0.22.0
+has no counterpart. This is a **scope** exclusion, not an environment or
+reproduction failure — the legacy code did not have the feature.
+
+**Permanent, not deferred to β.** β cannot unblock it: no version of v0.22.0
+gained column normalization retroactively. β should carry it forward with the
+same label and the same linked release note. The only thing that would change
+this is auditing against a legacy tag postdating v0.34c, which is a different
+audit.
+
+### Stage 1's asserted property, and why it changed at close
+
+Stage 1 was frozen as `qualitative_invariant` with the `sign` invariant.
+Checking what that actually asserted found a **latent cross-platform failure**:
+
+| exported component | can its sign differ? |
+|---|---|
+| `std` | no — non-negative by construction |
+| `l2` | no — non-negative by construction |
+| `mean` | measured `-4.17959937e-17` — numerical zero for a field of L2 38 |
+
+So the invariant tested **one sign bit of one component, and that bit is
+rounding noise**. On any platform where the mean rounded positive, stage 1 would
+have reported `unexplained_regression` on a stage that agrees to `5.6e-16`.
+
+**Reclassified to `tolerance_numeric`** — which is what the portability
+taxonomy's own decision tree gives for a unique-valued float produced by float
+arithmetic. The stage now asserts bounded relative agreement at `rtol=1e-6`, and
+measures `5.606564e-16`. No α stage is `qualitative_invariant` any more, and the
+policy's invariant map is empty by design.
+
+### Measurement footprint: macOS only
+
+**Every α measurement in this document was taken on macOS (arm64).** The audit
+has not run on Linux.
+
+**A Linux disagreement above `5.997790e-10` on any stage is a portability
+finding, not a regression.** It would mean the drift is platform-dependent in a
+way α did not observe, and the correct response is to widen the tolerance with
+that measurement recorded — not to treat it as a migration defect. β replays on
+Linux CI and is the first opportunity to close this.
+
+### Stage-list provenance
+
+The sixteen stages are those enumerated in the v0.36 per-sub-phase breakdown's
+α scope, frozen in `configs/alpha_migration/*.json` under `stages`. That config
+is the manifest.
+
+**Caveat stated plainly:** that list was supplied as the α scope. This repository
+does not contain the paper pipeline it was derived from, so **α cannot verify the
+sixteen are exhaustive of the paper-critical set.** If the paper's pipeline has
+stages the config omits, they are unaudited and their absence is unjustified
+rather than justified. Confirming the manifest against the paper pipeline is a
+β precondition that only someone with access to that pipeline can discharge.

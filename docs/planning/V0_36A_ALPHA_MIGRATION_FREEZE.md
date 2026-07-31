@@ -124,8 +124,8 @@ No invalidation clause fired. Both were checked rather than assumed.
 | label | count |
 |---|---|
 | `exactly_preserved` | **6** |
-| `numerically_equivalent_within_tolerance` | **8** |
-| `qualitatively_preserved` | **1** |
+| `numerically_equivalent_within_tolerance` | **9** |
+| `qualitatively_preserved` | 0 |
 | `blocked_missing_legacy_dependency` | **1** |
 | `intentional_contract_change` | 0 |
 | `platform_specific_difference` | 0 |
@@ -148,7 +148,7 @@ Legacy `py3.11.14 / numpy 1.26.4 / pysindy 1.7.5` versus modern
 | `selected_support` | exact_discrete | **exactly_preserved** |
 | `target_y` | tolerance_numeric | `0.000000e+00` |
 | `gram_matrix` | tolerance_numeric | `2.067376e-16` |
-| `generated_field_statistics` | qualitative_invariant | `5.606564e-16` |
+| `generated_field_statistics` | tolerance_numeric | `5.606564e-16` |
 | `coefficients` | tolerance_numeric | `2.282758e-15` |
 | `derivatives` | tolerance_numeric | `6.034927e-14` |
 | `design_matrix_x` | tolerance_numeric | `6.034927e-14` |
@@ -183,15 +183,32 @@ Measurement says otherwise: the *outputs* agree at `6.03e-14`, so the stage is `
 
 **2. Stage 1 is not reclassified to `exact_discrete`, despite the bit-identical field.**
 
-The pilot observed `max|Δ| = 0.000e+00` on the generated field and noted stage 1 might move from `qualitative_invariant`. It stays where it is. What stage 1 exports is *statistics of* the field — mean, std, L2 — not the field itself, and those are computed sums that drift at `5.6e-16`. The field being bit-identical does not make its aggregates bit-identical, and promoting the stage would assert something the exported artifact does not support.
+The pilot observed `max|Δ| = 0.000e+00` on the generated field and noted stage 1 might move. It does not move to `exact_discrete`. What stage 1 exports is *statistics of* the field — mean, std, L2 — not the field itself, and those are computed sums that drift at `5.6e-16`. A bit-identical field does not make its aggregates bit-identical.
+
+**3. Stage 1 IS reclassified — to `tolerance_numeric`, and the old classification was a latent cross-platform failure.**
+
+Found at close by asking what the frozen `sign` invariant actually asserted:
+
+| exported component | can its sign differ? |
+|---|---|
+| `std` | no — non-negative by construction |
+| `l2` | no — non-negative by construction |
+| `mean` | measured **`-4.17959937e-17`** — numerical zero for a field of L2 38 |
+
+The invariant tested **one sign bit of one component, and that bit is rounding noise**. On any platform where the mean rounded positive, stage 1 would have reported `unexplained_regression` on a stage agreeing to `5.6e-16` — a false failure on a passing stage.
+
+The portability taxonomy's decision tree gives the correct class directly: float arithmetic occurs, and the output is unique, therefore `tolerance_numeric`. Reclassified, re-exported, and re-measured at `5.606564e-16`, comfortably inside `rtol=1e-6`.
+
+**No α stage is `qualitative_invariant` any more**, and the policy's invariant map is empty by design. This is the sixth instance in this repository of an assertion that could only fail for reasons unrelated to what it claimed to test — and the first caught before it reached CI rather than by it.
 
 ## Reachability
 
-Four of seven labels were reached by a real stage. The three that were not:
+Three of seven labels were reached by a real stage. The four that were not:
 
 | label | why not reached |
 |---|---|
 | `intentional_contract_change` | see amendment 1 — no stage needed it |
+| `qualitatively_preserved` | see amendment 3 — no α stage is `qualitative_invariant` |
 | `platform_specific_difference` | no stage is classed `platform_specific_diagnostic` in alpha scope |
 | `unexplained_regression` | **nothing was unexplained** — the desired outcome |
 
