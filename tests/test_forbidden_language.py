@@ -49,6 +49,15 @@ V0_36_SOURCE_PATHS: tuple[str, ...] = (
     "src/pdelie/observation",
     "src/pdelie/differentiation",
     "src/pdelie/actions",
+    # v0.36c modules only. The `design` package predates v0.36 (v0.35c) and
+    # its __init__ follows the disclaim-explicitly convention -- it states
+    # that the selectors make no noise-robustness claim. Scanning the whole
+    # package would flag that disclaimer, which is the pattern this file's
+    # docstring exists to prevent.
+    "src/pdelie/design/attainability.py",
+    "src/pdelie/design/candidate_record.py",
+    "src/pdelie/design/comparators.py",
+    "src/pdelie/design/statistics.py",
 )
 
 #: Generated JSON introduced by the v0.36 arc. Empty until a sub-milestone
