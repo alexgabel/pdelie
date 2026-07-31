@@ -2,7 +2,7 @@
 
 **Status:** IMPLEMENTED — v0.32a landed the migration. This document is retained as the historical record of the six API deltas and the per-call-site mapping used during migration.
 
-**Addendum, v0.36a-β:** the migration also changed *numbers*, not only APIs. See [Numerical finding](#numerical-finding-v036a-β-legacy-stlsq-conditioning) below before citing any coefficient magnitude produced under PySINDy 1.7.5.
+**Addendum, v0.36a-β:** the migration also changed *numbers*, not only APIs. Read the section **"Numerical finding (v0.36a-β): legacy STLSQ conditioning"** below before citing any coefficient magnitude produced under PySINDy 1.7.5.
 
 **Companion documents:**
 
@@ -66,6 +66,20 @@ numerically fragile solve and should not be re-cited as a magnitude.
 is preserved on the modern stack. The difference is fit conditioning, not a
 modeling change — nothing about the library, the target, or the thresholding
 policy differs between the two sides.
+
+**Direct evidence, from the Linux replay.** Comparing each side *against itself*
+across macOS and Linux — identical data, library and seed, only BLAS differing:
+
+| PDE | Legacy relative difference | Modern relative difference |
+|---|---:|---:|
+| `advection_diffusion_1d` | `4.74e-03` | `4.21e-11` |
+| `kdv_1d` | **`2.17e-01`** | `9.86e-12` |
+
+A solve whose answer moves 22% when the BLAS changes is ill-conditioned. The
+legacy coefficients are not merely large, they are **not reproducible**; the
+modern coefficients agree across platforms to ~`1e-11`. A legacy coefficient
+magnitude for these two PDEs would not survive being recomputed on different
+hardware — which is a stronger reason not to re-cite it than its magnitude alone.
 
 **Attribution, stated honestly.** The two environments differ in PySINDy *and*
 NumPy version, so a raw comparison cannot separate them. What separates them is
