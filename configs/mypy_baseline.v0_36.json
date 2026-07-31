@@ -1,0 +1,745 @@
+{
+  "checker": "mypy",
+  "pin": "2.3.x",
+  "pin_rationale": "The standing error count is measured under the version CI resolves. pyproject pins mypy~=2.3.0 (v0.35 day-0); ~=1.11 resolves to 1.20.2 and reports 148 errors plus an unused-section config warning, which would make this baseline and its ratchet disagree on day one.",
+  "baseline_error_count": 147,
+  "fingerprints": [
+    {
+      "module": "src/pdelie/discovery/_pysindy_defaults.py",
+      "code": "call-overload",
+      "line_agnostic_message": "No overload variant of \"dict\" matches argument type \"object\""
+    },
+    {
+      "module": "src/pdelie/discovery/_pysindy_defaults.py",
+      "code": "arg-type",
+      "line_agnostic_message": "Argument 1 to \"float\" has incompatible type \"object\"; expected \"str | Buffer | SupportsFloat | SupportsIndex\""
+    },
+    {
+      "module": "src/pdelie/discovery/_pysindy_defaults.py",
+      "code": "call-overload",
+      "line_agnostic_message": "No overload variant of \"dict\" matches argument type \"object\""
+    },
+    {
+      "module": "src/pdelie/discovery/recovery_grid.py",
+      "code": "arg-type",
+      "line_agnostic_message": "Argument 1 to \"float\" has incompatible type \"object\"; expected \"str | Buffer | SupportsFloat | SupportsIndex\""
+    },
+    {
+      "module": "src/pdelie/discovery/pysindy_adapter.py",
+      "code": "no-untyped-def",
+      "line_agnostic_message": "Function is missing a return type annotation"
+    },
+    {
+      "module": "src/pdelie/discovery/pysindy_adapter.py",
+      "code": "assignment",
+      "line_agnostic_message": "Incompatible types in assignment (expression has type \"tuple[int, ...]\", variable has type \"tuple[int, int] | None\")"
+    },
+    {
+      "module": "src/pdelie/discovery/pysindy_adapter.py",
+      "code": "no-untyped-def",
+      "line_agnostic_message": "Function is missing a return type annotation"
+    },
+    {
+      "module": "src/pdelie/discovery/pysindy_adapter.py",
+      "code": "no-untyped-def",
+      "line_agnostic_message": "Function is missing a type annotation for one or more parameters"
+    },
+    {
+      "module": "src/pdelie/discovery/pysindy_adapter.py",
+      "code": "call-overload",
+      "line_agnostic_message": "No overload variant of \"dict\" matches argument type \"object\""
+    },
+    {
+      "module": "src/pdelie/discovery/pysindy_adapter.py",
+      "code": "arg-type",
+      "line_agnostic_message": "Argument 1 to \"float\" has incompatible type \"object\"; expected \"str | Buffer | SupportsFloat | SupportsIndex\""
+    },
+    {
+      "module": "src/pdelie/discovery/pysindy_adapter.py",
+      "code": "attr-defined",
+      "line_agnostic_message": "\"object\" has no attribute \"fit\""
+    },
+    {
+      "module": "src/pdelie/discovery/pysindy_adapter.py",
+      "code": "type-var",
+      "line_agnostic_message": "Value of type variable \"ScalarT\" of \"asarray\" cannot be \"float\""
+    },
+    {
+      "module": "src/pdelie/discovery/pysindy_adapter.py",
+      "code": "attr-defined",
+      "line_agnostic_message": "\"object\" has no attribute \"coefficients\""
+    },
+    {
+      "module": "src/pdelie/discovery/pysindy_adapter.py",
+      "code": "attr-defined",
+      "line_agnostic_message": "\"object\" has no attribute \"get_feature_names\""
+    },
+    {
+      "module": "src/pdelie/discovery/pysindy_adapter.py",
+      "code": "no-untyped-call",
+      "line_agnostic_message": "Call to untyped function \"_require_discovery_dependencies\" in typed context"
+    },
+    {
+      "module": "src/pdelie/discovery/pysindy_adapter.py",
+      "code": "call-overload",
+      "line_agnostic_message": "No overload variant of \"dict\" matches argument type \"object\""
+    },
+    {
+      "module": "src/pdelie/discovery/pysindy_adapter.py",
+      "code": "arg-type",
+      "line_agnostic_message": "Argument 1 to \"float\" has incompatible type \"object\"; expected \"str | Buffer | SupportsFloat | SupportsIndex\""
+    },
+    {
+      "module": "src/pdelie/discovery/evaluation.py",
+      "code": "arg-type",
+      "line_agnostic_message": "Argument 1 to \"float\" has incompatible type \"object\"; expected \"str | Buffer | SupportsFloat | SupportsIndex\""
+    },
+    {
+      "module": "src/pdelie/symmetry/symbolic.py",
+      "code": "no-untyped-def",
+      "line_agnostic_message": "Function is missing a return type annotation"
+    },
+    {
+      "module": "src/pdelie/symmetry/symbolic.py",
+      "code": "misc",
+      "line_agnostic_message": "List comprehension has incompatible type List[dict[str, Sequence[object]]]; expected List[dict[str, object]]"
+    },
+    {
+      "module": "src/pdelie/symmetry/symbolic.py",
+      "code": "no-any-return",
+      "line_agnostic_message": "Returning Any from function declared to return \"ndarray[tuple[Any, ...], dtype[Any]]\""
+    },
+    {
+      "module": "src/pdelie/symmetry/symbolic.py",
+      "code": "assignment",
+      "line_agnostic_message": "Incompatible types in assignment (expression has type \"str\", variable has type \"dict[str, object]\")"
+    },
+    {
+      "module": "src/pdelie/symmetry/symbolic.py",
+      "code": "attr-defined",
+      "line_agnostic_message": "\"dict[str, object]\" has no attribute \"startswith\""
+    },
+    {
+      "module": "src/pdelie/symmetry/symbolic.py",
+      "code": "index",
+      "line_agnostic_message": "Invalid index type \"slice[int, None, None]\" for \"dict[str, object]\"; expected type \"str\""
+    },
+    {
+      "module": "src/pdelie/symmetry/symbolic.py",
+      "code": "no-untyped-def",
+      "line_agnostic_message": "Function is missing a return type annotation"
+    },
+    {
+      "module": "src/pdelie/symmetry/symbolic.py",
+      "code": "no-untyped-def",
+      "line_agnostic_message": "Function is missing a type annotation for one or more parameters"
+    },
+    {
+      "module": "src/pdelie/symmetry/symbolic.py",
+      "code": "no-untyped-def",
+      "line_agnostic_message": "Function is missing a return type annotation"
+    },
+    {
+      "module": "src/pdelie/symmetry/symbolic.py",
+      "code": "no-untyped-def",
+      "line_agnostic_message": "Function is missing a type annotation for one or more parameters"
+    },
+    {
+      "module": "src/pdelie/symmetry/symbolic.py",
+      "code": "operator",
+      "line_agnostic_message": "Unsupported operand types for ** (\"object\" and \"int\")"
+    },
+    {
+      "module": "src/pdelie/symmetry/symbolic.py",
+      "code": "no-untyped-call",
+      "line_agnostic_message": "Call to untyped function \"_require_sympy\" in typed context"
+    },
+    {
+      "module": "src/pdelie/symmetry/symbolic.py",
+      "code": "call-overload",
+      "line_agnostic_message": "No overload variant of \"list\" matches argument type \"object\""
+    },
+    {
+      "module": "src/pdelie/symmetry/formula.py",
+      "code": "no-any-return",
+      "line_agnostic_message": "Returning Any from function declared to return \"ndarray[tuple[Any, ...], dtype[Any]]\""
+    },
+    {
+      "module": "src/pdelie/symmetry/formula.py",
+      "code": "unreachable",
+      "line_agnostic_message": "Statement is unreachable"
+    },
+    {
+      "module": "src/pdelie/symmetry/formula.py",
+      "code": "no-any-return",
+      "line_agnostic_message": "Returning Any from function declared to return \"dict[str, Any]\""
+    },
+    {
+      "module": "src/pdelie/symmetry/closure.py",
+      "code": "unreachable",
+      "line_agnostic_message": "Subclass of \"Sequence[VerificationReport]\" and \"str\" cannot exist: would have inconsistent method resolution order"
+    },
+    {
+      "module": "src/pdelie/symmetry/closure.py",
+      "code": "unreachable",
+      "line_agnostic_message": "Subclass of \"Sequence[VerificationReport]\" and \"bytes\" cannot exist: would have inconsistent method resolution order"
+    },
+    {
+      "module": "src/pdelie/symmetry/closure.py",
+      "code": "assignment",
+      "line_agnostic_message": "Incompatible types in assignment (expression has type \"ndarray[tuple[Any, ...], dtype[Any]]\", variable has type \"dict[str, dict[tuple[int, ...], float]]\")"
+    },
+    {
+      "module": "src/pdelie/symmetry/closure.py",
+      "code": "assignment",
+      "line_agnostic_message": "Incompatible types in assignment (expression has type \"ndarray[tuple[Any, ...], dtype[Any]]\", variable has type \"dict[str, dict[tuple[int, ...], float]]\")"
+    },
+    {
+      "module": "src/pdelie/symmetry/closure.py",
+      "code": "arg-type",
+      "line_agnostic_message": "Argument 1 to \"_sampled_inner_product\" has incompatible type \"dict[str, dict[tuple[int, ...], float]]\"; expected \"ndarray[tuple[Any, ...], dtype[Any]]\""
+    },
+    {
+      "module": "src/pdelie/symmetry/closure.py",
+      "code": "arg-type",
+      "line_agnostic_message": "Argument 2 to \"_sampled_inner_product\" has incompatible type \"dict[str, dict[tuple[int, ...], float]]\"; expected \"ndarray[tuple[Any, ...], dtype[Any]]\""
+    },
+    {
+      "module": "src/pdelie/symmetry/parameterization/polynomial_translation.py",
+      "code": "no-any-return",
+      "line_agnostic_message": "Returning Any from function declared to return \"ndarray[tuple[Any, ...], dtype[Any]]\""
+    },
+    {
+      "module": "src/pdelie/symmetry/parameterization/polynomial_translation.py",
+      "code": "no-any-return",
+      "line_agnostic_message": "Returning Any from function declared to return \"ndarray[tuple[Any, ...], dtype[Any]]\""
+    },
+    {
+      "module": "src/pdelie/residuals/weak_1d.py",
+      "code": "arg-type",
+      "line_agnostic_message": "Argument 1 to \"float\" has incompatible type \"object\"; expected \"str | Buffer | SupportsFloat | SupportsIndex\""
+    },
+    {
+      "module": "src/pdelie/discovery/pysindy_bridge.py",
+      "code": "no-untyped-def",
+      "line_agnostic_message": "Function is missing a return type annotation"
+    },
+    {
+      "module": "src/pdelie/discovery/pysindy_bridge.py",
+      "code": "no-untyped-def",
+      "line_agnostic_message": "Function is missing a return type annotation"
+    },
+    {
+      "module": "src/pdelie/discovery/pysindy_bridge.py",
+      "code": "no-untyped-call",
+      "line_agnostic_message": "Call to untyped function \"_require_pysindy\" in typed context"
+    },
+    {
+      "module": "src/pdelie/data/robustness.py",
+      "code": "arg-type",
+      "line_agnostic_message": "Argument 1 to \"float\" has incompatible type \"object\"; expected \"str | Buffer | SupportsFloat | SupportsIndex\""
+    },
+    {
+      "module": "src/pdelie/discovery/contracts.py",
+      "code": "no-any-return",
+      "line_agnostic_message": "Returning Any from function declared to return \"dict[str, Any]\""
+    },
+    {
+      "module": "src/pdelie/discovery/contracts.py",
+      "code": "arg-type",
+      "line_agnostic_message": "Argument 1 to \"float\" has incompatible type \"object\"; expected \"str | Buffer | SupportsFloat | SupportsIndex\""
+    },
+    {
+      "module": "src/pdelie/discovery/contracts.py",
+      "code": "assignment",
+      "line_agnostic_message": "Incompatible types in assignment (expression has type \"tuple[int, ...]\", variable has type \"tuple[int, int] | None\")"
+    },
+    {
+      "module": "src/pdelie/discovery/contracts.py",
+      "code": "var-annotated",
+      "line_agnostic_message": "Need type annotation for \"equation_terms\""
+    },
+    {
+      "module": "src/pdelie/symmetry/fitting/translation_baseline.py",
+      "code": "arg-type",
+      "line_agnostic_message": "Argument \"key\" to \"min\" has incompatible type overloaded function; expected \"Callable[[str], SupportsDunderLT[Any] | SupportsDunderGT[Any]]\""
+    },
+    {
+      "module": "src/pdelie/data/xarray_adapter.py",
+      "code": "no-untyped-def",
+      "line_agnostic_message": "Function is missing a return type annotation"
+    },
+    {
+      "module": "src/pdelie/data/xarray_adapter.py",
+      "code": "attr-defined",
+      "line_agnostic_message": "\"object\" has no attribute \"coords\""
+    },
+    {
+      "module": "src/pdelie/data/xarray_adapter.py",
+      "code": "attr-defined",
+      "line_agnostic_message": "\"object\" has no attribute \"coords\""
+    },
+    {
+      "module": "src/pdelie/data/xarray_adapter.py",
+      "code": "attr-defined",
+      "line_agnostic_message": "\"object\" has no attribute \"name\""
+    },
+    {
+      "module": "src/pdelie/data/xarray_adapter.py",
+      "code": "attr-defined",
+      "line_agnostic_message": "\"object\" has no attribute \"name\""
+    },
+    {
+      "module": "src/pdelie/data/xarray_adapter.py",
+      "code": "attr-defined",
+      "line_agnostic_message": "\"object\" has no attribute \"Dataset\""
+    },
+    {
+      "module": "src/pdelie/data/xarray_adapter.py",
+      "code": "attr-defined",
+      "line_agnostic_message": "\"object\" has no attribute \"DataArray\""
+    },
+    {
+      "module": "src/pdelie/data/xarray_adapter.py",
+      "code": "attr-defined",
+      "line_agnostic_message": "\"object\" has no attribute \"shape\""
+    },
+    {
+      "module": "src/pdelie/data/xarray_adapter.py",
+      "code": "attr-defined",
+      "line_agnostic_message": "\"object\" has no attribute \"dims\""
+    },
+    {
+      "module": "src/pdelie/data/xarray_adapter.py",
+      "code": "attr-defined",
+      "line_agnostic_message": "\"object\" has no attribute \"values\""
+    },
+    {
+      "module": "src/pdelie/data/xarray_adapter.py",
+      "code": "attr-defined",
+      "line_agnostic_message": "\"object\" has no attribute \"values\""
+    },
+    {
+      "module": "src/pdelie/data/xarray_adapter.py",
+      "code": "attr-defined",
+      "line_agnostic_message": "\"object\" has no attribute \"data_vars\""
+    },
+    {
+      "module": "src/pdelie/data/xarray_adapter.py",
+      "code": "attr-defined",
+      "line_agnostic_message": "\"object\" has no attribute \"data_vars\""
+    },
+    {
+      "module": "src/pdelie/data/xarray_adapter.py",
+      "code": "attr-defined",
+      "line_agnostic_message": "\"object\" has no attribute \"data_vars\""
+    },
+    {
+      "module": "src/pdelie/data/xarray_adapter.py",
+      "code": "attr-defined",
+      "line_agnostic_message": "\"object\" has no attribute \"data_vars\""
+    },
+    {
+      "module": "src/pdelie/data/xarray_adapter.py",
+      "code": "attr-defined",
+      "line_agnostic_message": "\"object\" has no attribute \"data_vars\""
+    },
+    {
+      "module": "src/pdelie/data/xarray_adapter.py",
+      "code": "attr-defined",
+      "line_agnostic_message": "\"object\" has no attribute \"dims\""
+    },
+    {
+      "module": "src/pdelie/data/xarray_adapter.py",
+      "code": "attr-defined",
+      "line_agnostic_message": "\"object\" has no attribute \"shape\""
+    },
+    {
+      "module": "src/pdelie/data/xarray_adapter.py",
+      "code": "no-any-return",
+      "line_agnostic_message": "Returning Any from function declared to return \"object | None\""
+    },
+    {
+      "module": "src/pdelie/data/reaction_diffusion_1d.py",
+      "code": "arg-type",
+      "line_agnostic_message": "Argument 1 to \"float\" has incompatible type \"object\"; expected \"str | Buffer | SupportsFloat | SupportsIndex\""
+    },
+    {
+      "module": "src/pdelie/data/kdv_1d.py",
+      "code": "arg-type",
+      "line_agnostic_message": "Argument 1 to \"float\" has incompatible type \"object\"; expected \"str | Buffer | SupportsFloat | SupportsIndex\""
+    },
+    {
+      "module": "src/pdelie/data/advection_diffusion_1d.py",
+      "code": "arg-type",
+      "line_agnostic_message": "Argument 1 to \"float\" has incompatible type \"object\"; expected \"str | Buffer | SupportsFloat | SupportsIndex\""
+    },
+    {
+      "module": "src/pdelie/residuals/reaction_diffusion_1d.py",
+      "code": "arg-type",
+      "line_agnostic_message": "Argument 1 to \"float\" has incompatible type \"object\"; expected \"str | Buffer | SupportsFloat | SupportsIndex\""
+    },
+    {
+      "module": "src/pdelie/viz/verification.py",
+      "code": "no-any-return",
+      "line_agnostic_message": "Returning Any from function declared to return \"Figure\""
+    },
+    {
+      "module": "src/pdelie/viz/span.py",
+      "code": "arg-type",
+      "line_agnostic_message": "Argument 1 to \"float\" has incompatible type \"object\"; expected \"str | Buffer | SupportsFloat | SupportsIndex\""
+    },
+    {
+      "module": "src/pdelie/viz/span.py",
+      "code": "arg-type",
+      "line_agnostic_message": "Argument 1 to \"float\" has incompatible type \"object\"; expected \"str | Buffer | SupportsFloat | SupportsIndex\""
+    },
+    {
+      "module": "src/pdelie/viz/span.py",
+      "code": "arg-type",
+      "line_agnostic_message": "Argument 1 to \"float\" has incompatible type \"object\"; expected \"str | Buffer | SupportsFloat | SupportsIndex\""
+    },
+    {
+      "module": "src/pdelie/viz/span.py",
+      "code": "arg-type",
+      "line_agnostic_message": "Argument 1 to \"float\" has incompatible type \"object\"; expected \"str | Buffer | SupportsFloat | SupportsIndex\""
+    },
+    {
+      "module": "src/pdelie/viz/span.py",
+      "code": "unused-ignore",
+      "line_agnostic_message": "Unused \"type: ignore\" comment"
+    },
+    {
+      "module": "src/pdelie/viz/span.py",
+      "code": "attr-defined",
+      "line_agnostic_message": "\"object\" has no attribute \"get\""
+    },
+    {
+      "module": "src/pdelie/viz/span.py",
+      "code": "unused-ignore",
+      "line_agnostic_message": "Unused \"type: ignore\" comment"
+    },
+    {
+      "module": "src/pdelie/viz/span.py",
+      "code": "attr-defined",
+      "line_agnostic_message": "\"object\" has no attribute \"get\""
+    },
+    {
+      "module": "src/pdelie/viz/span.py",
+      "code": "call-overload",
+      "line_agnostic_message": "No overload variant of \"int\" matches argument type \"object\""
+    },
+    {
+      "module": "src/pdelie/viz/span.py",
+      "code": "call-overload",
+      "line_agnostic_message": "No overload variant of \"int\" matches argument type \"object\""
+    },
+    {
+      "module": "src/pdelie/viz/span.py",
+      "code": "call-overload",
+      "line_agnostic_message": "No overload variant of \"int\" matches argument type \"object\""
+    },
+    {
+      "module": "src/pdelie/viz/span.py",
+      "code": "no-any-return",
+      "line_agnostic_message": "Returning Any from function declared to return \"Figure\""
+    },
+    {
+      "module": "src/pdelie/viz/closure.py",
+      "code": "arg-type",
+      "line_agnostic_message": "Argument 1 to \"float\" has incompatible type \"object\"; expected \"str | Buffer | SupportsFloat | SupportsIndex\""
+    },
+    {
+      "module": "src/pdelie/viz/closure.py",
+      "code": "no-any-return",
+      "line_agnostic_message": "Returning Any from function declared to return \"Figure\""
+    },
+    {
+      "module": "src/pdelie/residuals/advection_diffusion_1d.py",
+      "code": "arg-type",
+      "line_agnostic_message": "Argument 1 to \"float\" has incompatible type \"object\"; expected \"str | Buffer | SupportsFloat | SupportsIndex\""
+    },
+    {
+      "module": "src/pdelie/invariants/diagnostics.py",
+      "code": "no-any-return",
+      "line_agnostic_message": "Returning Any from function declared to return \"dict[str, Any]\""
+    },
+    {
+      "module": "src/pdelie/invariants/diagnostics.py",
+      "code": "arg-type",
+      "line_agnostic_message": "Argument 1 to \"array_equal\" has incompatible type \"ndarray[Any, Any] | None\"; expected \"Buffer | _SupportsArray[dtype[Any]] | _NestedSequence[_SupportsArray[dtype[Any]]] | complex | bytes | str | _NestedSequence[complex | bytes | str]\""
+    },
+    {
+      "module": "src/pdelie/invariants/diagnostics.py",
+      "code": "arg-type",
+      "line_agnostic_message": "Argument 2 to \"_residual_rms\" has incompatible type \"ResidualEvaluator | None\"; expected \"ResidualEvaluator\""
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "no-any-return",
+      "line_agnostic_message": "Returning Any from function declared to return \"dict[str, Any]\""
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "no-any-return",
+      "line_agnostic_message": "Returning Any from function declared to return \"dict[str, Any]\""
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "dict-item",
+      "line_agnostic_message": "Dict entry 1 has incompatible type \"str\": \"float | None\"; expected \"str\": \"float\""
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "operator",
+      "line_agnostic_message": "Unsupported operand types for > (\"float\" and \"None\")"
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "dict-item",
+      "line_agnostic_message": "Dict entry 1 has incompatible type \"str\": \"list[Any]\"; expected \"str\": \"int\""
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "dict-item",
+      "line_agnostic_message": "Dict entry 2 has incompatible type \"str\": \"list[Any]\"; expected \"str\": \"int\""
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "no-redef",
+      "line_agnostic_message": "Name \"diagnostics\" already defined on line 1029"
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "dict-item",
+      "line_agnostic_message": "Dict entry 0 has incompatible type \"str\": \"float\"; expected \"str\": \"bool\""
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "dict-item",
+      "line_agnostic_message": "Dict entry 1 has incompatible type \"str\": \"float\"; expected \"str\": \"bool\""
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "dict-item",
+      "line_agnostic_message": "Dict entry 2 has incompatible type \"str\": \"float | None\"; expected \"str\": \"bool\""
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "unreachable",
+      "line_agnostic_message": "Statement is unreachable"
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "dict-item",
+      "line_agnostic_message": "Dict entry 2 has incompatible type \"str\": \"dict[str, str]\"; expected \"str\": \"bool | None\""
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "dict-item",
+      "line_agnostic_message": "Dict entry 1 has incompatible type \"str\": \"dict[str, Any]\"; expected \"str\": \"bool | None\""
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "no-untyped-def",
+      "line_agnostic_message": "Function is missing a return type annotation"
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "attr-defined",
+      "line_agnostic_message": "\"object\" has no attribute \"data_vars\""
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "attr-defined",
+      "line_agnostic_message": "\"object\" has no attribute \"coords\""
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "attr-defined",
+      "line_agnostic_message": "\"object\" has no attribute \"coords\""
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "attr-defined",
+      "line_agnostic_message": "\"object\" has no attribute \"attrs\""
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "attr-defined",
+      "line_agnostic_message": "\"object\" has no attribute \"attrs\""
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "attr-defined",
+      "line_agnostic_message": "\"object\" has no attribute \"data_vars\""
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "attr-defined",
+      "line_agnostic_message": "\"object\" has no attribute \"data_vars\""
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "attr-defined",
+      "line_agnostic_message": "\"object\" has no attribute \"data_vars\""
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "attr-defined",
+      "line_agnostic_message": "\"object\" has no attribute \"data_vars\""
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "attr-defined",
+      "line_agnostic_message": "\"object\" has no attribute \"data_vars\""
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "attr-defined",
+      "line_agnostic_message": "\"object\" has no attribute \"sizes\""
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "no-any-return",
+      "line_agnostic_message": "Returning Any from function declared to return \"dict[str, Any]\""
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "assignment",
+      "line_agnostic_message": "Incompatible types in assignment (expression has type \"None\", variable has type \"int\")"
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "assignment",
+      "line_agnostic_message": "Incompatible types in assignment (expression has type \"None\", variable has type \"int\")"
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "dict-item",
+      "line_agnostic_message": "Dict entry 0 has incompatible type \"str\": \"float | None\"; expected \"str\": \"float\""
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "dict-item",
+      "line_agnostic_message": "Dict entry 1 has incompatible type \"str\": \"float | None\"; expected \"str\": \"float\""
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "dict-item",
+      "line_agnostic_message": "Dict entry 2 has incompatible type \"str\": \"float | None\"; expected \"str\": \"float\""
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "no-any-return",
+      "line_agnostic_message": "Returning Any from function declared to return \"dict[str, Any] | list[Any] | None\""
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "no-any-return",
+      "line_agnostic_message": "Returning Any from function declared to return \"dict[str, Any] | list[Any] | None\""
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "assignment",
+      "line_agnostic_message": "Incompatible types in assignment (expression has type \"dict[str, Any] | None\", variable has type \"dict[str, Any]\")"
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "no-any-return",
+      "line_agnostic_message": "Returning Any from function declared to return \"dict[str, Any]\""
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "no-any-return",
+      "line_agnostic_message": "Returning Any from function declared to return \"list[float] | list[list[float]]\""
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "no-any-return",
+      "line_agnostic_message": "Returning Any from function declared to return \"list[float] | list[list[float]]\""
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "assignment",
+      "line_agnostic_message": "Incompatible types in assignment (expression has type \"dict[str, Any] | None\", variable has type \"dict[str, Any]\")"
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "assignment",
+      "line_agnostic_message": "Incompatible types in assignment (expression has type \"dict[str, Any] | None\", variable has type \"dict[str, Any]\")"
+    },
+    {
+      "module": "src/pdelie/reporting/summaries.py",
+      "code": "no-any-return",
+      "line_agnostic_message": "Returning Any from function declared to return \"list[Any] | None\""
+    },
+    {
+      "module": "src/pdelie/symmetry/candidate_validation.py",
+      "code": "no-any-return",
+      "line_agnostic_message": "Returning Any from function declared to return \"dict[str, Any]\""
+    },
+    {
+      "module": "src/pdelie/examples/data_ecosystem_feasibility.py",
+      "code": "no-untyped-def",
+      "line_agnostic_message": "Function is missing a return type annotation"
+    },
+    {
+      "module": "src/pdelie/examples/data_ecosystem_feasibility.py",
+      "code": "no-untyped-call",
+      "line_agnostic_message": "Call to untyped function \"_require_xarray_for_example\" in typed context"
+    },
+    {
+      "module": "src/pdelie/viz/generators.py",
+      "code": "no-any-return",
+      "line_agnostic_message": "Returning Any from function declared to return \"Figure\""
+    },
+    {
+      "module": "src/pdelie/viz/generators.py",
+      "code": "no-any-return",
+      "line_agnostic_message": "Returning Any from function declared to return \"Figure\""
+    },
+    {
+      "module": "src/pdelie/examples/symmetry_candidate_validation.py",
+      "code": "index",
+      "line_agnostic_message": "Value of type \"Collection[str]\" is not indexable"
+    },
+    {
+      "module": "src/pdelie/examples/symmetry_candidate_validation.py",
+      "code": "index",
+      "line_agnostic_message": "Value of type \"Collection[str]\" is not indexable"
+    },
+    {
+      "module": "src/pdelie/examples/formula_generator_validation.py",
+      "code": "arg-type",
+      "line_agnostic_message": "Argument 2 to \"FormulaGeneratorFamily\" has incompatible type \"**dict[str, object]\"; expected \"str\""
+    },
+    {
+      "module": "src/pdelie/examples/formula_generator_validation.py",
+      "code": "arg-type",
+      "line_agnostic_message": "Argument 2 to \"FormulaGeneratorFamily\" has incompatible type \"**dict[str, object]\"; expected \"tuple[str, ...]\""
+    },
+    {
+      "module": "src/pdelie/examples/formula_generator_validation.py",
+      "code": "arg-type",
+      "line_agnostic_message": "Argument 2 to \"FormulaGeneratorFamily\" has incompatible type \"**dict[str, object]\"; expected \"dict[str, Any] | None\""
+    },
+    {
+      "module": "src/pdelie/examples/formula_generator_validation.py",
+      "code": "arg-type",
+      "line_agnostic_message": "Argument 2 to \"FormulaGeneratorFamily\" has incompatible type \"**dict[str, object]\"; expected \"dict[str, Any]\""
+    },
+    {
+      "module": "src/pdelie/examples/formula_generator_validation.py",
+      "code": "index",
+      "line_agnostic_message": "Value of type \"Collection[str]\" is not indexable"
+    },
+    {
+      "module": "src/pdelie/examples/formula_generator_validation.py",
+      "code": "index",
+      "line_agnostic_message": "Value of type \"Collection[str]\" is not indexable"
+    }
+  ],
+  "renames": [],
+  "rename_policy": "A renamed module inherits a fingerprint if and only if the error code and the line-agnostic message both match. Line numbers are excluded from the fingerprint so that unrelated edits above an error do not invalidate it; module path, code, and message together are specific enough that a genuinely new error cannot be absorbed by an old entry."
+}

@@ -170,9 +170,25 @@ def _metric_drift_report(expected: dict, observed: dict) -> list[str]:
     return drifted
 
 
+@pytest.mark.portability
 @pytest.mark.parametrize("pde_name", GOLDEN_PDE_NAMES)
 def test_golden_numbers_do_not_drift(pde_name: str, fixture_entries: dict) -> None:
-    """Replay the pipeline and fail on any metric that drifts past the tolerance."""
+    """Replay the pipeline and fail on any metric that drifts past the tolerance.
+
+    Portability class: ``tolerance_numeric``. The fixture was generated on macOS
+    and is replayed on manylinux, where a different BLAS orders floating-point
+    reductions differently -- this is the test that failed on Linux CI in v0.33e
+    when it compared bit-exactly. It is the v0.36 pilot for the portability lane
+    -- 11 parametrized cases, the full golden set (5 periodic, 3 nonperiodic,
+    3 variable-coefficient) -- because it is the oldest cross-platform claim in
+    the repo and the one with measured history: worst observed deviation 1.5e-9
+    against an rtol of 1e-6. The whole golden set is marked rather than an
+    arbitrary subset: covering 5 of 11 would leave six goldens unvalidated on
+    macOS while claiming the lane covers goldens.
+
+    The v0.34a byte-preservation tests are the intended second tranche, added
+    only once this one is green on both platforms.
+    """
     expected = fixture_entries[pde_name]
     observed = compute_golden_entry(_SPECS_BY_NAME[pde_name])
 

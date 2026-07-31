@@ -50,6 +50,43 @@ For nontrivial changes:
 
 Do not conflate report-only diagnostics with policy. PDELie may summarize readiness, confidence, provenance, and downstream contracts, but it does not decide benchmark success, train/test validity, or manuscript claims.
 
+### Freezing a number: hypothesis → pilot → confirmatory
+
+Any change that adds a constant a test asserts against — a threshold, a tolerance, a seed, a pinned fixture value, a label vocabulary, an axis or unit convention — follows the three-phase process in `docs/design/DESIGN_FREEZE_PROCESS.md`:
+
+1. **Hypothesis freeze**, written *before* implementation. Names the quantity, enumerates the inputs, states the decision rule, and leaves every threshold unset. Includes an invalidation clause: what would make the hypothesis *wrong* rather than merely unmet.
+2. **Pilot.** Prototype code, run outside the package. Every quantity produced by two independent routes or checked against a closed form. Report the spread, not a single draw. Probe the degenerate inputs.
+3. **Confirmatory freeze**, written *after* the pilot. Thresholds now set, each justified from the measured spread. Every branch of any new vocabulary shown reachable on real input.
+
+Keep the hypothesis after amending it. Across v0.33–v0.35, sixteen of twenty-one frozen contracts changed on contact with measurement, and the diff between hypothesis and confirmatory freeze is what every release-readiness note since has been written from.
+
+### Comparing numbers across platforms
+
+Three CI failures in three releases had the same cause: a claim measured on one platform and recorded as universal. Every assertion comparing numeric artifacts must declare a class from `docs/design/CROSS_PLATFORM_PORTABILITY_CLASSES.md`:
+
+| Class | Bit-equality | Examples |
+|---|---|---|
+| `exact_discrete` | **required** | IDs, split membership, boolean masks, `.npz` round-trip, `semantic_hash` output |
+| `tolerance_numeric` | forbidden | derivatives, residuals, design and Gram matrices, coefficients, metrics |
+| `qualitative_invariant` | forbidden | SVD subspaces (compare principal angles), QR permutations on tied norms (compare the objective) |
+| `platform_specific_diagnostic` | never asserted | BLAS config, timings, iteration counts |
+
+**The rule that would have caught all three failures:** if any floating-point arithmetic happens between input and output, bit-equality is the wrong assertion. A `.npz` round-trip is `exact_discrete` because it is pure file I/O; comparing that file against a fresh *rebuild* is not, because the rebuild ran the computation again.
+
+Any claim of equality between two implementations — or between a fixture and a rebuild — either runs in the portability lane on Linux **and** macOS (`@pytest.mark.portability`, budgeted at 30 tests) or is narrowed to a tolerance or invariant claim. On a cross-platform failure, reclassify rather than widen the tolerance: widening hides regressions, reclassifying states what is actually true.
+
+### Language PDELie does not use
+
+These terms must not appear in v0.36 production paths (`tests/test_forbidden_language.py`):
+
+| Term | Why |
+|---|---|
+| `wsindy` | PDELie does not implement WSINDy and makes no WSINDy benchmark claim |
+| `noise_robust`, `noise-robust`, `noise robustness` | no noise-robustness claim is made or supported |
+
+The scan covers declared v0.36 source paths only. Modules shipped before v0.36 deliberately *name* these terms in order to refuse them — "It is not WSINDy and makes no noise-robustness claim" — and prose documentation must be able to say what it disclaims. Flagging a disclaimer as a violation would push the codebase toward silence, which is the opposite of the intent.
+
+
 ### Deleting merged branches — verify by patch identity, not by diff
 
 Sub-milestone branches are **squash-merged**, so a merged branch is never an ancestor of `main` and its tip commit SHA never appears in `main`'s history. Two common checks give the wrong answer here:

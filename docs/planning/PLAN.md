@@ -1,4 +1,73 @@
-# PDELie - Execution Plan (V0.34.0 Release Close — Variable-Coefficient Residuals and Weak-Form Conditioning)
+# PDELie - Execution Plan (V0.36 — Paper-Critical Migration Audit and Artifact Identity)
+
+**Status:** V0.36 day-zero polish in progress. No tag. Package version remains `0.35.0` until the v0.36 release close.
+
+**Scope change on record.** The roadmap previously framed v0.36 as "TestPyPI staging + first external symmetry-method port". The arc is now led by the paper-critical pipeline migration audit. The external symmetry-method port (Ko infinitesimal-generator method) and TestPyPI staging both move to `v0.39`, so that the install surface is stressed by a second `SymmetryMethod` before artifacts are handed out.
+
+## Standing assumptions for every v0.36 sub-milestone
+
+Each of these is asserted by an existing test and is not renegotiated per sub-milestone:
+
+- no root `pdelie` export;
+- no `discovery_task_result` schema change (still 22 top-level keys);
+- no `pdelie_weak_pde_library_diagnostic` schema drift beyond the frozen 27/28 conditional;
+- no cross-platform bit-exact assertion outside the `exact_discrete` class (`docs/design/CROSS_PLATFORM_PORTABILITY_CLASSES.md`);
+- hypothesis freeze → pilot → confirmatory freeze on every numerical work package (`docs/design/DESIGN_FREEZE_PROCESS.md`).
+
+## Sub-milestone structure
+
+| Sub-milestone | Focus | Status |
+|---|---|---|
+| **day-zero** | process docs, artifact identity, mypy baseline, portability lane, roadmap/terminology corrections | in progress |
+| **v0.36a-α** | paper-critical migration audit — legacy-vs-modern comparison across 16 paper-critical stages | specified, not started |
+| **v0.36b** | *not yet specified* | — |
+| **v0.36a-β** | full-pipeline migration coverage beyond the α paper-critical subset | *not yet specified* |
+| **v0.36c** | *not yet specified* | — |
+| **v0.36d** | *not yet specified* | — |
+| **v0.36e** | *not yet specified* | — |
+| **v0.36f** | *not yet specified* | — |
+
+> Only day-zero and `v0.36a-α` have been specified in detail. The remaining sub-milestone slots are named here so the lettering is fixed and stable, and are deliberately left empty rather than invented — a placeholder that guesses its own scope is the failure mode the freeze process exists to prevent.
+
+## Day-zero contents
+
+**New process contracts.**
+
+- `docs/design/DESIGN_FREEZE_PROCESS.md` — hypothesis → pilot → confirmatory freeze, with section templates. Written because sixteen of twenty-one frozen contracts across v0.33–v0.35 required amendment on contact with measurement, six of which would otherwise have shipped as silent defects.
+- `docs/design/CROSS_PLATFORM_PORTABILITY_CLASSES.md` — the four-class taxonomy (`exact_discrete`, `tolerance_numeric`, `qualitative_invariant`, `platform_specific_diagnostic`). Written because three CI failures across three releases had one cause: a claim measured on one platform and recorded as universal.
+
+**New public surface.**
+
+- `pdelie.artifact.semantic_hash(payload) -> str` — the single canonical-JSON hash. Every `ArtifactRef` and lineage hash routes through it; there is deliberately no alternative canonical-JSON implementation anywhere in the codebase. Landed at day-zero so every later consumer shares one function from the start rather than converging on one afterwards.
+
+**New guards.**
+
+- `tests/test_semver_planning_monotonicity.py` — every planned identifier must sort above every shipped version.
+- `tests/test_portability_lane_budget.py` — the portability lane is capped at 30 tests.
+- `tests/test_forbidden_language.py` — v0.36 source paths make no forbidden claim.
+- `tests/test_v0_36_mypy_baseline.py` — baseline integrity and the fingerprint rename rule.
+- `.github/workflows/portability.yml` — Ubuntu 22.04 + macOS 14, Python 3.12, advisory during the pilot.
+- `configs/mypy_baseline.v0_36.json` — 147 fingerprints, pinned to the checker version CI resolves.
+
+**Corrections carried by day-zero.**
+
+- The forward roadmap planned the 2-D widening arc as `v0.4`, but `v0.4.0` is a shipped tag that sorts *below* the current line. Renamed to `v0.40`.
+- Three forward rows were labelled `Planned` for work that had shipped or been superseded: `v0.31` (released as `v0.31.0`), `v0.30.1` (shipped inside the v0.31.0 line), and `v0.31.1` (superseded by v0.32a per `docs/design/PYSINDY_2_MIGRATION_AUDIT.md`).
+- The external symmetry-method port is now named the **Ko infinitesimal-generator method** throughout active planning and stability docs. The former hyphenated label survives only in frozen shipped evidence — the support matrices, `CHANGELOG.md`, and the v0.35 readiness note — which is deliberately left as-shipped. (This bullet avoids quoting the old label verbatim: the renaming exit gate is a grep, and a sentence describing the rename would otherwise fail it.)
+
+## v0.36a-α — paper-critical migration audit
+
+Compares a legacy pipeline run against a modern one, stage by stage, across the sixteen paper-critical stages. Emits `summary_type = "pdelie_pipeline_migration_report"`.
+
+- **Interchange format:** `stage.json` plus `array_NNN.npy` per stage. No pickle, no object references; every array carries a content hash.
+- **Comparison classes** per stage, drawn from the portability taxonomy — `exact_discrete` for IDs, split membership, masks, and selected support; `tolerance_numeric` for derivatives, residuals, design matrices, Gram matrices, coefficients, and metrics; `qualitative_invariant` where the raw value is not unique.
+- **Migration labels:** `exactly_preserved`, `numerically_equivalent_within_tolerance`, `qualitatively_preserved`, `intentional_contract_change`, `platform_specific_difference`, `unexplained_regression`, `blocked_missing_legacy_dependency`.
+- **Tolerances are not frozen in advance.** They are set by the pilot, per the freeze process.
+- The audit itself runs under `workflow_dispatch`, not on every PR; the committed test file carries contract tests only.
+
+---
+
+# PDELie - Execution Plan (V0.35.0 Release Close — Design Diagnostics, Row Selection, and the Point-Symmetry Catalogue)
 
 **Status:** V0.35.0 Release Close — complete. Tag `v0.35.0`; readiness `docs/releases/V0_35_RELEASE_READINESS.md`.
 
@@ -33,7 +102,7 @@ Sub-milestone structure (three focus items a/b/c + two parallel scope-widenings 
 - **v0.33e** (parallel hygiene) — Golden-numbers regression gate. Frozen per-PDE derivative + residual + vertical-slice numerical fixtures pinned into the release-gate at `tests/fixtures/v0_33e_golden_numbers.json` with a strict-JSON `pdelie_golden_numbers_fixture` schema; tight tolerances (`rtol=1e-6, atol=1e-12`); nonperiodic golden fixtures land alongside v0.33a. No unnamed drift permitted — every release-close PR either regenerates the fixture with a named cause in the CHANGELOG or fixes the regression.
 - **v0.33.0** — Release close consolidation. Single tag consolidating v0.33a-e. Version bump `0.32.0` → `0.33.0`. `V0_33_RELEASE_READINESS.md`. `support_matrix.v0_33.json`. Release-gate manifest consolidated `0.33` row. CI job rename `v0_32_0-release-gate` → `v0_33_0-release-gate`.
 
-Non-goals: no new PDE; no new symmetry method (Ko-sparse moves to v0.34+); no new `SymmetryCandidate` discriminator; no new `summary_type`; no `discovery_task_result` schema change (still 22 keys); no root export; no noise / WSINDy claim; no multi-D / 2D contract widening; no package version bump until v0.33.0 release close.
+Non-goals: no new PDE; no new symmetry method (Ko infinitesimal-generator method moves to v0.34+); no new `SymmetryCandidate` discriminator; no new `summary_type`; no `discovery_task_result` schema change (still 22 keys); no root export; no noise / WSINDy claim; no multi-D / 2D contract widening; no package version bump until v0.33.0 release close.
 
 ---
 
@@ -704,7 +773,7 @@ Records the additive extension planned for `pdelie.reporting.summarize_generator
 The v0.20 `confidence_label` (`strong`, `qualified`, `failed`, `insufficient_evidence`) is a frozen public contract. Renaming it or extending its allowed values would break `tests/test_v0_20_release_gate.py` and every downstream consumer that already relies on the categorical vocabulary. However, the peer review of the v0.31 arc flagged that:
 
 - users need numeric per-component scores for calibration and cross-method comparison work, not only a categorical rollup;
-- future release adapters (v0.33 Ko-sparse, v0.35a LieGG) naturally emit uncertainty distributions that today have nowhere to land in PDELie's public reporting;
+- future release adapters (v0.33 Ko infinitesimal-generator method, v0.35a LieGG) naturally emit uncertainty distributions that today have nowhere to land in PDELie's public reporting;
 - BARNN-style calibration studies require reliability-diagram data that `confidence_label` cannot represent.
 
 The additive path avoids the breaking-change trap: keep `confidence_label` exactly as-is (v0.20 contract), and add three **optional** fields alongside it that default to `None` so existing downstream consumers are unaffected.
