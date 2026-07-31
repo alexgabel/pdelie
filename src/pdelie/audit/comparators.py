@@ -36,6 +36,7 @@ from pdelie.errors import ScopeValidationError, ShapeValidationError
 __all__ = [
     "COMPARATOR_ASSIGNABLE_LABELS",
     "MIGRATION_LABELS",
+    "PRINCIPAL_ANGLE_RESOLUTION_FLOOR_RAD",
     "QUALITATIVE_INVARIANTS",
     "ComparisonResult",
     "compare_exact",
@@ -72,6 +73,14 @@ COMPARATOR_ASSIGNABLE_LABELS: tuple[str, ...] = (
     "qualitatively_preserved",
     "unexplained_regression",
 )
+
+#: Smallest principal angle that ``arccos`` can resolve in float64.
+#:
+#: ``arccos`` is ill-conditioned near 1, so identical subspaces can report an
+#: angle of order ``sqrt(machine eps)``. Measured across platforms for two bases
+#: spanning the same subspace: ``0.0`` on macOS, ``1.49e-08`` on Linux. A
+#: threshold below this is not satisfiable by identical subspaces.
+PRINCIPAL_ANGLE_RESOLUTION_FLOOR_RAD = float(np.sqrt(np.finfo(float).eps))
 
 #: Invariants :func:`compare_qualitative` knows how to check.
 QUALITATIVE_INVARIANTS: tuple[str, ...] = (
@@ -241,6 +250,15 @@ def principal_angles(a: object, b: object) -> np.ndarray:
     not comparable across implementations -- column signs and the basis within a
     degenerate eigenspace are both arbitrary -- but the subspace they span is
     well defined.
+
+    **Resolution floor.** Angles are recovered with ``arccos``, which is
+    ill-conditioned near 1: ``arccos(1 - eps) ~ sqrt(2 eps)``. A singular value
+    off by one ulp therefore yields an angle of order ``sqrt(eps)``, about
+    ``1.5e-8`` in float64 -- and that floor is platform-dependent, measured at
+    ``0.0`` on macOS and ``1.49e-08`` on Linux for two bases spanning an
+    identical subspace. Do not pass ``max_principal_angle_rad`` below
+    :data:`PRINCIPAL_ANGLE_RESOLUTION_FLOOR_RAD`; a tighter threshold cannot be
+    satisfied by identical subspaces and will fail on some platforms only.
     """
     left = np.asarray(a, dtype=float)
     right = np.asarray(b, dtype=float)

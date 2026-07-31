@@ -19,6 +19,7 @@ from __future__ import annotations
 from pdelie.audit.comparators import (
     COMPARATOR_ASSIGNABLE_LABELS,
     MIGRATION_LABELS,
+    PRINCIPAL_ANGLE_RESOLUTION_FLOOR_RAD,
     QUALITATIVE_INVARIANTS,
     ComparisonResult,
     compare_exact,
@@ -48,6 +49,7 @@ __all__ = [
     "COMPARISON_CLASSES",
     "MIGRATION_LABELS",
     "PIPELINE_MIGRATION_SUMMARY_TYPE",
+    "PRINCIPAL_ANGLE_RESOLUTION_FLOOR_RAD",
     "QUALITATIVE_INVARIANTS",
     "STAGE_BUNDLE_SCHEMA_VERSION",
     "ComparisonResult",

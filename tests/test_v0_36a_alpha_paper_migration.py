@@ -20,6 +20,7 @@ from pdelie.audit import (
     COMPARATOR_ASSIGNABLE_LABELS,
     COMPARISON_CLASSES,
     MIGRATION_LABELS,
+    PRINCIPAL_ANGLE_RESOLUTION_FLOOR_RAD,
     QUALITATIVE_INVARIANTS,
     PipelineMigrationComparisonPolicy,
     StagePolicy,
@@ -196,15 +197,28 @@ def test_unknown_invariant_is_refused() -> None:
 
 
 def test_subspace_comparison_ignores_column_sign() -> None:
-    """The reason principal angles exist: sign is not a property of a subspace."""
+    """The reason principal angles exist: sign is not a property of a subspace.
+
+    The tolerance is the arccos resolution floor, not a round number. arccos is
+    ill-conditioned near 1 -- ``arccos(1 - eps) ~ sqrt(2 eps)`` -- so identical
+    subspaces report an angle of order ``sqrt(machine eps)``. Measured: 0.0 on
+    macOS and 1.49e-08 on Linux for these same two bases. An earlier revision of
+    this test asserted ``abs=1e-12`` and passed locally while failing CI, which
+    is the mistake the portability classes exist to prevent.
+    """
     rng = np.random.default_rng(20360)
     basis = np.linalg.qr(rng.standard_normal((6, 2)))[0]
     flipped = basis * np.array([1.0, -1.0])
     angles = principal_angles(basis, flipped)
-    assert float(angles.max()) == pytest.approx(0.0, abs=1e-12)
-    assert compare_subspaces(basis, flipped, max_principal_angle_rad=1e-9).label == (
-        "qualitatively_preserved"
-    )
+    assert float(angles.max()) <= PRINCIPAL_ANGLE_RESOLUTION_FLOOR_RAD
+    assert compare_subspaces(
+        basis, flipped, max_principal_angle_rad=PRINCIPAL_ANGLE_RESOLUTION_FLOOR_RAD
+    ).label == "qualitatively_preserved"
+
+
+def test_principal_angle_resolution_floor_is_sqrt_machine_epsilon() -> None:
+    """Pins the floor so a future edit cannot tighten it into a flaky assertion."""
+    assert PRINCIPAL_ANGLE_RESOLUTION_FLOOR_RAD == pytest.approx(1.4901161e-08, rel=1e-6)
 
 
 def test_row_selection_compared_by_objective_not_by_permutation() -> None:
