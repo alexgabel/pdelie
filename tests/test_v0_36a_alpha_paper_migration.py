@@ -11,6 +11,7 @@ evidence supports, and nothing pickles.
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 import numpy as np
@@ -675,3 +676,134 @@ def test_summarize_labels_counts_every_vocabulary_entry() -> None:
     counts = summarize_labels([compare_exact(np.ones(2), np.ones(2))])
     assert set(counts) == set(MIGRATION_LABELS)
     assert counts["exactly_preserved"] == 1
+
+
+# --- step 3-5: the sixteen stages and the frozen comparison policy ----------
+
+
+def _policy_spec() -> dict:
+    return json.loads(
+        (REPO_ROOT / "configs/alpha_migration/comparison_policy.json").read_text()
+    )
+
+
+def test_the_comparison_policy_is_frozen_and_strict_json() -> None:
+    spec = _policy_spec()
+    encoded = json.dumps(spec, allow_nan=False)
+    assert "NaN" not in encoded and "Infinity" not in encoded
+    assert spec["policy_id"] == "v0_36a_alpha_confirmatory"
+    assert spec["frozen_by"].endswith("V0_36A_ALPHA_MIGRATION_FREEZE.md")
+
+
+def test_the_tolerance_is_the_repo_floor_not_tighter() -> None:
+    """Fourteen stages would tolerate rtol=1e-12, but they have been measured on
+    macOS only. Tightening an unmeasured cross-platform claim is the mistake
+    v0.33e, v0.35a and v0.35c each made."""
+    spec = _policy_spec()
+    assert spec["default_tolerance_numeric"] == {"rtol": 1e-06, "atol": 1e-12}
+
+
+def test_the_tolerance_leaves_real_margin_over_the_measured_worst() -> None:
+    spec = _policy_spec()
+    worst = spec["measured_worst_relative_drift"]
+    assert worst == pytest.approx(5.99779e-10, rel=1e-9)
+    assert worst < spec["default_tolerance_numeric"]["rtol"] / 1000.0
+
+
+def test_every_measured_stage_is_inside_the_frozen_tolerance() -> None:
+    spec = _policy_spec()
+    rtol = spec["default_tolerance_numeric"]["rtol"]
+    for stage, drift in spec["measured_per_stage_relative_drift"].items():
+        assert drift < rtol, stage
+
+
+def test_the_gram_matrix_risk_did_not_materialize() -> None:
+    """The plan flagged stage 12 as most cross-BLAS-sensitive and proposed a
+    fallback to qualitative_invariant. It is the second-best stage measured."""
+    drifts = _policy_spec()["measured_per_stage_relative_drift"]
+    assert drifts["gram_matrix"] == pytest.approx(2.067376e-16, rel=1e-6)
+    assert drifts["gram_matrix"] < drifts["derivatives"]
+    assert drifts["gram_matrix"] < 1e-9  # the plan's proposed fallback threshold
+
+
+def test_the_metrics_stages_set_the_tolerance_and_are_amplified_ratios() -> None:
+    """per_seed_metrics reports a relative residual norm -- a ratio of two nearly
+    equal quantities -- so ordinary cancellation amplifies the input drift."""
+    drifts = _policy_spec()["measured_per_stage_relative_drift"]
+    assert drifts["per_seed_metrics"] == max(drifts.values())
+    assert drifts["per_seed_metrics"] > drifts["residuals"] * 1000
+
+
+def test_normalization_vector_is_blocked_with_a_linked_release_note() -> None:
+    """Column normalization arrived in v0.34c; v0.22.0 has no counterpart, so a
+    comparison would have to invent a legacy baseline."""
+    override = _policy_spec()["stage_overrides"]["normalization_vector"]
+    assert override["override_label"] == "blocked_missing_legacy_dependency"
+    assert override["justification"].strip()
+    assert override["release_note"].endswith(".md")
+
+
+def test_the_policy_spec_builds_a_valid_policy_for_every_stage() -> None:
+    """The spec must cover all sixteen stages without a gap."""
+    spec = _policy_spec()
+    config = json.loads(
+        (REPO_ROOT / "configs/alpha_migration/hard_heat_experiment.json").read_text()
+    )
+    tolerance = spec["default_tolerance_numeric"]
+    invariants = spec["qualitative_invariants"]
+    overrides = spec["stage_overrides"]
+
+    for item in config["stages"]:
+        stage_id, comparison_class = item["stage_id"], item["comparison_class"]
+        kwargs = dict(overrides.get(stage_id, {}))
+        if comparison_class == "tolerance_numeric":
+            kwargs.setdefault("rtol", tolerance["rtol"])
+            kwargs.setdefault("atol", tolerance["atol"])
+        if comparison_class == "qualitative_invariant":
+            kwargs.setdefault("invariant", invariants.get(stage_id, "sign"))
+        policy = StagePolicy(stage_id=stage_id, **kwargs)
+        assert policy.stage_id == stage_id
+
+
+def test_the_six_exactly_preserved_stages_are_recorded() -> None:
+    """A-alpha-1 and A-alpha-4 in their frozen form."""
+    preserved = set(_policy_spec()["exactly_preserved_stages"])
+    assert {"trajectory_ids", "split_membership"} <= preserved  # A-alpha-1
+    assert "selected_support" in preserved  # A-alpha-4
+    assert len(preserved) == 6
+
+
+# --- both exporters emit the same fifteen stages -----------------------------
+
+
+def _exporter_stage_ids(relative: str) -> set[str]:
+    source = (REPO_ROOT / relative).read_text()
+    return set(re.findall(r'write_bundle\(\s*\w+,\s*"([a-z_]+)"', source)) | set(
+        re.findall(r'write_stage_bundle\(\s*\w+,\s*"([a-z_]+)"', source)
+    )
+
+
+def test_both_exporters_emit_the_same_stage_set() -> None:
+    """The two sides share a format, never a serializer -- but they must agree
+    on which stages exist, or every comparison is a missing-bundle report."""
+    legacy = _exporter_stage_ids("scripts/legacy_exporter.py")
+    modern = _exporter_stage_ids("scripts/modern_exporter.py")
+    assert legacy == modern, legacy ^ modern
+    assert len(legacy) == 15
+
+
+def test_the_exporters_omit_exactly_the_blocked_stage() -> None:
+    config = json.loads(
+        (REPO_ROOT / "configs/alpha_migration/hard_heat_experiment.json").read_text()
+    )
+    declared = {item["stage_id"] for item in config["stages"]}
+    emitted = _exporter_stage_ids("scripts/legacy_exporter.py")
+    assert declared - emitted == {"normalization_vector"}
+
+
+def test_the_modern_adapter_is_the_only_shared_serializer_touchpoint() -> None:
+    """The legacy side must not gain a pdelie.audit import as stages grow."""
+    source = (REPO_ROOT / "scripts/legacy_exporter.py").read_text()
+    for line in source.splitlines():
+        stripped = line.strip()
+        assert not stripped.startswith(("from pdelie.audit", "import pdelie.audit"))

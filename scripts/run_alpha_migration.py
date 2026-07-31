@@ -117,13 +117,30 @@ def main(argv: list[str] | None = None) -> int:
     compare_script.write_text(
         "import json, sys\n"
         "from pathlib import Path\n"
-        "from pdelie.audit import compare_pipeline_stages, PipelineMigrationComparisonPolicy\n"
+        "from pdelie.audit import compare_pipeline_stages, "
+        "PipelineMigrationComparisonPolicy, StagePolicy\n"
+        "def _policy(spec):\n"
+        "    tol = spec['default_tolerance_numeric']\n"
+        "    inv = spec.get('qualitative_invariants', {})\n"
+        "    over = spec.get('stage_overrides', {})\n"
+        "    stages = {}\n"
+        "    for item in config['stages']:\n"
+        "        sid, cls = item['stage_id'], item['comparison_class']\n"
+        "        kw = dict(over.get(sid, {}))\n"
+        "        if cls == 'tolerance_numeric':\n"
+        "            kw.setdefault('rtol', tol['rtol']); kw.setdefault('atol', tol['atol'])\n"
+        "        if cls == 'qualitative_invariant':\n"
+        "            kw.setdefault('invariant', inv.get(sid, 'sign'))\n"
+        "        stages[sid] = StagePolicy(stage_id=sid, **kw)\n"
+        "    return PipelineMigrationComparisonPolicy("
+        "policy_id=spec['policy_id'], stage_policies=stages)\n"
         "config = json.loads(Path(sys.argv[1]).read_text())\n"
         "report = compare_pipeline_stages(\n"
         "    legacy_bundle_dir=Path(sys.argv[2]),\n"
         "    modern_bundle_dir=Path(sys.argv[3]),\n"
         "    experiment_config=config,\n"
-        "    comparison_policy=PipelineMigrationComparisonPolicy(policy_id='alpha_pilot'),\n"
+        "    comparison_policy=_policy(json.loads("
+        "Path(sys.argv[5]).read_text())),\n"
         ")\n"
         "Path(sys.argv[4]).write_text(json.dumps(report, indent=2, sort_keys=True, allow_nan=False))\n"
         "print('label counts:', json.dumps(report['label_counts'], sort_keys=True))\n",
@@ -133,6 +150,7 @@ def main(argv: list[str] | None = None) -> int:
     run([
         str(modern_python), str(compare_script), str(config_path),
         str(legacy_bundles), str(modern_bundles), str(report_path),
+        str(REPO_ROOT / "configs/alpha_migration/comparison_policy.json"),
     ])
 
     print(f"\nreport written to {report_path}")

@@ -113,4 +113,99 @@ Recorded as feasibility evidence, **not** as pilot results. They do not set any 
 
 # Confirmatory Freeze
 
-**Empty.** To be written after the pilot, per `docs/design/DESIGN_FREEZE_PROCESS.md`. It must record: hypothesis status (survived / amended / invalidated); the measured value and spread per stage; each threshold with the spread that justifies it; every amendment as a hypothesis-versus-measurement pair; and evidence that every reachable `MigrationLabel` was reached by a real stage.
+**Run:** 2026-07-31, after the pilot, before the tolerances entered any policy.
+
+## Hypothesis status: **survived, with two amendments**
+
+No invalidation clause fired. Both were checked rather than assumed.
+
+## Label distribution across the sixteen paper-critical stages
+
+| label | count |
+|---|---|
+| `exactly_preserved` | **6** |
+| `numerically_equivalent_within_tolerance` | **8** |
+| `qualitatively_preserved` | **1** |
+| `blocked_missing_legacy_dependency` | **1** |
+| `intentional_contract_change` | 0 |
+| `platform_specific_difference` | 0 |
+| **`unexplained_regression`** | **0** |
+
+`all_stages_explained: true`.
+
+## Measured per-stage relative drift
+
+Legacy `py3.11.14 / numpy 1.26.4 / pysindy 1.7.5` versus modern
+`py3.12.13 / numpy 2.5.1 / pysindy 2.1.0`.
+
+| stage | class | result |
+|---|---|---|
+| `trajectory_ids` | exact_discrete | **exactly_preserved** |
+| `split_membership` | exact_discrete | **exactly_preserved** |
+| `observation_mask` | exact_discrete | **exactly_preserved** |
+| `derivative_validity_mask` | exact_discrete | **exactly_preserved** |
+| `regression_row_mask` | exact_discrete | **exactly_preserved** |
+| `selected_support` | exact_discrete | **exactly_preserved** |
+| `target_y` | tolerance_numeric | `0.000000e+00` |
+| `gram_matrix` | tolerance_numeric | `2.067376e-16` |
+| `generated_field_statistics` | qualitative_invariant | `5.606564e-16` |
+| `coefficients` | tolerance_numeric | `2.282758e-15` |
+| `derivatives` | tolerance_numeric | `6.034927e-14` |
+| `design_matrix_x` | tolerance_numeric | `6.034927e-14` |
+| `residuals` | tolerance_numeric | `6.705474e-14` |
+| `per_seed_metrics` | tolerance_numeric | **`5.997790e-10`** |
+| `aggregate_metrics` | tolerance_numeric | **`5.997790e-10`** |
+| `normalization_vector` | tolerance_numeric | **blocked** — no v0.22 counterpart |
+
+**Overall worst: `5.997790e-10`.**
+
+### Two results worth naming
+
+**The Gram matrix risk did not materialize.** The plan flagged stage 12 as the most cross-BLAS-sensitive and proposed a fallback to `qualitative_invariant` if drift exceeded what a tolerance could cover. Measured, it is the **second-best stage in the whole audit** at `2.067376e-16`. The proposed `rtol=1e-9, atol=1e-12` would have been satisfied with seven orders to spare, and the fallback is not needed.
+
+**The metrics stages are four orders worse than everything else, for a boring reason.** `per_seed_metrics` reports a *relative* residual norm — a ratio of two nearly-equal quantities — so ordinary cancellation amplifies the input drift. `5.998e-10` from inputs at `6.7e-14` is roughly the amplification a ratio of that conditioning predicts. It is error propagation, not a regression, and it is the stage that sets the tolerance.
+
+## Threshold, now set
+
+| threshold | value | justification |
+|---|---|---|
+| all `tolerance_numeric` stages | **`rtol=1e-6`, `atol=1e-12`** | worst measured drift `5.998e-10` — roughly **1,700x** of margin |
+
+**Deliberately not tightened below the repo floor.** Every stage except two would tolerate `rtol=1e-12`, and it is tempting. But these fourteen stages have been measured on **macOS only**. Tightening a cross-platform claim that has not been measured cross-platform is precisely the mistake v0.33e, v0.35a, and v0.35c each made — three times, in three consecutive releases. The floor holds until the stages run in the portability lane.
+
+## Amendments
+
+**1. The derivative entry-point rename is not an `intentional_contract_change` after all.**
+
+The hypothesis freeze predicted it would be the first such label, because `compute_spectral_fd_derivatives` became `compute_derivatives` and `DerivativeBatch.config` gained two keys from v0.30d dispatch.
+
+Measurement says otherwise: the *outputs* agree at `6.03e-14`, so the stage is `numerically_equivalent_within_tolerance`. The rename is an **API** change, not an output change. It is documented in the experiment config, and labelling the stage as a contract change would have overstated it — the contract that matters for this audit is the numbers, and they held.
+
+**2. Stage 1 is not reclassified to `exact_discrete`, despite the bit-identical field.**
+
+The pilot observed `max|Δ| = 0.000e+00` on the generated field and noted stage 1 might move from `qualitative_invariant`. It stays where it is. What stage 1 exports is *statistics of* the field — mean, std, L2 — not the field itself, and those are computed sums that drift at `5.6e-16`. The field being bit-identical does not make its aggregates bit-identical, and promoting the stage would assert something the exported artifact does not support.
+
+## Reachability
+
+Four of seven labels were reached by a real stage. The three that were not:
+
+| label | why not reached |
+|---|---|
+| `intentional_contract_change` | see amendment 1 — no stage needed it |
+| `platform_specific_difference` | no stage is classed `platform_specific_diagnostic` in alpha scope |
+| `unexplained_regression` | **nothing was unexplained** — the desired outcome |
+
+That `unexplained_regression` is unreached is the result, not a coverage gap: its machinery is exercised by the v0.36a-alpha contract tests on synthetic pairs.
+
+## Scope actually audited
+
+Fifteen of sixteen stages compare real artifacts from both versions. The
+sixteenth, `normalization_vector`, is blocked because column normalization
+arrived in v0.34c and v0.22.0 has no counterpart — comparing it would require
+inventing a legacy baseline.
+
+Stages 9-16 build the design matrix from the `DerivativeBatch` rather than
+routing through PySINDy. That is deliberate: PySINDy 1.7.5 versus 2.1.x is a
+separately-documented contract change, and running the comparison through it
+would confound "did the numerics survive the migration" with "did PySINDy
+change". Auditing the PySINDy path itself is beta scope.

@@ -2,7 +2,7 @@
 
 **Purpose:** the exact procedure that takes v0.36a from "machinery merged" to "β can start".
 
-**Status of each step is stated.** Steps 0–2 have been executed once locally and their real output is recorded below; steps 3–6 have not.
+**All six steps have been executed.** Their real output is recorded below and in `V0_36A_ALPHA_MIGRATION_FREEZE.md`. **α is complete and β is unblocked.**
 
 ---
 
@@ -102,7 +102,7 @@ for stage in ("generated_field_statistics", "derivatives"):
 
 ---
 
-## Step 3 — Write the remaining fourteen exporters ⬜ not started
+## Step 3 — Write the remaining fourteen exporters ✅ executed
 
 Add to **both** `scripts/legacy_exporter.py` and `scripts/modern_exporter.py`, in the order the config declares. The two files stay independent — the legacy side must not import `pdelie.audit`, and a test asserts it.
 
@@ -129,7 +129,7 @@ Add to **both** `scripts/legacy_exporter.py` and `scripts/modern_exporter.py`, i
 
 ---
 
-## Step 4 — Re-run and set the tolerances ⬜ not started
+## Step 4 — Re-run and set the tolerances ✅ executed — `rtol=1e-6`, `atol=1e-12`
 
 Repeat steps 1–2 with all sixteen stages. Then, **per stage group**, set `rtol`/`atol` from the observed spread — not from a round number.
 
@@ -139,7 +139,7 @@ The Gram matrix (stage 12) is the one the plan flags as most cross-BLAS-sensitiv
 
 ---
 
-## Step 5 — Write the confirmatory freeze ⬜ not started
+## Step 5 — Write the confirmatory freeze ✅ executed
 
 Fill the empty section at the bottom of `docs/planning/V0_36A_ALPHA_MIGRATION_FREEZE.md`, per `docs/design/DESIGN_FREEZE_PROCESS.md`. It must record:
 
@@ -156,7 +156,7 @@ Two amendments are already known and must appear:
 
 ---
 
-## Step 6 — Check the α exit gates ⬜ not started
+## Step 6 — Check the α exit gates ✅ executed — every evaluable gate passes
 
 | Gate | How to check |
 |---|---|
@@ -179,3 +179,27 @@ Two amendments are already known and must appear:
 **A measurement mode may deserve to be public.** Step 2 works by calling comparators directly with a permissive tolerance — fine for a pilot, awkward as a documented procedure. A `measure_pipeline_drift()` that reports deviations without assigning labels would make the pilot a first-class operation instead of a workaround. It is not required to finish α.
 
 **The orchestrator currently stops at the first failing stage.** For an audit that is right. For a pilot it means one unlabelled stage hides the drift of every stage after it — so run step 2's loop over all stages rather than relying on the orchestrator's final step until the policy is complete.
+
+
+---
+
+## Outcome
+
+All sixteen stages are explained; **zero unexplained regressions**.
+
+| label | count |
+|---|---|
+| `exactly_preserved` | 6 |
+| `numerically_equivalent_within_tolerance` | 8 |
+| `qualitatively_preserved` | 1 |
+| `blocked_missing_legacy_dependency` | 1 |
+| `unexplained_regression` | **0** |
+
+Worst measured relative drift `5.997790e-10`; frozen tolerance `rtol=1e-6`,
+`atol=1e-12`, roughly 1,700x of margin. Every evaluable exit gate passes; A-α-6
+remains not evaluable here.
+
+**β is unblocked.** It inherits the frozen tolerances in
+`configs/alpha_migration/comparison_policy.json`, fifteen working exporter
+stages to generalize, and a confirmatory freeze recording which labels were
+reached.
