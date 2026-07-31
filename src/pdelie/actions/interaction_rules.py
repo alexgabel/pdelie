@@ -68,6 +68,15 @@ RULES: tuple[InteractionRule, ...] = (
         and s.boundary_relation == "not_preserved",
         "domain preserved with boundary not preserved is contradictory",
     ),
+    (
+        lambda s: s.coefficient_relation == "co_transformed"
+        and s.coefficient_field_action is None,
+        (
+            "co_transformed coefficient requires a non-null coefficient_field "
+            "action: a background claimed to travel with the transformation "
+            "needs something that moves it"
+        ),
+    ),
 )
 
 #: Frozen by test. Raising this is a deliberate act, not a side effect.
