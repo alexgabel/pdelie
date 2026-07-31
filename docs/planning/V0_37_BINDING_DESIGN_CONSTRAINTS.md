@@ -19,6 +19,8 @@ on it required a change, the change is linked.
 
 ## C-1 — A mathematical action carries no seed
 
+> **Status: `satisfied_in_v0_36`.**
+
 `u(t,x) ↦ u(t,x−τ)` has no random seed. Embedding one in an action's immutable
 mathematical specification makes deterministic actions appear stochastic,
 changes semantic hashes for no mathematical reason, couples the weak-library RNG
@@ -56,6 +58,10 @@ not the shipped code.
 
 ## C-2 — One authority for a coefficient action
 
+> **Status: `resolves_in_v0_37a`.** Does not block v0.36.0. The open
+> decisions are the `treatment_policy` generalisation and the rename; both
+> are answered by `docs/planning/V0_37A_HYPOTHESIS_FREEZE.md`.
+
 A coefficient-field *reference* describes the field. The action bundle is the
 **only** authority for the transformation applied to it. Holding a
 `coordinate_field_action` on the reference *and* a `coefficient_field_actions`
@@ -82,20 +88,31 @@ the action bundle's claim.
 `coefficient_field_action: ActionRef | None`, and there is no second location.
 `CoefficientFieldRef` does not exist.
 
-**Open — needs a decision before v0.37.** The repository already ships
-`co_transforming_background_equivalence`, but it is a *different construct*: an
-**admissibility classification label** from v0.34b
-(`src/pdelie/symmetry/admissibility.py`), describing a measured outcome, not a
-declared treatment policy. It is frozen into `docs/specs/support_matrix.v0_34.json`
-and `support_matrix.v0_35.json`. Renaming it would break two frozen release
-specs to align a label with an unrelated field's naming. The recommendation is
-to adopt `co_transformable_background` for the **new** `treatment_policy`
-vocabulary and leave the v0.34b classification label alone, since the `-ing`
-form is correct for a thing that has been observed to happen.
+**But `treatment_policy` partially does, and must be generalised rather than
+invented.** `nu_treatment_policy: "fixed_background"` is a **v0.33d generator
+tag**, emitted by `heat_1d`, `burgers_1d` and `advection_diffusion_1d` from the
+shared constant `NU_TREATMENT_POLICY_FIXED_BACKGROUND` and asserted by
+`tests/test_v0_33d_variable_coefficient_generators.py`. A new
+`CoefficientFieldRef.treatment_policy` must extend that tag from `nu`-specific
+to per-field, keeping `fixed_background` as a value, or the repository will
+carry two names for one declaration.
+
+**Open — needs a decision before v0.37.** `co_transforming_background_equivalence`
+is a *third construct*: an **admissibility classification label** from v0.34b
+(`src/pdelie/symmetry/admissibility.py`) describing a measured outcome, frozen
+into `docs/specs/support_matrix.v0_34.json` and `support_matrix.v0_35.json`.
+Renaming it breaks two frozen release specs to align a label with an unrelated
+field. Recommendation: adopt `co_transformable_background` for the **new**
+declarative vocabulary and leave the v0.34b label alone — the `-ing` form is
+correct for something that has been observed to happen.
+
+See **C-3a** below for how the three fit together.
 
 ---
 
 ## C-3 — Relation axes stay independent
+
+> **Status: `satisfied_in_v0_36`.**
 
 Boundary preservation is orthogonal to equation equivalence. A transformation
 can be an equivalence transformation with the boundary preserved, or an
@@ -122,7 +139,47 @@ would be worse than matching the proposal's wording.
 
 ---
 
+## C-3a — The background question has three layers, and they already exist
+
+> **Status: `satisfied_in_v0_36`.**
+
+This is the cross-reference between the new `coefficient_relation` axis and the
+constraints above. It is the part most likely to be got wrong twice, because
+three shipped vocabularies describe the same physical question at different
+layers and were introduced three releases apart.
+
+| Layer | Asks | Where it lives | Vocabulary |
+|---|---|---|---|
+| **1. Declared capability** | What may this background do? | v0.33d generator tag `nu_treatment_policy` | `fixed_background` (+ `co_transformable_background`, to be added by C-2) |
+| **2. Claimed action** | What does *this transformation* say it did? | v0.36b `ProblemActionSpec.coefficient_relation` | `fixed`, `co_transformed`, `not_applicable`, `unknown` |
+| **3. Measured outcome** | What actually happened when we computed the residual? | v0.34b `BACKGROUND_TREATMENT_LABELS` | `fixed_background_same_target_symmetry_failed`, `co_transforming_background_equivalence`, `inconclusive_background_separation` |
+
+The three are **not** synonyms and must not be merged. Layer 1 is a property of
+the *data*. Layer 2 is a *claim* made by a transformation. Layer 3 is an
+*observation* produced by measurement. The v0.34b module already knew this — its
+docstring says it "extends the v0.33d `nu_treatment_policy` value
+`fixed_background` with the equivalence reading" — but until `coefficient_relation`
+was added there was **no layer 2**, so a claim could only be inferred from the
+presence of an action.
+
+**Binding rules for v0.37:**
+
+1. A spec claiming `coefficient_relation="co_transformed"` against a field whose
+   declared `treatment_policy` is `fixed_background` is a **cross-layer
+   contradiction** and must be refused. This is the real content of C-2:
+   duplication is not two fields holding the same value, it is two layers
+   permitted to disagree with no rule to resolve them.
+2. Layer 3 must never be written into a `ProblemActionSpec`. A measured outcome
+   on a declarative spec is exactly the expected/observed collapse C-4 forbids.
+3. Layers 1 and 2 are `expected_case` inputs in C-4's vocabulary; layer 3 is
+   `observed_relation_status`. The split C-4 asks for is already prefigured by
+   the v0.33d/v0.34b division — v0.37 should adopt it, not reinvent it.
+
+---
+
 ## C-4 — Expected case, observed status and benchmark outcome are three fields
+
+> **Status: `binds_absent_design`.**
 
 Statuses like `confirmed` / `violated` / `diagnostic_only` /
 `wrong_direction_expected` mix what the benchmark *expected*, what the residual
@@ -150,6 +207,10 @@ may not promote its own failure into an intentional change.
 
 ## C-5 — Nest optional evidence; use one schema key
 
+> **Status: `resolves_in_v0_37a`.** Does not block v0.36.0. The nesting rule
+> is binding now; the schema-key choice is answered by
+> `docs/planning/V0_37A_HYPOTHESIS_FREEZE.md`.
+
 Four paired `*_available` booleans plus four payloads is **eight** top-level
 fields, not four. Prefer nesting:
 
@@ -167,14 +228,24 @@ expressed by the key being absent.
 
 **Open — the repository has no single convention.** Measured on the current
 tree: `schema_version` appears 37 times and `summary_schema_version` 36 times in
-`src/`. There is no established standard key to defer to. v0.37 must either pick
-one and state it, or accept both with the choice documented per payload family.
-Picking one repo-wide is a breaking change to roughly half the payloads and is
-not a v0.37 side quest.
+`src/`. There is no established standard key to defer to. A repo-wide rename on
+the belief that one of them is "the project standard" would break roughly half
+the payloads, including `discovery_task_result`.
+
+**The rule, therefore, is per payload:** preserve whatever key a payload already
+uses; choose deliberately, and state the choice, only for a genuinely new
+payload.
+
+The v0.37 report is a new payload, so it chooses freely. So is anything emitted
+by `pdelie.actions`, which currently carries **no schema key at all** —
+`ProblemActionSpec.as_dict()` has none. That is a clean slate rather than a
+migration, and whichever key it adopts should be stated here when it does.
 
 ---
 
 ## C-6 — Hash the science, not the run
+
+> **Status: `binds_absent_design`.**
 
 A report cannot be byte-for-byte deterministic *and* contain `runtime_seconds`.
 Split them:
@@ -196,14 +267,62 @@ which is reported and never asserted.
 
 ## Summary
 
-| # | Constraint | Applies to shipped code? |
-|---|---|---|
-| C-1 | no seed in an action spec | already satisfied — no seed in `pdelie.actions` |
-| C-2 | one coefficient-action authority | no duplication exists; rename decision open |
-| C-3 | independent relation axes | shipped; `coefficient_relation` added in `ea20e14` |
-| C-4 | expected vs observed vs outcome | no commutation report exists |
-| C-5 | nested optional evidence; one schema key | no report exists; repo key convention is genuinely split |
-| C-6 | hash science, not runtime | no report exists |
+| # | Constraint | Status | Applies to shipped code? |
+|---|---|---|---|
+| C-1 | no seed in an action spec | `satisfied_in_v0_36` | already satisfied — no seed in `pdelie.actions` |
+| C-2 | one coefficient-action authority | **`resolves_in_v0_37a`** | no duplication exists; the `treatment_policy` generalisation and the rename decision are forward-scoped |
+| C-3 | independent relation axes | `satisfied_in_v0_36` | shipped; `coefficient_relation` added in `ea20e14` |
+| C-3a | three-layer coefficient handling | `satisfied_in_v0_36` | all three layers present; v0.36 completed the middle one |
+| C-4 | expected vs observed vs outcome | `binds_absent_design` | no commutation report exists |
+| C-5 | nested optional evidence; one schema key | **`resolves_in_v0_37a`** | no report exists; the per-payload rule is stated, the key choice is forward-scoped |
+| C-6 | hash science, not runtime | `binds_absent_design` | no report exists |
+
+Status vocabulary:
+
+| Value | Meaning |
+|---|---|
+| `satisfied_in_v0_36` | shipped code meets the constraint; a test asserts it |
+| `binds_absent_design` | nothing to do until the design lands; the constraint binds it on arrival |
+| `resolves_in_v0_37a` | **an open decision with a named owner and vehicle** — see below |
 
 **Four of six bind a design that is not in this repository.** They are recorded
 here so that when it arrives, it arrives already constrained.
+
+---
+
+## Resolution vehicle for the forward-scoped items
+
+**C-2 and C-5 do not block v0.36.0.** Both bind v0.37, not v0.36: neither names
+a defect in shipped code, and holding the tag for them would make v0.36 a moving
+target while v0.37 design work waits for its anchor. This document is that
+anchor.
+
+They are resolved in the **v0.37a hypothesis freeze**, at
+`docs/planning/V0_37A_HYPOTHESIS_FREEZE.md`, which must not be signed until it
+answers both:
+
+**C-2 — `resolves_in_v0_37a`.** Decide and record:
+
+1. Whether `CoefficientFieldRef.treatment_policy` generalises the shipped v0.33d
+   `nu_treatment_policy` tag from `nu`-specific to per-field, or introduces a
+   parallel vocabulary. The recommendation here is generalisation; a parallel
+   vocabulary needs an argument.
+2. Whether `co_transformable_background` is adopted for the new declarative
+   vocabulary while the v0.34b outcome label `co_transforming_background_equivalence`
+   is left alone. The recommendation here is yes — they are different constructs
+   at different layers, and the label is frozen into two released support
+   matrices.
+3. The cross-layer contradiction rule from C-3a, as an executable check rather
+   than prose.
+
+**C-5 — `resolves_in_v0_37a`.** Decide and record:
+
+1. Which schema key the v0.37 report payload uses. It is a new payload, so it
+   chooses freely; the choice must be stated, not inherited by accident.
+2. Which key `pdelie.actions` adopts, given it currently carries none.
+3. That the per-payload rule — preserve what a payload already uses; choose
+   deliberately only for new payloads — is not weakened into a repo-wide rename.
+   Measured, neither key is a majority worth migrating to.
+
+Anything marked `binds_absent_design` needs no decision now; it applies when the
+design arrives.
