@@ -1,10 +1,16 @@
 """v0.36b: what a transformation claims to do to a problem.
 
-``ProblemActionSpec`` records six *relations* -- what the transformation claims
-is preserved, transformed, or invalidated -- alongside the *actions* that
-implement them. The pairing is the point: a spec that claims parameters were
-transformed while naming no action that transforms them is not describing
-anything, and :func:`validate_action_spec` refuses it.
+``ProblemActionSpec`` records **five** independent *relations* -- what the
+transformation claims is preserved, transformed, or invalidated -- alongside the
+*actions* that implement them. The pairing is the point: a spec that claims
+parameters were transformed while naming no action that transforms them is not
+describing anything, and :func:`validate_action_spec` refuses it.
+
+The axes are deliberately independent rather than one collapsed vocabulary.
+Boundary preservation is orthogonal to equation equivalence: a transformation
+can be an equivalence transformation with the boundary preserved, or an
+equivalence transformation with the boundary destroyed, and a single enum cannot
+say which.
 
 The vocabularies here deliberately echo distinctions the repository already
 draws and has already paid for:
@@ -17,6 +23,13 @@ draws and has already paid for:
   verification and the v0.33a interior-only claim: those established that a
   finite transform on a nonperiodic domain preserves the *interior* differential
   operator, not the boundary-value problem.
+
+``coefficient_relation`` was added after the axes were first frozen. Its absence
+was a real gap: ``coefficient_field_action`` could be attached, but the claim it
+implements -- whether the background is held ``fixed`` or ``co_transformed`` --
+had nowhere to live, which is precisely the unpaired state this module exists to
+refuse. It is the *only* place that claim belongs; a coefficient-field reference
+describes the field, not the transformation currently applied to it.
 """
 
 from __future__ import annotations
@@ -31,6 +44,7 @@ from pdelie.errors import ScopeValidationError
 
 __all__ = [
     "BOUNDARY_RELATIONS",
+    "COEFFICIENT_RELATIONS",
     "DOMAIN_RELATIONS",
     "EQUATION_RELATIONS",
     "PARAMETER_RELATIONS",
@@ -47,6 +61,18 @@ EQUATION_RELATIONS: tuple[str, ...] = (
 
 #: What it claims about the equation's parameters.
 PARAMETER_RELATIONS: tuple[str, ...] = ("preserved", "transformed", "unknown")
+
+#: What it claims about a variable-coefficient background field. ``fixed`` is
+#: the v0.34b non-equivalence case (the background stays put while the state
+#: moves); ``co_transformed`` is the case where the background travels with the
+#: transformation. ``not_applicable`` is the honest answer for a
+#: constant-coefficient problem, and is distinct from ``unknown``.
+COEFFICIENT_RELATIONS: tuple[str, ...] = (
+    "fixed",
+    "co_transformed",
+    "not_applicable",
+    "unknown",
+)
 
 #: What it claims about the spatial domain.
 DOMAIN_RELATIONS: tuple[str, ...] = ("preserved", "overlap_crop", "not_preserved", "unknown")
@@ -69,6 +95,10 @@ class ProblemActionSpec:
     parameter_relation: str
     domain_relation: str
     boundary_relation: str
+    # Defaulted so existing four-axis specs keep constructing. "not_applicable"
+    # is the correct default: a spec that never mentioned a coefficient field
+    # was describing a problem without one.
+    coefficient_relation: str = "not_applicable"
     state_action: ActionRef | None = None
     parameter_action: ActionRef | None = None
     coefficient_field_action: ActionRef | None = None
@@ -84,6 +114,7 @@ class ProblemActionSpec:
             ("parameter_relation", PARAMETER_RELATIONS),
             ("domain_relation", DOMAIN_RELATIONS),
             ("boundary_relation", BOUNDARY_RELATIONS),
+            ("coefficient_relation", COEFFICIENT_RELATIONS),
         ):
             value = getattr(self, name)
             if value not in allowed:
@@ -115,6 +146,7 @@ class ProblemActionSpec:
             "parameter_relation": self.parameter_relation,
             "domain_relation": self.domain_relation,
             "boundary_relation": self.boundary_relation,
+            "coefficient_relation": self.coefficient_relation,
             "state_action": None if self.state_action is None else self.state_action.as_dict(),
             "parameter_action": (
                 None if self.parameter_action is None else self.parameter_action.as_dict()

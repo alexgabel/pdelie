@@ -6,6 +6,7 @@ from pdelie.actions.action_ref import ACTION_TARGETS, ActionRef
 from pdelie.actions.interaction_rules import RULE_COUNT, RULES, InteractionRule
 from pdelie.actions.problem_action_spec import (
     BOUNDARY_RELATIONS,
+    COEFFICIENT_RELATIONS,
     DOMAIN_RELATIONS,
     EQUATION_RELATIONS,
     PARAMETER_RELATIONS,
@@ -16,6 +17,7 @@ from pdelie.actions.problem_action_spec import (
 __all__ = [
     "ACTION_TARGETS",
     "BOUNDARY_RELATIONS",
+    "COEFFICIENT_RELATIONS",
     "DOMAIN_RELATIONS",
     "EQUATION_RELATIONS",
     "PARAMETER_RELATIONS",

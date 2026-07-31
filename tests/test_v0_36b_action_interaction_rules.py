@@ -66,12 +66,18 @@ FAILING_EXAMPLES: tuple[tuple[str, ProblemActionSpec], ...] = (
         "domain preserved with boundary not preserved",
         build(domain_relation="preserved", boundary_relation="not_preserved"),
     ),
+    (
+        # The v0.34b distinction, now expressible: a background claimed to
+        # travel with the transformation needs something that moves it.
+        "co_transformed coefficient requires a non-null coefficient_field",
+        build(coefficient_relation="co_transformed", coefficient_field_action=None),
+    ),
 )
 
 
 def test_rule_count_is_frozen() -> None:
     """Growth must be deliberate: a new rule needs a PR that raises this number."""
-    assert RULE_COUNT == 6
+    assert RULE_COUNT == 7
     assert len(RULES) == RULE_COUNT
 
 

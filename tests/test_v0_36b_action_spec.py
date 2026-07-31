@@ -9,11 +9,13 @@ import pytest
 from pdelie.actions import (
     ACTION_TARGETS,
     BOUNDARY_RELATIONS,
+    COEFFICIENT_RELATIONS,
     DOMAIN_RELATIONS,
     EQUATION_RELATIONS,
     PARAMETER_RELATIONS,
     ActionRef,
     ProblemActionSpec,
+    validate_action_spec,
 )
 from pdelie.errors import ScopeValidationError
 
@@ -121,3 +123,86 @@ def test_non_strict_json_parameters_are_refused() -> None:
             action_parameter_id="p",
             parameters={"eps": float("inf")},
         )
+
+
+# --- coefficient_relation: the fifth axis ----------------------------------
+
+
+def test_coefficient_relation_defaults_to_not_applicable() -> None:
+    """Adding the axis must not break specs written against four axes."""
+    spec = ProblemActionSpec(
+        action_id="four-axis",
+        equation_relation="same_equation",
+        parameter_relation="preserved",
+        domain_relation="preserved",
+        boundary_relation="preserved",
+    )
+    assert spec.coefficient_relation == "not_applicable"
+    assert spec.as_dict()["coefficient_relation"] == "not_applicable"
+
+
+def test_not_applicable_is_distinct_from_unknown() -> None:
+    """A constant-coefficient problem has no background; that is not ignorance."""
+    assert "not_applicable" in COEFFICIENT_RELATIONS
+    assert "unknown" in COEFFICIENT_RELATIONS
+    fixed = ProblemActionSpec(
+        action_id="a",
+        equation_relation="same_equation",
+        parameter_relation="preserved",
+        domain_relation="preserved",
+        boundary_relation="preserved",
+        coefficient_relation="not_applicable",
+    )
+    unknown = ProblemActionSpec(
+        action_id="a",
+        equation_relation="same_equation",
+        parameter_relation="preserved",
+        domain_relation="preserved",
+        boundary_relation="preserved",
+        coefficient_relation="unknown",
+    )
+    assert fixed.identity() != unknown.identity()
+
+
+def test_unknown_coefficient_relation_value_is_refused() -> None:
+    with pytest.raises(ScopeValidationError, match="coefficient_relation"):
+        ProblemActionSpec(
+            action_id="a",
+            equation_relation="same_equation",
+            parameter_relation="preserved",
+            domain_relation="preserved",
+            boundary_relation="preserved",
+            coefficient_relation="co_transformable",
+        )
+
+
+def test_the_five_axes_vary_independently() -> None:
+    """Boundary preservation is orthogonal to equation equivalence.
+
+    Both combinations must be expressible; a collapsed vocabulary could not say
+    which of the two a transformation was.
+    """
+    common = {
+        "action_id": "equiv",
+        "equation_relation": "equivalence_transformation",
+        "parameter_relation": "preserved",
+        "domain_relation": "preserved",
+        "coefficient_relation": "co_transformed",
+        "coefficient_field_action": ActionRef(
+            action_target="coefficient_field",
+            action_family="translation",
+            action_parameter_id="shift_background",
+        ),
+    }
+    # domain_relation is held fixed at "preserved"; only the boundary claim
+    # moves. "not_preserved" is not usable here -- rule 6 already refuses a
+    # preserved domain with a destroyed boundary -- so the contrast is against
+    # "interior_only", the v0.33a claim that the interior operator survives
+    # while the boundary-value problem does not.
+    preserved = ProblemActionSpec(**common, boundary_relation="preserved")
+    interior = ProblemActionSpec(**common, boundary_relation="interior_only")
+    assert preserved.equation_relation == interior.equation_relation
+    assert preserved.coefficient_relation == interior.coefficient_relation
+    assert preserved.boundary_relation != interior.boundary_relation
+    validate_action_spec(preserved)
+    validate_action_spec(interior)
