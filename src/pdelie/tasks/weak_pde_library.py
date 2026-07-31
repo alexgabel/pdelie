@@ -168,6 +168,13 @@ class WeakPDELibraryDiagnostic:
 # ---------------------------------------------------------------------------
 
 
+#: Distinguishes "the caller said nothing about seeding" from "the caller
+#: explicitly asked for nondeterminism". ``None`` cannot carry both meanings, and
+#: conflating them is why the diagnostic has been silently unreproducible since
+#: v0.31b2: every unseeded caller looked identical to one who had opted in.
+_UNSET: Any = object()
+
+
 @_contextlib.contextmanager
 def _seeded_global_numpy_random(seed: int | None) -> Iterator[None]:
     """Temporarily seed the legacy global NumPy RNG, then restore it.
@@ -573,7 +580,7 @@ def inspect_pysindy_weak_pde_library(
     task_name: str,
     library_configuration: WeakPDELibraryDiagnostic | Mapping[str, Any] | None = None,
     column_normalize: bool = False,
-    seed: int | None = None,
+    seed: int | Any | None = _UNSET,
 ) -> dict[str, Any]:
     """Run the diagnostic wrapper and return the strict-JSON summary.
 
@@ -601,6 +608,37 @@ def inspect_pysindy_weak_pde_library(
     """
     if not isinstance(task_name, str) or not task_name:
         raise SchemaValidationError("task_name must be a non-empty string.")
+
+    # v0.36e: three-state seed. Omitted, explicitly None, and an integer are
+    # three different intentions and are reported as three different states.
+    if seed is _UNSET:
+        _warnings.warn(
+            "inspect_pysindy_weak_pde_library was called without an explicit "
+            "seed. Legacy nondeterministic behavior is retained temporarily; "
+            "v0.37 will require an explicit integer seed. Pass seed=<int> for "
+            "deterministic behavior, or seed=None to explicitly opt into "
+            "nondeterminism.",
+            # FutureWarning, NOT DeprecationWarning: the latter is hidden by
+            # default outside __main__, which would make this transition
+            # invisible to exactly the callers who need to see it.
+            FutureWarning,
+            stacklevel=2,
+        )
+        effective_seed: int | None = None
+        seed_was_omitted = True
+        nondeterministic_requested = False
+    elif seed is None:
+        effective_seed = None
+        seed_was_omitted = False
+        nondeterministic_requested = True
+    else:
+        if isinstance(seed, bool) or not isinstance(seed, int):
+            raise ScopeValidationError(
+                f"seed must be an int, None, or omitted; got {type(seed).__name__}."
+            )
+        effective_seed = int(seed)
+        seed_was_omitted = False
+        nondeterministic_requested = False
 
     # Layer 1 + Layer 2 scope checks — before any PySINDy call.
     _validate_field_scope(field_batch)
@@ -646,7 +684,7 @@ def inspect_pysindy_weak_pde_library(
     # v0.34c: the library construction AND the fit both draw domain centers from
     # the global NumPy RNG, so both must sit inside the seeded scope for the
     # emitted diagnostic to be reproducible.
-    with _seeded_global_numpy_random(seed):
+    with _seeded_global_numpy_random(effective_seed):
         library, spatiotemporal_grid = _build_weak_library(
             config, x_coord=x_coord, t_coord=t_coord
         )
@@ -723,6 +761,19 @@ def inspect_pysindy_weak_pde_library(
         "pysindy_version": backend_version.get("pysindy"),
         "sklearn_version": backend_version.get("sklearn"),
         "scipy_version": backend_version.get("scipy"),
+        # Nested deliberately: a new TOP-LEVEL key would break the frozen 27/28
+        # conditional schema. This lives inside the provenance block that
+        # already exists, so the default path still has exactly 27 keys and the
+        # column_normalize path exactly 28.
+        "seed_provenance": {
+            "seed": effective_seed,
+            "seed_was_omitted": seed_was_omitted,
+            "rng_backend": "numpy_legacy_global_state",
+            "rng_scope": "process_wide_context_manager",
+            "nondeterministic_requested": nondeterministic_requested,
+            "thread_safe": False,
+            "legacy_global_rng_workaround": True,
+        },
     }
 
     library_configuration_payload = config.as_dict()

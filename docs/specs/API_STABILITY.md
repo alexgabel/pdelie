@@ -25,6 +25,12 @@ Stable public import path for the invariant canonical object:
 
 - `pdelie.InvariantMapSpec`
 
+Behaviour transition note for `v0.36e` (`inspect_pysindy_weak_pde_library` seed): the `seed` parameter becomes three-state. Omitting it emits a `FutureWarning` and retains the legacy nondeterministic behaviour; `seed=None` is now an explicit opt-in to nondeterminism and is silent; an integer seed is deterministic. `bool` and non-integer values are refused rather than coerced — `seed=True` would otherwise silently seed with 1.
+
+`FutureWarning` is used deliberately rather than `DeprecationWarning`: the latter is hidden by default outside `__main__`, which would make the transition invisible to library code importing PDELie — precisely the callers who need to see it. **v0.37 will require an explicit integer seed**; the warning message names both accepted fixes.
+
+**The frozen 27/28 conditional schema is unchanged.** `seed_provenance` is nested inside the existing top-level `provenance` block, so the default path still emits exactly 27 top-level keys and the `column_normalize=True` path exactly 28, in all three seed states.
+
 Stable public-surface note for the v0.36 day-zero polish: the only runtime addition is `pdelie.artifact.semantic_hash`, the single canonical-JSON hash function. Every `ArtifactRef` and lineage hash from v0.36 onward routes through it, and no alternative canonical-JSON implementation may be introduced elsewhere — two hash functions that agree today and diverge after a Python or NumPy release would silently split a lineage graph with nothing reporting it. Submodule-only; `pdelie.__all__` is unchanged. No shipped payload changed shape.
 
 **Ko infinitesimal-generator method deferred to v0.39.** The first external symmetry-method port was previously named for v0.36; it now lands in v0.39, followed by TestPyPI staging. The ordering is deliberate: that port is what proves the `SymmetryMethod` contract can hold more than one entry, and the install surface should be stressed by a second method before artifacts are published. `SymmetryMethod` continues to have exactly one built-in, `polynomial_translation_svd`, and its `fit(field, ...)` semantics are unchanged.

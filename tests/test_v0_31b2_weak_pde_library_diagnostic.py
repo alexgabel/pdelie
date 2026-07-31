@@ -800,3 +800,43 @@ def test_29_supports_weak_derivative_backend_still_scoped_to_weak_1d() -> None:
         "supports_pysindy_weak_library_diagnostic must be declared alongside "
         "supports_weak_derivative_backend in the same policy dict."
     )
+
+
+# --- v0.36e: three-state seed semantics -------------------------------------
+
+
+def test_v0_36e_omitted_seed_still_produces_the_v0_31b2_schema() -> None:
+    """The transition warning must not change the shipped report shape.
+
+    Every payload producible before v0.36e still has exactly 27 top-level keys;
+    ``seed_provenance`` is nested inside the existing ``provenance`` block.
+    """
+    import warnings as _warnings
+
+    field = generate_heat_1d_field_batch(
+        batch_size=1, num_times=64, num_points=64, seed=3120
+    )
+    with _warnings.catch_warnings(record=True) as captured:
+        _warnings.simplefilter("always")
+        report = inspect_pysindy_weak_pde_library(field, task_name="v0_31b2_legacy")
+
+    assert len(set(report)) == 27
+    assert "seed_provenance" not in report
+    assert [item for item in captured if issubclass(item.category, FutureWarning)]
+
+
+def test_v0_36e_legacy_nondeterminism_is_retained_when_the_seed_is_omitted() -> None:
+    """v0.36e warns; it does not flip the default. The flip is v0.37."""
+    import warnings as _warnings
+
+    field = generate_heat_1d_field_batch(
+        batch_size=1, num_times=64, num_points=64, seed=3120
+    )
+    with _warnings.catch_warnings():
+        _warnings.simplefilter("ignore")
+        report = inspect_pysindy_weak_pde_library(field, task_name="v0_31b2_legacy")
+
+    provenance = report["provenance"]["seed_provenance"]
+    assert provenance["seed"] is None
+    assert provenance["seed_was_omitted"] is True
+    assert provenance["nondeterministic_requested"] is False
