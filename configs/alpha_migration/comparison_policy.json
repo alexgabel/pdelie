@@ -1,0 +1,45 @@
+{
+  "schema_version": "0.1",
+  "config_type": "pdelie_alpha_migration_comparison_policy",
+  "policy_id": "v0_36a_alpha_confirmatory",
+  "frozen_by": "docs/planning/V0_36A_ALPHA_MIGRATION_FREEZE.md",
+  "tolerance_rationale": "Worst measured relative drift across all tolerance_numeric stages is 5.997790e-10 (per_seed_metrics / aggregate_metrics). rtol=1e-6 is the repo-wide floor and leaves roughly 1,700x of margin. It is NOT tightened below the floor: these stages have been measured on macOS only, and tightening an unmeasured cross-platform claim is the mistake v0.33e, v0.35a and v0.35c each made.",
+  "measured_worst_relative_drift": 5.99779e-10,
+  "measured_on": {
+    "legacy": "py3.11.14 numpy1.26.4",
+    "modern": "py3.12.13 numpy2.5.1"
+  },
+  "default_tolerance_numeric": {
+    "rtol": 1e-06,
+    "atol": 1e-12
+  },
+  "qualitative_invariants": {
+    "generated_field_statistics": "sign"
+  },
+  "stage_overrides": {
+    "normalization_vector": {
+      "override_label": "blocked_missing_legacy_dependency",
+      "justification": "Column normalization of the weak-form design matrix was added in v0.34c. v0.22.0 has no counterpart, so there is nothing to compare against and a comparison would have to invent a legacy baseline.",
+      "release_note": "docs/releases/V0_34_RELEASE_READINESS.md"
+    }
+  },
+  "measured_per_stage_relative_drift": {
+    "per_seed_metrics": 5.99779e-10,
+    "aggregate_metrics": 5.99779e-10,
+    "residuals": 6.705474e-14,
+    "derivatives": 6.034927e-14,
+    "design_matrix_x": 6.034927e-14,
+    "coefficients": 2.282758e-15,
+    "generated_field_statistics": 5.606564e-16,
+    "gram_matrix": 2.067376e-16,
+    "target_y": 0.0
+  },
+  "exactly_preserved_stages": [
+    "trajectory_ids",
+    "split_membership",
+    "observation_mask",
+    "derivative_validity_mask",
+    "regression_row_mask",
+    "selected_support"
+  ]
+}
