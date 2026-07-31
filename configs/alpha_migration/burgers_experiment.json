@@ -1,0 +1,186 @@
+{
+  "schema_version": "0.1",
+  "config_type": "pdelie_alpha_migration_experiment",
+  "experiment_id": "alpha_burgers",
+  "description": "Generic Burgers configuration for the paper-critical migration audit.",
+  "contains_paper_table_numbers": false,
+  "field_generator": "pdelie.data.generate_burgers_1d_field_batch",
+  "field_generator_kwargs": {
+    "batch_size": 1,
+    "num_times": 64,
+    "num_points": 64,
+    "seed": 3120
+  },
+  "derivative_configuration": {
+    "legacy_entry_point": "pdelie.derivatives.compute_spectral_fd_derivatives",
+    "modern_entry_point": "pdelie.derivatives.compute_derivatives",
+    "entry_point_rename_is_a_known_contract_change": true,
+    "known_contract_change_note": "v0.30d added boundary-condition backend dispatch; the modern DerivativeBatch.config gains backend_selected_by_boundary_condition and backend_selection_reason. DerivativeBatch itself is contract-identical: the same six fields on both sides."
+  },
+  "stages": [
+    {
+      "stage_id": "generated_field_statistics",
+      "stage_type": "statistics",
+      "comparison_class": "qualitative_invariant",
+      "parent_stage_ids": [],
+      "tolerance": null,
+      "tolerance_note": "UNSET by design; set by the v0.36a-alpha pilot."
+    },
+    {
+      "stage_id": "trajectory_ids",
+      "stage_type": "identifiers",
+      "comparison_class": "exact_discrete",
+      "parent_stage_ids": [
+        "generated_field_statistics"
+      ],
+      "tolerance": null,
+      "tolerance_note": "UNSET by design; set by the v0.36a-alpha pilot."
+    },
+    {
+      "stage_id": "split_membership",
+      "stage_type": "split",
+      "comparison_class": "exact_discrete",
+      "parent_stage_ids": [
+        "trajectory_ids"
+      ],
+      "tolerance": null,
+      "tolerance_note": "UNSET by design; set by the v0.36a-alpha pilot."
+    },
+    {
+      "stage_id": "observation_mask",
+      "stage_type": "mask",
+      "comparison_class": "exact_discrete",
+      "parent_stage_ids": [
+        "trajectory_ids"
+      ],
+      "tolerance": null,
+      "tolerance_note": "UNSET by design; set by the v0.36a-alpha pilot."
+    },
+    {
+      "stage_id": "derivative_validity_mask",
+      "stage_type": "mask",
+      "comparison_class": "exact_discrete",
+      "parent_stage_ids": [
+        "observation_mask"
+      ],
+      "tolerance": null,
+      "tolerance_note": "UNSET by design; set by the v0.36a-alpha pilot."
+    },
+    {
+      "stage_id": "regression_row_mask",
+      "stage_type": "mask",
+      "comparison_class": "exact_discrete",
+      "parent_stage_ids": [
+        "derivative_validity_mask",
+        "observation_mask"
+      ],
+      "tolerance": null,
+      "tolerance_note": "UNSET by design; set by the v0.36a-alpha pilot."
+    },
+    {
+      "stage_id": "derivatives",
+      "stage_type": "derivatives",
+      "comparison_class": "tolerance_numeric",
+      "parent_stage_ids": [
+        "observation_mask"
+      ],
+      "tolerance": null,
+      "tolerance_note": "UNSET by design; set by the v0.36a-alpha pilot."
+    },
+    {
+      "stage_id": "residuals",
+      "stage_type": "residuals",
+      "comparison_class": "tolerance_numeric",
+      "parent_stage_ids": [
+        "derivatives"
+      ],
+      "tolerance": null,
+      "tolerance_note": "UNSET by design; set by the v0.36a-alpha pilot."
+    },
+    {
+      "stage_id": "design_matrix_x",
+      "stage_type": "matrix",
+      "comparison_class": "tolerance_numeric",
+      "parent_stage_ids": [
+        "derivatives",
+        "regression_row_mask"
+      ],
+      "tolerance": null,
+      "tolerance_note": "UNSET by design; set by the v0.36a-alpha pilot."
+    },
+    {
+      "stage_id": "target_y",
+      "stage_type": "vector",
+      "comparison_class": "tolerance_numeric",
+      "parent_stage_ids": [
+        "derivatives",
+        "regression_row_mask"
+      ],
+      "tolerance": null,
+      "tolerance_note": "UNSET by design; set by the v0.36a-alpha pilot."
+    },
+    {
+      "stage_id": "normalization_vector",
+      "stage_type": "vector",
+      "comparison_class": "tolerance_numeric",
+      "parent_stage_ids": [
+        "design_matrix_x"
+      ],
+      "tolerance": null,
+      "tolerance_note": "UNSET by design; set by the v0.36a-alpha pilot."
+    },
+    {
+      "stage_id": "gram_matrix",
+      "stage_type": "matrix",
+      "comparison_class": "tolerance_numeric",
+      "parent_stage_ids": [
+        "design_matrix_x",
+        "normalization_vector"
+      ],
+      "tolerance": null,
+      "tolerance_note": "UNSET by design; set by the v0.36a-alpha pilot."
+    },
+    {
+      "stage_id": "coefficients",
+      "stage_type": "vector",
+      "comparison_class": "tolerance_numeric",
+      "parent_stage_ids": [
+        "gram_matrix",
+        "target_y"
+      ],
+      "tolerance": null,
+      "tolerance_note": "UNSET by design; set by the v0.36a-alpha pilot."
+    },
+    {
+      "stage_id": "selected_support",
+      "stage_type": "support",
+      "comparison_class": "exact_discrete",
+      "parent_stage_ids": [
+        "coefficients"
+      ],
+      "tolerance": null,
+      "tolerance_note": "UNSET by design; set by the v0.36a-alpha pilot."
+    },
+    {
+      "stage_id": "per_seed_metrics",
+      "stage_type": "metrics",
+      "comparison_class": "tolerance_numeric",
+      "parent_stage_ids": [
+        "coefficients",
+        "split_membership"
+      ],
+      "tolerance": null,
+      "tolerance_note": "UNSET by design; set by the v0.36a-alpha pilot."
+    },
+    {
+      "stage_id": "aggregate_metrics",
+      "stage_type": "metrics",
+      "comparison_class": "tolerance_numeric",
+      "parent_stage_ids": [
+        "per_seed_metrics"
+      ],
+      "tolerance": null,
+      "tolerance_note": "UNSET by design; set by the v0.36a-alpha pilot."
+    }
+  ]
+}

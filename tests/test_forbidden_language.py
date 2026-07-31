@@ -43,7 +43,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 
 #: Source paths introduced by the v0.36 arc. Extend as sub-milestones land
 #: (v0.36a adds ``src/pdelie/audit``).
-V0_36_SOURCE_PATHS: tuple[str, ...] = ("src/pdelie/artifact",)
+V0_36_SOURCE_PATHS: tuple[str, ...] = ("src/pdelie/artifact", "src/pdelie/audit")
 
 #: Generated JSON introduced by the v0.36 arc. Empty until a sub-milestone
 #: emits one; the mechanism is wired now so the first producer is covered.
