@@ -1,0 +1,73 @@
+{
+  "schema_version": "0.1",
+  "config_type": "pdelie_full_migration_comparison_policy",
+  "policy_id": "v0_36a_beta_confirmatory",
+  "frozen_by": "docs/planning/V0_36A_BETA_MIGRATION_FREEZE.md",
+  "inherits_alpha_policy": "configs/alpha_migration/comparison_policy.json",
+  "default_tolerance_numeric": {
+    "rtol": 1e-06,
+    "atol": 1e-12
+  },
+  "tolerance_rationale": "Inherited from alpha unchanged. But the margin is materially smaller than alpha reported: alpha measured heat only and found 5.997790e-10 (~1,700x of headroom); across all five PDEs the worst DerivativeBatch-routed drift is 7.951155e-08, leaving ~12.6x. The tolerance still holds, and widening the PDE axis cost two orders of headroom. Recorded so nobody quotes alpha's 1,700x as the arc's margin.",
+  "measured_worst_derivative_batch_drift_all_pdes": 7.951155e-08,
+  "alpha_measured_worst_heat_only": 5.99779e-10,
+  "stage_overrides": {
+    "normalization_vector": {
+      "override_label": "blocked_missing_legacy_dependency",
+      "justification": "Column normalization arrived in v0.34c; v0.22.0 has no counterpart. Permanent, carried forward from alpha unchanged.",
+      "release_note": "docs/releases/V0_34_RELEASE_READINESS.md"
+    },
+    "pysindy_coefficients": {
+      "override_label": "intentional_contract_change",
+      "justification": "PySINDy 1.7.5 -> 2.1.x. Structure is identical on both sides -- same coefficient shape (64, 2145), same library size 2145, same nonzero cardinality -- but fitted magnitudes diverge by 7 to 10 orders on advection_diffusion_1d (3.6695e+10 vs 8.9725e+00) and kdv_1d (1.2885e+09 vs 1.9405e+02). Coefficients of order 1e10 indicate an ill-conditioned STLSQ solve on the legacy side. heat_1d, burgers_1d and reaction_diffusion_1d are identical (both all-zero after thresholding). Given alpha's clean close, this is attributable to the PySINDy version delta and not to migration numerical drift -- the attribution rule in the runbook.",
+      "release_note": "docs/design/PYSINDY_2_MIGRATION_AUDIT.md"
+    },
+    "pysindy_selected_support": {
+      "override_label": "intentional_contract_change",
+      "justification": "Downstream of pysindy_coefficients. Support differs on exactly the two PDEs whose coefficients diverge -- 0.067% of entries on advection_diffusion_1d and 0.177% on kdv_1d -- and is identical on the other three. Same attribution.",
+      "release_note": "docs/design/PYSINDY_2_MIGRATION_AUDIT.md"
+    },
+    "residuals": {
+      "rtol": 1e-06,
+      "atol": 5e-11,
+      "justification": "Per-stage atol raised from alpha's 1e-12, measured across all five PDEs. alpha calibrated 1e-12 on heat_1d alone, where the fitted coefficient vector has magnitude 1.000e-01. kdv_1d's has magnitude 4.404e+01 -- 440x larger -- so the same relative precision yields an absolute coefficient error 35,000x larger (6.281e-12 vs 1.775e-16), and that propagates linearly into the residual through |X| @ dc. The residual's own elements are meanwhile ~4e-09, so the rtol term contributes almost nothing and the whole allowance falls to atol. Error scale is set by the largest intermediate; tolerance scale by the smallest output. An absolute tolerance measured on one PDE cannot transfer across a five-PDE axis."
+    }
+  },
+  "pysindy_divergence_by_pde": {
+    "heat_1d": "identical",
+    "burgers_1d": "identical",
+    "reaction_diffusion_1d": "identical",
+    "advection_diffusion_1d": "diverges ~10 orders",
+    "kdv_1d": "diverges ~7 orders"
+  },
+  "residuals_tolerance_measurement": {
+    "measured_on": [
+      "heat_1d",
+      "burgers_1d",
+      "advection_diffusion_1d",
+      "reaction_diffusion_1d",
+      "kdv_1d"
+    ],
+    "max_abs_delta_by_pde": {
+      "heat_1d": 1.829648e-13,
+      "burgers_1d": 1.317835e-13,
+      "advection_diffusion_1d": 4.396483e-14,
+      "reaction_diffusion_1d": 5.614953e-14,
+      "kdv_1d": 2.260692e-12
+    },
+    "coefficient_magnitude_by_pde": {
+      "heat_1d": 0.1,
+      "burgers_1d": 1.0,
+      "advection_diffusion_1d": 0.75,
+      "reaction_diffusion_1d": 0.4718,
+      "kdv_1d": 44.04
+    },
+    "worst_observed": 2.260692e-12,
+    "worst_pde": "kdv_1d",
+    "chosen_atol": 5e-11,
+    "margin_over_worst_observed": 22.1,
+    "spread_across_pdes": "51x between best (4.396e-14) and worst (2.261e-12)",
+    "alpha_value_did_not_transfer": true,
+    "propagation_model": "residual_delta <= |X|max * |dc|max * n_columns; covers kdv_1d (7.839e-12 >= 2.261e-12)"
+  }
+}

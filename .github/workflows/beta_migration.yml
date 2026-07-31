@@ -1,0 +1,76 @@
+name: beta-migration
+
+# v0.36a-beta: the full migration audit, five PDEs across twenty stages each.
+#
+# MANUAL ONLY, for the same reason as alpha-migration: two wheels, two
+# virtualenvs across a major Python/NumPy boundary, and now five pipelines on
+# each side. Heavier than alpha by a factor of five, and its result is evidence
+# to read rather than a gate to pass. The contract tests that DO gate every PR
+# live in tests/test_v0_36a_beta_full_migration.py.
+#
+# `include_alpha_regression` replays the alpha experiment through this same
+# orchestrator and fails the run if alpha's frozen label counts do not
+# reproduce. That is beta exit gate 6, checked by running rather than asserted.
+
+on:
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: "Scope manifest naming the experiments to audit"
+        required: true
+        default: configs/full_migration/full_migration_scope.json
+        type: string
+      include_alpha_regression:
+        description: "Also replay alpha and assert its frozen label counts (exit gate 6)"
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  beta-migration:
+    runs-on: ubuntu-22.04
+    # Five PDEs on two sides, plus two wheel builds. Alpha's single experiment
+    # ran well inside the 360-minute default; five do not need more, but the
+    # explicit ceiling keeps a hung solve from burning a full runner day.
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          fetch-depth: 0  # the legacy worktree needs the v0.22.0 tag
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.11"
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+
+      # The orchestrator shells out to `uv venv` four times to build the two
+      # isolated environments. Without this the run dies at the first call with
+      # FileNotFoundError, before any wheel is built.
+      - name: Install uv
+        uses: astral-sh/setup-uv@f94ec6bedd8674c4426838e6b50417d36b6ab231 # v5.1.0
+
+      - name: Run the full migration orchestrator
+        run: |
+          python scripts/run_full_migration.py \
+            --scope "${{ inputs.scope }}" \
+            --output-dir migration_out \
+            ${{ inputs.include_alpha_regression && '--include-alpha-regression' || '' }}
+
+      - name: Upload the migration report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: beta-migration-report
+          # The reports and the stage bundles they are derived from -- not the
+          # two virtualenvs, the built wheels, or the legacy worktree, which
+          # together run to hundreds of megabytes and reconstruct from the
+          # v0.22.0 tag anyway.
+          path: |
+            migration_out/migration_report_*.json
+            migration_out/bundles/
+          retention-days: 30

@@ -226,19 +226,78 @@ def export_remaining_stages(directory, wheel_path, field, values, derivatives, r
                  prov("metrics"), ["per_seed_metrics"], "tolerance_numeric")
 
 
+# ---------------------------------------------------------------------------
+# v0.36a-beta: the PySINDy-routed stages.
+#
+# alpha deliberately routed stages 9-16 around PySINDy so its numerical baseline
+# would not be confounded by the PySINDy 1.7.5 -> 2.1.x version delta. beta MUST
+# audit that path -- see the beta preconditions in
+# docs/planning/V0_36A_ALPHA_TO_BETA_RUNBOOK.md. Any delta found here, given
+# alpha's clean close, is attributable to the PySINDy version delta rather than
+# to migration numerical drift.
+#
+# The stage ids are suffixed `_pysindy` so they never collide with alpha's
+# DerivativeBatch-routed stages, and both can appear in one report.
+# ---------------------------------------------------------------------------
+
+
+def export_pysindy_stages(directory, wheel_path, field):
+    """Export the PySINDy-routed design matrix, coefficients and support."""
+    from pdelie.discovery import fit_pysindy_discovery, to_pysindy_trajectories
+
+    def prov(kind):
+        return build_provenance(wheel_path, kind)
+
+    trajectories, time_values, feature_names = to_pysindy_trajectories(field)
+
+    write_bundle(directory, "pysindy_trajectories",
+                 {"trajectory_0": np.asarray(trajectories[0], dtype=float),
+                  "time_values": np.asarray(time_values, dtype=float)},
+                 prov("matrix"), ["generated_field_statistics"], "tolerance_numeric")
+
+    result = fit_pysindy_discovery(
+        trajectories=trajectories, time_values=time_values,
+        feature_names=feature_names, config=None,
+    )
+    coefficients = np.asarray(result["coefficients"], dtype=float)
+    write_bundle(directory, "pysindy_coefficients", {"coefficients": coefficients},
+                 prov("matrix"), ["pysindy_trajectories"], "tolerance_numeric")
+
+    scale = float(np.abs(coefficients).max()) or 1.0
+    support = (np.abs(coefficients) / scale >= SUPPORT_THRESHOLD).astype(np.int64)
+    write_bundle(directory, "pysindy_selected_support", {"support": support},
+                 prov("support"), ["pysindy_coefficients"], "exact_discrete")
+
+    # The library feature-name list is the surface most likely to move between
+    # PySINDy majors. Exported as a length so a change is visible without
+    # embedding a version-specific naming scheme in the comparison.
+    library_names = result.get("library_feature_names") or []
+    write_bundle(directory, "pysindy_library_size",
+                 {"library_feature_count": np.array([len(library_names)], dtype=np.int64)},
+                 prov("metrics"), ["pysindy_coefficients"], "exact_discrete")
+
+
 def export(config_path: Path, output_dir: Path, wheel_path: Path | None) -> int:
     config = json.loads(Path(config_path).read_text(encoding="utf-8"))
     kwargs = config["field_generator_kwargs"]
 
     from pdelie.data import (
+        generate_advection_diffusion_1d_field_batch,
         generate_burgers_1d_field_batch,
         generate_heat_1d_field_batch,
+        generate_kdv_1d_field_batch,
+        generate_reaction_diffusion_1d_field_batch,
     )
     from pdelie.derivatives import compute_spectral_fd_derivatives
 
     generators = {
+        "pdelie.data.generate_advection_diffusion_1d_field_batch":
+            generate_advection_diffusion_1d_field_batch,
         "pdelie.data.generate_burgers_1d_field_batch": generate_burgers_1d_field_batch,
         "pdelie.data.generate_heat_1d_field_batch": generate_heat_1d_field_batch,
+        "pdelie.data.generate_kdv_1d_field_batch": generate_kdv_1d_field_batch,
+        "pdelie.data.generate_reaction_diffusion_1d_field_batch":
+            generate_reaction_diffusion_1d_field_batch,
     }
     generator = generators[config["field_generator"]]
     field = generator(**kwargs)
@@ -278,19 +337,31 @@ def export(config_path: Path, output_dir: Path, wheel_path: Path | None) -> int:
 
     # Stage 8 uses the residual evaluator each version ships. The constructor is
     # contract-identical across the gap: both take `diffusivity`.
-    from pdelie.residuals import BurgersResidualEvaluator, HeatResidualEvaluator
+    import pdelie.residuals as _residuals
 
-    evaluator = (
-        BurgersResidualEvaluator(diffusivity=1.0)
-        if "burgers" in config["field_generator"]
-        else HeatResidualEvaluator(diffusivity=1.0)
-    )
+    _EVALUATORS = {
+        "burgers": ("BurgersResidualEvaluator", {"diffusivity": 1.0}),
+        "kdv": ("KdVResidualEvaluator", {}),
+        "reaction_diffusion": ("ReactionDiffusionResidualEvaluator", {}),
+        "advection_diffusion": ("AdvectionDiffusionResidualEvaluator", {"diffusivity": 1.0}),
+        "heat": ("HeatResidualEvaluator", {"diffusivity": 1.0}),
+    }
+    _generator_name = config["field_generator"]
+    for _key, (_cls, _kwargs) in _EVALUATORS.items():
+        if _key in _generator_name:
+            evaluator = getattr(_residuals, _cls)(**_kwargs)
+            break
+    else:
+        evaluator = _residuals.HeatResidualEvaluator(diffusivity=1.0)
     residual_batch = evaluator.evaluate(field)
     residual_l2 = np.asarray(residual_batch.residual, dtype=float)
 
     export_remaining_stages(
         output_dir, wheel_path, field, values, derivatives.derivatives, residual_l2
     )
+
+    if config.get("include_pysindy_path", False):
+        export_pysindy_stages(output_dir, wheel_path, field)
 
     print(f"legacy exporter wrote bundles to {output_dir}")
     return 0

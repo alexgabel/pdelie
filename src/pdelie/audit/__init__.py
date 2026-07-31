@@ -30,6 +30,15 @@ from pdelie.audit.comparators import (
     principal_angles,
     summarize_labels,
 )
+from pdelie.audit.full_migration_scope import (
+    AUDITABILITY,
+    BETA_PDE_NAMES,
+    BOUNDARY_CONDITIONS,
+    PIPELINE_PATHS,
+    ScopeEntry,
+    enumerate_scope,
+    summarize_scope,
+)
 from pdelie.audit.pipeline_migration import (
     PIPELINE_MIGRATION_SUMMARY_TYPE,
     PipelineMigrationComparisonPolicy,
@@ -45,15 +54,20 @@ from pdelie.audit.stage_bundle import (
 )
 
 __all__ = [
+    "AUDITABILITY",
+    "BETA_PDE_NAMES",
+    "BOUNDARY_CONDITIONS",
     "COMPARATOR_ASSIGNABLE_LABELS",
     "COMPARISON_CLASSES",
     "MIGRATION_LABELS",
     "PIPELINE_MIGRATION_SUMMARY_TYPE",
+    "PIPELINE_PATHS",
     "PRINCIPAL_ANGLE_RESOLUTION_FLOOR_RAD",
     "QUALITATIVE_INVARIANTS",
     "STAGE_BUNDLE_SCHEMA_VERSION",
     "ComparisonResult",
     "PipelineMigrationComparisonPolicy",
+    "ScopeEntry",
     "StageBundle",
     "StagePolicy",
     "compare_exact",
@@ -62,8 +76,10 @@ __all__ = [
     "compare_qualitative",
     "compare_selected_rows_by_objective",
     "compare_subspaces",
+    "enumerate_scope",
     "principal_angles",
     "read_stage_bundle",
     "summarize_labels",
+    "summarize_scope",
     "write_stage_bundle",
 ]

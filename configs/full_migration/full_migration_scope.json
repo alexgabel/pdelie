@@ -1,0 +1,862 @@
+{
+  "schema_version": "0.1",
+  "config_type": "pdelie_full_migration_scope_manifest",
+  "scope_id": "v0_36a_beta_full_migration",
+  "frozen_by": "docs/planning/V0_36A_BETA_MIGRATION_FREEZE.md",
+  "config_dir": "configs/full_migration",
+  "comparison_policy": "configs/full_migration/comparison_policy.json",
+  "experiments": [
+    "heat_1d",
+    "burgers_1d",
+    "advection_diffusion_1d",
+    "reaction_diffusion_1d",
+    "kdv_1d"
+  ],
+  "stages_per_experiment": 20,
+  "total_stages": 100,
+  "legacy_tag": "v0.22.0",
+  "alpha_regression_manifest": {
+    "config_dir": "configs/alpha_migration",
+    "comparison_policy": "configs/alpha_migration/comparison_policy.json",
+    "experiments": [
+      "hard_heat_experiment"
+    ],
+    "purpose": "beta exit gate 6: the generalized orchestrator must reproduce alpha's own result, so alpha's conclusions are re-verified under the new tooling rather than assumed to survive it."
+  },
+  "auditability": {
+    "summary_type": "pdelie_full_migration_scope",
+    "schema_version": "0.1",
+    "combination_count": 100,
+    "auditable_count": 10,
+    "blocked_count": 90,
+    "auditable_by_pipeline_path": {
+      "derivative_batch": 5,
+      "pysindy_discovery": 5
+    },
+    "pde_names": [
+      "heat_1d",
+      "burgers_1d",
+      "advection_diffusion_1d",
+      "reaction_diffusion_1d",
+      "kdv_1d"
+    ],
+    "boundary_conditions": [
+      "periodic",
+      "dirichlet",
+      "neumann",
+      "open_unknown"
+    ],
+    "pipeline_paths": [
+      "derivative_batch",
+      "pysindy_discovery",
+      "weak_default",
+      "weak_normalized",
+      "row_selection_diagnostics"
+    ],
+    "pysindy_path_is_a_beta_obligation": true,
+    "pysindy_path_rationale": "alpha deliberately routed stages 9-16 around PySINDy so its numerical baseline would not be confounded by the PySINDy 1.7.5 to 2.1.x version delta. beta MUST audit that path; beta close is blocked without it. Any delta found there, given alpha's clean close, is attributable to the PySINDy version delta rather than to migration numerical drift.",
+    "entries": [
+      {
+        "pde_name": "heat_1d",
+        "boundary_condition": "periodic",
+        "pipeline_path": "derivative_batch",
+        "auditability": "auditable",
+        "reason": null,
+        "release_note": null
+      },
+      {
+        "pde_name": "heat_1d",
+        "boundary_condition": "periodic",
+        "pipeline_path": "pysindy_discovery",
+        "auditability": "auditable",
+        "reason": null,
+        "release_note": null
+      },
+      {
+        "pde_name": "heat_1d",
+        "boundary_condition": "periodic",
+        "pipeline_path": "weak_default",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "pdelie.tasks does not exist in v0.22.0; the weak-form diagnostic arrived in v0.31b2.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "heat_1d",
+        "boundary_condition": "periodic",
+        "pipeline_path": "weak_normalized",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "Column normalization of the weak-form design matrix arrived in v0.34c and has no v0.22.0 counterpart.",
+        "release_note": "docs/releases/V0_34_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "heat_1d",
+        "boundary_condition": "periodic",
+        "pipeline_path": "row_selection_diagnostics",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "Row-selection diagnostics arrived in v0.35c and have no v0.22.0 counterpart.",
+        "release_note": "docs/releases/V0_35_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "heat_1d",
+        "boundary_condition": "dirichlet",
+        "pipeline_path": "derivative_batch",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "heat_1d",
+        "boundary_condition": "dirichlet",
+        "pipeline_path": "pysindy_discovery",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "heat_1d",
+        "boundary_condition": "dirichlet",
+        "pipeline_path": "weak_default",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "heat_1d",
+        "boundary_condition": "dirichlet",
+        "pipeline_path": "weak_normalized",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "heat_1d",
+        "boundary_condition": "dirichlet",
+        "pipeline_path": "row_selection_diagnostics",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "heat_1d",
+        "boundary_condition": "neumann",
+        "pipeline_path": "derivative_batch",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "heat_1d",
+        "boundary_condition": "neumann",
+        "pipeline_path": "pysindy_discovery",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "heat_1d",
+        "boundary_condition": "neumann",
+        "pipeline_path": "weak_default",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "heat_1d",
+        "boundary_condition": "neumann",
+        "pipeline_path": "weak_normalized",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "heat_1d",
+        "boundary_condition": "neumann",
+        "pipeline_path": "row_selection_diagnostics",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "heat_1d",
+        "boundary_condition": "open_unknown",
+        "pipeline_path": "derivative_batch",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "heat_1d",
+        "boundary_condition": "open_unknown",
+        "pipeline_path": "pysindy_discovery",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "heat_1d",
+        "boundary_condition": "open_unknown",
+        "pipeline_path": "weak_default",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "heat_1d",
+        "boundary_condition": "open_unknown",
+        "pipeline_path": "weak_normalized",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "heat_1d",
+        "boundary_condition": "open_unknown",
+        "pipeline_path": "row_selection_diagnostics",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "burgers_1d",
+        "boundary_condition": "periodic",
+        "pipeline_path": "derivative_batch",
+        "auditability": "auditable",
+        "reason": null,
+        "release_note": null
+      },
+      {
+        "pde_name": "burgers_1d",
+        "boundary_condition": "periodic",
+        "pipeline_path": "pysindy_discovery",
+        "auditability": "auditable",
+        "reason": null,
+        "release_note": null
+      },
+      {
+        "pde_name": "burgers_1d",
+        "boundary_condition": "periodic",
+        "pipeline_path": "weak_default",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "pdelie.tasks does not exist in v0.22.0; the weak-form diagnostic arrived in v0.31b2.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "burgers_1d",
+        "boundary_condition": "periodic",
+        "pipeline_path": "weak_normalized",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "Column normalization of the weak-form design matrix arrived in v0.34c and has no v0.22.0 counterpart.",
+        "release_note": "docs/releases/V0_34_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "burgers_1d",
+        "boundary_condition": "periodic",
+        "pipeline_path": "row_selection_diagnostics",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "Row-selection diagnostics arrived in v0.35c and have no v0.22.0 counterpart.",
+        "release_note": "docs/releases/V0_35_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "burgers_1d",
+        "boundary_condition": "dirichlet",
+        "pipeline_path": "derivative_batch",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "burgers_1d",
+        "boundary_condition": "dirichlet",
+        "pipeline_path": "pysindy_discovery",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "burgers_1d",
+        "boundary_condition": "dirichlet",
+        "pipeline_path": "weak_default",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "burgers_1d",
+        "boundary_condition": "dirichlet",
+        "pipeline_path": "weak_normalized",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "burgers_1d",
+        "boundary_condition": "dirichlet",
+        "pipeline_path": "row_selection_diagnostics",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "burgers_1d",
+        "boundary_condition": "neumann",
+        "pipeline_path": "derivative_batch",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "burgers_1d",
+        "boundary_condition": "neumann",
+        "pipeline_path": "pysindy_discovery",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "burgers_1d",
+        "boundary_condition": "neumann",
+        "pipeline_path": "weak_default",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "burgers_1d",
+        "boundary_condition": "neumann",
+        "pipeline_path": "weak_normalized",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "burgers_1d",
+        "boundary_condition": "neumann",
+        "pipeline_path": "row_selection_diagnostics",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "burgers_1d",
+        "boundary_condition": "open_unknown",
+        "pipeline_path": "derivative_batch",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "burgers_1d",
+        "boundary_condition": "open_unknown",
+        "pipeline_path": "pysindy_discovery",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "burgers_1d",
+        "boundary_condition": "open_unknown",
+        "pipeline_path": "weak_default",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "burgers_1d",
+        "boundary_condition": "open_unknown",
+        "pipeline_path": "weak_normalized",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "burgers_1d",
+        "boundary_condition": "open_unknown",
+        "pipeline_path": "row_selection_diagnostics",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "advection_diffusion_1d",
+        "boundary_condition": "periodic",
+        "pipeline_path": "derivative_batch",
+        "auditability": "auditable",
+        "reason": null,
+        "release_note": null
+      },
+      {
+        "pde_name": "advection_diffusion_1d",
+        "boundary_condition": "periodic",
+        "pipeline_path": "pysindy_discovery",
+        "auditability": "auditable",
+        "reason": null,
+        "release_note": null
+      },
+      {
+        "pde_name": "advection_diffusion_1d",
+        "boundary_condition": "periodic",
+        "pipeline_path": "weak_default",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "pdelie.tasks does not exist in v0.22.0; the weak-form diagnostic arrived in v0.31b2.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "advection_diffusion_1d",
+        "boundary_condition": "periodic",
+        "pipeline_path": "weak_normalized",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "Column normalization of the weak-form design matrix arrived in v0.34c and has no v0.22.0 counterpart.",
+        "release_note": "docs/releases/V0_34_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "advection_diffusion_1d",
+        "boundary_condition": "periodic",
+        "pipeline_path": "row_selection_diagnostics",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "Row-selection diagnostics arrived in v0.35c and have no v0.22.0 counterpart.",
+        "release_note": "docs/releases/V0_35_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "advection_diffusion_1d",
+        "boundary_condition": "dirichlet",
+        "pipeline_path": "derivative_batch",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "advection_diffusion_1d",
+        "boundary_condition": "dirichlet",
+        "pipeline_path": "pysindy_discovery",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "advection_diffusion_1d",
+        "boundary_condition": "dirichlet",
+        "pipeline_path": "weak_default",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "advection_diffusion_1d",
+        "boundary_condition": "dirichlet",
+        "pipeline_path": "weak_normalized",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "advection_diffusion_1d",
+        "boundary_condition": "dirichlet",
+        "pipeline_path": "row_selection_diagnostics",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "advection_diffusion_1d",
+        "boundary_condition": "neumann",
+        "pipeline_path": "derivative_batch",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "advection_diffusion_1d",
+        "boundary_condition": "neumann",
+        "pipeline_path": "pysindy_discovery",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "advection_diffusion_1d",
+        "boundary_condition": "neumann",
+        "pipeline_path": "weak_default",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "advection_diffusion_1d",
+        "boundary_condition": "neumann",
+        "pipeline_path": "weak_normalized",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "advection_diffusion_1d",
+        "boundary_condition": "neumann",
+        "pipeline_path": "row_selection_diagnostics",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "advection_diffusion_1d",
+        "boundary_condition": "open_unknown",
+        "pipeline_path": "derivative_batch",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "advection_diffusion_1d",
+        "boundary_condition": "open_unknown",
+        "pipeline_path": "pysindy_discovery",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "advection_diffusion_1d",
+        "boundary_condition": "open_unknown",
+        "pipeline_path": "weak_default",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "advection_diffusion_1d",
+        "boundary_condition": "open_unknown",
+        "pipeline_path": "weak_normalized",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "advection_diffusion_1d",
+        "boundary_condition": "open_unknown",
+        "pipeline_path": "row_selection_diagnostics",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "reaction_diffusion_1d",
+        "boundary_condition": "periodic",
+        "pipeline_path": "derivative_batch",
+        "auditability": "auditable",
+        "reason": null,
+        "release_note": null
+      },
+      {
+        "pde_name": "reaction_diffusion_1d",
+        "boundary_condition": "periodic",
+        "pipeline_path": "pysindy_discovery",
+        "auditability": "auditable",
+        "reason": null,
+        "release_note": null
+      },
+      {
+        "pde_name": "reaction_diffusion_1d",
+        "boundary_condition": "periodic",
+        "pipeline_path": "weak_default",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "pdelie.tasks does not exist in v0.22.0; the weak-form diagnostic arrived in v0.31b2.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "reaction_diffusion_1d",
+        "boundary_condition": "periodic",
+        "pipeline_path": "weak_normalized",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "Column normalization of the weak-form design matrix arrived in v0.34c and has no v0.22.0 counterpart.",
+        "release_note": "docs/releases/V0_34_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "reaction_diffusion_1d",
+        "boundary_condition": "periodic",
+        "pipeline_path": "row_selection_diagnostics",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "Row-selection diagnostics arrived in v0.35c and have no v0.22.0 counterpart.",
+        "release_note": "docs/releases/V0_35_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "reaction_diffusion_1d",
+        "boundary_condition": "dirichlet",
+        "pipeline_path": "derivative_batch",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "reaction_diffusion_1d",
+        "boundary_condition": "dirichlet",
+        "pipeline_path": "pysindy_discovery",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "reaction_diffusion_1d",
+        "boundary_condition": "dirichlet",
+        "pipeline_path": "weak_default",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "reaction_diffusion_1d",
+        "boundary_condition": "dirichlet",
+        "pipeline_path": "weak_normalized",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "reaction_diffusion_1d",
+        "boundary_condition": "dirichlet",
+        "pipeline_path": "row_selection_diagnostics",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "reaction_diffusion_1d",
+        "boundary_condition": "neumann",
+        "pipeline_path": "derivative_batch",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "reaction_diffusion_1d",
+        "boundary_condition": "neumann",
+        "pipeline_path": "pysindy_discovery",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "reaction_diffusion_1d",
+        "boundary_condition": "neumann",
+        "pipeline_path": "weak_default",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "reaction_diffusion_1d",
+        "boundary_condition": "neumann",
+        "pipeline_path": "weak_normalized",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "reaction_diffusion_1d",
+        "boundary_condition": "neumann",
+        "pipeline_path": "row_selection_diagnostics",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "reaction_diffusion_1d",
+        "boundary_condition": "open_unknown",
+        "pipeline_path": "derivative_batch",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "reaction_diffusion_1d",
+        "boundary_condition": "open_unknown",
+        "pipeline_path": "pysindy_discovery",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "reaction_diffusion_1d",
+        "boundary_condition": "open_unknown",
+        "pipeline_path": "weak_default",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "reaction_diffusion_1d",
+        "boundary_condition": "open_unknown",
+        "pipeline_path": "weak_normalized",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "reaction_diffusion_1d",
+        "boundary_condition": "open_unknown",
+        "pipeline_path": "row_selection_diagnostics",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "v0.22.0 has no pdelie._boundary module and no generator accepts boundary_condition_x. Boundary-condition dispatch arrived in v0.30d and the nonperiodic generator layer in v0.33. Nonperiodic data can be manufactured on both sides by cropping, but the legacy side has no boundary-aware processing to compare against.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "kdv_1d",
+        "boundary_condition": "periodic",
+        "pipeline_path": "derivative_batch",
+        "auditability": "auditable",
+        "reason": null,
+        "release_note": null
+      },
+      {
+        "pde_name": "kdv_1d",
+        "boundary_condition": "periodic",
+        "pipeline_path": "pysindy_discovery",
+        "auditability": "auditable",
+        "reason": null,
+        "release_note": null
+      },
+      {
+        "pde_name": "kdv_1d",
+        "boundary_condition": "periodic",
+        "pipeline_path": "weak_default",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "pdelie.tasks does not exist in v0.22.0; the weak-form diagnostic arrived in v0.31b2.",
+        "release_note": "docs/releases/V0_33_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "kdv_1d",
+        "boundary_condition": "periodic",
+        "pipeline_path": "weak_normalized",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "Column normalization of the weak-form design matrix arrived in v0.34c and has no v0.22.0 counterpart.",
+        "release_note": "docs/releases/V0_34_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "kdv_1d",
+        "boundary_condition": "periodic",
+        "pipeline_path": "row_selection_diagnostics",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "Row-selection diagnostics arrived in v0.35c and have no v0.22.0 counterpart.",
+        "release_note": "docs/releases/V0_35_RELEASE_READINESS.md"
+      },
+      {
+        "pde_name": "kdv_1d",
+        "boundary_condition": "dirichlet",
+        "pipeline_path": "derivative_batch",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "Nonperiodic KdV has been explicitly deferred since v0.30 and remains out of scope; it is not a migration finding.",
+        "release_note": "docs/planning/ROADMAP.md"
+      },
+      {
+        "pde_name": "kdv_1d",
+        "boundary_condition": "dirichlet",
+        "pipeline_path": "pysindy_discovery",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "Nonperiodic KdV has been explicitly deferred since v0.30 and remains out of scope; it is not a migration finding.",
+        "release_note": "docs/planning/ROADMAP.md"
+      },
+      {
+        "pde_name": "kdv_1d",
+        "boundary_condition": "dirichlet",
+        "pipeline_path": "weak_default",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "Nonperiodic KdV has been explicitly deferred since v0.30 and remains out of scope; it is not a migration finding.",
+        "release_note": "docs/planning/ROADMAP.md"
+      },
+      {
+        "pde_name": "kdv_1d",
+        "boundary_condition": "dirichlet",
+        "pipeline_path": "weak_normalized",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "Nonperiodic KdV has been explicitly deferred since v0.30 and remains out of scope; it is not a migration finding.",
+        "release_note": "docs/planning/ROADMAP.md"
+      },
+      {
+        "pde_name": "kdv_1d",
+        "boundary_condition": "dirichlet",
+        "pipeline_path": "row_selection_diagnostics",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "Nonperiodic KdV has been explicitly deferred since v0.30 and remains out of scope; it is not a migration finding.",
+        "release_note": "docs/planning/ROADMAP.md"
+      },
+      {
+        "pde_name": "kdv_1d",
+        "boundary_condition": "neumann",
+        "pipeline_path": "derivative_batch",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "Nonperiodic KdV has been explicitly deferred since v0.30 and remains out of scope; it is not a migration finding.",
+        "release_note": "docs/planning/ROADMAP.md"
+      },
+      {
+        "pde_name": "kdv_1d",
+        "boundary_condition": "neumann",
+        "pipeline_path": "pysindy_discovery",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "Nonperiodic KdV has been explicitly deferred since v0.30 and remains out of scope; it is not a migration finding.",
+        "release_note": "docs/planning/ROADMAP.md"
+      },
+      {
+        "pde_name": "kdv_1d",
+        "boundary_condition": "neumann",
+        "pipeline_path": "weak_default",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "Nonperiodic KdV has been explicitly deferred since v0.30 and remains out of scope; it is not a migration finding.",
+        "release_note": "docs/planning/ROADMAP.md"
+      },
+      {
+        "pde_name": "kdv_1d",
+        "boundary_condition": "neumann",
+        "pipeline_path": "weak_normalized",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "Nonperiodic KdV has been explicitly deferred since v0.30 and remains out of scope; it is not a migration finding.",
+        "release_note": "docs/planning/ROADMAP.md"
+      },
+      {
+        "pde_name": "kdv_1d",
+        "boundary_condition": "neumann",
+        "pipeline_path": "row_selection_diagnostics",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "Nonperiodic KdV has been explicitly deferred since v0.30 and remains out of scope; it is not a migration finding.",
+        "release_note": "docs/planning/ROADMAP.md"
+      },
+      {
+        "pde_name": "kdv_1d",
+        "boundary_condition": "open_unknown",
+        "pipeline_path": "derivative_batch",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "Nonperiodic KdV has been explicitly deferred since v0.30 and remains out of scope; it is not a migration finding.",
+        "release_note": "docs/planning/ROADMAP.md"
+      },
+      {
+        "pde_name": "kdv_1d",
+        "boundary_condition": "open_unknown",
+        "pipeline_path": "pysindy_discovery",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "Nonperiodic KdV has been explicitly deferred since v0.30 and remains out of scope; it is not a migration finding.",
+        "release_note": "docs/planning/ROADMAP.md"
+      },
+      {
+        "pde_name": "kdv_1d",
+        "boundary_condition": "open_unknown",
+        "pipeline_path": "weak_default",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "Nonperiodic KdV has been explicitly deferred since v0.30 and remains out of scope; it is not a migration finding.",
+        "release_note": "docs/planning/ROADMAP.md"
+      },
+      {
+        "pde_name": "kdv_1d",
+        "boundary_condition": "open_unknown",
+        "pipeline_path": "weak_normalized",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "Nonperiodic KdV has been explicitly deferred since v0.30 and remains out of scope; it is not a migration finding.",
+        "release_note": "docs/planning/ROADMAP.md"
+      },
+      {
+        "pde_name": "kdv_1d",
+        "boundary_condition": "open_unknown",
+        "pipeline_path": "row_selection_diagnostics",
+        "auditability": "blocked_missing_legacy_dependency",
+        "reason": "Nonperiodic KdV has been explicitly deferred since v0.30 and remains out of scope; it is not a migration finding.",
+        "release_note": "docs/planning/ROADMAP.md"
+      }
+    ],
+    "diagnostic_only": true
+  }
+}

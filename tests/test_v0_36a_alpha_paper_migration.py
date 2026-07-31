@@ -783,13 +783,33 @@ def _exporter_stage_ids(relative: str) -> set[str]:
     )
 
 
+#: The four PySINDy-routed stages. Alpha deliberately routed around them so its
+#: numerical baseline would not be confounded by the PySINDy 1.7.5 -> 2.1.x
+#: version delta; v0.36a-beta added them back as the axis it exists to audit.
+BETA_PYSINDY_STAGE_IDS = frozenset(
+    {
+        "pysindy_trajectories",
+        "pysindy_coefficients",
+        "pysindy_selected_support",
+        "pysindy_library_size",
+    }
+)
+
+
 def test_both_exporters_emit_the_same_stage_set() -> None:
     """The two sides share a format, never a serializer -- but they must agree
     on which stages exist, or every comparison is a missing-bundle report."""
     legacy = _exporter_stage_ids("scripts/legacy_exporter.py")
     modern = _exporter_stage_ids("scripts/modern_exporter.py")
     assert legacy == modern, legacy ^ modern
-    assert len(legacy) == 15
+    # Alpha's 15 emitted stages (16 declared, less the blocked
+    # normalization_vector) plus beta's 4 PySINDy stages. The exporters are
+    # config-driven, so carrying beta's stages does not change what an alpha run
+    # produces -- test_the_exporters_omit_exactly_the_blocked_stage still holds
+    # against the alpha config.
+    assert BETA_PYSINDY_STAGE_IDS <= legacy
+    assert len(legacy - BETA_PYSINDY_STAGE_IDS) == 15
+    assert len(legacy) == 19
 
 
 def test_the_exporters_omit_exactly_the_blocked_stage() -> None:
