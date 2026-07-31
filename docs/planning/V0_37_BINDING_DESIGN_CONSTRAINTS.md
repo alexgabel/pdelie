@@ -82,16 +82,25 @@ the action bundle's claim.
 `coefficient_field_action: ActionRef | None`, and there is no second location.
 `CoefficientFieldRef` does not exist.
 
-**Open — needs a decision before v0.37.** The repository already ships
-`co_transforming_background_equivalence`, but it is a *different construct*: an
-**admissibility classification label** from v0.34b
-(`src/pdelie/symmetry/admissibility.py`), describing a measured outcome, not a
-declared treatment policy. It is frozen into `docs/specs/support_matrix.v0_34.json`
-and `support_matrix.v0_35.json`. Renaming it would break two frozen release
-specs to align a label with an unrelated field's naming. The recommendation is
-to adopt `co_transformable_background` for the **new** `treatment_policy`
-vocabulary and leave the v0.34b classification label alone, since the `-ing`
-form is correct for a thing that has been observed to happen.
+**But `treatment_policy` partially does, and must be generalised rather than
+invented.** `nu_treatment_policy: "fixed_background"` is a **v0.33d generator
+tag**, emitted by `heat_1d`, `burgers_1d` and `advection_diffusion_1d` from the
+shared constant `NU_TREATMENT_POLICY_FIXED_BACKGROUND` and asserted by
+`tests/test_v0_33d_variable_coefficient_generators.py`. A new
+`CoefficientFieldRef.treatment_policy` must extend that tag from `nu`-specific
+to per-field, keeping `fixed_background` as a value, or the repository will
+carry two names for one declaration.
+
+**Open — needs a decision before v0.37.** `co_transforming_background_equivalence`
+is a *third construct*: an **admissibility classification label** from v0.34b
+(`src/pdelie/symmetry/admissibility.py`) describing a measured outcome, frozen
+into `docs/specs/support_matrix.v0_34.json` and `support_matrix.v0_35.json`.
+Renaming it breaks two frozen release specs to align a label with an unrelated
+field. Recommendation: adopt `co_transformable_background` for the **new**
+declarative vocabulary and leave the v0.34b label alone — the `-ing` form is
+correct for something that has been observed to happen.
+
+See **C-3a** below for how the three fit together.
 
 ---
 
@@ -119,6 +128,42 @@ with a seventh interaction rule refusing `co_transformed` with no
 **Deviation:** the axes use `unknown`, not `unverified`. Four sibling axes
 already used `unknown`; five axes disagreeing on the word for the same state
 would be worse than matching the proposal's wording.
+
+---
+
+## C-3a — The background question has three layers, and they already exist
+
+This is the cross-reference between the new `coefficient_relation` axis and the
+constraints above. It is the part most likely to be got wrong twice, because
+three shipped vocabularies describe the same physical question at different
+layers and were introduced three releases apart.
+
+| Layer | Asks | Where it lives | Vocabulary |
+|---|---|---|---|
+| **1. Declared capability** | What may this background do? | v0.33d generator tag `nu_treatment_policy` | `fixed_background` (+ `co_transformable_background`, to be added by C-2) |
+| **2. Claimed action** | What does *this transformation* say it did? | v0.36b `ProblemActionSpec.coefficient_relation` | `fixed`, `co_transformed`, `not_applicable`, `unknown` |
+| **3. Measured outcome** | What actually happened when we computed the residual? | v0.34b `BACKGROUND_TREATMENT_LABELS` | `fixed_background_same_target_symmetry_failed`, `co_transforming_background_equivalence`, `inconclusive_background_separation` |
+
+The three are **not** synonyms and must not be merged. Layer 1 is a property of
+the *data*. Layer 2 is a *claim* made by a transformation. Layer 3 is an
+*observation* produced by measurement. The v0.34b module already knew this — its
+docstring says it "extends the v0.33d `nu_treatment_policy` value
+`fixed_background` with the equivalence reading" — but until `coefficient_relation`
+was added there was **no layer 2**, so a claim could only be inferred from the
+presence of an action.
+
+**Binding rules for v0.37:**
+
+1. A spec claiming `coefficient_relation="co_transformed"` against a field whose
+   declared `treatment_policy` is `fixed_background` is a **cross-layer
+   contradiction** and must be refused. This is the real content of C-2:
+   duplication is not two fields holding the same value, it is two layers
+   permitted to disagree with no rule to resolve them.
+2. Layer 3 must never be written into a `ProblemActionSpec`. A measured outcome
+   on a declarative spec is exactly the expected/observed collapse C-4 forbids.
+3. Layers 1 and 2 are `expected_case` inputs in C-4's vocabulary; layer 3 is
+   `observed_relation_status`. The split C-4 asks for is already prefigured by
+   the v0.33d/v0.34b division — v0.37 should adopt it, not reinvent it.
 
 ---
 
@@ -167,10 +212,18 @@ expressed by the key being absent.
 
 **Open — the repository has no single convention.** Measured on the current
 tree: `schema_version` appears 37 times and `summary_schema_version` 36 times in
-`src/`. There is no established standard key to defer to. v0.37 must either pick
-one and state it, or accept both with the choice documented per payload family.
-Picking one repo-wide is a breaking change to roughly half the payloads and is
-not a v0.37 side quest.
+`src/`. There is no established standard key to defer to. A repo-wide rename on
+the belief that one of them is "the project standard" would break roughly half
+the payloads, including `discovery_task_result`.
+
+**The rule, therefore, is per payload:** preserve whatever key a payload already
+uses; choose deliberately, and state the choice, only for a genuinely new
+payload.
+
+The v0.37 report is a new payload, so it chooses freely. So is anything emitted
+by `pdelie.actions`, which currently carries **no schema key at all** —
+`ProblemActionSpec.as_dict()` has none. That is a clean slate rather than a
+migration, and whichever key it adopts should be stated here when it does.
 
 ---
 
