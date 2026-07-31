@@ -13,9 +13,7 @@
     "rtol": 1e-06,
     "atol": 1e-12
   },
-  "qualitative_invariants": {
-    "generated_field_statistics": "sign"
-  },
+  "qualitative_invariants": {},
   "stage_overrides": {
     "normalization_vector": {
       "override_label": "blocked_missing_legacy_dependency",
@@ -41,5 +39,6 @@
     "derivative_validity_mask",
     "regression_row_mask",
     "selected_support"
-  ]
+  ],
+  "qualitative_invariants_note": "Empty by design. generated_field_statistics was reclassified to tolerance_numeric at the confirmatory freeze; no alpha stage is qualitative_invariant. See the freeze, amendment 3."
 }
