@@ -103,6 +103,14 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+  # v0.36 day-zero: the cross-platform portability lane. Tests carrying this
+  # marker run on Linux AND macOS via .github/workflows/portability.yml. The
+  # lane is budgeted at 30 tests (tests/test_portability_lane_budget.py) --
+  # a lane that runs everything protects nothing and takes twice as long to
+  # say so. See docs/design/CROSS_PLATFORM_PORTABILITY_CLASSES.md.
+  "portability: runs on both Linux and macOS to validate a cross-platform equality claim",
+]
 
 # v0.30e: cross-cutting hygiene phase 1. All three tools are wired into
 # non-blocking CI jobs; a red run reports but does not gate merges.

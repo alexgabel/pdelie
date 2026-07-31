@@ -1,0 +1,86 @@
+name: portability
+
+# v0.36 day-zero: the cross-platform lane.
+#
+# Three CI failures across three releases had one cause -- a claim measured on
+# one platform and recorded as universal (v0.33e, v0.35a, v0.35c). None was a
+# numerical defect; each was a classification error. This lane runs the small
+# set of tests that assert cross-platform equality claims on BOTH Linux and
+# macOS, so those claims are validated rather than assumed.
+#
+# Deliberately narrow:
+#   * Python 3.12 only -- this lane varies the OS, not the interpreter. The
+#     3.13 matrix already runs in ci.yml on Linux.
+#   * budgeted at 30 tests (tests/test_portability_lane_budget.py). A lane that
+#     runs everything protects nothing in particular and takes twice as long to
+#     say so.
+#   * advisory while the lane is piloted. Promotion to blocking is a deliberate
+#     decision recorded in the v0.36 close, not a side effect of it going green.
+#
+# See docs/design/CROSS_PLATFORM_PORTABILITY_CLASSES.md.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: portability-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  portability:
+    name: portability (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    # Advisory during the pilot. See the header note.
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, macos-14]
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+
+      - name: Install package and test dependencies
+        shell: bash
+        run: |
+          retry() {
+            local attempts="$1"
+            shift
+            local count=1
+            until "$@"; do
+              if [ "${count}" -ge "${attempts}" ]; then
+                return 1
+              fi
+              count=$((count + 1))
+              echo "Retrying (${count}/${attempts}): $*"
+              sleep 5
+            done
+          }
+          retry 3 python -m pip install --upgrade pip
+          retry 3 python -m pip install -e .[test]
+
+      - name: Record platform provenance
+        shell: bash
+        run: |
+          python - <<'PY'
+          import platform, sys
+          import numpy as np
+          print(f"os        : {platform.platform()}")
+          print(f"machine   : {platform.machine()}")
+          print(f"python    : {sys.version.split()[0]}")
+          print(f"numpy     : {np.__version__}")
+          PY
+          # BLAS configuration is a platform_specific_diagnostic: reported for
+          # triage, never asserted across platforms.
+          python -c "import numpy as np; np.show_config()" || true
+
+      - name: Run the portability lane
+        run: python -m pytest -m portability -v --no-header

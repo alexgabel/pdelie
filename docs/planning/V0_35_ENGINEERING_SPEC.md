@@ -462,7 +462,7 @@ Expect the wedge to be wide: at the canonical weak-form configuration every supp
 
 **Resolved (team decision):** catalogue ships as data in `pdelie.symmetry._point_symmetry_registry`; `SymmetryMethod` keeps exactly one built-in and its `fit()` semantics intact.
 
-Consequence, recorded rather than papered over: **v0.35.0 success criterion 4 — "the `SymmetryMethod` contract now has multiple entries" — is NOT met**, and [`ROADMAP.md`](ROADMAP.md) has been amended. The v0.36 line previously gated the Ko-sparse port on the registry "having proven the multi-method contract"; that precondition is dropped, and **the Ko-sparse port is itself what proves it**. v0.36 is unblocked — it is the proof, not the beneficiary of one.
+Consequence, recorded rather than papered over: **v0.35.0 success criterion 4 — "the `SymmetryMethod` contract now has multiple entries" — is NOT met**, and [`ROADMAP.md`](ROADMAP.md) has been amended. The v0.36 line previously gated the Ko infinitesimal-generator port on the registry "having proven the multi-method contract"; that precondition is dropped, and **the Ko infinitesimal-generator port is itself what proves it**. v0.36 is unblocked — it is the proof, not the beneficiary of one.
 
 ### 5.3 v0.35b gates — detail
 
