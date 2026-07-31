@@ -19,6 +19,8 @@ on it required a change, the change is linked.
 
 ## C-1 — A mathematical action carries no seed
 
+> **Status: `satisfied_in_v0_36`.**
+
 `u(t,x) ↦ u(t,x−τ)` has no random seed. Embedding one in an action's immutable
 mathematical specification makes deterministic actions appear stochastic,
 changes semantic hashes for no mathematical reason, couples the weak-library RNG
@@ -55,6 +57,10 @@ not the shipped code.
 ---
 
 ## C-2 — One authority for a coefficient action
+
+> **Status: `resolves_in_v0_37a`.** Does not block v0.36.0. The open
+> decisions are the `treatment_policy` generalisation and the rename; both
+> are answered by `docs/planning/V0_37A_HYPOTHESIS_FREEZE.md`.
 
 A coefficient-field *reference* describes the field. The action bundle is the
 **only** authority for the transformation applied to it. Holding a
@@ -106,6 +112,8 @@ See **C-3a** below for how the three fit together.
 
 ## C-3 — Relation axes stay independent
 
+> **Status: `satisfied_in_v0_36`.**
+
 Boundary preservation is orthogonal to equation equivalence. A transformation
 can be an equivalence transformation with the boundary preserved, or an
 equivalence transformation with the boundary destroyed; one collapsed
@@ -132,6 +140,8 @@ would be worse than matching the proposal's wording.
 ---
 
 ## C-3a — The background question has three layers, and they already exist
+
+> **Status: `satisfied_in_v0_36`.**
 
 This is the cross-reference between the new `coefficient_relation` axis and the
 constraints above. It is the part most likely to be got wrong twice, because
@@ -169,6 +179,8 @@ presence of an action.
 
 ## C-4 — Expected case, observed status and benchmark outcome are three fields
 
+> **Status: `binds_absent_design`.**
+
 Statuses like `confirmed` / `violated` / `diagnostic_only` /
 `wrong_direction_expected` mix what the benchmark *expected*, what the residual
 computation *observed*, and whether the report is diagnostic. In particular, a
@@ -194,6 +206,10 @@ may not promote its own failure into an intentional change.
 ---
 
 ## C-5 — Nest optional evidence; use one schema key
+
+> **Status: `resolves_in_v0_37a`.** Does not block v0.36.0. The nesting rule
+> is binding now; the schema-key choice is answered by
+> `docs/planning/V0_37A_HYPOTHESIS_FREEZE.md`.
 
 Four paired `*_available` booleans plus four payloads is **eight** top-level
 fields, not four. Prefer nesting:
@@ -229,6 +245,8 @@ migration, and whichever key it adopts should be stated here when it does.
 
 ## C-6 — Hash the science, not the run
 
+> **Status: `binds_absent_design`.**
+
 A report cannot be byte-for-byte deterministic *and* contain `runtime_seconds`.
 Split them:
 
@@ -249,14 +267,62 @@ which is reported and never asserted.
 
 ## Summary
 
-| # | Constraint | Applies to shipped code? |
-|---|---|---|
-| C-1 | no seed in an action spec | already satisfied — no seed in `pdelie.actions` |
-| C-2 | one coefficient-action authority | no duplication exists; rename decision open |
-| C-3 | independent relation axes | shipped; `coefficient_relation` added in `ea20e14` |
-| C-4 | expected vs observed vs outcome | no commutation report exists |
-| C-5 | nested optional evidence; one schema key | no report exists; repo key convention is genuinely split |
-| C-6 | hash science, not runtime | no report exists |
+| # | Constraint | Status | Applies to shipped code? |
+|---|---|---|---|
+| C-1 | no seed in an action spec | `satisfied_in_v0_36` | already satisfied — no seed in `pdelie.actions` |
+| C-2 | one coefficient-action authority | **`resolves_in_v0_37a`** | no duplication exists; the `treatment_policy` generalisation and the rename decision are forward-scoped |
+| C-3 | independent relation axes | `satisfied_in_v0_36` | shipped; `coefficient_relation` added in `ea20e14` |
+| C-3a | three-layer coefficient handling | `satisfied_in_v0_36` | all three layers present; v0.36 completed the middle one |
+| C-4 | expected vs observed vs outcome | `binds_absent_design` | no commutation report exists |
+| C-5 | nested optional evidence; one schema key | **`resolves_in_v0_37a`** | no report exists; the per-payload rule is stated, the key choice is forward-scoped |
+| C-6 | hash science, not runtime | `binds_absent_design` | no report exists |
+
+Status vocabulary:
+
+| Value | Meaning |
+|---|---|
+| `satisfied_in_v0_36` | shipped code meets the constraint; a test asserts it |
+| `binds_absent_design` | nothing to do until the design lands; the constraint binds it on arrival |
+| `resolves_in_v0_37a` | **an open decision with a named owner and vehicle** — see below |
 
 **Four of six bind a design that is not in this repository.** They are recorded
 here so that when it arrives, it arrives already constrained.
+
+---
+
+## Resolution vehicle for the forward-scoped items
+
+**C-2 and C-5 do not block v0.36.0.** Both bind v0.37, not v0.36: neither names
+a defect in shipped code, and holding the tag for them would make v0.36 a moving
+target while v0.37 design work waits for its anchor. This document is that
+anchor.
+
+They are resolved in the **v0.37a hypothesis freeze**, at
+`docs/planning/V0_37A_HYPOTHESIS_FREEZE.md`, which must not be signed until it
+answers both:
+
+**C-2 — `resolves_in_v0_37a`.** Decide and record:
+
+1. Whether `CoefficientFieldRef.treatment_policy` generalises the shipped v0.33d
+   `nu_treatment_policy` tag from `nu`-specific to per-field, or introduces a
+   parallel vocabulary. The recommendation here is generalisation; a parallel
+   vocabulary needs an argument.
+2. Whether `co_transformable_background` is adopted for the new declarative
+   vocabulary while the v0.34b outcome label `co_transforming_background_equivalence`
+   is left alone. The recommendation here is yes — they are different constructs
+   at different layers, and the label is frozen into two released support
+   matrices.
+3. The cross-layer contradiction rule from C-3a, as an executable check rather
+   than prose.
+
+**C-5 — `resolves_in_v0_37a`.** Decide and record:
+
+1. Which schema key the v0.37 report payload uses. It is a new payload, so it
+   chooses freely; the choice must be stated, not inherited by accident.
+2. Which key `pdelie.actions` adopts, given it currently carries none.
+3. That the per-payload rule — preserve what a payload already uses; choose
+   deliberately only for new payloads — is not weakened into a repo-wide rename.
+   Measured, neither key is a majority worth migrating to.
+
+Anything marked `binds_absent_design` needs no decision now; it applies when the
+design arrives.

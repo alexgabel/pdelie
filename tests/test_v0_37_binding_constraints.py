@@ -184,3 +184,77 @@ def test_document_does_not_claim_absent_types_exist() -> None:
             f"{name} now exists in {found}; the document says it does not and "
             f"must be updated"
         )
+
+
+# --- status vocabulary and forward scoping ----------------------------------
+
+#: Every constraint carries exactly one of these. A constraint with no status is
+#: an ambiguous item, which is the thing the status column exists to remove.
+STATUS_VALUES = ("satisfied_in_v0_36", "binds_absent_design", "resolves_in_v0_37a")
+
+#: Deliberately forward-scoped: neither names a defect in shipped code, so
+#: neither blocks the v0.36.0 tag.
+FORWARD_SCOPED = ("C-2", "C-5")
+
+CONSTRAINT_IDS = ("C-1", "C-2", "C-3", "C-3a", "C-4", "C-5", "C-6")
+
+
+def test_every_constraint_section_declares_a_status() -> None:
+    """An unmarked constraint reads as blocking when it may not be."""
+    text = _doc()
+    sections = re.findall(r"^## (C-\d+a?) — .*$", text, flags=re.MULTILINE)
+    assert set(sections) == set(CONSTRAINT_IDS), sections
+    for block in re.split(r"^## ", text, flags=re.MULTILINE)[1:]:
+        if not block.startswith("C-"):
+            continue
+        identifier = block.split(" ", 1)[0]
+        declared = [value for value in STATUS_VALUES if f"`{value}`" in block]
+        assert declared, f"{identifier} declares no status"
+
+
+def test_the_summary_table_has_a_status_column() -> None:
+    text = _doc()
+    assert "| # | Constraint | Status |" in text
+    for value in STATUS_VALUES:
+        assert f"`{value}`" in text, value
+
+
+@pytest.mark.parametrize("identifier", FORWARD_SCOPED)
+def test_forward_scoped_items_say_they_do_not_block_the_release(identifier: str) -> None:
+    """C-2 and C-5 ship open, explicitly, rather than ambiguously."""
+    block = next(
+        part
+        for part in re.split(r"^## ", _doc(), flags=re.MULTILINE)[1:]
+        if part.startswith(f"{identifier} —")
+    )
+    assert "`resolves_in_v0_37a`" in block, identifier
+    assert "Does not block v0.36.0" in block, identifier
+
+
+def test_forward_scoped_items_name_their_resolution_vehicle() -> None:
+    """A deferred decision with no owner is a decision nobody makes."""
+    text = _doc()
+    assert "V0_37A_HYPOTHESIS_FREEZE.md" in text
+    assert "Resolution vehicle" in text
+    # Each forward-scoped item must have numbered decisions, not a vague pointer.
+    vehicle = text.split("Resolution vehicle", 1)[1]
+    for identifier in FORWARD_SCOPED:
+        assert f"**{identifier} — `resolves_in_v0_37a`.**" in vehicle, identifier
+
+
+def test_no_constraint_is_marked_satisfied_without_a_test_backing_it() -> None:
+    """satisfied_in_v0_36 is the only status that makes a claim about code.
+
+    C-1, C-3, C-3a each have assertions above. If a future constraint is marked
+    satisfied, it needs the same.
+    """
+    text = _doc()
+    satisfied = [
+        part.split(" ", 1)[0]
+        for part in re.split(r"^## ", text, flags=re.MULTILINE)[1:]
+        if part.startswith("C-") and "`satisfied_in_v0_36`" in part
+    ]
+    assert set(satisfied) == {"C-1", "C-3", "C-3a"}, (
+        f"a constraint changed status to satisfied_in_v0_36 ({satisfied}); add "
+        f"the assertion that backs it before updating this list"
+    )
