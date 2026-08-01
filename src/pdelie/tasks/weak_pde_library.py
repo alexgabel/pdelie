@@ -615,7 +615,7 @@ def inspect_pysindy_weak_pde_library(
         _warnings.warn(
             "inspect_pysindy_weak_pde_library was called without an explicit "
             "seed. Legacy nondeterministic behavior is retained temporarily; "
-            "v0.37 will require an explicit integer seed. Pass seed=<int> for "
+            "v0.38 will require an explicit integer seed. Pass seed=<int> for "
             "deterministic behavior, or seed=None to explicitly opt into "
             "nondeterminism.",
             # FutureWarning, NOT DeprecationWarning: the latter is hidden by

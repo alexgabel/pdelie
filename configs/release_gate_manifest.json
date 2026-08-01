@@ -2,8 +2,8 @@
   "summary_schema_version": "0.1",
   "summary_type": "pdelie_declarative_release_gate_manifest",
   "scope": "declarative_release_gate_checks_only",
-  "current_release_gate_job_name": "v0_36_0-release-gate",
-  "release_count": 24,
+  "current_release_gate_job_name": "v0_37_0-release-gate",
+  "release_count": 25,
   "excluded_functional_release_gate_files": [
     {
       "file": "tests/test_v0_4_release_gate.py",
@@ -1822,6 +1822,36 @@
         {
           "submodule": "pdelie.design",
           "name": "attainability_report"
+        }
+      ]
+    },
+    {
+      "release": "0.37",
+      "source_file": "tests/test_v0_37d_downstream_crash_test.py",
+      "required_submodule_attributes": [
+        {
+          "submodule": "pdelie.actions",
+          "name": "ProblemActionBundle"
+        },
+        {
+          "submodule": "pdelie.actions",
+          "name": "ActionExecutionConfig"
+        },
+        {
+          "submodule": "pdelie.actions",
+          "name": "execute_bundle"
+        },
+        {
+          "submodule": "pdelie.actions",
+          "name": "build_residual_commutation_report"
+        },
+        {
+          "submodule": "pdelie.benchmarks",
+          "name": "BENCHMARK_CASES"
+        },
+        {
+          "submodule": "pdelie.downstream",
+          "name": "run_downstream_with_action_bundle"
         }
       ]
     }
