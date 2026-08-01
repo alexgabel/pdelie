@@ -19,11 +19,11 @@ import numpy as np
 import pytest
 
 from pdelie.benchmarks import (
+    BENCHMARK_CASES,
     CONFIRMATORY_ALPHA_GRID,
     EXPECTED_CLASSIFICATIONS,
     PILOT_ALPHA_GRID,
     PROFILE_REGISTRY,
-    SIX_BENCHMARK_CASES,
     alpha_grid,
     build_coefficient_field,
     resolve_case,
@@ -58,25 +58,26 @@ def test_the_freeze_document_exists_and_is_marked_frozen() -> None:
     assert "**Status:** frozen" in _freeze()
 
 
-def test_the_six_cases_match_the_freeze_table() -> None:
+def test_the_benchmark_cases_match_the_freeze_table() -> None:
+    """Five cases since C-4's retirement at pilot 2."""
     rows = _case_rows()
-    assert set(rows) == set(SIX_BENCHMARK_CASES) == {"C-1", "C-2", "C-3", "C-4", "C-5", "C-6"}
+    assert set(rows) == set(BENCHMARK_CASES) == {"C-1", "C-2", "C-3", "C-5", "C-6"}
 
 
-@pytest.mark.parametrize("case_id", sorted(SIX_BENCHMARK_CASES))
+@pytest.mark.parametrize("case_id", sorted(BENCHMARK_CASES))
 def test_each_case_declares_the_operator_family_the_freeze_gives_it(case_id: str) -> None:
     cells = _case_rows()[case_id]
-    case = SIX_BENCHMARK_CASES[case_id]
+    case = BENCHMARK_CASES[case_id]
     assert case.expected_operator_family in cells, (
         f"{case_id}: registry says {case.expected_operator_family!r}, freeze row "
         f"says {cells}"
     )
 
 
-@pytest.mark.parametrize("case_id", sorted(SIX_BENCHMARK_CASES))
+@pytest.mark.parametrize("case_id", sorted(BENCHMARK_CASES))
 def test_each_case_declares_the_equation_and_profile_the_freeze_gives_it(case_id: str) -> None:
     cells = _case_rows()[case_id]
-    case = SIX_BENCHMARK_CASES[case_id]
+    case = BENCHMARK_CASES[case_id]
     assert case.equation_family in cells
     assert case.profile_id in cells
 
@@ -94,16 +95,16 @@ def test_the_operator_family_set_is_exactly_identity_and_scalar_multiplier() -> 
     cannot affect this benchmark. If a future case selects it, this fails and
     the gap becomes a blocker that has to be closed first.
     """
-    families = {case.expected_operator_family for case in SIX_BENCHMARK_CASES.values()}
+    families = {case.expected_operator_family for case in BENCHMARK_CASES.values()}
     assert families == {"identity", "scalar_multiplier"}
     assert "linear_combination_of_derivatives" not in families
     assert "diagnostic_fitted" not in families
 
 
-def test_four_of_six_cases_are_deliberate_obstructions() -> None:
-    """The benchmark distinguishes six outcomes; it does not pass six tests."""
-    obstructions = [c.case_id for c in SIX_BENCHMARK_CASES.values() if c.is_deliberate_obstruction]
-    assert sorted(obstructions) == ["C-3", "C-4", "C-5", "C-6"]
+def test_three_of_five_cases_are_deliberate_obstructions() -> None:
+    """The benchmark distinguishes outcomes; it does not pass tests."""
+    obstructions = [c.case_id for c in BENCHMARK_CASES.values() if c.is_deliberate_obstruction]
+    assert sorted(obstructions) == ["C-3", "C-5", "C-6"]
 
 
 # --- alpha grids ----------------------------------------------------------------
@@ -182,9 +183,9 @@ def test_alpha_outside_the_positivity_bound_is_refused(alpha: float) -> None:
         build_coefficient_field("sinusoidal", alpha, x)
 
 
-def test_the_five_profiles_match_the_freeze() -> None:
+def test_the_profiles_match_the_freeze() -> None:
     text = _freeze()
-    assert len(PROFILE_REGISTRY) == 5
+    assert len(PROFILE_REGISTRY) == 4
     for profile_id in PROFILE_REGISTRY:
         assert f"`{profile_id}`" in text, profile_id
 
@@ -250,26 +251,39 @@ def test_the_freeze_contains_no_frozen_tolerance_value() -> None:
     assert "No tolerance value appears in this document" in _freeze()
 
 
-def test_the_pilot_ran_and_the_confirmatory_freeze_did_not() -> None:
-    """The pilot blocked on PS-2, so the confirmatory freeze must not exist.
+def test_the_confirmatory_freeze_exists_only_because_the_pilot_passed() -> None:
+    """The two-stage gate, asserted in both directions.
 
-    This originally asserted neither document existed. The pilot has now run,
-    so half of it expired -- but the half that matters did not: a confirmatory
-    freeze may only appear if all three criteria passed, and PS-2 did not.
+    A confirmatory freeze may exist only if the pilot report records a pass.
+    This test has now been through both states: it previously asserted the
+    freeze was absent while the pilot recorded a block.
     """
-    assert PILOT_REPORT.exists(), "the pilot report is the record that it ran"
-    assert not CONFIRMATORY.exists(), (
-        "a confirmatory freeze exists while the pilot report records a block; "
-        "the two-stage freeze permits no such state"
+    assert PILOT_REPORT.exists()
+    pilot = PILOT_REPORT.read_text()
+    passed = "PS-1, PS-2 and PS-3 all PASS" in pilot
+    assert passed == CONFIRMATORY.exists(), (
+        "the confirmatory freeze and the pilot's verdict disagree; the "
+        "two-stage freeze permits no such state"
     )
+    assert "**Status: SIGNED.**" in CONFIRMATORY.read_text()
 
 
-def test_the_pilot_report_declares_the_pre_registered_block_status() -> None:
-    """Blocking is a first-class outcome and must name its criterion."""
+def test_the_blocked_runs_are_retained_in_the_pilot_report() -> None:
+    """A report showing only the passing run is a selection-effect document."""
     text = PILOT_REPORT.read_text()
     assert "blocked_pilot_criteria_not_met" in text
-    assert "Blocking criterion: PS-2" in text
-    assert "v0.37d does not open" in text
+    assert "Run 1" in text and "Run 2" in text and "Run 3" in text
+    assert "Records are **additive**" in text
+
+
+def test_every_frozen_tolerance_cites_a_reference() -> None:
+    """PS-2 outlives the pilot: a tolerance without a citation is untraceable."""
+    text = CONFIRMATORY.read_text()
+    assert "traces to" in text
+    for case_id in BENCHMARK_CASES:
+        assert case_id in text, case_id
+    # And the freeze must say what it does NOT establish.
+    assert "What this freeze does not establish" in text
 
 
 def test_the_pilot_report_records_every_seed_it_used() -> None:
@@ -308,5 +322,35 @@ def test_the_reconnaissance_is_disclosed() -> None:
 def test_v0_37c_adds_no_root_export() -> None:
     import pdelie
 
-    for name in ("SIX_BENCHMARK_CASES", "PROFILE_REGISTRY", "BenchmarkCase"):
+    for name in ("BENCHMARK_CASES", "PROFILE_REGISTRY", "BenchmarkCase"):
         assert name not in pdelie.__all__
+
+
+def test_no_nonperiodic_profile_is_registered() -> None:
+    """C-4's defect, guarded against reintroduction.
+
+    `monotone_smooth` was retired because a nonperiodic profile on a periodic
+    domain carries a wrap discontinuity that `np.roll` moves through the
+    interior, where it dominates whatever the case meant to measure. Every
+    registered profile must close on itself, and a future addition that does not
+    fails here rather than at a pilot three rounds later.
+    """
+    x = np.linspace(0.0, 2.0 * np.pi, 64, endpoint=False)
+    for profile_id, profile in PROFILE_REGISTRY.items():
+        shape = np.asarray(profile.shape(x), dtype=float)
+        wrap = abs(float(shape[0] - shape[-1]))
+        typical = float(np.abs(np.diff(shape)).max()) if shape.size > 1 else 0.0
+        assert wrap <= max(typical, 1e-12) * 1.5, (
+            f"profile {profile_id!r} has a wrap discontinuity of {wrap:g} against "
+            f"a typical adjacent step of {typical:g}; it is not periodic and every "
+            f"case declares domain_type=periodic_uniform"
+        )
+
+
+def test_the_retirement_of_c4_is_recorded_in_the_freeze() -> None:
+    """A case that vanishes without a reason is a case nobody can audit."""
+    text = _freeze()
+    assert "C-4 retired at pilot 2" in text
+    assert "Retirement, not restatement" in text
+    assert "nonperiodic by construction" in text
+    assert "C-4" not in set(BENCHMARK_CASES)

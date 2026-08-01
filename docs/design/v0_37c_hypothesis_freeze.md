@@ -48,20 +48,33 @@ than a pilot honestly described as informed.
 
 ---
 
-## 2. Six benchmark cases — frozen
+## 2. Benchmark cases — frozen
 
 | Case | Equation | Profile | Action | `expected_operator_family` | Expected classification |
 | --- | --- | --- | --- | --- | --- |
 | C-1 | `heat_1d` | `constant` | translation, state only | `identity` | `valid_same_target` |
 | C-2 | `heat_1d` | `sinusoidal` | translation, state **+** background | `identity` | `valid_equivalence` |
 | C-3 | `heat_1d` | `sinusoidal` | translation, state only, `fixed_background` | `identity` | `invalid_fixed_background_obstruction` |
-| C-4 | `heat_1d` | `monotone_smooth` | translation, state only | `identity` | `invalid_state_only_with_monotone_coefficient` |
 | C-5 | `burgers_1d` | `constant` | `scalar_rescale` on `u`, no state action | `scalar_multiplier` | `invalid_parameter_only_without_state` |
 | C-6 | `advection_diffusion_1d` | `localized_bump` | translation, state only, `fixed_background` | `identity` | `invalid_state_only_with_localized_coefficient` |
 
-The benchmark is **not** "pass all six". It is "distinguish all six by the
-classification each is expected to receive". C-3 through C-6 are deliberate
+The benchmark is **not** "pass them all". It is "distinguish each by the
+classification it is expected to receive". C-3, C-5 and C-6 are deliberate
 obstructions, and a run in which they *passed* would be a failure.
+
+### C-4 retired at pilot 2 (2026-08-01)
+
+The `monotone_smooth` profile is **nonperiodic by construction** — `tanh` runs
+from `−0.9999` to `+0.9999` — while every case declares
+`domain_type = periodic_uniform`. The wrap discontinuity of `1.9998`, against a
+typical adjacent-sample step of `0.3198`, dominated the measurement rather than
+the intended monotone coefficient variation.
+
+**Retirement, not restatement.** The case as frozen was self-contradictory and
+its meaning cannot be preserved under the domain constraint: a monotone function
+is not periodic, so no periodic profile still measures what C-4 named.
+Monotone-coefficient obstruction returns when a nonperiodic action family is
+available.
 
 ### The operator-family set is `{identity, scalar_multiplier}`
 
@@ -89,14 +102,13 @@ All profiles take the form
 a(x) = a₀ · (1 + α · f(x)),    |f|∞ ≤ 1,    0 ≤ α < 1,    a₀ > 0
 ```
 
-> **Amendment 2 (post-pilot) — an unstated requirement, now stated.** Every case
-> declares `domain_type: periodic_uniform`, so **`f` must be periodic on the
-> domain**. This was assumed and never written down, and one frozen profile
-> violates it: `monotone_smooth` = `tanh((x−x₀)/w)` runs from `−0.9999` to
-> `+0.9999`, a wrap discontinuity of `1.9998` against a typical adjacent-sample
-> step of `0.3198`. Under `np.roll` that jump travels through the interior, so
-> C-4 measures the discontinuity rather than the monotone variation it names.
-> The other four profiles are periodic and unaffected.
+**Every profile must be periodic** under the frozen
+`domain_type = periodic_uniform`. The requirement had been implicit throughout
+and was written down only after `monotone_smooth` violated it; it is stated here
+so a future profile addition does not repeat the C-4 error. A nonperiodic
+profile carries a wrap discontinuity, and `np.roll` moves that seam through the
+interior where it dominates whatever the case meant to measure.
+`test_no_nonperiodic_profile_is_registered` enforces it.
 
 **This form guarantees positivity.** With `|f|∞ ≤ 1` and `α < 1`, the factor
 `(1 + αf)` is strictly positive, so `a(x) > 0` everywhere and the problem stays
@@ -108,7 +120,6 @@ different and ill-posed equation.
 | --- | --- | --- |
 | `constant` | `0` | `a₀ = 0.1` |
 | `sinusoidal` | `sin(k·x)` | `a₀ = 0.1`, `k = 2` |
-| `monotone_smooth` | `tanh((x − x₀)/w)` | `a₀ = 0.1`, `x₀ = mid-domain`, `w = 0.1·L` |
 | `localized_bump` | `exp(−((x − x₀)/w)²)` | `a₀ = 0.1`, `x₀ = mid-domain`, `w = 0.05·L` |
 | `higher_frequency` | `sin(k·x)` | `a₀ = 0.1`, `k = 6` |
 
@@ -190,14 +201,20 @@ samples. The equivalence is exact for the same reason C-1 is, and the tolerance
 is the same floor. **This is a derivation, not an approximation** — it does not
 degrade with α.
 
-**C-3, C-4, C-6 — first order in α, bounded below.** These are obstructions, so
+**C-3, C-6 — first order in α, bounded below.** These are obstructions, so
 their tolerance is a **floor**: the error must *exceed* a stated value.
 
 > **Amendment 1 (post-pilot).** The derivation below previously kept only the
 > `a·u_xx` term and was **not** a valid bound: measured against the pilot it came
 > in at `0.52`–`1.00` of the observed error. The diffusion operator is
 > `(a(x)·u_x)_x = a'(x)·u_x + a(x)·u_xx`, and the `a'` term is the same order in
-> α. Dropping it was a derivation error, not a measurement one.
+> α. Dropping it was a derivation error, not a measurement one. With both terms
+> the bound holds with margin on the periodic profiles.
+>
+> **Amendment 3 (pilot 2).** C-4's derivation is deleted rather than corrected.
+> There is nothing to derive for a retired case, and the bound never failed
+> because the algebra was wrong -- it failed because the case was measuring a
+> seam.
 
 Writing `a(x) = a₀(1 + αf(x))`, the state shift moves `u` but not `a`, leaving
 both terms:
