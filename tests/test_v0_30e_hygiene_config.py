@@ -71,7 +71,11 @@ def test_pyproject_has_coverage_sections_with_expected_shape() -> None:
     assert run.get("branch") is True
     report = coverage.get("report")
     assert report is not None, "[tool.coverage.report] missing"
-    assert report.get("fail_under") == 80
+    # v0.30e set this to 80. v0.37 day-0 ratcheted it to 85 against a measured
+    # 86.33%. The invariant is may-increase / must-not-decrease, so this is a
+    # floor on the floor rather than an equality pin -- an equality pin makes
+    # every future ratchet look like a regression.
+    assert report.get("fail_under") >= 80
 
 
 # --- pyproject.toml [project.optional-dependencies].test -----------------
