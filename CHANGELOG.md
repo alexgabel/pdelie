@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.36.0
+
+Release-close for the v0.36 arc: eight sub-milestones consolidated into a single tag per the solo-dev consolidation policy. Submodule-only surface — no root `pdelie` export added. No new PDE, no change to any existing payload shape.
+
+Release decision: `v0_36_0_migration_audit_artifact_lineage_and_design_comparison`.
+
+**Git-tag-only.** An earlier plan targeted TestPyPI at v0.36; that was superseded and publication stays deferred to `v1.0`. v0.36f built and hardened the publish path without exercising it.
+
+**Process note.** Three findings outlived the release, and they are the substantive contribution beyond feature delivery — the legacy PySINDy STLSQ conditioning result, the five-instance tolerance-calibration pattern now encoded as policy in `CONTRIBUTING.md`, and the three-layer structure of coefficient handling whose middle layer v0.36 completed. All three are written up in `docs/releases/V0_36_RELEASE_READINESS.md`.
+
+### Added
+
+- **`pdelie.audit` (v0.36a).** A legacy-vs-modern pipeline migration audit against the `v0.22.0` tag. Seven-label vocabulary with a comparator/policy authority split: comparators assign only evidence-backed labels, and `intentional_contract_change` additionally requires a linked release note. No-pickle interchange (`.npy` + strict JSON, `allow_nan=False`). `full_migration_scope` enumerates all 100 (PDE × boundary × path) combinations against what v0.22.0 can actually produce — 10 auditable, 90 blocked, each blocked one naming its reason and the release that introduced the gap.
+- **`pdelie.artifact` (v0.36b).** Content-addressed artifact identity via `semantic_hash` as the single canonical hash. Per-run stores, never global.
+- **`pdelie.observation`, `pdelie.differentiation` (v0.36b).** Observation-operator and differentiation-policy specifications.
+- **`pdelie.actions` (v0.36b).** Declarative problem actions: `ProblemActionSpec` pairs each claim with the action implementing it, and seven interaction rules refuse self-contradictory specs. Five independent relation axes — equation, parameter, coefficient, domain, boundary — because boundary preservation is orthogonal to equation equivalence and one collapsed enum cannot say which combination a transformation is.
+- **`pdelie.design` (v0.36c, v0.36d).** Budget-aware design comparison with six mandatory information-access flags (a missing flag raises rather than defaulting to `False`), four named method classes replacing the bare word "oracle", paired per-seed bootstrap intervals, and sparse-recovery assumption reporting. Row-level resampling is refused: rows of a PDE-derived design matrix are adjacent samples of a continuous field.
+- **`docs/planning/V0_37_BINDING_DESIGN_CONSTRAINTS.md`.** Six design constraints pre-registered before v0.37 implementation, with a status vocabulary (`satisfied_in_v0_36` / `binds_absent_design` / `resolves_in_v0_37a`) and a named resolution vehicle. Machine-checked: 25 tests assert every drift-prone claim it makes about the code.
+
+### Changed
+
+- **`inspect_pysindy_weak_pde_library` seed semantics (v0.36e).** Three states: explicit `int`, explicit `None`, and omitted. Omission emits a `FutureWarning`; an explicit seed will be required from v0.37. The 27/28-key conditional schema is unchanged.
+- **`ProblemActionSpec` gained `coefficient_relation`.** Additive and defaulted to `not_applicable`, so specs written against the four prior axes construct unchanged. `not_applicable` is deliberately distinct from `unknown`: a constant-coefficient problem has no background, which is not ignorance.
+- **`publish.yml` hardened (v0.36f).** It was the only workflow still using floating action tags, and the only one granted `id-token: write`. All five actions SHA-pinned; the build job writes `SHA256SUMS` and each publish job verifies it before upload; no `skip-existing`, because index versions are immutable and a skip reports success having published nothing.
+- **Residuals comparison tolerance.** `atol` `1e-12` → `5e-11` for the `residuals` stage only. α's value was calibrated on `heat_1d` alone and does not transfer; the new value is measured across five PDEs on two platforms with a 19.6× binding margin.
+
+### Fixed
+
+- **A latent cross-platform failure in the α stage-1 classification.** `generated_field_statistics` was frozen as `qualitative_invariant` with a `sign` invariant, but `std` and `l2` are non-negative by construction and the mean is `-4.17959937e-17` — numerical zero, whose sign is rounding noise. Reclassified to `tolerance_numeric` and asserted across all five β configs.
+- **The migration orchestrator could not run on a clean machine.** `uv venv --seed` seeds setuptools 83.0.0, which removed `pkg_resources`; PySINDy 1.7.5 imports it at module load. Only the build venv was pinned, never the runtime venv, and `pip install <wheel>[extra]` exits 0 either way — so the failure was silent until an exporter tried to use it. Fixed with a runtime setuptools pin plus a probe that fails at the venv.
+- **A duplicate publishing document.** v0.36f briefly added `PUBLISHING.md` at the repository root while `docs/releases/PUBLISHING.md` already existed and was referenced by the README, four readiness docs and a release-gate test. Consolidated into the canonical location.
+
+
 ## 0.35.0
 
 Release-close for the v0.35 arc: three internal sub-milestones (v0.35a design-matrix diagnostics, v0.35c deterministic row selection, v0.35b private point-symmetry catalogue) plus a day-0 polish PR, consolidated into a single tag per the solo-dev consolidation policy. Submodule-only surface — no root `pdelie` export added. No new PDE, no new symmetry method, no change to any existing payload shape.

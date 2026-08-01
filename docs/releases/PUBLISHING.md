@@ -16,14 +16,18 @@ These files must be aligned before any release candidate or final release is pub
 
 ## V0.x Package-Index Deferral
 
-For the current `v0.x` series, including `v0.29.0`, `v0.30.0`, `v0.31.0`, `v0.32.0`, `v0.33.0`, `v0.34.0`, and `v0.35.0`, release completion means:
+For the current `v0.x` series, including `v0.29.0`, `v0.30.0`, `v0.31.0`, `v0.32.0`, `v0.33.0`, `v0.34.0`, `v0.35.0`, and `v0.36.0`, release completion means:
 
 - metadata, docs, tests, build, and wheel-smoke checks pass
 - the release PR is merged
 - the merged commit is tagged in Git as the final version
 
-`v0.29.0`, `v0.30.0`, `v0.31.0`, `v0.32.0`, `v0.33.0`, `v0.34.0`, and `v0.35.0` are intentionally Git-tag-only releases.
-Do not publish to TestPyPI or PyPI for `v0.29.0`, `v0.30.0`, `v0.31.0`, `v0.32.0`, `v0.33.0`, `v0.34.0`, or `v0.35.0`.
+`v0.29.0` through `v0.36.0` are intentionally Git-tag-only releases.
+Do not publish to TestPyPI or PyPI for any of them.
+
+**v0.36 note.** An earlier plan targeted TestPyPI at `v0.36`. That was
+superseded: publication stays deferred to `v1.0`. v0.36f built and hardened
+the path without exercising it — see *Publish-path hardening* below.
 
 Package-index publishing through TestPyPI or PyPI is deferred until `v1.0` or later.
 The publishing model below remains the intended future package-index workflow once publication is re-enabled.
@@ -170,6 +174,75 @@ Expected behavior:
 - use trusted publishing via `pypa/gh-action-pypi-publish`
 
 This workflow is release infrastructure, not a general CI job.
+
+## Publish-Path Hardening (v0.36f)
+
+The path below was built, hardened and unit-tested in v0.36f. **It has never been
+run against a live index.** Treat the first run as genuinely first-run.
+
+One workflow, not two. The v0.36 plan called for a separate
+`publish-testpypi.yml`; that was rejected in favour of hardening `publish.yml`,
+consistent with the single-workflow shape this document already required. Two
+workflows able to upload is twice the surface holding `id-token: write`, and
+they drift.
+
+| Property | How |
+|---|---|
+| No API tokens | OIDC trusted publishing via GitHub Environments. No `password:`, no `PYPI_API_TOKEN`. |
+| `id-token: write` minimally scoped | Publish jobs only. The `build` job has `contents: read`. |
+| Published artifact == built artifact | `build` writes `SHA256SUMS`; each publish job re-downloads it and runs `sha256sum -c` **before** upload. |
+| Every action SHA-pinned | All five pinned to a 40-hex commit with a `# vX.Y.Z` comment. `publish.yml` was the last workflow on floating tags and the only one with `id-token: write`. |
+| No silent no-op | **No `skip-existing`.** Index versions are immutable; a skip reports success having published nothing. A defect means rc2, never an overwrite. |
+| PyPI needs a second key | `target: pypi` requires `confirm_pypi=publish-to-pypi` and rejects any ref containing `rc`. |
+
+`SHA256SUMS` is uploaded as its own artifact, never into `dist/` — everything in
+`dist/` is offered to the index, and a checksum manifest is not a distribution.
+
+`tests/test_v0_36f_publish_contract.py` asserts all of the above. The assertions
+are mutation-tested: adding `skip-existing`, unpinning an action, granting
+`id-token` to the build job, or removing the hash verification each fail exactly
+one test.
+
+## Post-Publish Verification
+
+**Run this outside the source checkout.** A smoke test run from the repo root
+imports the working tree instead of the installed wheel and proves nothing —
+`pdelie/` is on `sys.path` when the interpreter starts there, so the import
+succeeds whether or not the install did.
+
+All six install configurations must pass on a fresh interpreter:
+
+```bash
+cd "$(mktemp -d)"                     # <- outside the checkout
+for cfg in "" "[downstream]" "[xarray]" "[viz]" "[pdebench]" "[test]"; do
+  uv venv --python 3.12 --seed ./v --quiet
+  uv pip install --python ./v/bin/python -q "pdelie${cfg}==<version>"
+  ./v/bin/python -m pip check
+  ./v/bin/python -c "
+import importlib.metadata as m, pdelie, pathlib
+p = pathlib.Path(pdelie.__file__).resolve()
+assert 'site-packages' in p.parts, f'imported the working tree: {p}'
+print(m.version('pdelie'))"
+  rm -rf ./v
+done
+```
+
+Two things the v0.36 plan assumed that are not true: `pdelie` exposes no
+`__version__` attribute — use `importlib.metadata.version` — and there are no
+console-script entry points, so there is no CLI smoke to run.
+
+### Last verified
+
+Against a **locally built** wheel, not an index. py3.12 / numpy 2.5.1:
+
+| Config | Install | `pip check` | Imported from |
+|---|---|---|---|
+| base | ok | OK | site-packages |
+| `[downstream]` | ok | OK | site-packages |
+| `[xarray]` | ok | OK | site-packages |
+| `[viz]` | ok | OK | site-packages |
+| `[pdebench]` | ok | OK | site-packages |
+| `[test]` | ok | OK | site-packages |
 
 ## Required External Setup
 

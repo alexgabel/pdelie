@@ -27,7 +27,7 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW_DIR = REPO_ROOT / ".github/workflows"
 PUBLISH = WORKFLOW_DIR / "publish.yml"
-PUBLISHING_DOC = REPO_ROOT / "PUBLISHING.md"
+PUBLISHING_DOC = REPO_ROOT / "docs/releases/PUBLISHING.md"
 
 #: ``uses:`` lines must look like this: a 40-hex commit plus a version comment.
 _PINNED = re.compile(r"uses:\s+[^@\s]+@[0-9a-f]{40}\s+#\s*\S+")
@@ -49,6 +49,16 @@ def _strip_comments(source: str) -> str:
     is about what a file *declares*, not what it *mentions*.
     """
     return "\n".join(line.split("#", 1)[0].rstrip() for line in source.splitlines())
+
+
+def _publishing_doc() -> str:
+    """The publishing doc with whitespace collapsed.
+
+    It is hard-wrapped Markdown, so any phrase long enough to be worth asserting
+    on is likely to straddle a line break. Asserting against the raw text tests
+    the wrap width, not the content.
+    """
+    return " ".join(PUBLISHING_DOC.read_text().split())
 
 
 def _publish_source() -> str:
@@ -172,9 +182,11 @@ def test_publish_is_manual_only() -> None:
 
 def test_publishing_doc_exists_and_states_the_unpublished_status() -> None:
     """The doc must not read as though the path has been exercised."""
-    text = PUBLISHING_DOC.read_text()
-    assert "has not been published" in text
-    assert "deferred to v1.0" in text
+    text = _publishing_doc()
+    assert "never been run against a live index" in text
+    assert "deferred to `v1.0`" in text
+    # And v0.36.0 must be named in the Git-tag-only list, not silently omitted.
+    assert "`v0.36.0`" in text
 
 
 def test_publishing_doc_enumerates_every_extra() -> None:
@@ -185,17 +197,17 @@ def test_publishing_doc_enumerates_every_extra() -> None:
     """
     metadata = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text())
     extras = set(metadata["project"].get("optional-dependencies", {}))
-    text = PUBLISHING_DOC.read_text()
+    text = _publishing_doc()
     for extra in extras:
-        assert f"[{extra}]" in text, f"PUBLISHING.md does not verify the {extra!r} extra"
+        assert f"[{extra}]" in text, f"docs/releases/PUBLISHING.md does not verify the {extra!r} extra"
     assert len(extras) + 1 == 6, (
         f"the documented 'six install configurations' is now {len(extras) + 1}; "
-        f"update PUBLISHING.md and this assertion together"
+        f"update docs/releases/PUBLISHING.md and this assertion together"
     )
 
 
 def test_publishing_doc_warns_against_verifying_inside_the_checkout() -> None:
     """The failure mode that makes a smoke test prove nothing."""
-    text = PUBLISHING_DOC.read_text()
+    text = _publishing_doc()
     assert "outside the source checkout" in text
     assert "site-packages" in text

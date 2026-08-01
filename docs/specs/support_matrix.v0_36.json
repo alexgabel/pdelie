@@ -1,0 +1,675 @@
+{
+  "additive_reporting_extensions_v0_32b": {
+    "additive_field_defaults": "None (backward compatible)",
+    "builtin_svd_score_metadata": {
+      "bootstrap_helper": "pdelie.symmetry.methods.polynomial_translation_svd.bootstrap_uncertainty",
+      "frozen_score_names": [
+        "span_distance",
+        "residual_l2",
+        "error_curve_max",
+        "svd_condition_number"
+      ],
+      "method": "pdelie.symmetry.methods.polynomial_translation_svd"
+    },
+    "calibration_report": {
+      "builtin_svd_populates": false,
+      "diagnostic_only_invariant": true,
+      "shape": "dict | None"
+    },
+    "confidence_labels_invariant": [
+      "strong",
+      "qualified",
+      "failed",
+      "insufficient_evidence"
+    ],
+    "enrich_helper": "pdelie.reporting.enrich_method_scores",
+    "method_scores": {
+      "direction_vocabulary": [
+        "lower_is_better",
+        "higher_is_better",
+        "diagnostic_only"
+      ],
+      "shape": "dict[str, {value, direction, description, units}] | None"
+    },
+    "target_summary": "pdelie.reporting.summarize_generator_confidence",
+    "uncertainty_report": {
+      "diagnostic_only_invariant": true,
+      "method_vocabulary": [
+        "bootstrap",
+        "point_estimate"
+      ],
+      "resampling_unit_vocabulary": [
+        "batch",
+        "trajectory",
+        "not_applicable"
+      ],
+      "row_level_bootstrap_refused": true,
+      "shape": "dict | None"
+    }
+  },
+  "admissibility_scoring_v0_34b": {
+    "background_treatment_labels": [
+      "fixed_background_same_target_symmetry_failed",
+      "co_transforming_background_equivalence",
+      "inconclusive_background_separation"
+    ],
+    "block": "fit_diagnostics.variable_coefficient_admissibility",
+    "entry_point": "polynomial_translation_svd.fit(reference_generator_family=..., reference_generator_family_id=...)",
+    "frozen_four_score_names_unchanged": true,
+    "measured_separation_ratio_median": 1048.53,
+    "measured_separation_ratio_min": 77.45,
+    "minimum_separation_bar": 5.0,
+    "relative_error_l2_bounded_by": "sqrt(2)",
+    "scale_invariant": true,
+    "sign_invariant": true
+  },
+  "artifact_and_lineage_v0_36b": {
+    "artifact_identity": "content_addressed_semantic_hash",
+    "axes_are_independent": true,
+    "axes_independence_rationale": "Boundary preservation is orthogonal to equation equivalence. A transformation can be an equivalence transformation with the boundary preserved or destroyed, and a single collapsed enum cannot say which.",
+    "coefficient_relation_rationale": "coefficient_field_action could be attached while the claim it implements had nowhere to live. not_applicable is distinct from unknown: a constant-coefficient problem has no background, which is not ignorance.",
+    "coefficient_relation_vocabulary": [
+      "fixed",
+      "co_transformed",
+      "not_applicable",
+      "unknown"
+    ],
+    "diagnostic_only": true,
+    "interaction_rule_count": 7,
+    "interaction_rule_growth_policy": "a new rule requires a PR raising the frozen count together with an example that trips it",
+    "modules": [
+      "pdelie.artifact",
+      "pdelie.observation",
+      "pdelie.differentiation",
+      "pdelie.actions"
+    ],
+    "problem_action_relation_axes": [
+      "equation_relation",
+      "parameter_relation",
+      "coefficient_relation",
+      "domain_relation",
+      "boundary_relation"
+    ],
+    "public_surface": "submodule_only_no_root_export",
+    "store_scope": "per_run_never_global"
+  },
+  "blocking_toolchain_pins_v0_35_day0": {
+    "mypy": "~=2.3.0",
+    "rationale": "lint is a blocking CI job, so the linter version is part of the merge gate. Unchanged source on the v0.34.0 tree reported 102 errors under ruff 0.9.10, 5 under 0.14.5-0.15.20, and 0 under 0.16.0.",
+    "release_guard_asserts": [
+      "readme_prose_release_line",
+      "readme_pip_install_pins"
+    ],
+    "release_guard_derives_from": "pyproject.project.version",
+    "ruff": "~=0.16.0"
+  },
+  "boundary_condition_support": {
+    "multidimensional_grids": "not supported",
+    "nonuniform_grids": "not supported",
+    "scalar_1d_nonperiodic_canonical_field_batch_readiness": "supported (dirichlet, neumann, open_unknown)",
+    "scalar_1d_nonperiodic_kdv": "not supported (KdV remains periodic-only)",
+    "scalar_1d_nonperiodic_pysindy_discovery": "not supported (both v0.31 task paths raise PySINDyDiscoveryUnsupportedBoundaryError on nonperiodic-x)",
+    "scalar_1d_nonperiodic_strong_residual": "supported for Heat, Burgers, advection-diffusion, reaction-diffusion via compute_derivatives(backend=\"auto\") + interior-only diagnostics",
+    "scalar_1d_nonperiodic_translation_finite_transform_verification": "not supported (deferred to v0.31.5 overlap-crop design)",
+    "scalar_1d_nonperiodic_weak": "not supported",
+    "scalar_1d_periodic": "supported (strong path, frozen weak slice, v0.31 downstream discovery task bridge, and v0.32c composed candidate-to-discovery workflow example)"
+  },
+  "carried_forward_from": "docs/specs/support_matrix.v0_35.json",
+  "columns": [
+    "pde",
+    "generator",
+    "residual",
+    "vertical_slice",
+    "candidate_validation",
+    "weak_support",
+    "external_data_readiness"
+  ],
+  "compatibility_policy": {
+    "hidden_manual_install_step": false,
+    "numpy_pin": "numpy>=2,<3",
+    "optional_extras": [
+      "downstream",
+      "xarray",
+      "viz",
+      "test",
+      "pdebench"
+    ],
+    "pdebench_extra_dependency": "h5py>=3.10",
+    "pysindy_pin": "pysindy>=2.1,<3",
+    "python_311_legacy_line": "release/v0.31.x maintenance branch cut from the v0.31.0 tag; security-only fixes for 12 months from the v0.32.0 tag, then archived",
+    "python_advisory": [
+      "3.14"
+    ],
+    "python_matrix": [
+      "3.12",
+      "3.13"
+    ],
+    "python_min": ">=3.12",
+    "scipy_pin": "scipy>=1.14,<2",
+    "sklearn_pin": "scikit-learn>=1.4,<2"
+  },
+  "deferred": [
+    "root pdelie.discover_symmetries (v1.0 scope decision)",
+    "external symmetry-method ports (Ko-sparse deferred to v0.33; LieGAN/LaLiGAN to v0.33.1)",
+    "trained-model extraction layer (LieGG deferred to v0.35a)",
+    "multi-channel / 2D contract widening (deferred to v0.34+)",
+    "nonperiodic finite-transform verification via overlap-crop (deferred to v0.31.5 design revisit)",
+    "The Well scalar 1D adapter (blocked_multichannel_required; unblocks only when The Well ships a scientifically-honest scalar 1D slice)",
+    "additional PDEBench readiness cookbooks beyond the frozen 1D Burgers shard",
+    "PDEBench / The Well recovery benchmarks",
+    "FD-nonperiodic PySINDy discovery",
+    "WSINDy benchmark claim",
+    "noise robustness claim",
+    "public weak derivative backend",
+    "u_xxx / u_xxxx on nonperiodic data",
+    "public KS runtime APIs",
+    "KdV nonperiodic",
+    "weak nonperiodic",
+    "file loaders",
+    "broad adapters",
+    "load_field_batch",
+    "from_pdebench",
+    "from_the_well",
+    "from_netcdf",
+    "from_zarr",
+    "multidimensional grids",
+    "nonuniform grids",
+    "neural or callable generator APIs",
+    "train/test split enforcement or leakage prevention",
+    "PyPI publication (deferred to v1.0)",
+    "nonperiodic KdV",
+    "nonperiodic PySINDy discovery",
+    "nonperiodic weak-form residuals",
+    "spatial masks in the discovery bridge",
+    "boundary-value-problem preservation claims",
+    "residual-side variable-coefficient support (v0.34a)",
+    "conservative advection evaluation",
+    "callable coefficient profiles in residual evaluators",
+    "KdV / reaction-diffusion variable-coefficient support",
+    "deterministic-by-default weak diagnostic"
+  ],
+  "design_comparison_v0_36c": {
+    "bare_oracle_is_not_a_class": true,
+    "budget_fairness_enforced": true,
+    "diagnostic_only": true,
+    "mandatory_flags_rationale": "A missing flag raises rather than defaulting to False: 'we did not think about it' and 'we do not use it' are different claims and only one is evidence.",
+    "mandatory_information_access_flags": 6,
+    "method_classes": [
+      "attainable_policy",
+      "full_design_matrix_heuristic",
+      "true_support_diagnostic_oracle",
+      "exact_small_problem_solver"
+    ],
+    "module": "pdelie.design",
+    "public_surface": "submodule_only_no_root_export",
+    "resampling_units": [
+      "seed",
+      "trajectory"
+    ],
+    "row_resampling_rationale": "Rows of a PDE-derived design matrix are adjacent samples of a continuous field. Resampling them independently manufactures effective sample size the data lacks and produces intervals too narrow by a factor nobody can state.",
+    "row_resampling_refused": true
+  },
+  "design_matrix_diagnostics_v0_35a": {
+    "canonical_fixture": "tests/fixtures/v0_35a_canonical_design_matrix.npz",
+    "canonical_fixture_seed": 20340,
+    "column_scaling": "unit_l2_column_norm",
+    "column_scaling_is_mandatory": true,
+    "column_scaling_rationale": "coherence and leverage are scale-invariant; the irrepresentability constant and restricted eigenvalue are not. An arbitrary rescaling moved the irrepresentability constant from 1.129160013 to 0.2955377896, across the 1.0 threshold, flipping the reported verdict on identical data.",
+    "diagnostic_only": true,
+    "leverage_route": "thin_svd_never_hat_matrix",
+    "leverage_route_rationale": "diag(A (A^T A)^-1 A^T) errs by 5.634e-01 on Hilbert(8) and 6.258e-01 on Hilbert(10) against an analytic value of exactly 1.0; the SVD route holds at machine epsilon.",
+    "metrics": [
+      "mutual_coherence",
+      "leverage_scores",
+      "irrepresentability_constant",
+      "restricted_eigenvalue"
+    ],
+    "module": "pdelie.diagnostics",
+    "public_surface": "submodule_only_no_root_export",
+    "restricted_eigenvalue_definition": "support_restricted_min_gram_eigenvalue_over_n",
+    "restricted_eigenvalue_is_not": "cone_constrained_bickel_ritov_tsybakov_constant",
+    "summary_type": "pdelie_design_matrix_diagnostic",
+    "undefined_cases_return": "null_with_named_warning_never_nan"
+  },
+  "deterministic_seed_v0_36e": {
+    "api": "inspect_pysindy_weak_pde_library",
+    "diagnostic_only": true,
+    "omitted_emits_futurewarning": true,
+    "required_from": "v0.37",
+    "schema_conditional_preserved": "27_28_key_conditional_unchanged",
+    "seed_states": [
+      "explicit_int",
+      "explicit_none",
+      "omitted"
+    ]
+  },
+  "downstream_discovery_task_bridge": {
+    "composed_candidate_to_discovery_workflow_example": {
+      "cli": "python -m pdelie.examples.candidate_to_discovery_workflow",
+      "composed_summary_type": "candidate_to_discovery_workflow",
+      "downstream_comparison_metric_key": "heldout_residual_l2_norm",
+      "downstream_gain_claim": false,
+      "evidence_conclusion_reasons_name_metric_key": true,
+      "explicit_stage_count": 15,
+      "generic_symmetry_discovery_claim": false,
+      "public_name": "pdelie.examples.run_candidate_to_discovery_workflow_example",
+      "root_export": "no",
+      "scenarios": [
+        "successful",
+        "valid_but_not_useful_static"
+      ],
+      "silent_first_trajectory_slicing": false,
+      "stage_marker_summary_type": "candidate_to_discovery_workflow_stage_marker",
+      "universal_downstream_benefit_claim": false
+    },
+    "pysindy_pdelibrary_task": {
+      "backend": "pysindy>=2.1,<3 on python_version >= '3.12'",
+      "input_layout": "scalar_1d_uniform",
+      "multi_trajectory_execution": "supported (batch_size>1 flows through the v0.31b1 adapter to PySINDy 2.1.x list-of-trajectories fit; no silent first-trajectory slicing)",
+      "public_names": [
+        "pdelie.tasks.run_pysindy_pde_task",
+        "pdelie.tasks.summarize_discovery_task_result",
+        "pdelie.tasks.PySINDyDiscoveryUnsupportedBoundaryError"
+      ],
+      "pysindy_bridge_variant": "periodic_only_v1",
+      "report_key_count": 22,
+      "report_summary_type": "discovery_task_result",
+      "root_export": "no",
+      "scope": "periodic scalar 1D only",
+      "status": "supported"
+    },
+    "pysindy_weak_pde_library_diagnostic": {
+      "backend": "pysindy>=2.1,<3 on python_version >= '3.12'",
+      "diagnostic_only": true,
+      "method_family": "pysindy_weak_pde_library_polynomial_gauss_v1",
+      "noise_robustness_claim": false,
+      "numerical_equivalence_with_weak_1d_claim": false,
+      "public_names": [
+        "pdelie.tasks.inspect_pysindy_weak_pde_library",
+        "pdelie.tasks.summarize_pysindy_weak_pde_library_diagnostic",
+        "pdelie.tasks.WeakPDELibraryDiagnostic"
+      ],
+      "quadrature_rule": "pysindy_weak_pde_library_composite_gauss_v1",
+      "report_key_count": 27,
+      "report_summary_type": "pdelie_weak_pde_library_diagnostic",
+      "root_export": "no",
+      "scope": "periodic scalar 1D only",
+      "status": "diagnostic_only",
+      "test_function_family": "pysindy_weak_pde_library_polynomial_bump_v1",
+      "wsindy_benchmark_claim": false
+    }
+  },
+  "external_data_readiness_v0_32d": {
+    "pdebench_burgers_1d_readiness_cookbook": {
+      "broad_pdebench_support_claim": false,
+      "checksum_algorithm": "md5",
+      "checksum_value": "b4be2fc3383f737c76033073e6d2ccfb",
+      "cli": "python -m pdelie.examples.pdebench_burgers_1d_readiness",
+      "conclusion_vocabulary": [
+        "ready_scalar_1d_readiness_only",
+        "ready_residual_preflight_only",
+        "blocked_boundary_metadata_unverified",
+        "blocked_parameter_convention_mismatch",
+        "blocked_nonuniform_grid",
+        "blocked_schema_mismatch",
+        "blocked_multichannel_required",
+        "blocked_download_or_checksum_failure",
+        "unavailable_no_cached_dataset"
+      ],
+      "config_summary_type": "pdelie_external_data_readiness_config",
+      "data_doi_or_record": "10.18419/darus-2986",
+      "license": "CC-BY-4.0",
+      "network_io_in_default_ci": false,
+      "optional_dependency_extra": "pdebench (h5py-only)",
+      "pinned_shard": "1D_Burgers_Sols_Nu0.001.hdf5",
+      "public_name": "pdelie.examples.run_pdebench_burgers_1d_readiness_cookbook",
+      "recovery_benchmark_claim": false,
+      "report_summary_type": "pdelie_external_data_readiness",
+      "residual_preflight_diagnostic_only": true,
+      "root_export": "no"
+    },
+    "the_well_feasibility_scan": {
+      "broad_the_well_support_claim": false,
+      "catalogue_entry_count": 23,
+      "cli": "python -m pdelie.examples.the_well_feasibility_scan",
+      "conclusion": "blocked_multichannel_required",
+      "config_summary_type": "pdelie_the_well_feasibility_scan_config",
+      "downloads_in_default_ci": false,
+      "paper_dataset_count": 16,
+      "public_name": "pdelie.examples.run_the_well_feasibility_scan",
+      "report_summary_type": "pdelie_the_well_feasibility_scan",
+      "root_export": "no",
+      "scalar_1d_extractable_count": 0
+    }
+  },
+  "forward_scoped_constraints_v0_37": {
+    "binds_absent_design": [
+      "C-4",
+      "C-6"
+    ],
+    "document": "docs/planning/V0_37_BINDING_DESIGN_CONSTRAINTS.md",
+    "resolution_vehicle": "docs/planning/V0_37A_HYPOTHESIS_FREEZE.md",
+    "resolves_in_v0_37a": [
+      "C-2",
+      "C-5"
+    ],
+    "satisfied_in_v0_36": [
+      "C-1",
+      "C-3",
+      "C-3a"
+    ]
+  },
+  "golden_numbers_gate_v0_33e": {
+    "comparison": "aggregate norms only; no pinned metric is compared bit-exactly",
+    "fixture": "tests/fixtures/v0_33e_golden_numbers.json",
+    "measured_worst_cross_platform_deviation": 1.5e-09,
+    "nonperiodic_entries": 3,
+    "periodic_entries": 5,
+    "tolerances": {
+      "atol": 1e-12,
+      "rtol": 1e-06
+    }
+  },
+  "mask_preserving_discovery_bridge_v0_33c": {
+    "default": "after_differentiation",
+    "diagnostics_key": "underlying_discovery_result.fit_diagnostics.pdelie_mask_diagnostics",
+    "kwarg": "mask_application",
+    "legacy_opt_in": "before_differentiation (warns, retained for at least one release cycle)",
+    "mask_support_scope": "whole_time_row_selections_only",
+    "nonperiodic_discovery": "still blocked by PySINDyDiscoveryUnsupportedBoundaryError",
+    "spatial_masks": "rejected with ScopeValidationError",
+    "spectral_differentiation_on_masked_field": "rejected with ScopeValidationError",
+    "top_level_key_count_preserved": 22
+  },
+  "migration_audit_v0_36a": {
+    "alpha_scope": {
+      "label_counts": {
+        "blocked_missing_legacy_dependency": 1,
+        "exactly_preserved": 6,
+        "numerically_equivalent_within_tolerance": 9
+      },
+      "pdes": 1,
+      "stages": 16
+    },
+    "auditable_combinations": {
+      "auditable": 10,
+      "blocked": 90,
+      "total": 100
+    },
+    "beta_scope": {
+      "label_counts": {
+        "blocked_missing_legacy_dependency": 5,
+        "exactly_preserved": 38,
+        "intentional_contract_change": 4,
+        "numerically_equivalent_within_tolerance": 53,
+        "unexplained_regression": 0
+      },
+      "pdes": 5,
+      "stages_per_pde": 20,
+      "total_stages": 100
+    },
+    "blocked_axes_rationale": "Nonperiodic data can be manufactured on both sides by cropping, but v0.22.0 has no boundary-aware processing to compare against; the weak-form path and row-selection diagnostics have no v0.22.0 counterpart at all. Blocked rather than faked.",
+    "comparator_assignable_labels_only": true,
+    "comparator_assignable_rationale": "A comparator may assign only evidence-backed labels. intentional_contract_change, platform_specific_difference and blocked_missing_legacy_dependency are policy-assigned and require a human justification; intentional_contract_change additionally requires a linked release note. A comparator may not promote its own failure into an intentional change.",
+    "diagnostic_only": true,
+    "interchange_format": "npy_plus_strict_json_no_pickle",
+    "label_vocabulary_size": 7,
+    "legacy_baseline_tag": "v0.22.0",
+    "module": "pdelie.audit",
+    "platforms_verified": [
+      "macOS-26.5.2-arm64",
+      "ubuntu-22.04-x86_64"
+    ],
+    "public_surface": "submodule_only_no_root_export",
+    "pysindy_conditioning_finding": {
+      "affected_pdes": [
+        "advection_diffusion_1d",
+        "kdv_1d"
+      ],
+      "conclusion": "A solve whose answer moves 21.7% when the BLAS changes is ill-conditioned. Legacy coefficient magnitudes for these two PDEs are not reproducible across hardware; the modern solve agrees to ~1e-11. Regressor selection is preserved.",
+      "legacy_cross_platform_relative_difference": {
+        "advection_diffusion_1d": 0.004738,
+        "kdv_1d": 0.2168
+      },
+      "magnitudes_are_fit_conditioning_artifacts": true,
+      "modern_cross_platform_relative_difference": {
+        "advection_diffusion_1d": 4.209e-11,
+        "kdv_1d": 9.86e-12
+      },
+      "release_note": "docs/design/PYSINDY_2_MIGRATION_AUDIT.md",
+      "selection_preserved": true
+    },
+    "residuals_tolerance": {
+      "atol": 5e-11,
+      "binding_margin": 19.6,
+      "binding_platform": "ubuntu-22.04-x86_64",
+      "rationale": "atol raised from alpha's 1e-12, which was calibrated on heat_1d alone and does not transfer. kdv_1d's fitted coefficient vector has magnitude 4.404e+01 against heat's 1.000e-01, so the same relative precision yields an absolute coefficient error 35,000x larger, propagating through |X| @ dc into a residual whose own elements are ~4e-09. Error scale is set by the largest intermediate; tolerance scale by the smallest output.",
+      "rtol": 1e-06
+    }
+  },
+  "nonperiodic_generator_layer_v0_33": {
+    "boundary_types_supported": [
+      "periodic",
+      "dirichlet",
+      "neumann",
+      "open_unknown"
+    ],
+    "claim_NOT_established": "boundary-value-problem preservation",
+    "claim_established": "interior differential-operator covariance on the overlap",
+    "fit_translation_generator": "dispatches on is_x_periodic; nonperiodic uses finite_difference + interior-only shave at boundary_trim_width",
+    "polynomial_translation_svd": "accepts nonperiodic input; frozen four score names unchanged on both branches",
+    "reserved_but_never_emitted": [
+      "boundary_value_problem_preserved",
+      "boundary_value_problem_not_preserved"
+    ],
+    "resolution_caveat": "only Heat is well resolved below num_points=256; honest span_distance plus a low-row warning are emitted rather than a hard gate",
+    "symmetry_claim_vocabulary": [
+      "equation_symmetry_candidate",
+      "interior_overlap_verified",
+      "boundary_value_problem_preserved",
+      "boundary_value_problem_not_preserved",
+      "domain_changing_action",
+      "inconclusive_boundary_metadata"
+    ],
+    "verify_translation_generator": "dispatches on is_x_periodic; nonperiodic compares on overlap intersect interior"
+  },
+  "pdes": [
+    {
+      "candidate_validation": "yes",
+      "external_data_readiness": "readiness-only (no v0.32d external cookbook; synthetic FieldBatch supported)",
+      "generator": "yes",
+      "pde": "Heat",
+      "residual": "yes",
+      "vertical_slice": "yes",
+      "weak_support": "frozen weak slice"
+    },
+    {
+      "candidate_validation": "yes",
+      "external_data_readiness": "yes (PDEBench 1D Burgers V8 shard 1D_Burgers_Sols_Nu0.001.hdf5, DOI 10.18419/darus-2986, CC-BY-4.0, MD5 b4be2fc3383f737c76033073e6d2ccfb; narrow cookbook only)",
+      "generator": "yes",
+      "pde": "Burgers",
+      "residual": "yes",
+      "vertical_slice": "yes",
+      "weak_support": "frozen weak slice"
+    },
+    {
+      "candidate_validation": "yes",
+      "external_data_readiness": "readiness-only (no v0.32d external cookbook)",
+      "generator": "normalized short-horizon only",
+      "pde": "KdV",
+      "residual": "yes",
+      "vertical_slice": "yes",
+      "weak_support": "no"
+    },
+    {
+      "candidate_validation": "yes",
+      "external_data_readiness": "readiness-only (no v0.32d external cookbook)",
+      "generator": "yes",
+      "pde": "Fisher-KPP",
+      "residual": "yes",
+      "vertical_slice": "yes",
+      "weak_support": "internal weak diagnostic only"
+    },
+    {
+      "candidate_validation": "yes",
+      "external_data_readiness": "readiness-only (no v0.32d external cookbook)",
+      "generator": "yes",
+      "pde": "Advection-diffusion",
+      "residual": "yes",
+      "vertical_slice": "yes",
+      "weak_support": "no"
+    },
+    {
+      "candidate_validation": "diagnostic/no-go",
+      "external_data_readiness": "no",
+      "generator": "no public runtime",
+      "pde": "KS",
+      "residual": "no",
+      "vertical_slice": "no",
+      "weak_support": "no"
+    }
+  ],
+  "point_symmetry_catalogue_v0_35b": {
+    "catalogued_pdes": [
+      "heat_1d",
+      "burgers_1d",
+      "advection_diffusion_1d"
+    ],
+    "classification_vocabulary": [
+      "exact_and_useful",
+      "invalid",
+      "valid_but_not_useful"
+    ],
+    "diagnostic_only": true,
+    "entry_counts": {
+      "advection_diffusion_1d": 3,
+      "burgers_1d": 4,
+      "heat_1d": 6
+    },
+    "generator_representation": "FormulaGeneratorFamily",
+    "is_registered_as_symmetry_method": false,
+    "measured_rho_ir_at_canonical_configuration": {
+      "advection_diffusion_1d": 1.17817,
+      "burgers_1d": 2.19384,
+      "heat_1d": 2.742717168
+    },
+    "module": "pdelie.symmetry._point_symmetry_registry",
+    "privacy_rationale": "no public write-up exists to cite; publishing an API asserting the point symmetries of a PDE without a citable source would make PDELie the reference for a claim it cannot support.",
+    "public_surface": "underscore_private",
+    "recovery_threshold": 1.0,
+    "registration_rationale": "SymmetryMethod requires fit(field, ...), which discovers a generator from data; catalogued symmetries are analytically known and discover nothing.",
+    "summary_type": "pdelie_point_symmetry_catalogue",
+    "symmetry_method_builtin_count": 1,
+    "total_entry_count": 13,
+    "usefulness_axis_source": "pdelie.diagnostics.irrepresentability_constant",
+    "validity_axis_source": "caller_supplied_from_existing_verification",
+    "validity_is_never_inferred": true,
+    "validity_rationale": "the irrepresentability constant is a property of the design matrix and support and never consults the symmetry; a classification derived from it alone returned the same verdict for every symmetry of every PDE."
+  },
+  "publish_hardening_v0_36f": {
+    "actions_sha_pinned": true,
+    "artifact_hash_verified_before_upload": true,
+    "install_configurations_verified": 6,
+    "publication_deferred_to": "v1.0",
+    "published_to_index": false,
+    "single_workflow_rationale": "Two workflows able to upload is twice the surface holding id-token: write, and they drift.",
+    "skip_existing": false,
+    "skip_existing_rationale": "Index versions are immutable; a skip reports success having published nothing. A defect means rc2.",
+    "verified_outside_checkout": true,
+    "workflow": ".github/workflows/publish.yml",
+    "workflow_count": 1
+  },
+  "release": "0.36.0",
+  "release_decision": "v0_36_0_migration_audit_artifact_lineage_and_design_comparison",
+  "row_selection_v0_35c": {
+    "core_installable": true,
+    "d_optimal_default_start": "qr_pivot",
+    "d_optimal_is_start_dependent": true,
+    "d_optimal_start_evidence": "4 to 5 distinct optima across 3 matrices x 5 random starts",
+    "diagnostic_only": true,
+    "imports_pysindy": false,
+    "imports_scipy": false,
+    "leverage_conditioning_evidence": "beat 8% of 40 random draws on the canonical weak matrix, against 100% for qr_pivot and d_optimal_exchange.",
+    "leverage_targets_conditioning": false,
+    "methods": [
+      "qr_pivot",
+      "d_optimal_exchange",
+      "leverage"
+    ],
+    "module": "pdelie.design",
+    "norm_recompute_ratio": 1e-08,
+    "norm_safeguard_evidence": "changed the permutation on 8 of 12 adversarial matrices; in every case the guarded result matched the SciPy oracle and the unguarded did not.",
+    "norm_safeguard_is_load_bearing": true,
+    "public_surface": "submodule_only_no_root_export",
+    "qr_implementation": "hand_rolled_householder_column_pivoting_golub_van_loan_5_4_1",
+    "qr_implementation_rationale": "np.linalg.qr has no pivoting parameter and scipy is not a core dependency; scipy.linalg.qr(pivoting=True) is retained as a test-side oracle only.",
+    "scipy_agreement_on_tied_norms": "not asserted: every tie-break is a valid pivoted QR and SciPy's own choice varies by LAPACK build; selection quality is asserted instead.",
+    "scipy_permutation_agreement_scope": "matrices_whose_pivot_sequence_is_determined",
+    "summary_type": "pdelie_row_selection_diagnostic",
+    "tie_break_policy": "largest_remaining_column_norm_then_lowest_index"
+  },
+  "scope_title": "Paper-Critical Migration Audit, Artifact Lineage, and Design Comparison",
+  "summary_schema_version": "0.1",
+  "summary_type": "pdelie_support_matrix",
+  "variable_coefficient_generators_v0_33d": {
+    "admissibility_crash_test_measured_worst_ratio": 1772.0,
+    "admissibility_crash_test_metric": "residual_l2",
+    "admissibility_crash_test_min_ratio": 10.0,
+    "constant_path_byte_preserved": true,
+    "generators": [
+      "heat_1d",
+      "burgers_1d",
+      "advection_diffusion_1d"
+    ],
+    "kwargs": [
+      "diffusivity_profile",
+      "advection_profile (advection-diffusion only)",
+      "diffusivity_form",
+      "advection_form"
+    ],
+    "not_supported": [
+      "kdv_1d",
+      "reaction_diffusion_1d"
+    ],
+    "profile_kinds": [
+      "constant",
+      "array",
+      "callable"
+    ],
+    "residual_side_nu_of_x": "deferred_to_v0_34a"
+  },
+  "variable_coefficient_residuals_v0_34a": {
+    "callable_profiles": "refused",
+    "coefficient_kinds_accepted": [
+      "scalar",
+      "pre_sampled_array",
+      "None_reads_parameter_tags"
+    ],
+    "conservative_advection": "generated_by_v0_33d_but_not_evaluated_refused",
+    "evaluators": [
+      "HeatResidualEvaluator",
+      "BurgersResidualEvaluator",
+      "AdvectionDiffusionResidualEvaluator"
+    ],
+    "form_dispatch_tag": "parameter_tags.nu_form",
+    "measured_cost_of_form_mismatch": "approximately_300x_residual_l2_inflation",
+    "residual_batch_top_level_shape_unchanged": true,
+    "scalar_path_byte_preserved": true
+  },
+  "weak_form_conditioning_v0_34c": {
+    "default_top_level_key_count": 27,
+    "explicit_non_claims": [
+      "no_wsindy",
+      "no_noise_robustness",
+      "no_dataset_recovery"
+    ],
+    "kwarg": "column_normalize",
+    "measured_improvement_range": "1.79x_to_48.34x_median_4.51x_at_the_pinned_seed",
+    "opt_in_top_level_key_count": 28,
+    "planned_figures_87x_111_8_3_77": "do_not_reproduce_one_draw_from_a_nondeterministic_process",
+    "seed_default": null,
+    "seed_kwarg_added": true,
+    "seed_rationale": "pysindy_WeakPDELibrary_draws_domain_centers_from_the_global_numpy_rng_with_no_seed_parameter",
+    "universal_gate": "condition_ratio_never_below_1_0"
+  }
+}
