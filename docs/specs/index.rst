@@ -12,3 +12,4 @@ Normative docs for runtime behavior, canonical objects, and public API policy.
    API_STABILITY
    SUPPORT_MATRIX
    LABEL_REGISTRY
+   EQUATION_TO_IMPLEMENTATION_TRACEABILITY_TEMPLATE

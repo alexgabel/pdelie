@@ -29,3 +29,4 @@ Once a design is implemented and validated it is folded into the specs.
    v0_37c_confirmatory_freeze
    v0_37d_hypothesis_freeze
    ANALYTICAL_ORACLE_DISCIPLINE
+   V0_38_BINDING_DESIGN_CONSTRAINTS
