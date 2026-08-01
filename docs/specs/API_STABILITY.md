@@ -43,6 +43,8 @@ v0.37a contract additions (submodule-only, `pdelie.actions`): `ProblemInstanceSp
 
 v0.37b execution additions (submodule-only, `pdelie.actions`): `execute_bundle`, `execute_state_action`, `execute_coefficient_action`, `classify_runtime_path`, `build_residual_commutation_report`, and `fit_diagnostic_operator`. One new `summary_type` -- `pdelie_problem_action_residual_relation` -- emitted by a new function on a new payload, carrying `summary_schema_version` per the measured convention for summary payloads. No existing payload changed shape and `pdelie.__all__` is unchanged. `src/pdelie/residuals/` is untouched beyond the two v0.37a constant hoists, asserted by a test that diffs against the v0.36.0 tag.
 
+v0.37d downstream additions (submodule-only, `pdelie.downstream`): `run_downstream_with_action_bundle` and `classify_branch`. One new `summary_type` -- `pdelie_downstream_task_with_action_bundle` -- emitted by a new function on a new payload. **`discovery_task_result` keeps its 22-key top level**, frozen since v0.30.1: the no-bundle branch returns it unchanged, and the augmented branches emit a different type carrying those 22 keys plus exactly two. `pdelie.__all__` is unchanged.
+
 Design-matrix diagnostics (`v0.35a`) and row selection (`v0.35c`):
 
 - Both packages are core-installable: neither imports scipy nor pysindy, asserted by test. `pdelie.design` hand-rolls Householder QR with column pivoting because `numpy.linalg.qr` has no `pivoting` parameter and scipy is not a core dependency; `scipy.linalg.qr(pivoting=True)` is a test-side oracle only.
