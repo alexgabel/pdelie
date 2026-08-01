@@ -58,9 +58,12 @@ not the shipped code.
 
 ## C-2 — One authority for a coefficient action
 
-> **Status: `resolves_in_v0_37a`.** Does not block v0.36.0. The open
-> decisions are the `treatment_policy` generalisation and the rename; both
-> are answered by `docs/planning/V0_37A_HYPOTHESIS_FREEZE.md`.
+> **Status: `resolves_in_v0_37a` — decided.** Does not block v0.36.0, which
+> shipped with it open. `treatment_policy` generalises
+> the shipped v0.33d `nu_treatment_policy` tag rather than forking a new
+> vocabulary, keeping `fixed_background`; the declarative value is
+> `co_transformable_background`, and the v0.34b outcome label keeps the
+> `-ing` form. See the decision record below.
 
 A coefficient-field *reference* describes the field. The action bundle is the
 **only** authority for the transformation applied to it. Holding a
@@ -105,6 +108,14 @@ Renaming it breaks two frozen release specs to align a label with an unrelated
 field. Recommendation: adopt `co_transformable_background` for the **new**
 declarative vocabulary and leave the v0.34b label alone — the `-ing` form is
 correct for something that has been observed to happen.
+
+**Decision (v0.37a).** Adopted as recommended. `CoefficientFieldRef.treatment`
+generalises v0.33d's `nu_treatment_policy` from `nu`-specific to per-field,
+keeping `fixed_background` as a shared value and adding
+`co_transformable_background` as the generalisation. The declarative question
+is *can this field co-transform*; the v0.34b
+`co_transforming_background_equivalence` label answers *did it, on this run*.
+Different layers, different names, per C-3a.
 
 See **C-3a** below for how the three fit together.
 
@@ -207,9 +218,10 @@ may not promote its own failure into an intentional change.
 
 ## C-5 — Nest optional evidence; use one schema key
 
-> **Status: `resolves_in_v0_37a`.** Does not block v0.36.0. The nesting rule
-> is binding now; the schema-key choice is answered by
-> `docs/planning/V0_37A_HYPOTHESIS_FREEZE.md`.
+> **Status: `resolves_in_v0_37a` — decided.** Does not block v0.36.0, which
+> shipped with it open. The nesting rule was always
+> binding. The schema-key question is answered below: the original
+> measurement was scoped wrongly, and there is a convention.
 
 Four paired `*_available` booleans plus four payloads is **eight** top-level
 fields, not four. Prefer nesting:
@@ -226,22 +238,38 @@ optional_evidence = {
 One stable top-level field, no paired availability booleans — absence is
 expressed by the key being absent.
 
-**Open — the repository has no single convention.** Measured on the current
-tree: `schema_version` appears 37 times and `summary_schema_version` 36 times in
-`src/`. There is no established standard key to defer to. A repo-wide rename on
-the belief that one of them is "the project standard" would break roughly half
-the payloads, including `discovery_task_result`.
+**Correction — the original measurement was scoped wrongly.** This section
+previously said the repository had no convention, citing `schema_version` at 37
+occurrences against `summary_schema_version` at 36 across all of `src/`. That
+counted every payload in the package, including many that carry no
+`summary_type` at all and are not what this constraint is about.
 
-**The rule, therefore, is per payload:** preserve whatever key a payload already
-uses; choose deliberately, and state the choice, only for a genuinely new
-payload.
+Re-measured over the population that matters — dict literals declaring a
+`summary_type`:
 
-The v0.37 report is a new payload, so it chooses freely. So is anything emitted
-by `pdelie.actions`, which currently carries **no schema key at all** —
-`ProblemActionSpec.as_dict()` has none. That is a clean slate rather than a
-migration, and whichever key it adopts should be stated here when it does.
+| Key | Payloads declaring `summary_type` |
+|---|---:|
+| `summary_schema_version` | **34** |
+| `schema_version` | 5 |
+| both | 0 |
 
----
+**There is a convention, and it is `summary_schema_version`.** The five
+exceptions are `pdelie.design.attainability`, `pdelie.audit.full_migration_scope`
+and `pdelie.audit.pipeline_migration` — all v0.36 modules, which broke the
+convention without noticing it existed.
+
+**The rule.** A payload carrying `summary_type` uses `summary_schema_version`.
+The v0.36 outliers are **not** migrated: they are released, and changing an
+emitted payload's key is a shape change for a cosmetic gain. New payloads follow
+the convention.
+
+**Resolution for v0.37 — `resolves_in_v0_37a` closes here.** Both new summary
+types, `pdelie_problem_action_residual_relation` and
+`pdelie_downstream_task_with_action_bundle`, use `summary_schema_version`.
+
+The nesting half of C-5 is unchanged and binding: `optional_evidence` is one
+stable top-level field, and absence is expressed by a key being absent rather
+than by a paired `<name>_available` boolean.
 
 ## C-6 — Hash the science, not the run
 

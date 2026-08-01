@@ -116,29 +116,43 @@ def test_c2_the_frozen_label_really_is_in_those_support_matrices() -> None:
 # --- C-5: the schema-key count ----------------------------------------------
 
 
-def _count_key(key: str) -> int:
-    pattern = re.compile(rf'"{key}"')
-    return sum(len(pattern.findall(path.read_text())) for path in SRC.rglob("*.py"))
+def _summary_payload_key_counts() -> dict[str, int]:
+    """Count schema keys only where a ``summary_type`` is declared.
 
-
-def test_c5_documented_schema_key_counts_are_current() -> None:
-    """The doc's whole argument rests on these two numbers being close.
-
-    If a future change makes one dominant, the "there is no standard" conclusion
-    may no longer hold and the constraint should be revisited rather than quoted.
+    The population matters. Counting every payload in ``src/`` mixes in ones
+    that carry no ``summary_type`` and produced a near-tie that read as "no
+    convention"; scoped correctly the convention is decisive. This helper is
+    the corrected measurement.
     """
+    counts = {"summary_schema_version": 0, "schema_version": 0}
+    for path in SRC.rglob("*.py"):
+        text = path.read_text()
+        for match in re.finditer(r'"summary_type"\s*:', text):
+            window = text[max(0, match.start() - 1200) : match.start() + 1200]
+            if '"summary_schema_version"' in window:
+                counts["summary_schema_version"] += 1
+            elif re.search(r'(?<!summary_)"schema_version"', window):
+                counts["schema_version"] += 1
+    return counts
+
+
+def test_c5_summary_payload_convention_is_documented_and_current() -> None:
+    """C-5's conclusion rests on this ratio, so it must not silently drift."""
+    counts = _summary_payload_key_counts()
     text = _doc()
-    # The quoted pattern already excludes "summary_schema_version" -- the
-    # opening quote cannot match mid-identifier -- so these are disjoint counts
-    # and must not be subtracted from one another.
-    plain = _count_key("schema_version")
-    summary = _count_key("summary_schema_version")
-    assert str(plain) in text, f"documented schema_version count is stale; now {plain}"
-    assert str(summary) in text, f"documented summary_schema_version count is stale; now {summary}"
-    assert abs(plain - summary) <= 5, (
-        f"the counts have diverged ({plain} vs {summary}); C-5's premise that "
-        f"neither is the standard should be re-examined"
+    assert str(counts["summary_schema_version"]) in text, counts
+    assert str(counts["schema_version"]) in text, counts
+    assert counts["summary_schema_version"] > 4 * counts["schema_version"], (
+        f"the convention has weakened ({counts}); C-5's resolution assumed "
+        f"summary_schema_version was dominant among summary payloads"
     )
+
+
+def test_c5_names_summary_schema_version_as_the_resolution() -> None:
+    text = _doc()
+    assert "There is a convention, and it is `summary_schema_version`" in text
+    # And the nesting half must survive the correction.
+    assert "optional_evidence" in text
 
 
 def test_c5_actions_payloads_still_carry_no_schema_key() -> None:
@@ -228,7 +242,11 @@ def test_forward_scoped_items_say_they_do_not_block_the_release(identifier: str)
         if part.startswith(f"{identifier} —")
     )
     assert "`resolves_in_v0_37a`" in block, identifier
+    # Historical: both shipped open in v0.36.0. Kept so the record survives.
     assert "Does not block v0.36.0" in block, identifier
+    # And both are now decided, so the doc must carry the decision, not a
+    # forward pointer to a document that would then never be written.
+    assert "decided" in block, identifier
 
 
 def test_forward_scoped_items_name_their_resolution_vehicle() -> None:

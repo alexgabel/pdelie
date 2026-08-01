@@ -77,11 +77,31 @@ V0_36_GENERATED_JSON_GLOBS: tuple[str, ...] = ()
 #: to mean a reference implementation used in tests. Adding it here fails
 #: shipped code and requires a rename first, so it is NOT included.
 FORBIDDEN_TERMS: tuple[str, ...] = (
+    # v0.36 and earlier.
     "wsindy",
     "noise_robust",
     "noise-robust",
     "noise robustness",
+    # v0.37. The first three name methods PDELie does not implement; the last
+    # four name claims v0.37 specifically does not make. The library handles
+    # three declared coefficient profiles on declared domains -- not arbitrary
+    # coefficient fields, not boundary-value symmetries, and not
+    # parameter-free equivariance.
+    "ko_sparse",
+    "wsindy_bridge",
+    "learned_symmetry_recovery",
+    "parameter_free",
+    "coefficient_agnostic",
+    "arbitrary_coefficient_field",
+    "boundary_value_symmetry_guaranteed",
 )
+
+#: Terms already caught by a shorter entry. Matching is substring-based, so
+#: these add no detection -- they are retained because naming them explicitly is
+#: how a reader learns the claim is refused. Asserted, so nobody "optimises" the
+#: list by deleting a term believing it does work it does not do, and nobody
+#: adds a term believing it does work already covered.
+SUBSUMED_TERMS: dict[str, str] = {"wsindy_bridge": "wsindy"}
 
 
 def _v0_36_python_files() -> list[Path]:
@@ -171,3 +191,58 @@ def test_shipped_disclaimers_are_deliberately_out_of_scope() -> None:
 
     scanned = {str(path.relative_to(REPO_ROOT)) for path in _v0_36_python_files()}
     assert not scanned.intersection(disclaiming)
+
+
+# --- v0.37 additions --------------------------------------------------------
+
+
+def test_the_table_only_grows() -> None:
+    """Every term the project has ever forbidden is still forbidden.
+
+    The cross-sub-phase invariant is 'extend, never contract'. A term dropped
+    here silently re-permits a claim the library previously refused to make.
+    """
+    for term in (
+        "wsindy",
+        "noise_robust",
+        "noise-robust",
+        "noise robustness",
+        "ko_sparse",
+        "wsindy_bridge",
+        "learned_symmetry_recovery",
+        "parameter_free",
+        "coefficient_agnostic",
+        "arbitrary_coefficient_field",
+        "boundary_value_symmetry_guaranteed",
+    ):
+        assert term in FORBIDDEN_TERMS, f"forbidden term removed: {term}"
+
+
+def test_subsumed_terms_are_declared_as_subsumed() -> None:
+    """A redundant entry must be marked, not left to look load-bearing.
+
+    Matching is substring-based, so a term containing a shorter forbidden term
+    can never fire on its own. Recording which entries are in that position
+    keeps the table honest about what it actually detects.
+    """
+    for term, covering in SUBSUMED_TERMS.items():
+        assert term in FORBIDDEN_TERMS, term
+        assert covering in FORBIDDEN_TERMS, covering
+        assert covering in term, f"{term!r} is not actually subsumed by {covering!r}"
+
+    for term in FORBIDDEN_TERMS:
+        shorter = [
+            other for other in FORBIDDEN_TERMS if other != term and other in term
+        ]
+        if shorter:
+            assert term in SUBSUMED_TERMS, (
+                f"{term!r} is subsumed by {shorter} but is not declared in "
+                f"SUBSUMED_TERMS; declare it so the table's real coverage is visible"
+            )
+
+
+def test_v0_37_terms_are_clean_on_the_current_tree() -> None:
+    """Measured before the terms were added; asserted so it stays true."""
+    for path in _v0_36_python_files():
+        hits = _hits(path.read_text())
+        assert not hits, f"{path}: {hits}"

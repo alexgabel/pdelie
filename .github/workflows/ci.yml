@@ -170,7 +170,7 @@ jobs:
           }
           retry 3 python -m pip install --upgrade pip
           retry 3 python -m pip install -e .[test]
-      - name: "pytest with coverage (non-blocking; floor 80%, current baseline ~86%)"
+      - name: "pytest with coverage (non-blocking; floor 85%, measured 86.33% at v0.36.0)"
         continue-on-error: true
         run: python -m pytest --cov=src/pdelie --cov-report=xml --cov-report=term-missing
       - name: Upload coverage.xml
