@@ -194,7 +194,9 @@ extend-select = ["E", "W", "F", "B", "I", "UP", "RUF", "NPY"]
 "src/pdelie/residuals/weak_1d.py" = ["E501"]
 "src/pdelie/viz/span.py" = ["E501"]
 "src/pdelie/viz/closure.py" = ["E501"]
-"src/pdelie/contracts.py" = ["E501"]
+# contracts.py became a package at v0.38 day-zero; the ignore follows the
+# file, which is now contracts/_core.py.
+"src/pdelie/contracts/_core.py" = ["E501"]
 # Runtime example scripts print long JSON blobs and reference their own
 # path in comments; formatting churn adds no value.
 "src/pdelie/examples/*.py" = ["E501"]
