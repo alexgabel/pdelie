@@ -1,5 +1,36 @@
 # Changelog
 
+## 0.37.0
+
+Release-close for the v0.37 arc: five sub-milestones consolidated into a single tag. Submodule-only — no root `pdelie` export added. No new PDE, and no change to any existing payload shape.
+
+Release decision: `v0_37_0_parameter_equivariant_actions_and_admissibility_benchmark`.
+
+**Git-tag-only.** Publication remains deferred to `v1.0`; the path hardened in v0.36f has still never been run.
+
+**Process note.** v0.37c ran three pilots. Two blocked, and each caught a specification defect — an interface mismatch between two documents (bounds derived in one norm, measured in another) and a self-contradictory case (a nonperiodic profile on a domain declared periodic). Neither was a code bug and neither would have been caught by tests: only by measuring against a derivation written in advance and finding they disagreed. Written up in `docs/releases/V0_37_RELEASE_READINESS.md`.
+
+### Added
+
+- **`pdelie.actions` contracts (v0.37a).** `ProblemInstanceSpec`, `CoefficientFieldRef`, `CoordinateFieldAction`, `ProblemActionBundle`, `ExpectedResidualRelation`, `ExpectedResidualOperator`, `ActionExecutionConfig`, and `validate_action_bundle` with a twelve-rule table. Five independent relation axes rather than one collapsed enum, because boundary preservation is orthogonal to equation equivalence. `CoefficientFieldRef.treatment` generalises the shipped v0.33d `nu_treatment_policy` tag from `nu`-specific to per-field, keeping `fixed_background` verbatim.
+- **`pdelie.actions.execute` (v0.37b).** Six runtime paths P-1…P-6. The only implemented backend is `exact_grid_shift`, a whole-cell periodic translation that permutes samples and adds no interpolation error; a fractional shift is refused rather than rounded, because rounding would measure a different action than the one declared.
+- **`pdelie.actions.commutation_report` (v0.37b).** New `summary_type` `pdelie_problem_action_residual_relation`. Three independent status fields — expected case, observed status, benchmark outcome — so a deliberate obstruction that fails reads as a benchmark success without contradiction. `scientific_payload` is hashed; `execution_metadata` carries runtime and is not.
+- **`pdelie.actions.diagnostic_fit` (v0.37b).** Advisory by construction: no status field, no boolean verdict, no threshold. The analytical decision is computed first and alone.
+- **`pdelie.benchmarks` (v0.37c).** A five-case admissibility benchmark with four coefficient profiles, disjoint pilot and confirmatory α grids, and a signed confirmatory freeze.
+- **`pdelie.downstream` (v0.37d).** New `summary_type` `pdelie_downstream_task_with_action_bundle`. Seven branches; the four invalid ones block **before** discovery runs, measured by a sentinel task that raises on call and is asserted never to fire.
+
+### Changed
+
+- **Coverage floor 80 → 85**, against a measured 86.33%. A hygiene test pinning `fail_under == 80` exactly was changed to `>= 80`: an equality pin makes every ratchet read as a regression, inverting the invariant it protects.
+- **Forbidden-language table 4 → 11 terms.** `wsindy_bridge` is recorded in `SUBSUMED_TERMS` because substring matching means it adds no detection — a redundant entry that looks load-bearing is worse than an absent one.
+- **`execute_state_action` refuses non-periodic domains.** `numpy.roll` wraps, which is correct for a periodic domain and silently wrong otherwise.
+
+### Fixed
+
+- **A deprecation notice that promised something this release does not deliver.** The weak diagnostic's `FutureWarning` said "v0.37 will require an explicit integer seed". v0.37a's freeze scoped that transition out, so v0.37 ships without it and the notice was false. It now names v0.38, and a test asserts the version a deprecation names is always still in the future — a notice naming an already-released version is worse than no notice.
+- **A schema-key convention I had mis-measured.** The v0.37 constraints doc claimed the repository had no convention, citing 37 vs 36 across all of `src/`. Re-measured over payloads that actually declare a `summary_type`, it is 34 to 5 in favour of `summary_schema_version`. There is a convention; the five exceptions are v0.36 modules that broke it. They are not migrated — changing an emitted key is a shape change for a cosmetic gain — and both new v0.37 types follow it.
+
+
 ## 0.36.0
 
 Release-close for the v0.36 arc: eight sub-milestones consolidated into a single tag per the solo-dev consolidation policy. Submodule-only surface — no root `pdelie` export added. No new PDE, no change to any existing payload shape.

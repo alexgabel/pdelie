@@ -66,7 +66,24 @@ def test_the_warning_names_both_exact_fixes(field) -> None:
     message = str(future_warnings(field)[0].message)
     assert "seed=<int>" in message
     assert "seed=None" in message
-    assert "v0.37" in message
+    # The named release must be one that has NOT shipped. It said v0.37 until
+    # v0.37 closed without making the cut -- v0.37a's freeze scoped the
+    # weak-diagnostic transition out explicitly -- at which point the warning
+    # was promising something the release did not deliver. A deprecation notice
+    # naming a version already released is worse than no notice.
+    import tomllib
+    from pathlib import Path
+
+    version = tomllib.loads(
+        (Path(__file__).resolve().parents[1] / "pyproject.toml").read_text()
+    )["project"]["version"]
+    named = [tok for tok in message.split() if tok.startswith("v0.")]
+    assert named, f"the warning names no target release: {message}"
+    for token in named:
+        assert token.strip(".,") > f"v{version}", (
+            f"the warning promises {token} but the package is already v{version}; "
+            f"either make the cut or name a later release"
+        )
 
 
 def test_explicit_none_is_silent_and_records_the_opt_in(field) -> None:

@@ -16,13 +16,13 @@ These files must be aligned before any release candidate or final release is pub
 
 ## V0.x Package-Index Deferral
 
-For the current `v0.x` series, including `v0.29.0`, `v0.30.0`, `v0.31.0`, `v0.32.0`, `v0.33.0`, `v0.34.0`, `v0.35.0`, and `v0.36.0`, release completion means:
+For the current `v0.x` series, including `v0.29.0`, `v0.30.0`, `v0.31.0`, `v0.32.0`, `v0.33.0`, `v0.34.0`, `v0.35.0`, `v0.36.0`, and `v0.37.0`, release completion means:
 
 - metadata, docs, tests, build, and wheel-smoke checks pass
 - the release PR is merged
 - the merged commit is tagged in Git as the final version
 
-`v0.29.0` through `v0.36.0` are intentionally Git-tag-only releases.
+`v0.29.0` through `v0.37.0` are intentionally Git-tag-only releases.
 Do not publish to TestPyPI or PyPI for any of them.
 
 **v0.36 note.** An earlier plan targeted TestPyPI at `v0.36`. That was
