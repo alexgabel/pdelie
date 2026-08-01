@@ -25,3 +25,4 @@ Once a design is implemented and validated it is folded into the specs.
    V0_30_HYGIENE_AUDIT
    V0_33_NONPERIODIC_GENERATORS_AND_MASK_PRESERVING_BRIDGE
    v0_37c_hypothesis_freeze
+   v0_37c_pilot_report

@@ -250,10 +250,42 @@ def test_the_freeze_contains_no_frozen_tolerance_value() -> None:
     assert "No tolerance value appears in this document" in _freeze()
 
 
-def test_the_pilot_and_confirmatory_documents_do_not_exist_yet() -> None:
-    """Scaffolding only. The pilot has not run and nothing may claim it has."""
-    assert not PILOT_REPORT.exists()
-    assert not CONFIRMATORY.exists()
+def test_the_pilot_ran_and_the_confirmatory_freeze_did_not() -> None:
+    """The pilot blocked on PS-2, so the confirmatory freeze must not exist.
+
+    This originally asserted neither document existed. The pilot has now run,
+    so half of it expired -- but the half that matters did not: a confirmatory
+    freeze may only appear if all three criteria passed, and PS-2 did not.
+    """
+    assert PILOT_REPORT.exists(), "the pilot report is the record that it ran"
+    assert not CONFIRMATORY.exists(), (
+        "a confirmatory freeze exists while the pilot report records a block; "
+        "the two-stage freeze permits no such state"
+    )
+
+
+def test_the_pilot_report_declares_the_pre_registered_block_status() -> None:
+    """Blocking is a first-class outcome and must name its criterion."""
+    text = PILOT_REPORT.read_text()
+    assert "blocked_pilot_criteria_not_met" in text
+    assert "Blocking criterion: PS-2" in text
+    assert "v0.37d does not open" in text
+
+
+def test_the_pilot_report_records_every_seed_it_used() -> None:
+    """A dropped seed is a selection effect; absence must be auditable."""
+    text = PILOT_REPORT.read_text()
+    assert "all five retained, none dropped" in text.lower().replace("**", "")
+    for seed in (7, 11, 13, 17, 19):
+        assert f"`{seed}`" in text, seed
+
+
+def test_the_pilot_report_evaluates_all_three_criteria() -> None:
+    text = PILOT_REPORT.read_text()
+    for criterion in ("PS-1", "PS-2", "PS-3"):
+        assert criterion in text, criterion
+    assert "**PASS**" in text
+    assert "**FAIL**" in text
 
 
 def test_the_reconnaissance_is_disclosed() -> None:
