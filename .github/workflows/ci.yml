@@ -5,8 +5,8 @@ on:
   pull_request:
 
 jobs:
-  v0_35_0-release-gate:
-    # v0.35.0: consolidated release gate. Python 3.12/3.13 blocking (via
+  v0_36_0-release-gate:
+    # v0.36.0: consolidated release gate. Python 3.12/3.13 blocking (via
     # matrix), Python 3.14 advisory-only in a separate job below.
     # PySINDy is resolved by the [test] extra directly to the declared
     # >=2.1,<3 pin; no explicit setuptools workaround (pysindy 2.x uses

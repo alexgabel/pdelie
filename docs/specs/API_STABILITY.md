@@ -37,7 +37,7 @@ Stable public-surface note for the v0.36 day-zero polish: the only runtime addit
 
 Two normative process documents land with day-zero and govern later v0.36 work rather than the current API surface: `docs/design/DESIGN_FREEZE_PROCESS.md` (hypothesis → pilot → confirmatory freeze) and `docs/design/CROSS_PLATFORM_PORTABILITY_CLASSES.md` (the four-class taxonomy that decides when bit-equality may be asserted).
 
-Stable public-surface note for the v0.35.0 release close: the v0.35 arc adds design-matrix diagnostics (`pdelie.diagnostics`), deterministic row selection (`pdelie.design`), and a private point-symmetry catalogue (`pdelie.symmetry._point_symmetry_registry`). Every addition is submodule-only and diagnostic-only; `pdelie.__all__` is unchanged and no existing payload changed shape. Three new `summary_type` values appear, all on new payloads produced by new functions.
+Stable public-surface note for the v0.36.0 release close: the v0.36 arc adds content-addressed artifact identity (`pdelie.artifact`), a pipeline-migration audit layer (`pdelie.audit`), observation and differentiation specifications (`pdelie.observation`, `pdelie.differentiation`), declarative problem actions (`pdelie.actions`), and budget-aware design comparison (`pdelie.design`). Every addition is submodule-only and diagnostic-only; `pdelie.__all__` is unchanged and no existing payload changed shape. `ProblemActionSpec` gained a defaulted `coefficient_relation` field, which is additive: specs written against the four prior axes construct unchanged.
 
 Design-matrix diagnostics (`v0.35a`) and row selection (`v0.35c`):
 

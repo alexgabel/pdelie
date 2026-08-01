@@ -17,4 +17,5 @@ Release readiness and publishing records.
    V0_33_RELEASE_READINESS
    V0_34_RELEASE_READINESS
    V0_35_RELEASE_READINESS
+   V0_36_RELEASE_READINESS
    archive/index
