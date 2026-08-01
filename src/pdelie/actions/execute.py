@@ -190,6 +190,20 @@ def execute_state_action(
     if family == "identity":
         return field
 
+    # np.roll wraps. That is the correct semantics for a periodic domain and the
+    # wrong semantics for any other, where it would silently move the left edge
+    # onto the right. The bundle declares which it is, so the declaration is
+    # checked rather than assumed -- all six v0.37c cases are periodic, but a
+    # nonperiodic bundle reaching here would be quietly mis-executed.
+    domain_type = bundle.problem_instance.domain_type
+    if domain_type != "periodic_uniform":
+        raise ScopeValidationError(
+            f"spatial_translation on domain_type {domain_type!r} is refused: the "
+            f"exact_grid_shift backend wraps, which is only meaningful on a "
+            f"periodic domain. A nonperiodic translation needs a crop or a "
+            f"boundary-aware action, neither of which exists at v0.37b."
+        )
+
     axis_name = bundle.problem_instance.spatial_axis_name
     axis = _spatial_axis_index(field, axis_name)
     spacing = _uniform_spacing(np.asarray(field.coords[axis_name]), axis_name=axis_name)

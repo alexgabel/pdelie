@@ -94,6 +94,11 @@ def _l2(array: np.ndarray) -> float:
     return float(np.sqrt(float(flat @ flat)))
 
 
+def _linf(array: np.ndarray) -> float:
+    flat = np.asarray(array, dtype=float).ravel()
+    return 0.0 if flat.size == 0 else float(np.abs(flat).max())
+
+
 def _expected_case(bundle: ProblemActionBundle, runtime_path: str) -> str:
     """What the bundle declared it expected, before measurement."""
     if not bundle.expected_residual_relation.permits_confirmation:
@@ -150,9 +155,16 @@ def _analytical_status(
     holds = absolute_error <= tolerance
     detail = {
         "absolute_error": absolute_error,
+        # Both norms, named. `absolute_error` alone is ambiguous in a report that
+        # gets cited: an L2 measurement compared against an Linf-derived bound is
+        # a comparison between different quantities, and the v0.37c pilot blocked
+        # on exactly that. Additive -- `absolute_error` keeps its meaning.
+        "absolute_error_l2": absolute_error,
+        "absolute_error_linf": _linf(difference),
         "relative_error": relative_error,
         "tolerance_applied": tolerance,
         "comparison_scale": scale,
+        "comparison_scale_linf": _linf(predicted),
     }
     return ("confirmed" if holds else "violated"), detail
 

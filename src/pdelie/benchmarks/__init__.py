@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from pdelie.benchmarks.parameter_equivariant import (
     CONFIRMATORY_ALPHA_GRID,
+    DEFAULT_TRANSLATION_CELLS,
     EXPECTED_CLASSIFICATIONS,
     PILOT_ALPHA_GRID,
     PROFILE_REGISTRY,
@@ -21,6 +22,7 @@ from pdelie.benchmarks.parameter_equivariant import (
 
 __all__ = [
     "CONFIRMATORY_ALPHA_GRID",
+    "DEFAULT_TRANSLATION_CELLS",
     "EXPECTED_CLASSIFICATIONS",
     "PILOT_ALPHA_GRID",
     "PROFILE_REGISTRY",

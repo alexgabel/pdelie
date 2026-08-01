@@ -89,6 +89,15 @@ All profiles take the form
 a(x) = a₀ · (1 + α · f(x)),    |f|∞ ≤ 1,    0 ≤ α < 1,    a₀ > 0
 ```
 
+> **Amendment 2 (post-pilot) — an unstated requirement, now stated.** Every case
+> declares `domain_type: periodic_uniform`, so **`f` must be periodic on the
+> domain**. This was assumed and never written down, and one frozen profile
+> violates it: `monotone_smooth` = `tanh((x−x₀)/w)` runs from `−0.9999` to
+> `+0.9999`, a wrap discontinuity of `1.9998` against a typical adjacent-sample
+> step of `0.3198`. Under `np.roll` that jump travels through the interior, so
+> C-4 measures the discontinuity rather than the monotone variation it names.
+> The other four profiles are periodic and unaffected.
+
 **This form guarantees positivity.** With `|f|∞ ≤ 1` and `α < 1`, the factor
 `(1 + αf)` is strictly positive, so `a(x) > 0` everywhere and the problem stays
 parabolic for every point on both grids. An additive form `a₀ + α·f(x)` would
@@ -182,23 +191,30 @@ is the same floor. **This is a derivation, not an approximation** — it does no
 degrade with α.
 
 **C-3, C-4, C-6 — first order in α, bounded below.** These are obstructions, so
-their tolerance is a **floor**: the error must *exceed* a stated value. Writing
-`a(x) = a₀(1 + αf(x))`, the state shift moves `u` but not `a`, leaving
+their tolerance is a **floor**: the error must *exceed* a stated value.
+
+> **Amendment 1 (post-pilot).** The derivation below previously kept only the
+> `a·u_xx` term and was **not** a valid bound: measured against the pilot it came
+> in at `0.52`–`1.00` of the observed error. The diffusion operator is
+> `(a(x)·u_x)_x = a'(x)·u_x + a(x)·u_xx`, and the `a'` term is the same order in
+> α. Dropping it was a derivation error, not a measurement one.
+
+Writing `a(x) = a₀(1 + αf(x))`, the state shift moves `u` but not `a`, leaving
+both terms:
 
 ```
-R(Tu) − T R(u)  =  [a(x) − a(x−τ)] · ∂²ₓ(Tu)  =  a₀ · α · [f(x) − f(x−τ)] · ∂²ₓ(Tu)
+R(Tu) − T R(u)  =  −[a(x) − a(x−τ)]·u_xx(x−τ)  −  [a'(x) − a'(x−τ)]·u_x(x−τ)
 ```
 
 so
 
 ```
-‖R(Tu) − T R(u)‖∞  ≤  a₀ · α · ‖f(x) − f(x−τ)‖∞ · ‖u_xx‖∞
+‖R(Tu) − T R(u)‖∞  ≤  a₀·α·( ‖f(x) − f(x−τ)‖∞·‖u_xx‖∞  +  ‖f'(x) − f'(x−τ)‖∞·‖u_x‖∞ )
 ```
 
-with every factor computable from the frozen profile and the data. The bound is
-**exactly first order in α**, which the reconnaissance confirmed to seven
-significant figures. Each case's floor cites this bound with its own
-`‖f(x) − f(x−τ)‖∞`.
+Still **exactly first order in α**, which the pilot confirmed to seven
+significant figures. Each case's floor cites this bound with its own profile
+differences.
 
 **C-5 — bounded below by the nonlinear term.** For Burgers,
 `R(cu) − c·R(u) = (c² − c)·u·u_x`, so
