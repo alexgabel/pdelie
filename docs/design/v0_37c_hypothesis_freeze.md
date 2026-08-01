@@ -1,0 +1,253 @@
+# v0.37c — Hypothesis Freeze: Six-Case Admissibility Benchmark
+
+**Status:** frozen. Written before the pilot runs.
+
+**No tolerance value appears in this document.** Every threshold lives in
+`docs/design/v0_37c_confirmatory_freeze.md`, which may only be written after the
+pilot passes PS-1, PS-2 and PS-3. A tolerance frozen here would make the pilot
+theatre.
+
+---
+
+## 0. Glossary — three layers, three vocabularies
+
+The benchmark touches all three layers of the coefficient question, and they use
+different words on purpose. Conflating them is the single most likely
+misreading of this document.
+
+| Layer | Asks | Vocabulary | Since |
+| --- | --- | --- | --- |
+| Declared capability | *Can* this background co-transform? | `fixed_background`, `co_transformable_background` | v0.33d tag, generalised v0.37a |
+| Claimed action | Does *this transformation* say it moved? | `fixed`, `co_transformed` | v0.36b `coefficient_relation` |
+| Measured outcome | Did it, *on this run*? | `co_transforming_background_equivalence`, `fixed_background_same_target_symmetry_failed` | v0.34b |
+
+A case declares with the first two and is judged by the third. The `-able` form
+is a capability; the `-ing` form is an observation.
+
+---
+
+## 1. Pre-registration reconnaissance — disclosed
+
+Before this freeze was written, an exploratory run measured the six cases in
+order to (a) determine each case's `expected_operator_family` and (b) establish
+the *analytical form* of the obstruction. Both were needed to write this
+document at all, and both are reported here rather than presented as pilot
+findings.
+
+**What it established.** Co-transformation is *exact* under `exact_grid_shift`,
+and every obstruction is *exactly first order in α* — `error/α` was constant to
+seven significant figures across the whole grid.
+
+**What it did not do.** No tolerance is derived from it. The constants it
+observed are not recorded in this document, and the **confirmatory α grid is
+disjoint from the grid the reconnaissance used**, so the confirmatory
+measurement lands on points nobody has looked at.
+
+This is disclosed because a pilot presented as blind when it was not is worse
+than a pilot honestly described as informed.
+
+---
+
+## 2. Six benchmark cases — frozen
+
+| Case | Equation | Profile | Action | `expected_operator_family` | Expected classification |
+| --- | --- | --- | --- | --- | --- |
+| C-1 | `heat_1d` | `constant` | translation, state only | `identity` | `valid_same_target` |
+| C-2 | `heat_1d` | `sinusoidal` | translation, state **+** background | `identity` | `valid_equivalence` |
+| C-3 | `heat_1d` | `sinusoidal` | translation, state only, `fixed_background` | `identity` | `invalid_fixed_background_obstruction` |
+| C-4 | `heat_1d` | `monotone_smooth` | translation, state only | `identity` | `invalid_state_only_with_monotone_coefficient` |
+| C-5 | `burgers_1d` | `constant` | `scalar_rescale` on `u`, no state action | `scalar_multiplier` | `invalid_parameter_only_without_state` |
+| C-6 | `advection_diffusion_1d` | `localized_bump` | translation, state only, `fixed_background` | `identity` | `invalid_state_only_with_localized_coefficient` |
+
+The benchmark is **not** "pass all six". It is "distinguish all six by the
+classification each is expected to receive". C-3 through C-6 are deliberate
+obstructions, and a run in which they *passed* would be a failure.
+
+### The operator-family set is `{identity, scalar_multiplier}`
+
+Neither `linear_combination_of_derivatives` nor `diagnostic_fitted` is used by
+any case.
+
+> **Note, not a blocker.** v0.37b declares
+> `linear_combination_of_derivatives` but does not synthesise it, reporting
+> `inconclusive` with a stated reason. Because no v0.37c case selects that
+> family, **the gap is inert for this benchmark** and does not need closing
+> before the pilot. It remains open for a later phase.
+
+C-5 is the only `scalar_multiplier` case. Burgers is nonlinear —
+`R(cu) = c·u_t + c²·u·u_x − c·ν·u_xx` — so the `u u_x` term scales as `c²` and
+the naive claim that rescaling `u` scales the residual is false. That falsity is
+the point of the case.
+
+---
+
+## 3. Coefficient profiles — frozen
+
+All profiles take the form
+
+```
+a(x) = a₀ · (1 + α · f(x)),    |f|∞ ≤ 1,    0 ≤ α < 1,    a₀ > 0
+```
+
+**This form guarantees positivity.** With `|f|∞ ≤ 1` and `α < 1`, the factor
+`(1 + αf)` is strictly positive, so `a(x) > 0` everywhere and the problem stays
+parabolic for every point on both grids. An additive form `a₀ + α·f(x)` would
+admit negative diffusivity for `α > a₀`, which is not a harder test — it is a
+different and ill-posed equation.
+
+| Profile ID | `f(x)` | Fixed parameters |
+| --- | --- | --- |
+| `constant` | `0` | `a₀ = 0.1` |
+| `sinusoidal` | `sin(k·x)` | `a₀ = 0.1`, `k = 2` |
+| `monotone_smooth` | `tanh((x − x₀)/w)` | `a₀ = 0.1`, `x₀ = mid-domain`, `w = 0.1·L` |
+| `localized_bump` | `exp(−((x − x₀)/w)²)` | `a₀ = 0.1`, `x₀ = mid-domain`, `w = 0.05·L` |
+| `higher_frequency` | `sin(k·x)` | `a₀ = 0.1`, `k = 6` |
+
+`α` is the dose-response knob and is the only thing that varies within a case.
+Positivity is asserted per profile per α by the runner, not assumed.
+
+---
+
+## 4. α grids — frozen and disjoint
+
+| Grid | Values |
+| --- | --- |
+| Pilot | `0.0, 0.05, 0.1, 0.2, 0.4, 0.8` |
+| Confirmatory | `0.025, 0.075, 0.15, 0.3, 0.6` |
+
+Disjointness is asserted by test:
+`set(PILOT_ALPHA_GRID).isdisjoint(set(CONFIRMATORY_ALPHA_GRID))`.
+
+`α = 0` appears only in the pilot grid and is a **control**: at zero dose every
+profile degenerates to `constant`, so C-3, C-4 and C-6 must become
+indistinguishable from C-1. A pilot in which they separated at `α = 0` would
+indicate the separation is an artefact of something other than the coefficient
+variation, and PS-1 is stated to require exactly that.
+
+---
+
+## 5. Pilot success criteria — frozen
+
+All three must pass before the confirmatory freeze may be signed.
+
+### PS-1 — Decision margin, not pairwise ratio
+
+For every `α > 0` on the pilot grid, there must exist a single decision
+threshold `T` such that:
+
+1. every **valid** case (C-1, C-2) measures **below** `T`;
+2. every **invalid** case (C-3…C-6) measures **above** `T`;
+3. the margin — the ratio of the smallest invalid measurement to the largest
+   valid measurement — is reported, per α.
+
+And, as the control: **at `α = 0`, no such separating threshold exists** between
+C-1 and the profile-dependent obstruction cases, because at zero dose they are
+the same problem.
+
+This replaces an earlier pairwise-5× formulation. A pairwise criterion asks
+whether two cases differ; what the benchmark actually needs is whether a
+*decision* can be made, which is a property of the whole set against a single
+boundary.
+
+### PS-2 — Traceable tolerances
+
+Every tolerance in the confirmatory freeze must trace to **either** a
+hand-computed reference **or** an analytically-derived bound, and must cite it.
+An experimentally-tuned value chosen to make the intended labels pass is a
+PS-2 failure, however well it works.
+
+The derivations are given in §6 and are to be completed *before* the pilot runs,
+so that a PS-2 failure at pilot time is a measurement finding rather than
+unfinished arithmetic.
+
+### PS-3 — Grid non-reuse
+
+No confirmatory α coincides with any pilot α. Asserted by test.
+
+---
+
+## 6. Traceability derivations — to be completed before the pilot
+
+Each case's tolerance must trace to one of these.
+
+**C-1 — exact, floor-limited.** Constant coefficient plus an exact grid shift is
+a permutation of samples: `R(Tu) = T R(u)` identically, and the only error is
+the spectral-derivative floor. The reference is that floor, measured on the same
+grid, not a fitted number.
+
+**C-2 — exact, floor-limited.** When the background shifts by the same whole
+number of cells as the state, both sides are the same permutation of the same
+samples. The equivalence is exact for the same reason C-1 is, and the tolerance
+is the same floor. **This is a derivation, not an approximation** — it does not
+degrade with α.
+
+**C-3, C-4, C-6 — first order in α, bounded below.** These are obstructions, so
+their tolerance is a **floor**: the error must *exceed* a stated value. Writing
+`a(x) = a₀(1 + αf(x))`, the state shift moves `u` but not `a`, leaving
+
+```
+R(Tu) − T R(u)  =  [a(x) − a(x−τ)] · ∂²ₓ(Tu)  =  a₀ · α · [f(x) − f(x−τ)] · ∂²ₓ(Tu)
+```
+
+so
+
+```
+‖R(Tu) − T R(u)‖∞  ≤  a₀ · α · ‖f(x) − f(x−τ)‖∞ · ‖u_xx‖∞
+```
+
+with every factor computable from the frozen profile and the data. The bound is
+**exactly first order in α**, which the reconnaissance confirmed to seven
+significant figures. Each case's floor cites this bound with its own
+`‖f(x) − f(x−τ)‖∞`.
+
+**C-5 — bounded below by the nonlinear term.** For Burgers,
+`R(cu) − c·R(u) = (c² − c)·u·u_x`, so
+
+```
+‖R(cu) − c·R(u)‖∞  =  |c² − c| · ‖u·u_x‖∞
+```
+
+exactly. The floor is that expression evaluated on the frozen data, and it
+vanishes only at `c ∈ {0, 1}` — neither of which the case uses.
+
+---
+
+## 7. Pre-registered artifacts and block status
+
+| Artifact | Path | Written when |
+| --- | --- | --- |
+| Hypothesis freeze | `docs/design/v0_37c_hypothesis_freeze.md` | now |
+| Pilot report | `docs/design/v0_37c_pilot_report.md` | after the pilot runs |
+| Confirmatory freeze | `docs/design/v0_37c_confirmatory_freeze.md` | **only if** PS-1, PS-2 and PS-3 all pass |
+
+**Block status: `blocked_pilot_criteria_not_met`.**
+
+If any criterion fails, v0.37c terminates in that status, the block reason
+**names the specific PS criterion violated**, and `v0.37d does not open`. This
+status is pre-registered here so that blocking is a first-class declared outcome
+rather than an implicit failure discovered by the absence of a document.
+
+There is no third outcome. "Pilot passed with a note" is not available: the
+two-stage freeze is only worth having if its signal is clean.
+
+---
+
+## 8. Seeds
+
+Every benchmark run is seed-full from the first line. `ProblemActionBundle`
+carries no seed by C-1; `ActionExecutionConfig` requires one, with no default,
+so a fixture that forgets is a `TypeError` rather than a silently
+irreproducible run.
+
+Every seed used in the pilot is retained in the pilot report. None are dropped,
+including any that produce inconvenient results — a dropped seed is a selection
+effect, and the report must be auditable for its absence as much as its content.
+
+---
+
+## 9. Non-goals
+
+- No tolerance values in this document.
+- No new PDE, no new profile beyond the five frozen here.
+- No change to the v0.37b report schema.
+- No root export.
