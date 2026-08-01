@@ -36,16 +36,19 @@ import numpy as np
 from pdelie.errors import ScopeValidationError
 
 __all__ = [
+    "C5_RESCALE_FACTOR",
     "CONFIRMATORY_ALPHA_GRID",
     "EXPECTED_CLASSIFICATIONS",
     "PILOT_ALPHA_GRID",
     "PROFILE_REGISTRY",
     "SIX_BENCHMARK_CASES",
+    "TRANSLATION_CELLS",
     "BenchmarkCase",
     "CoefficientProfile",
     "alpha_grid",
     "build_coefficient_field",
     "resolve_case",
+    "run_admissibility_benchmark",
 ]
 
 #: Frozen. ``0.0`` is a control: at zero dose every profile degenerates to
@@ -336,3 +339,242 @@ def build_coefficient_field(
             f"than assumed."
         )
     return values
+
+
+# ---------------------------------------------------------------------------
+# Runner
+# ---------------------------------------------------------------------------
+#
+# The runner builds a real ProblemActionBundle, executes it through
+# pdelie.actions.execute, and reads the measured error out of a real
+# commutation report. It deliberately does not compute the comparison itself:
+# a benchmark that measures with its own arithmetic is not measuring what
+# ships, and a discrepancy between the two would be invisible.
+#
+# It reports MAGNITUDES, never verdicts. No threshold is applied here, because
+# no threshold exists yet -- that is what the pilot is for.
+
+_GENERATORS: dict[str, str] = {
+    "heat_1d": "generate_heat_1d_field_batch",
+    "burgers_1d": "generate_burgers_1d_field_batch",
+    "advection_diffusion_1d": "generate_advection_diffusion_1d_field_batch",
+}
+
+#: The rescale factor C-5 uses. Not a tolerance: it is the action's parameter,
+#: and the case exists because the claim it makes about this value is false.
+C5_RESCALE_FACTOR = 1.5
+
+#: Whole grid cells every translation moves. Whole so the shift is exact.
+TRANSLATION_CELLS = 3
+
+
+def _build_field(
+    equation_family: str, seed: int, num_times: int, num_points: int
+) -> Any:
+    from pdelie import data
+
+    generator = getattr(data, _GENERATORS[equation_family])
+    return generator(
+        batch_size=1, num_times=num_times, num_points=num_points, seed=seed
+    )
+
+
+def _evaluator(equation_family: str, coefficient: np.ndarray | float) -> Any:
+    from pdelie.residuals import (
+        AdvectionDiffusionResidualEvaluator,
+        BurgersResidualEvaluator,
+        HeatResidualEvaluator,
+    )
+
+    if equation_family == "heat_1d":
+        return HeatResidualEvaluator(diffusivity=coefficient)
+    if equation_family == "burgers_1d":
+        return BurgersResidualEvaluator(diffusivity=coefficient)
+    return AdvectionDiffusionResidualEvaluator(
+        advection_speed=1.0, diffusivity=coefficient
+    )
+
+
+def _measure_case(
+    case: BenchmarkCase, alpha: float, seed: int, num_times: int, num_points: int
+) -> dict[str, Any]:
+    """One (case, alpha, seed) measurement, through the shipped machinery."""
+    import numpy as np
+
+    from pdelie.actions import (
+        ActionExecutionConfig,
+        ActionRef,
+        CoefficientFieldRef,
+        CoordinateFieldAction,
+        ExpectedResidualOperator,
+        ExpectedResidualRelation,
+        ProblemActionBundle,
+        ProblemInstanceSpec,
+        build_residual_commutation_report,
+        execute_bundle,
+        validate_action_bundle,
+    )
+    from pdelie.contracts import FieldBatch
+
+    field = _build_field(case.equation_family, seed, num_times, num_points)
+    axis = field.dims.index("x")
+    x = np.asarray(field.coords["x"], dtype=float)
+    spacing = float(np.diff(x)[0])
+    coefficient = build_coefficient_field(case.profile_id, alpha, x)
+
+    translating = case.state_action_family == "spatial_translation"
+    offset = TRANSLATION_CELLS * spacing if translating else 0.0
+    co_moves = case.coefficient_relation == "co_transformed"
+
+    reference = CoefficientFieldRef(
+        field_name="nu",
+        coordinate_dependency=("x",),
+        treatment=case.coefficient_treatment,
+        analytical_spec={"profile_id": case.profile_id, "alpha": float(alpha)},
+    )
+    problem = ProblemInstanceSpec(
+        equation_family=case.equation_family,
+        equation_form="nonconservative",
+        parameters={"nu": PROFILE_REGISTRY[case.profile_id].baseline},
+        coefficient_fields={"nu": reference},
+        spatial_axis_name="x",
+        time_axis_name="t",
+        domain_type="periodic_uniform",
+    )
+    operator = (
+        ExpectedResidualOperator(
+            family="scalar_multiplier", parameters={"multiplier": C5_RESCALE_FACTOR}
+        )
+        if case.expected_operator_family == "scalar_multiplier"
+        else ExpectedResidualOperator(family="identity")
+    )
+    relation = ExpectedResidualRelation(
+        equation_relation=(
+            "equivalence_transformation" if co_moves else "same_equation"
+        ),
+        parameter_relation=(
+            "transformed" if case.parameter_action_family else "preserved"
+        ),
+        coefficient_relation=case.coefficient_relation,
+        domain_relation="preserved",
+        boundary_relation="preserved",
+        expected_operator=operator,
+    )
+    bundle = ProblemActionBundle(
+        problem_instance=problem,
+        state_action=ActionRef(
+            action_target="state",
+            action_family=case.state_action_family,
+            action_parameter_id=f"{case.case_id}_state",
+            parameters={"offset": offset} if translating else {},
+        ),
+        domain_action=ActionRef(
+            action_target="domain", action_family="identity", action_parameter_id="id"
+        ),
+        boundary_action=ActionRef(
+            action_target="domain", action_family="identity", action_parameter_id="id"
+        ),
+        coefficient_field_actions={
+            "nu": CoordinateFieldAction(family="shift", parameters={"offset": offset})
+            if co_moves
+            else CoordinateFieldAction(family="identity")
+        },
+        expected_residual_relation=relation,
+        parameter_action=(
+            ActionRef(
+                action_target="parameter",
+                action_family="scalar_rescale",
+                action_parameter_id=f"{case.case_id}_param",
+                parameters={"factor": C5_RESCALE_FACTOR},
+            )
+            if case.parameter_action_family
+            else None
+        ),
+    )
+    validate_action_bundle(bundle)
+
+    config = ActionExecutionConfig(
+        interpolation_backend="exact_grid_shift",
+        numerical_tolerances={"rtol": 0.0, "atol": 0.0},
+        seed=None,
+        deterministic_expected=True,
+    )
+    execution = execute_bundle(
+        bundle, field, config, coefficient_values={"nu": coefficient}
+    )
+
+    base_evaluator = _evaluator(case.equation_family, coefficient)
+    original = base_evaluator.evaluate(field).residual
+
+    if case.parameter_action_family == "scalar_rescale":
+        # C-5 rescales the state itself; the transformed residual is R(cu).
+        rescaled = FieldBatch(
+            schema_version=field.schema_version,
+            values=np.asarray(field.values) * C5_RESCALE_FACTOR,
+            dims=field.dims,
+            coords=dict(field.coords),
+            var_names=field.var_names,
+            metadata=dict(field.metadata),
+            preprocess_log=list(field.preprocess_log),
+            mask=None,
+        )
+        transformed = base_evaluator.evaluate(rescaled).residual
+        expected = original
+    else:
+        moved_coefficient = (
+            execution.transformed_coefficients["nu"] if co_moves else coefficient
+        )
+        transformed = _evaluator(case.equation_family, moved_coefficient).evaluate(
+            execution.transformed_field
+        ).residual
+        expected = np.roll(original, execution.state_shift_cells, axis=axis)
+
+    report = build_residual_commutation_report(
+        bundle, execution, config, expected, transformed, runtime_seconds=0.0
+    )
+    payload = report["scientific_payload"]
+    return {
+        "case_id": case.case_id,
+        "alpha": float(alpha),
+        "seed": int(seed),
+        "runtime_path": payload["runtime_path"],
+        "expected_operator_family": payload["expected_operator_family"],
+        "absolute_error": float(payload["analytical_detail"]["absolute_error"]),
+        "comparison_scale": float(payload["analytical_detail"]["comparison_scale"]),
+        "is_deliberate_obstruction": case.is_deliberate_obstruction,
+    }
+
+
+def run_admissibility_benchmark(
+    *,
+    phase: str,
+    seeds: Sequence[int],
+    num_times: int = 32,
+    num_points: int = 32,
+) -> dict[str, Any]:
+    """Measure every case at every alpha for every seed. Reports magnitudes only.
+
+    No verdict is computed and no threshold applied: the whole point of the
+    pilot is to find out what the magnitudes are before anyone picks one.
+    """
+    grid = alpha_grid(phase)
+    if not seeds:
+        raise ScopeValidationError("seeds must be non-empty; a run with no seed is not a run.")
+    measurements = [
+        _measure_case(case, alpha, seed, num_times, num_points)
+        for case in SIX_BENCHMARK_CASES.values()
+        for alpha in grid
+        for seed in seeds
+    ]
+    return {
+        "summary_type": "pdelie_parameter_equivariant_benchmark_run",
+        "summary_schema_version": "0.1",
+        "phase": phase,
+        "alpha_grid": list(grid),
+        "seeds": [int(s) for s in seeds],
+        "grid_shape": {"num_times": num_times, "num_points": num_points},
+        "translation_cells": TRANSLATION_CELLS,
+        "measurement_count": len(measurements),
+        "measurements": measurements,
+        "diagnostic_only": True,
+    }

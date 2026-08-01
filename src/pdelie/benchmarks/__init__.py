@@ -16,6 +16,7 @@ from pdelie.benchmarks.parameter_equivariant import (
     alpha_grid,
     build_coefficient_field,
     resolve_case,
+    run_admissibility_benchmark,
 )
 
 __all__ = [
@@ -29,4 +30,5 @@ __all__ = [
     "alpha_grid",
     "build_coefficient_field",
     "resolve_case",
+    "run_admissibility_benchmark",
 ]
