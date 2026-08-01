@@ -15,6 +15,15 @@ from pdelie.residuals.base import (
     build_residual_diagnostics_from_derivatives,
 )
 
+#: Derivatives every heat residual needs, on any coefficient path.
+#:
+#: ``u_x`` is deliberately absent. It is required only on the
+#: variable-coefficient path -- where the product rule introduces a
+#: ``nu'(x) u_x`` term -- and that requirement is raised at the point of use.
+#: Adding it here would demand it on the constant-coefficient path, which does
+#: not need it.
+_REQUIRED_DERIVATIVES: tuple[str, ...] = ("u_t", "u_xx")
+
 
 class HeatResidualEvaluator(ResidualEvaluator):
     """``u_t - (diffusive term) = 0``.
@@ -46,7 +55,7 @@ class HeatResidualEvaluator(ResidualEvaluator):
             derivatives = compute_derivatives(field, backend="auto")
         derivatives.validate_against(field)
 
-        for name in ("u_t", "u_xx"):
+        for name in _REQUIRED_DERIVATIVES:
             if name not in derivatives.derivatives:
                 raise SchemaValidationError(f"HeatResidualEvaluator requires derivative '{name}'.")
 

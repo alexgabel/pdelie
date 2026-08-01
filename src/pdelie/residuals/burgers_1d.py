@@ -15,6 +15,9 @@ from pdelie.residuals.base import (
     build_residual_diagnostics_from_derivatives,
 )
 
+#: Derivatives every Burgers residual needs.
+_REQUIRED_DERIVATIVES: tuple[str, ...] = ("u_t", "u_x", "u_xx")
+
 
 class BurgersResidualEvaluator(ResidualEvaluator):
     """``u_t + u u_x - (diffusive term) = 0``.
@@ -39,7 +42,7 @@ class BurgersResidualEvaluator(ResidualEvaluator):
             derivatives = compute_derivatives(field, backend="auto")
         derivatives.validate_against(field)
 
-        for name in ("u_t", "u_x", "u_xx"):
+        for name in _REQUIRED_DERIVATIVES:
             if name not in derivatives.derivatives:
                 raise SchemaValidationError(f"BurgersResidualEvaluator requires derivative '{name}'.")
 

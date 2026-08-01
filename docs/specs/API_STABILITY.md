@@ -39,6 +39,8 @@ Two normative process documents land with day-zero and govern later v0.36 work r
 
 Stable public-surface note for the v0.36.0 release close: the v0.36 arc adds content-addressed artifact identity (`pdelie.artifact`), a pipeline-migration audit layer (`pdelie.audit`), observation and differentiation specifications (`pdelie.observation`, `pdelie.differentiation`), declarative problem actions (`pdelie.actions`), and budget-aware design comparison (`pdelie.design`). Every addition is submodule-only and diagnostic-only; `pdelie.__all__` is unchanged and no existing payload changed shape. `ProblemActionSpec` gained a defaulted `coefficient_relation` field, which is additive: specs written against the four prior axes construct unchanged.
 
+v0.37a contract additions (submodule-only, `pdelie.actions`): `ProblemInstanceSpec`, `CoefficientFieldRef`, `CoordinateFieldAction`, `ProblemActionBundle`, `ExpectedResidualRelation`, `ExpectedResidualOperator`, and `validate_action_bundle`. Contracts only -- no executor ships at v0.37a. `ProblemActionBundle.seed` is **required**: the v0.36 `_UNSET` sentinel and its `FutureWarning` are retired for bundles, and omission is a `TypeError`. `pdelie.__all__` is unchanged and no existing payload changed shape.
+
 Design-matrix diagnostics (`v0.35a`) and row selection (`v0.35c`):
 
 - Both packages are core-installable: neither imports scipy nor pysindy, asserted by test. `pdelie.design` hand-rolls Householder QR with column pivoting because `numpy.linalg.qr` has no `pivoting` parameter and scipy is not a core dependency; `scipy.linalg.qr(pivoting=True)` is a test-side oracle only.
