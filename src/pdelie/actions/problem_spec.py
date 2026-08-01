@@ -268,6 +268,20 @@ class ProblemInstanceSpec:
 
         if not isinstance(self.coefficient_fields, Mapping):
             raise ScopeValidationError("coefficient_fields must be a mapping.")
+
+        # One name, one owner. A name appearing in both is two declarations of
+        # the same quantity with no rule about which an executor should read --
+        # and the v0.37c C-5 defect is what that ambiguity produced: the bundle
+        # declared an action on the parameter `nu` while the runner transformed
+        # something else entirely, and nothing could tell them apart.
+        overlap = sorted(set(self.parameters) & set(self.coefficient_fields))
+        if overlap:
+            raise ScopeValidationError(
+                f"{overlap} appear in both parameters and coefficient_fields. A "
+                f"quantity has one owner: a scalar parameter or a coordinate-"
+                f"dependent field, never both. Rename one -- e.g. 'nu_baseline' "
+                f"for the scalar and 'nu' for the field."
+            )
         fields: dict[str, CoefficientFieldRef] = {}
         for key, ref in self.coefficient_fields.items():
             if not isinstance(ref, CoefficientFieldRef):

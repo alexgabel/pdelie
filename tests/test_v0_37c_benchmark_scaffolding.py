@@ -87,7 +87,7 @@ def test_every_expected_classification_appears_in_the_freeze(classification: str
     assert classification in _freeze()
 
 
-def test_the_operator_family_set_is_exactly_identity_and_scalar_multiplier() -> None:
+def test_the_operator_family_set_is_exactly_identity() -> None:
     """The measured consequence: the v0.37b synthesis gap is inert here.
 
     No case selects ``linear_combination_of_derivatives`` or
@@ -96,9 +96,14 @@ def test_the_operator_family_set_is_exactly_identity_and_scalar_multiplier() -> 
     the gap becomes a blocker that has to be closed first.
     """
     families = {case.expected_operator_family for case in BENCHMARK_CASES.values()}
-    assert families == {"identity", "scalar_multiplier"}
+    assert families == {"identity"}
     assert "linear_combination_of_derivatives" not in families
     assert "diagnostic_fitted" not in families
+    # Coverage loss recorded rather than hidden: C-5 declared scalar_multiplier
+    # until v0.37.1, matching the state rescale the runner was wrongly
+    # performing. With the semantics repaired no case exercises that family
+    # end to end; it remains contract-tested in the v0.37a suite.
+    assert "scalar_multiplier" not in families
 
 
 def test_three_of_five_cases_are_deliberate_obstructions() -> None:
@@ -354,3 +359,42 @@ def test_the_retirement_of_c4_is_recorded_in_the_freeze() -> None:
     assert "Retirement, not restatement" in text
     assert "nonperiodic by construction" in text
     assert "C-4" not in set(BENCHMARK_CASES)
+
+
+# --- the pilot report is append-only ----------------------------------------
+
+#: The pilot report's first N lines, pinned. Runs 1-3 -- two of which blocked --
+#: are the substantive record of the v0.37c phase, and a report that can be
+#: quietly rewritten to show only the passing run is a selection-effect
+#: document. Raising this boundary is legitimate when a new appendix is added;
+#: CHANGING the digest without raising the boundary is a rewrite of history.
+_PILOT_FROZEN_LINES = 419
+_PILOT_FROZEN_SHA256 = "78b7dae6eabc44c889e21ddd5b35da6485a2a2c127a5739e26354d699815d71e"
+
+
+def test_v0_37c_pilot_report_is_append_only() -> None:
+    """The frozen prefix must hash exactly; new content goes after it."""
+    import hashlib
+
+    lines = PILOT_REPORT.read_text().splitlines()
+    assert len(lines) >= _PILOT_FROZEN_LINES, (
+        f"the pilot report shrank to {len(lines)} lines, below the frozen "
+        f"prefix of {_PILOT_FROZEN_LINES}. Content was deleted, not appended."
+    )
+    prefix = "\n".join(lines[:_PILOT_FROZEN_LINES])
+    digest = hashlib.sha256(prefix.encode()).hexdigest()
+    assert digest == _PILOT_FROZEN_SHA256, (
+        "the first "
+        f"{_PILOT_FROZEN_LINES} lines of the pilot report were edited. Runs 1-3, "
+        "two of which blocked, are the record this phase exists to preserve. "
+        "Append below the boundary; do not rewrite above it."
+    )
+
+
+def test_the_appendix_records_the_c5_defect_and_run_4() -> None:
+    text = PILOT_REPORT.read_text()
+    assert "Appendix A" in text
+    assert "Nothing above this line was edited" in text
+    assert "Run 4" in text
+    # And the blocked runs are still present after the append.
+    assert "blocked_pilot_criteria_not_met" in text

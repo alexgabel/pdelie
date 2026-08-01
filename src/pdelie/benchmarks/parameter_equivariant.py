@@ -270,7 +270,7 @@ BENCHMARK_CASES: dict[str, BenchmarkCase] = {
         parameter_action_family="scalar_rescale",
         parameter_action_parameters={"factor": 2.0},
         state_action_parameters={},
-        expected_operator_family="scalar_multiplier",
+        expected_operator_family="identity",
         expected_classification="invalid_parameter_only_without_state",
         is_deliberate_obstruction=True,
     ),
@@ -414,7 +414,6 @@ def _measure_case(
         execute_bundle,
         validate_action_bundle,
     )
-    from pdelie.contracts import FieldBatch
 
     field = _build_field(case.equation_family, seed, num_times, num_points)
     axis = field.dims.index("x")
@@ -436,7 +435,7 @@ def _measure_case(
     problem = ProblemInstanceSpec(
         equation_family=case.equation_family,
         equation_form="nonconservative",
-        parameters={"nu": PROFILE_REGISTRY[case.profile_id].baseline},
+        parameters={"nu_baseline": PROFILE_REGISTRY[case.profile_id].baseline},
         coefficient_fields={"nu": reference},
         spatial_axis_name="x",
         time_axis_name="t",
@@ -445,13 +444,7 @@ def _measure_case(
     rescale_factor = float(
         dict(case.parameter_action_parameters or {}).get("factor", 1.0)
     )
-    operator = (
-        ExpectedResidualOperator(
-            family="scalar_multiplier", parameters={"multiplier": rescale_factor}
-        )
-        if case.expected_operator_family == "scalar_multiplier"
-        else ExpectedResidualOperator(family="identity")
-    )
+    operator = ExpectedResidualOperator(family=case.expected_operator_family)
     relation = ExpectedResidualRelation(
         equation_relation=(
             "equivalence_transformation" if co_moves else "same_equation"
@@ -511,18 +504,16 @@ def _measure_case(
     original = base_evaluator.evaluate(field).residual
 
     if case.parameter_action_family == "scalar_rescale":
-        # C-5 rescales the state itself; the transformed residual is R(cu).
-        rescaled = FieldBatch(
-            schema_version=field.schema_version,
-            values=np.asarray(field.values) * rescale_factor,
-            dims=field.dims,
-            coords=dict(field.coords),
-            var_names=field.var_names,
-            metadata=dict(field.metadata),
-            preprocess_log=list(field.preprocess_log),
-            mask=None,
-        )
-        transformed = base_evaluator.evaluate(rescaled).residual
+        # The declared action rescales the PARAMETER, so the transformed
+        # residual is the one produced by an evaluator built from the rescaled
+        # parameter -- read from execution.transformed_parameters, which is what
+        # execute_bundle computed. The state is untouched.
+        #
+        # v0.37.0 rescaled the STATE here by hand and never read
+        # transformed_parameters at all, so C-5 measured R(cu) while declaring a
+        # parameter action. See docs/releases/V0_37_C5_ERRATUM.md.
+        rescaled_nu = float(execution.transformed_parameters["nu_baseline"])
+        transformed = _evaluator(case.equation_family, rescaled_nu).evaluate(field).residual
         expected = original
     else:
         moved_coefficient = (
@@ -531,7 +522,13 @@ def _measure_case(
         transformed = _evaluator(case.equation_family, moved_coefficient).evaluate(
             execution.transformed_field
         ).residual
-        expected = np.roll(original, execution.state_shift_cells, axis=axis)
+        # The reference side of the comparison: T R(u), what the residual should
+        # be if the transformation commutes. Not an application of the action --
+        # that went through execute_bundle above, and the shift used here is the
+        # one the EXECUTOR reported, so the oracle cannot drift from the action.
+        expected = np.roll(  # oracle: reference calculation
+            original, execution.state_shift_cells, axis=axis
+        )
 
     report = build_residual_commutation_report(
         bundle, execution, config, expected, transformed, runtime_seconds=0.0

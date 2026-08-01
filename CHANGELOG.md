@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.37.1
+
+Hotfix. Repairs a semantic mismatch in benchmark case C-5, enforces parameter/coefficient ownership, and reruns the confirmatory freeze on a fresh seed packet. See [`docs/releases/V0_37_C5_ERRATUM.md`](docs/releases/V0_37_C5_ERRATUM.md).
+
+**v0.37.0 did not test parameter-only obstruction correctly.** C-5's bundle declared a `scalar_rescale` on the *parameter*; the runner never read it, and rescaled the *state* instead. `execute_bundle` computed the rescaled parameter correctly into `transformed_parameters` and the benchmark discarded it.
+
+The arithmetic was right. The v0.37.0 record states C-5's derivation reproduced the measurement at ratio `1.000000`, and it did — for a state rescale, which is not what C-5 declared.
+
+Every v0.37 gate checked that a *declared* thing was coherent. None checked that the declared thing was the thing *executed*, which is why this survived a hypothesis freeze, three pilots, a confirmatory freeze, a release close and a tag.
+
+### Fixed
+
+- **C-5 now consumes the action it declares.** The runner reads `execution.transformed_parameters["nu_baseline"]` and builds an evaluator from the rescaled parameter, leaving the state untouched. Its derivation is now `|c−1|·ν·‖u_xx‖∞`, exact at ratio `1.000000` on every seed.
+- **A name may not be owned twice.** `ProblemInstanceSpec` refuses a key appearing in both `parameters` and `coefficient_fields`. C-5 had `nu` in both — two declarations of one quantity with no rule about which an executor should read. The scalar is now `nu_baseline`.
+
+### Changed
+
+- **C-5's declared operator family: `scalar_multiplier` → `identity`.** The claim under test is that rescaling `ν` leaves the residual unchanged; measurement violates it. **No benchmark case now exercises `scalar_multiplier` end to end** — a coverage loss recorded rather than hidden.
+- **Confirmatory freeze v2** on seeds `13, 17, 19, 23, 29`, disjoint from v1's. All five cases rerun, not just C-5: a confirmatory freeze is a paired comparison at a fixed seed packet, and mixing runs would make the margins incomparable. v1 is retained unedited and invalidated for C-5 only.
+
+### Added
+
+- **`tests/test_benchmark_action_semantics_guard.py`** — the gate the v0.37 arc lacked. Scans benchmark code for transformations applied outside the declared action path. Written from the pattern rather than this defect, it flagged all three of C-5's constructs on first run.
+- **An append-only guard on the pilot report.** The first 419 lines are pinned by SHA-256, so runs 1–3 — two of which blocked — cannot be quietly rewritten to show only the passing run.
+
+
 ## 0.37.0
 
 Release-close for the v0.37 arc: five sub-milestones consolidated into a single tag. Submodule-only — no root `pdelie` export added. No new PDE, and no change to any existing payload shape.

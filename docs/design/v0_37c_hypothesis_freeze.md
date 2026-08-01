@@ -55,7 +55,7 @@ than a pilot honestly described as informed.
 | C-1 | `heat_1d` | `constant` | translation, state only | `identity` | `valid_same_target` |
 | C-2 | `heat_1d` | `sinusoidal` | translation, state **+** background | `identity` | `valid_equivalence` |
 | C-3 | `heat_1d` | `sinusoidal` | translation, state only, `fixed_background` | `identity` | `invalid_fixed_background_obstruction` |
-| C-5 | `burgers_1d` | `constant` | `scalar_rescale` on `u`, no state action | `scalar_multiplier` | `invalid_parameter_only_without_state` |
+| C-5 | `burgers_1d` | `constant` | `scalar_rescale` on the **parameter**, no state action | `identity` | `invalid_parameter_only_without_state` |
 | C-6 | `advection_diffusion_1d` | `localized_bump` | translation, state only, `fixed_background` | `identity` | `invalid_state_only_with_localized_coefficient` |
 
 The benchmark is **not** "pass them all". It is "distinguish each by the
@@ -76,7 +76,16 @@ is not periodic, so no periodic profile still measures what C-4 named.
 Monotone-coefficient obstruction returns when a nonperiodic action family is
 available.
 
-### The operator-family set is `{identity, scalar_multiplier}`
+### The operator-family set is `{identity}`
+
+> **Amendment 4 (v0.37.1).** C-5 previously declared `scalar_multiplier`, which
+> matched the *state* rescale the runner was performing rather than the
+> *parameter* rescale its bundle declared. With the semantics repaired, the
+> claim under test is that rescaling `nu` leaves the residual unchanged --
+> `identity` -- and measurement violates it. **No case now exercises
+> `scalar_multiplier`**, which is a coverage loss recorded rather than hidden:
+> the family is contract-tested in `test_v0_37a_problem_action_contracts.py`
+> but no longer exercised end to end by a benchmark case.
 
 Neither `linear_combination_of_derivatives` nor `diagnostic_fitted` is used by
 any case.
@@ -233,15 +242,27 @@ Still **exactly first order in α**, which the pilot confirmed to seven
 significant figures. Each case's floor cites this bound with its own profile
 differences.
 
-**C-5 — bounded below by the nonlinear term.** For Burgers,
-`R(cu) − c·R(u) = (c² − c)·u·u_x`, so
+**C-5 — bounded below by the diffusive term.** The action rescales the
+*parameter*, not the state: `nu -> c*nu` with `u` untouched. For Burgers
+`R = u_t + u·u_x − nu·u_xx`, so
 
 ```
-‖R(cu) − c·R(u)‖∞  =  |c² − c| · ‖u·u_x‖∞
+R_{c·nu}(u) − R_{nu}(u)  =  −(c − 1)·nu·u_xx
 ```
 
-exactly. The floor is that expression evaluated on the frozen data, and it
-vanishes only at `c ∈ {0, 1}` — neither of which the case uses.
+and therefore
+
+```
+‖R_{c·nu}(u) − R_{nu}(u)‖∞  =  |c − 1| · nu · ‖u_xx‖∞
+```
+
+exactly. Verified at ratio `1.000000` on every seed. It vanishes only at
+`c = 1`, which the case does not use.
+
+> **Amendment 5 (v0.37.1).** The previous derivation was
+> `|c² − c|·‖u·u_x‖∞`, correct arithmetic for a *state* rescale — which is what
+> the runner was doing and not what the bundle declared. See
+> `docs/releases/V0_37_C5_ERRATUM.md`.
 
 ---
 

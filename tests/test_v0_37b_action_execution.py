@@ -74,7 +74,7 @@ def _problem(treatment: str = "fixed_background") -> ProblemInstanceSpec:
     return ProblemInstanceSpec(
         equation_family="heat_1d",
         equation_form="nonconservative",
-        parameters={"nu": 0.1},
+        parameters={"nu_baseline": 0.1},
         coefficient_fields={"nu": _ref(treatment)},
         spatial_axis_name="x",
         time_axis_name="t",
@@ -290,7 +290,7 @@ def test_scalar_rescale_scales_every_numeric_parameter(field, config) -> None:
         relation=_relation(parameter_relation="transformed"),
     )
     result = execute_bundle(bundle, field, config)
-    assert result.transformed_parameters["nu"] == pytest.approx(0.3)
+    assert result.transformed_parameters["nu_baseline"] == pytest.approx(0.3)
 
 
 def test_a_missing_coefficient_array_is_refused_when_an_action_needs_it(

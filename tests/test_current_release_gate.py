@@ -16,7 +16,7 @@ def test_current_release_metadata_docs_and_ci_are_aligned() -> None:
     readme = _repo_text("README.md")
     changelog = _repo_text("CHANGELOG.md")
     publishing = _repo_text("docs/releases/PUBLISHING.md")
-    readiness = _repo_text("docs/releases/V0_37_RELEASE_READINESS.md")
+    readiness = _repo_text("docs/releases/V0_37_1_RELEASE_READINESS.md")
     plan = _repo_text("docs/planning/PLAN.md")
     roadmap = _repo_text("docs/planning/ROADMAP.md")
     api_stability = _repo_text("docs/specs/API_STABILITY.md")
@@ -28,8 +28,8 @@ def test_current_release_metadata_docs_and_ci_are_aligned() -> None:
         flags=re.MULTILINE,
     )
 
-    assert pyproject["project"]["version"] == "0.37.0"
-    assert 'release = "0.37.0"' in docs_conf
+    assert pyproject["project"]["version"] == "0.37.1"
+    assert 'release = "0.37.1"' in docs_conf
     assert 'version = "0.37"' in docs_conf
     # v0.33.0 release close: v0_33_0-release-gate (a single consolidated
     # release-gate job for the five v0.33 sub-milestones).
@@ -62,7 +62,7 @@ def test_current_release_metadata_docs_and_ci_are_aligned() -> None:
             f"stale release-gate job name remained in CI workflow: {stale}"
         )
 
-    assert "## 0.37.0" in changelog
+    assert "## 0.37.1" in changelog
 
     # README/release alignment, derived from pyproject rather than hard-coded.
     #
@@ -92,8 +92,8 @@ def test_current_release_metadata_docs_and_ci_are_aligned() -> None:
         f"every pin to name the current release {current_version}"
     )
 
-    assert "package version: `0.37.0`" in readiness
-    assert "git tag: `v0.37.0`" in readiness
+    assert "package version: `0.37.1`" in readiness
+    assert "git tag: `v0.37.1`" in readiness
     assert "Do not publish to TestPyPI or PyPI for `v0.37`" in readiness
     assert "`v0.37.0`" in publishing
     assert (
@@ -105,5 +105,5 @@ def test_current_release_metadata_docs_and_ci_are_aligned() -> None:
     assert "Stable public-surface note for the v0.37.0 release close" in api_stability
 
     assert "archive/index" in planning_index
-    assert "V0_37_RELEASE_READINESS" in releases_index
+    assert "V0_37_1_RELEASE_READINESS" in releases_index
     assert "archive/index" in releases_index
