@@ -1,7 +1,7 @@
-"""v0.37c: registries and dispatch for the six-case admissibility benchmark.
+"""v0.37c: registries and dispatch for the parameter-equivariant admissibility benchmark.
 
-Scaffolding only. This module declares *what* the benchmark is -- the six cases,
-the five coefficient profiles, the two alpha grids -- and can build a coefficient
+Scaffolding only. This module declares *what* the benchmark is -- the cases,
+the coefficient profiles, the two alpha grids -- and can build a coefficient
 field for a given (profile, alpha). It runs nothing and writes no pilot data.
 
 Everything here is frozen by ``docs/design/v0_37c_hypothesis_freeze.md``, and
@@ -36,11 +36,11 @@ import numpy as np
 from pdelie.errors import ScopeValidationError
 
 __all__ = [
+    "BENCHMARK_CASES",
     "CONFIRMATORY_ALPHA_GRID",
     "EXPECTED_CLASSIFICATIONS",
     "PILOT_ALPHA_GRID",
     "PROFILE_REGISTRY",
-    "SIX_BENCHMARK_CASES",
     "BenchmarkCase",
     "CoefficientProfile",
     "alpha_grid",
@@ -66,7 +66,6 @@ EXPECTED_CLASSIFICATIONS: tuple[str, ...] = (
     "valid_same_target",
     "valid_equivalence",
     "invalid_fixed_background_obstruction",
-    "invalid_state_only_with_monotone_coefficient",
     "invalid_parameter_only_without_state",
     "invalid_state_only_with_localized_coefficient",
 )
@@ -82,13 +81,6 @@ def _sinusoidal(k: float) -> Callable[[np.ndarray], np.ndarray]:
 
     return shape
 
-
-def _monotone_smooth(width_fraction: float) -> Callable[[np.ndarray], np.ndarray]:
-    def shape(x: np.ndarray) -> np.ndarray:
-        span = float(x[-1] - x[0])
-        return np.asarray(np.tanh((x - 0.5 * (x[0] + x[-1])) / (width_fraction * span)))
-
-    return shape
 
 
 def _localized_bump(width_fraction: float) -> Callable[[np.ndarray], np.ndarray]:
@@ -141,13 +133,6 @@ PROFILE_REGISTRY: dict[str, CoefficientProfile] = {
         shape=_sinusoidal(2.0),
         description="a(x) = a0*(1 + alpha*sin(k x))",
         parameters={"k": 2.0},
-    ),
-    "monotone_smooth": CoefficientProfile(
-        profile_id="monotone_smooth",
-        baseline=0.1,
-        shape=_monotone_smooth(0.1),
-        description="a(x) = a0*(1 + alpha*tanh((x - x0)/w))",
-        parameters={"w_fraction": 0.1},
     ),
     "localized_bump": CoefficientProfile(
         profile_id="localized_bump",
@@ -238,7 +223,7 @@ class BenchmarkCase:
         }
 
 
-SIX_BENCHMARK_CASES: dict[str, BenchmarkCase] = {
+BENCHMARK_CASES: dict[str, BenchmarkCase] = {
     "C-1": BenchmarkCase(
         case_id="C-1",
         equation_family="heat_1d",
@@ -275,18 +260,6 @@ SIX_BENCHMARK_CASES: dict[str, BenchmarkCase] = {
         expected_classification="invalid_fixed_background_obstruction",
         is_deliberate_obstruction=True,
     ),
-    "C-4": BenchmarkCase(
-        case_id="C-4",
-        equation_family="heat_1d",
-        profile_id="monotone_smooth",
-        coefficient_treatment="fixed_background",
-        coefficient_relation="fixed",
-        state_action_family="spatial_translation",
-        parameter_action_family=None,
-        expected_operator_family="identity",
-        expected_classification="invalid_state_only_with_monotone_coefficient",
-        is_deliberate_obstruction=True,
-    ),
     "C-5": BenchmarkCase(
         case_id="C-5",
         equation_family="burgers_1d",
@@ -317,12 +290,12 @@ SIX_BENCHMARK_CASES: dict[str, BenchmarkCase] = {
 
 
 def resolve_case(case_id: str) -> BenchmarkCase:
-    if case_id not in SIX_BENCHMARK_CASES:
+    if case_id not in BENCHMARK_CASES:
         raise ScopeValidationError(
             f"unknown benchmark case {case_id!r}; the six are "
-            f"{sorted(SIX_BENCHMARK_CASES)}."
+            f"{sorted(BENCHMARK_CASES)}."
         )
-    return SIX_BENCHMARK_CASES[case_id]
+    return BENCHMARK_CASES[case_id]
 
 
 def alpha_grid(phase: str) -> tuple[float, ...]:
@@ -596,7 +569,7 @@ def run_admissibility_benchmark(
         raise ScopeValidationError("seeds must be non-empty; a run with no seed is not a run.")
     measurements = [
         _measure_case(case, alpha, seed, num_times, num_points)
-        for case in SIX_BENCHMARK_CASES.values()
+        for case in BENCHMARK_CASES.values()
         for alpha in grid
         for seed in seeds
     ]
