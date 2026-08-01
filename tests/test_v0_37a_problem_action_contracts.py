@@ -58,7 +58,7 @@ def _ref(name: str = "nu", *, treatment: str = "fixed_background", **kwargs) -> 
 def _problem(**kwargs) -> ProblemInstanceSpec:
     kwargs.setdefault("equation_family", "heat_1d")
     kwargs.setdefault("equation_form", "nonconservative")
-    kwargs.setdefault("parameters", {"nu": 0.1})
+    kwargs.setdefault("parameters", {"nu_baseline": 0.1})
     kwargs.setdefault("coefficient_fields", {"nu": _ref()})
     kwargs.setdefault("spatial_axis_name", "x")
     kwargs.setdefault("time_axis_name", "t")
@@ -186,15 +186,15 @@ def test_bundle_round_trips_and_hashes() -> None:
 
 
 def test_identity_is_insensitive_to_key_order() -> None:
-    a = _problem(parameters={"nu": 0.1, "alpha": 0.2})
-    b = _problem(parameters={"alpha": 0.2, "nu": 0.1})
+    a = _problem(parameters={"nu_baseline": 0.1, "alpha": 0.2})
+    b = _problem(parameters={"alpha": 0.2, "nu_baseline": 0.1})
     assert a.identity() == b.identity()
 
 
 @pytest.mark.parametrize("bad", [float("nan"), float("inf"), float("-inf")])
 def test_non_finite_parameters_are_refused(bad: float) -> None:
     with pytest.raises(ScopeValidationError):
-        _problem(parameters={"nu": bad})
+        _problem(parameters={"nu_baseline": bad})
 
 
 # --- R-A12a..e: per-family operator parameter shapes ------------------------

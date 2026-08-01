@@ -1,5 +1,12 @@
 # V0.37 Release Readiness
 
+> **Erratum, v0.37.1.** Benchmark case C-5 as released did not test what it
+> declared: its bundle declared a parameter rescale and the runner performed a
+> state rescale. See [`V0_37_C5_ERRATUM.md`](V0_37_C5_ERRATUM.md) and the
+> superseding [confirmatory freeze
+> v2](../design/v0_37c_confirmatory_freeze_v2.md). The other four cases are
+> unaffected; this document is otherwise unedited.
+
 ## 1. Release Target
 
 - package version: `0.37.0`

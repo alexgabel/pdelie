@@ -88,7 +88,7 @@ def _bundle(
     problem = ProblemInstanceSpec(
         equation_family="heat_1d",
         equation_form="nonconservative",
-        parameters={"nu": 0.1},
+        parameters={"nu_baseline": 0.1},
         coefficient_fields={"nu": _ref(treatment)},
         spatial_axis_name="x",
         time_axis_name="t",

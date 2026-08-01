@@ -17,7 +17,7 @@ else:
 project = "PDELie"
 author = "Alex Gabel"
 copyright = f"{datetime.now(tz=UTC).date().year}, {author}"
-release = "0.37.0"
+release = "0.37.1"
 version = "0.37"
 
 extensions = [

@@ -417,3 +417,67 @@ Grids disjoint; the confirmatory points were unmeasured at the time of this run.
 ## Outcome
 
 **All three criteria pass.** The confirmatory freeze is signed.
+
+---
+
+# Appendix A — the C-5 semantic defect (v0.37.1)
+
+**Appended 2026-08-02. Nothing above this line was edited.** The first
+419 lines of this file hash to `78b7dae6eabc44c8...`, pinned by
+`test_v0_37c_pilot_report_is_append_only`.
+
+## What was found, after the tag
+
+C-5's bundle declared a `scalar_rescale` on the **parameter**. The runner never
+read it: `execute_bundle` computed `execution.transformed_parameters` correctly,
+and the runner discarded that, built a `FieldBatch` by hand, and rescaled the
+**state**.
+
+Runs 1, 2 and 3 above all measured a state rescale under a parameter
+declaration. Their C-5 numbers are internally consistent and describe the wrong
+transformation.
+
+## Why the three runs above did not catch it
+
+Every check in this report asks whether the *declared* thing is coherent — do
+the classifications separate, do the tolerances trace, are the grids disjoint.
+C-5 passed all of them, because a state rescale really is a valid obstruction
+with a valid derivation. It is simply not the obstruction C-5 names.
+
+The missing question was *is the declared action the one the runner consumed?*
+
+## The repair
+
+The runner now reads `execution.transformed_parameters["nu_baseline"]` and
+builds an evaluator from the rescaled parameter, leaving the state untouched.
+`ProblemInstanceSpec` refuses a name owned by both `parameters` and
+`coefficient_fields`, which C-5 had.
+
+`tests/test_benchmark_action_semantics_guard.py` scans for the pattern and found
+all three of C-5's constructs on its first run, having been written from the
+class rather than this instance.
+
+## Run 4 — repaired semantics, fresh seeds: **PASS**
+
+Seeds `13, 17, 19, 23, 29`, disjoint from runs 2 and 3.
+
+| alpha | `C-1` | `C-2` | `C-3` | `C-5` | `C-6` |
+|---|---|---|---|---|---|
+| `0.0` | `1.3101e-14` | `1.3101e-14` | `1.3101e-14` | `1.6286e-01` | `8.7430e-16` |
+| `0.05` | `1.3101e-14` | `1.3711e-14` | `6.0205e-02` | `1.6286e-01` | `1.1108e-02` |
+| `0.1` | `1.3101e-14` | `1.2823e-14` | `1.2041e-01` | `1.6286e-01` | `2.2217e-02` |
+| `0.2` | `1.3101e-14` | `1.2990e-14` | `2.4082e-01` | `1.6286e-01` | `4.4434e-02` |
+| `0.4` | `1.3101e-14` | `1.3101e-14` | `4.8164e-01` | `1.6286e-01` | `8.8867e-02` |
+| `0.8` | `1.3101e-14` | `1.3711e-14` | `9.6327e-01` | `1.6286e-01` | `1.7773e-01` |
+
+PS-1 **PASS**, binding margin `4.484e+11`; control holds at α = 0. PS-2 **PASS**
+— C-5's repaired derivation `|c−1|·ν·‖u_xx‖∞` is exact at ratio `1.000000` on
+every seed. PS-3 **PASS**.
+
+C-5's value moved from `3.9902e-01` to `1.6286e-01` because it now measures a
+different transformation. That the number changed is the point.
+
+The confirmatory freeze is
+[`v0_37c_confirmatory_freeze_v2.md`](v0_37c_confirmatory_freeze_v2.md); v1 is
+retained unedited and invalidated for C-5 by
+[`V0_37_C5_ERRATUM.md`](../releases/V0_37_C5_ERRATUM.md).

@@ -96,17 +96,9 @@ def _violations(path: Path) -> list[str]:
     return found
 
 
-#: The C-5 defect this guard was written to catch is still present: the repair
-#: is Phase 1 (v0.37.1) and this guard is Phase 3, landing first by design so
-#: the repair has something to turn green. xfail(strict=True) means it fails
-#: loudly the moment C-5 is fixed and this marker is not removed -- an expected
-#: failure that silently becomes permanent is how a guard rots.
-_C5_REPAIR_PENDING = "parameter_equivariant.py"
-
-
 @pytest.mark.parametrize("path", _benchmark_sources(), ids=lambda p: p.name)
 def test_no_transformation_is_applied_outside_the_declared_action_path(
-    path: Path, request: pytest.FixtureRequest
+    path: Path,
 ) -> None:
     """A benchmark must consume the actions its bundle declares.
 
@@ -116,12 +108,6 @@ def test_no_transformation_is_applied_outside_the_declared_action_path(
     exemption is visible.
     """
     violations = _violations(path)
-    if path.name == _C5_REPAIR_PENDING and violations:
-        pytest.xfail(
-            f"known: the C-5 semantic mismatch is not repaired yet (Phase 1 / "
-            f"v0.37.1). This guard landed first so the repair has a red test to "
-            f"turn green. Violations: {violations}"
-        )
     assert not violations, (
         "benchmark code applies a transformation outside the declared action "
         "path:\n  " + "\n  ".join(violations) + "\n\n"
@@ -189,18 +175,43 @@ def test_the_benchmark_package_is_actually_scanned() -> None:
     assert any(p.name == "parameter_equivariant.py" for p in sources)
 
 
-def test_the_c5_exemption_is_temporary_and_named() -> None:
-    """The xfail above must not become permanent scenery.
+def test_the_c5_repair_is_still_in_place() -> None:
+    """C-5 must keep consuming the action it declares.
 
-    It names a specific pending repair. When Phase 1 lands, the guard goes green
-    on its own and this test is what makes removing the marker mandatory rather
-    than optional -- it fails once the file is clean.
+    Replaces the temporary xfail this module shipped with at v0.38 day-zero.
+    That marker retired the moment the repair landed, which is what the
+    now-removed companion test existed to force.
+
+    The positive assertion is what matters: it is not enough that the banned
+    constructs are gone. The runner has to actually read what the executor
+    produced, and a repair that deleted the manual rescale without wiring up
+    ``transformed_parameters`` would pass a pattern scan while measuring
+    nothing.
     """
-    target = BENCHMARKS / _C5_REPAIR_PENDING
-    assert target.exists(), _C5_REPAIR_PENDING
-    if not _violations(target):
-        pytest.fail(
-            f"{_C5_REPAIR_PENDING} is now clean, so the C-5 repair has landed. "
-            f"Remove _C5_REPAIR_PENDING and its xfail branch from this module -- "
-            f"a permanent expected-failure is a guard that stopped guarding."
-        )
+    source = (BENCHMARKS / "parameter_equivariant.py").read_text()
+    assert "execution.transformed_parameters[" in source, (
+        "the benchmark no longer reads transformed_parameters; the declared "
+        "parameter action is being computed and discarded again"
+    )
+    assert "FieldBatch(" not in source, (
+        "the benchmark constructs a FieldBatch again; transformed state must "
+        "come from execute_bundle"
+    )
+
+
+def test_the_oracle_exemptions_are_few_and_reviewable() -> None:
+    """The escape hatch must not become the normal path.
+
+    Each exemption is a place the guard is deliberately blind, so the set is
+    asserted small enough to read in one sitting rather than merely greppable.
+    """
+    exemptions = [
+        (path.name, line)
+        for path in _benchmark_sources()
+        for line in sorted(_exempt_lines(path.read_text()))
+    ]
+    assert len(exemptions) <= 3, (
+        f"{len(exemptions)} oracle exemptions in the benchmark package: "
+        f"{exemptions}. Each one is a place this guard cannot see; if the count "
+        f"is growing, the guard is being routed around rather than satisfied."
+    )
