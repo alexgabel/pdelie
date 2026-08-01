@@ -122,8 +122,7 @@ derived from those bounds could trace to what was measured.
 dropped a term of the same order, and `monotone_smooth` was nonperiodic on a
 domain every case declared periodic.
 
-Neither was a code bug. **Neither would have been caught by tests** — only by
-measuring against a derivation written in advance and finding they disagreed.
+Neither was a code bug, and neither was reachable by **unit tests generated from the same defective specification** — which is the trap, not a general claim about testing. Both were reachable by other means: a manufactured-solution check, a symbolic expansion of the operator, a metamorphic property, or an execution-vs-declaration audit. The v0.37.1 C-5 finding proves the last of those — an audit asking *is the declared action the one the runner consumed?* would have caught it immediately. See `docs/design/ANALYTICAL_ORACLE_DISCIPLINE.md`.
 
 Had the derivations been skipped and thresholds fitted to the pilot numbers,
 they would have "worked" on every case, and the freeze would have shipped citing

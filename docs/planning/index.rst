@@ -7,6 +7,7 @@ Release planning records. Planning docs do not override the specs.
    :maxdepth: 1
 
    ROADMAP
+   LEADERSHIP_METRICS
    PLAN
    V0_26_SCOPE
    V0_27_SCOPE

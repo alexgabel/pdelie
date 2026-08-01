@@ -8,7 +8,7 @@ Release decision: `v0_37_0_parameter_equivariant_actions_and_admissibility_bench
 
 **Git-tag-only.** Publication remains deferred to `v1.0`; the path hardened in v0.36f has still never been run.
 
-**Process note.** v0.37c ran three pilots. Two blocked, and each caught a specification defect — an interface mismatch between two documents (bounds derived in one norm, measured in another) and a self-contradictory case (a nonperiodic profile on a domain declared periodic). Neither was a code bug and neither would have been caught by tests: only by measuring against a derivation written in advance and finding they disagreed. Written up in `docs/releases/V0_37_RELEASE_READINESS.md`.
+**Process note.** v0.37c ran three pilots. Two blocked, and each caught a specification defect — an interface mismatch between two documents (bounds derived in one norm, measured in another) and a self-contradictory case (a nonperiodic profile on a domain declared periodic). Neither was a code bug, and neither was reachable by unit tests generated from the same defective specification — which is the trap, not a general claim about testing. Both were reachable by a manufactured-solution check, a symbolic expansion, a metamorphic property, or an execution-vs-declaration audit. Written up in `docs/releases/V0_37_RELEASE_READINESS.md`.
 
 ### Added
 
