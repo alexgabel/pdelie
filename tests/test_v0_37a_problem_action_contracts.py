@@ -578,10 +578,34 @@ def test_v0_37a_adds_no_root_export() -> None:
         assert name not in pdelie.__all__
 
 
-def test_no_executor_ships_at_v0_37a() -> None:
-    """Contracts only. The executor is v0.37b."""
+def test_the_contract_layer_stays_declarative() -> None:
+    """v0.37a shipped contracts only, and they must stay contracts.
+
+    This was originally a file-existence check -- that ``execute.py`` did not
+    exist. v0.37b shipped it, so that assertion expired. What did not expire is
+    the invariant it was protecting: the contract modules describe actions and
+    never perform them. Asserted by checking they import no array library and
+    define no execution entry point, which stays true as v0.37b and later grow.
+    """
+    import ast
     from pathlib import Path
 
     actions = Path(__file__).resolve().parents[1] / "src/pdelie/actions"
-    assert not (actions / "execute.py").exists()
-    assert not (actions / "commutation_report.py").exists()
+    for name in ("problem_spec.py", "action_bundle.py", "validate.py"):
+        tree = ast.parse((actions / name).read_text())
+        imported: set[str] = set()
+        functions: set[str] = set()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                imported.update(alias.name.split(".")[0] for alias in node.names)
+            elif isinstance(node, ast.ImportFrom) and node.module:
+                imported.add(node.module.split(".")[0])
+            elif isinstance(node, ast.FunctionDef):
+                functions.add(node.name)
+        assert "numpy" not in imported, (
+            f"{name} imports numpy; a contract module describes actions and does "
+            f"not perform them"
+        )
+        assert not {f for f in functions if f.startswith("execute")}, (
+            f"{name} defines an execute* function; execution belongs in execute.py"
+        )

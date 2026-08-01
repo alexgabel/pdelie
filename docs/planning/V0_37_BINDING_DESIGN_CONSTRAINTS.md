@@ -10,7 +10,7 @@ when this document was written.
 **Four of them have since landed in v0.37a**, built to these constraints:
 `ProblemInstanceSpec`, `CoefficientFieldRef`, `ProblemActionBundle`,
 `ExpectedResidualRelation` (with `ExpectedResidualOperator`), and
-`ActionExecutionConfig`. The residual commutation report has not — it is v0.37b. The constraints are recorded anyway, because they are
+`ActionExecutionConfig`. The residual commutation report landed in v0.37b, built to C-4, C-5 and C-6: three independent status fields, nested `optional_evidence` with no `<name>_available` booleans, and a `scientific_payload` / `execution_metadata` split so only the half that can be deterministic claims to be. The constraints are recorded anyway, because they are
 self-contained and binding regardless of where the proposal lives: v0.37 must
 satisfy them, and a design that violates one is rejected at review rather than
 discovered at implementation.

@@ -252,9 +252,9 @@ def test_the_document_tracks_which_types_now_exist() -> None:
         assert f"`{name}`" in _doc(), name
     assert "landed in v0.37a" in _doc()
 
-    # CoefficientFieldRef also landed; the commutation report has not.
+    # CoefficientFieldRef and, as of v0.37b, the commutation report.
     assert any("CoefficientFieldRef" in p.read_text() for p in SRC.rglob("*.py"))
-    assert not (SRC / "actions" / "commutation_report.py").exists()
+    assert (SRC / "actions" / "commutation_report.py").exists()
 
 
 # --- status vocabulary and forward scoping ----------------------------------

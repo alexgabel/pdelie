@@ -12,6 +12,25 @@ from pdelie.actions.action_bundle import (
     ProblemActionBundle,
 )
 from pdelie.actions.action_ref import ACTION_TARGETS, ActionRef
+from pdelie.actions.commutation_report import (
+    BENCHMARK_OUTCOMES,
+    COMMUTATION_REPORT_SUMMARY_TYPE,
+    EXPECTED_CASES,
+    build_residual_commutation_report,
+)
+from pdelie.actions.diagnostic_fit import (
+    FittedOperatorDiagnostic,
+    fit_diagnostic_operator,
+)
+from pdelie.actions.execute import (
+    RUNTIME_PATHS,
+    BundleExecutionResult,
+    classify_runtime_path,
+    execute_bundle,
+    execute_coefficient_action,
+    execute_state_action,
+    shift_cells,
+)
 from pdelie.actions.execution_config import (
     INTERPOLATION_BACKENDS,
     ActionExecutionConfig,
@@ -46,6 +65,7 @@ from pdelie.actions.validate import (
 
 __all__ = [
     "ACTION_TARGETS",
+    "BENCHMARK_OUTCOMES",
     "BOUNDARY_RELATIONS",
     "BUNDLE_RULES",
     "BUNDLE_RULE_COUNT",
@@ -53,6 +73,7 @@ __all__ = [
     "BUNDLE_SCHEMA_VERSION",
     "COEFFICIENT_RELATIONS",
     "COEFFICIENT_TREATMENTS",
+    "COMMUTATION_REPORT_SUMMARY_TYPE",
     "COORDINATE_FIELD_ACTION_FAMILIES",
     "DERIVATIVE_NAMES",
     "DOMAIN_RELATIONS",
@@ -60,23 +81,34 @@ __all__ = [
     "EQUATION_FAMILIES",
     "EQUATION_FORMS",
     "EQUATION_RELATIONS",
+    "EXPECTED_CASES",
     "EXPECTED_OPERATOR_FAMILIES",
     "INTERPOLATION_BACKENDS",
     "OBSERVED_RELATION_STATUSES",
     "PARAMETER_RELATIONS",
     "RULES",
     "RULE_COUNT",
+    "RUNTIME_PATHS",
     "ActionExecutionConfig",
     "ActionRef",
+    "BundleExecutionResult",
     "CoefficientFieldRef",
     "CoordinateFieldAction",
     "ExpectedResidualOperator",
     "ExpectedResidualRelation",
+    "FittedOperatorDiagnostic",
     "InconsistentBundleError",
     "InteractionRule",
     "ProblemActionBundle",
     "ProblemActionSpec",
     "ProblemInstanceSpec",
+    "build_residual_commutation_report",
+    "classify_runtime_path",
+    "execute_bundle",
+    "execute_coefficient_action",
+    "execute_state_action",
+    "fit_diagnostic_operator",
+    "shift_cells",
     "validate_action_bundle",
     "validate_action_spec",
 ]
