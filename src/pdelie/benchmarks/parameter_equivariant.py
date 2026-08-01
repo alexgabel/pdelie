@@ -27,8 +27,8 @@ algebra.
 
 from __future__ import annotations
 
-from collections.abc import Callable, Sequence
-from dataclasses import dataclass
+from collections.abc import Callable, Mapping, Sequence
+from dataclasses import dataclass, field
 from typing import Any
 
 import numpy as np
@@ -36,13 +36,11 @@ import numpy as np
 from pdelie.errors import ScopeValidationError
 
 __all__ = [
-    "C5_RESCALE_FACTOR",
     "CONFIRMATORY_ALPHA_GRID",
     "EXPECTED_CLASSIFICATIONS",
     "PILOT_ALPHA_GRID",
     "PROFILE_REGISTRY",
     "SIX_BENCHMARK_CASES",
-    "TRANSLATION_CELLS",
     "BenchmarkCase",
     "CoefficientProfile",
     "alpha_grid",
@@ -50,6 +48,10 @@ __all__ = [
     "resolve_case",
     "run_admissibility_benchmark",
 ]
+
+#: Default whole-cell translation, used by any case that does not override it.
+#: Whole cells so the shift is exact under ``exact_grid_shift``.
+DEFAULT_TRANSLATION_CELLS = 3
 
 #: Frozen. ``0.0`` is a control: at zero dose every profile degenerates to
 #: ``constant``, so the obstruction cases must become indistinguishable from C-1.
@@ -178,6 +180,15 @@ class BenchmarkCase:
     expected_operator_family: str
     expected_classification: str
     is_deliberate_obstruction: bool
+    #: Parameters of the state action. ``shift_cells`` is a whole number of grid
+    #: cells; the physical offset is that times ``dx``, computed at run time.
+    state_action_parameters: Mapping[str, Any] = field(
+        default_factory=lambda: {"shift_cells": DEFAULT_TRANSLATION_CELLS}
+    )
+    #: Parameters of the parameter action, or ``None`` when there is none.
+    #: Frozen here rather than left to the runner, so the case is fully
+    #: self-describing and the value cannot become an implicit constant.
+    parameter_action_parameters: Mapping[str, Any] | None = None
 
     def __post_init__(self) -> None:
         if self.profile_id not in PROFILE_REGISTRY:
@@ -190,6 +201,21 @@ class BenchmarkCase:
                 f"case {self.case_id!r} expects {self.expected_classification!r}, "
                 f"which is not a frozen classification."
             )
+        if (self.parameter_action_family is None) != (self.parameter_action_parameters is None):
+            raise ScopeValidationError(
+                f"case {self.case_id!r} declares parameter_action_family="
+                f"{self.parameter_action_family!r} and parameter_action_parameters="
+                f"{self.parameter_action_parameters!r}. A family without its "
+                f"parameters cannot be executed, and parameters without a family "
+                f"cannot be interpreted."
+            )
+        if self.state_action_family == "spatial_translation":
+            cells = dict(self.state_action_parameters).get("shift_cells")
+            if not isinstance(cells, int) or isinstance(cells, bool) or cells == 0:
+                raise ScopeValidationError(
+                    f"case {self.case_id!r} translates but declares shift_cells="
+                    f"{cells!r}; it must be a non-zero integer number of cells."
+                )
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -203,6 +229,12 @@ class BenchmarkCase:
             "expected_operator_family": self.expected_operator_family,
             "expected_classification": self.expected_classification,
             "is_deliberate_obstruction": self.is_deliberate_obstruction,
+            "state_action_parameters": dict(self.state_action_parameters),
+            "parameter_action_parameters": (
+                None
+                if self.parameter_action_parameters is None
+                else dict(self.parameter_action_parameters)
+            ),
         }
 
 
@@ -263,6 +295,8 @@ SIX_BENCHMARK_CASES: dict[str, BenchmarkCase] = {
         coefficient_relation="not_applicable",
         state_action_family="identity",
         parameter_action_family="scalar_rescale",
+        parameter_action_parameters={"factor": 2.0},
+        state_action_parameters={},
         expected_operator_family="scalar_multiplier",
         expected_classification="invalid_parameter_only_without_state",
         is_deliberate_obstruction=True,
@@ -360,13 +394,6 @@ _GENERATORS: dict[str, str] = {
     "advection_diffusion_1d": "generate_advection_diffusion_1d_field_batch",
 }
 
-#: The rescale factor C-5 uses. Not a tolerance: it is the action's parameter,
-#: and the case exists because the claim it makes about this value is false.
-C5_RESCALE_FACTOR = 1.5
-
-#: Whole grid cells every translation moves. Whole so the shift is exact.
-TRANSLATION_CELLS = 3
-
 
 def _build_field(
     equation_family: str, seed: int, num_times: int, num_points: int
@@ -423,7 +450,8 @@ def _measure_case(
     coefficient = build_coefficient_field(case.profile_id, alpha, x)
 
     translating = case.state_action_family == "spatial_translation"
-    offset = TRANSLATION_CELLS * spacing if translating else 0.0
+    cells = int(dict(case.state_action_parameters).get("shift_cells", 0))
+    offset = cells * spacing if translating else 0.0
     co_moves = case.coefficient_relation == "co_transformed"
 
     reference = CoefficientFieldRef(
@@ -441,9 +469,12 @@ def _measure_case(
         time_axis_name="t",
         domain_type="periodic_uniform",
     )
+    rescale_factor = float(
+        dict(case.parameter_action_parameters or {}).get("factor", 1.0)
+    )
     operator = (
         ExpectedResidualOperator(
-            family="scalar_multiplier", parameters={"multiplier": C5_RESCALE_FACTOR}
+            family="scalar_multiplier", parameters={"multiplier": rescale_factor}
         )
         if case.expected_operator_family == "scalar_multiplier"
         else ExpectedResidualOperator(family="identity")
@@ -485,7 +516,7 @@ def _measure_case(
                 action_target="parameter",
                 action_family="scalar_rescale",
                 action_parameter_id=f"{case.case_id}_param",
-                parameters={"factor": C5_RESCALE_FACTOR},
+                parameters={"factor": rescale_factor},
             )
             if case.parameter_action_family
             else None
@@ -510,7 +541,7 @@ def _measure_case(
         # C-5 rescales the state itself; the transformed residual is R(cu).
         rescaled = FieldBatch(
             schema_version=field.schema_version,
-            values=np.asarray(field.values) * C5_RESCALE_FACTOR,
+            values=np.asarray(field.values) * rescale_factor,
             dims=field.dims,
             coords=dict(field.coords),
             var_names=field.var_names,
@@ -539,8 +570,11 @@ def _measure_case(
         "seed": int(seed),
         "runtime_path": payload["runtime_path"],
         "expected_operator_family": payload["expected_operator_family"],
-        "absolute_error": float(payload["analytical_detail"]["absolute_error"]),
+        "absolute_error_l2": float(payload["analytical_detail"]["absolute_error_l2"]),
+        "absolute_error_linf": float(payload["analytical_detail"]["absolute_error_linf"]),
         "comparison_scale": float(payload["analytical_detail"]["comparison_scale"]),
+        "shift_cells": cells if translating else 0,
+        "rescale_factor": rescale_factor if case.parameter_action_family else None,
         "is_deliberate_obstruction": case.is_deliberate_obstruction,
     }
 
@@ -573,7 +607,6 @@ def run_admissibility_benchmark(
         "alpha_grid": list(grid),
         "seeds": [int(s) for s in seeds],
         "grid_shape": {"num_times": num_times, "num_points": num_points},
-        "translation_cells": TRANSLATION_CELLS,
         "measurement_count": len(measurements),
         "measurements": measurements,
         "diagnostic_only": True,
