@@ -42,18 +42,69 @@ def test_document_exists_and_is_marked_binding() -> None:
 # --- C-1: no seed in an action spec -----------------------------------------
 
 
-def test_c1_actions_package_still_carries_no_seed() -> None:
-    """The document claims this. If it stops being true, the claim must fail."""
-    offenders = [
-        path.relative_to(REPO_ROOT)
-        for path in (SRC / "actions").rglob("*.py")
-        if "seed" in path.read_text()
-    ]
-    assert not offenders, f"C-1 claims pdelie.actions has no seed; found in {offenders}"
+#: C-1 puts the seed in the execution-config layer, which lives inside
+#: ``pdelie.actions``. The constraint is that no *action specification* carries
+#: one -- not that the package is seed-free, which would forbid the very layer
+#: C-1 asks for.
+_ACTION_SPECIFICATION_MODULES = (
+    "problem_action_spec.py",
+    "problem_spec.py",
+    "action_bundle.py",
+    "action_ref.py",
+)
+
+
+def test_c1_no_action_specification_carries_a_seed() -> None:
+    """The declarative layer stays seed-free; the execution layer holds it.
+
+    Checked against the parsed **field names**, not the module text. The text
+    contains the word: ``ProblemActionBundle``'s docstring says it carries no
+    seed, and a substring scan flags the sentence that refuses the thing as the
+    thing. Same lesson as ``tests/test_forbidden_language.py`` -- the constraint
+    is about what a type declares, not what its prose mentions.
+    """
+    import ast
+
+    offenders: list[str] = []
+    for name in _ACTION_SPECIFICATION_MODULES:
+        tree = ast.parse((SRC / "actions" / name).read_text())
+        for node in ast.walk(tree):
+            if isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+                if node.target.id == "seed":
+                    offenders.append(f"{name}:{node.lineno}")
+            elif isinstance(node, ast.Assign):
+                for target in node.targets:
+                    if isinstance(target, ast.Name) and target.id == "seed":
+                        offenders.append(f"{name}:{node.lineno}")
+    assert not offenders, (
+        f"C-1: an action specification declares a seed: {offenders}. A seed is not "
+        f"a property of a mathematical action; move it to ActionExecutionConfig."
+    )
+
+
+def test_c1_the_seed_lives_in_the_execution_config_layer() -> None:
+    """And it is required there, so the hard cut moved rather than weakened."""
+    from pdelie.actions import ActionExecutionConfig
+
+    fields = ActionExecutionConfig.__dataclass_fields__
+    assert "seed" in fields
+    assert "deterministic_expected" in fields
+    # Required: no default, so omission is a TypeError from the dataclass.
+    import dataclasses
+
+    seed_field = fields["seed"]
+    assert seed_field.default is dataclasses.MISSING
+    assert seed_field.default_factory is dataclasses.MISSING
 
 
 def test_c1_problem_action_spec_has_no_seed_field() -> None:
     assert "seed" not in ProblemActionSpec.__dataclass_fields__
+
+
+def test_c1_problem_action_bundle_has_no_seed_field() -> None:
+    from pdelie.actions import ProblemActionBundle
+
+    assert "seed" not in ProblemActionBundle.__dataclass_fields__
 
 
 # --- C-3 / C-3a: the coefficient axis and its three layers ------------------
@@ -189,15 +240,21 @@ def test_the_referenced_interaction_rule_exists() -> None:
         validate_action_spec(spec)
 
 
-def test_document_does_not_claim_absent_types_exist() -> None:
-    """It must keep saying these are absent for as long as they are absent."""
-    absent = ("ProblemActionBundle", "ExpectedResidualRelation", "ActionExecutionConfig")
-    for name in absent:
-        found = [p for p in SRC.rglob("*.py") if name in p.read_text()]
-        assert not found, (
-            f"{name} now exists in {found}; the document says it does not and "
-            f"must be updated"
-        )
+def test_the_document_tracks_which_types_now_exist() -> None:
+    """v0.37a landed three of the five types the document called absent.
+
+    The doc was written when none existed. It must not go on describing shipped
+    code as hypothetical -- that is precisely the staleness it exists to prevent.
+    """
+    landed = ("ProblemActionBundle", "ExpectedResidualRelation", "ActionExecutionConfig")
+    for name in landed:
+        assert any(name in path.read_text() for path in SRC.rglob("*.py")), name
+        assert f"`{name}`" in _doc(), name
+    assert "landed in v0.37a" in _doc()
+
+    # CoefficientFieldRef also landed; the commutation report has not.
+    assert any("CoefficientFieldRef" in p.read_text() for p in SRC.rglob("*.py"))
+    assert not (SRC / "actions" / "commutation_report.py").exists()
 
 
 # --- status vocabulary and forward scoping ----------------------------------

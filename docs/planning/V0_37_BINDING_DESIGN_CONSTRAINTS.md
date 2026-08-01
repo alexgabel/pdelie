@@ -4,10 +4,13 @@
 freeze in the sense of `docs/design/DESIGN_FREEZE_PROCESS.md`.
 
 These six constraints were raised as P0 corrections against a v0.37 design
-proposal. **That proposal is not in this repository** — the types it names
-(`ProblemActionBundle`, `CoefficientFieldRef`, `ActionExecutionConfig`,
-`ExpectedResidualRelation`, and the residual commutation report) do not exist in
-any file here. The constraints are recorded anyway, because they are
+proposal that was not in this repository — none of the types it named existed
+when this document was written.
+
+**Four of them have since landed in v0.37a**, built to these constraints:
+`ProblemInstanceSpec`, `CoefficientFieldRef`, `ProblemActionBundle`,
+`ExpectedResidualRelation` (with `ExpectedResidualOperator`), and
+`ActionExecutionConfig`. The residual commutation report has not — it is v0.37b. The constraints are recorded anyway, because they are
 self-contained and binding regardless of where the proposal lives: v0.37 must
 satisfy them, and a design that violates one is rejected at review rather than
 discovered at implementation.
