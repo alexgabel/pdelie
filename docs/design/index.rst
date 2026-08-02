@@ -40,3 +40,6 @@ Once a design is implemented and validated it is folded into the specs.
    OPERATOR_FORM_IDENTITY_ORACLE
    PERIODICITY_LAYERS
    generated/benchmark_case_table
+   v0_38a_hypothesis_freeze
+   v0_38a_pilot_report
+   v0_38a_confirmatory_freeze
