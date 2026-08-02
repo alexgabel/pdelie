@@ -37,12 +37,22 @@ SMOOTHNESS_CLASSES: tuple[str, ...] = (
     "smooth",
     "monotone",
     "compact_support",
+    # v0.38. Distinct from "smooth": a profile can be smooth on the interior and
+    # still carry a seam at the wrap, which is what retired benchmark case C-4.
+    # "periodic_smooth" asserts smoothness ACROSS the seam as well, so a caller
+    # declaring it is making the stronger claim the wrapping actions need.
+    "periodic_smooth",
 )
 
 #: Smoothness classes that cannot be periodic on a bounded domain, whatever a
 #: caller declares. A monotone non-constant function takes different values at
 #: the two ends by definition.
 _INHERENTLY_NONPERIODIC: frozenset[str] = frozenset({"monotone"})
+
+#: Classes asserting continuity across the wrap. Declaring one of these while
+#: naming no periodic axis is a contradiction: the claim is about a seam that
+#: the declaration says does not exist.
+_REQUIRES_PERIODIC_AXIS: frozenset[str] = frozenset({"periodic_smooth"})
 
 
 @dataclass(frozen=True)
@@ -71,6 +81,13 @@ class ProfileGeometrySpec:
         if not isinstance(self.seam_continuity_required, bool):
             raise ScopeValidationError("seam_continuity_required must be a bool.")
 
+        if self.smoothness_class in _REQUIRES_PERIODIC_AXIS and not self.periodic_axes:
+            raise ScopeValidationError(
+                f"profile {self.profile_id!r} declares smoothness_class "
+                f"{self.smoothness_class!r}, which asserts continuity across a "
+                f"wrap, but names no periodic axis. The claim is about a seam "
+                f"the declaration says does not exist."
+            )
         if self.smoothness_class in _INHERENTLY_NONPERIODIC and self.periodic_axes:
             raise ScopeValidationError(
                 f"profile {self.profile_id!r} declares smoothness_class "

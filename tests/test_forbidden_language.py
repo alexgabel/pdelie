@@ -94,6 +94,16 @@ FORBIDDEN_TERMS: tuple[str, ...] = (
     "coefficient_agnostic",
     "arbitrary_coefficient_field",
     "boundary_value_symmetry_guaranteed",
+    # v0.38. The first three name methods PDELie does not implement; the last
+    # three name claims v0.38 specifically does not make. The irregular layer
+    # handles 1-D scattered coordinates on a declared axis -- not unstructured
+    # meshes, not arbitrary geometry, and it makes no discovery claim at all.
+    "unstructured_mesh",
+    "arbitrary_geometry",
+    "rbf_fd",
+    "meshfree_sindy",
+    "noise_robust_derivative",
+    "meshfree_pde_discovery",
 )
 
 #: Terms already caught by a shorter entry. Matching is substring-based, so
@@ -101,7 +111,13 @@ FORBIDDEN_TERMS: tuple[str, ...] = (
 #: how a reader learns the claim is refused. Asserted, so nobody "optimises" the
 #: list by deleting a term believing it does work it does not do, and nobody
 #: adds a term believing it does work already covered.
-SUBSUMED_TERMS: dict[str, str] = {"wsindy_bridge": "wsindy"}
+SUBSUMED_TERMS: dict[str, str] = {
+    "wsindy_bridge": "wsindy",
+    # v0.38. Named in the battleplan and kept for documentary value -- a reader
+    # scanning this table should find the exact phrase v0.38 refuses -- but it
+    # detects nothing "noise_robust" would not already catch.
+    "noise_robust_derivative": "noise_robust",
+}
 
 
 def _v0_36_python_files() -> list[Path]:
@@ -214,6 +230,12 @@ def test_the_table_only_grows() -> None:
         "coefficient_agnostic",
         "arbitrary_coefficient_field",
         "boundary_value_symmetry_guaranteed",
+        "unstructured_mesh",
+        "arbitrary_geometry",
+        "rbf_fd",
+        "meshfree_sindy",
+        "noise_robust_derivative",
+        "meshfree_pde_discovery",
     ):
         assert term in FORBIDDEN_TERMS, f"forbidden term removed: {term}"
 

@@ -110,6 +110,12 @@ markers = [
   # a lane that runs everything protects nothing and takes twice as long to
   # say so. See docs/design/CROSS_PLATFORM_PORTABILITY_CLASSES.md.
   "portability: runs on both Linux and macOS to validate a cross-platform equality claim",
+  # v0.38 day-zero: the analytical-oracle lane. Any test whose pass/fail cites a
+  # hand-derived bound carries this marker AND a mandatory oracle_source naming
+  # the SECOND, independent derivation. The v0.37c section-6 bound was derived
+  # once, looked right, and was not a bound at all. See
+  # docs/design/ANALYTICAL_ORACLE_DISCIPLINE.md.
+  "load_bearing_analytical: a hand-derived bound gates this test; requires oracle_source",
 ]
 
 # v0.30e: cross-cutting hygiene phase 1. All three tools are wired into

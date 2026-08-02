@@ -108,6 +108,27 @@ notice in `src/` is checked by `tests/test_forward_promises.py` against the
 packaged version read from `pyproject.toml`. v0.37 shipped a notice promising
 v0.37, because the promise and the release drifted apart with nothing watching.
 
+**The refused vocabulary names v0.38's methods explicitly.** Six terms added
+to `tests/test_forbidden_language.py`: `unstructured_mesh`, `arbitrary_geometry`,
+`rbf_fd`, `meshfree_sindy`, `noise_robust_derivative`, `meshfree_pde_discovery`.
+The first three name methods PDELie does not implement; the rest name claims the
+irregular layer does not make. `noise_robust_derivative` is declared **subsumed**
+by the existing `noise_robust` — it is retained so a reader finds the exact
+phrase, and marked so nobody mistakes it for doing detection work it does not do.
+
+**`periodic_smooth` is a distinct smoothness class.** `smooth` says nothing about
+the wrap: C-4 was smooth on the interior and still carried a `1.9998` seam jump.
+`periodic_smooth` asserts smoothness *across* the seam, and
+`ProfileGeometrySpec` refuses it when no periodic axis is named — a claim about a
+seam the same declaration says does not exist.
+
+**Load-bearing analytical bounds declare their oracle at the marker.**
+`@pytest.mark.load_bearing_analytical(oracle_source="method: location")` is
+registered and enforced by `tests/test_analytical_oracle_marker.py`, which parses
+the decorator with `ast`, requires a method from a closed three-item vocabulary,
+and requires a location. Its population is empty until v0.38b, so it carries
+sentinels proving the guard can fire rather than passing vacuously.
+
 **Execution must match declaration.**
 `tests/test_benchmark_action_semantics_guard.py` scans benchmark code for
 transformations applied outside the declared action path. This is the gate the

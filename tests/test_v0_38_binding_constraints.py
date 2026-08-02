@@ -106,6 +106,54 @@ def test_profile_geometry_refuses_a_monotone_periodic_declaration() -> None:
         )
 
 
+def test_periodic_smooth_requires_a_periodic_axis() -> None:
+    """v0.38 day-zero: the stronger claim needs the seam it is a claim about.
+
+    "smooth" says nothing about the wrap -- C-4 was smooth on the interior and
+    still carried a 1.9998 jump at the seam. "periodic_smooth" is the class that
+    asserts smoothness ACROSS it, so declaring it with no periodic axis is a
+    claim about a seam the same declaration says does not exist.
+    """
+    from pdelie.contracts import ProfileGeometrySpec
+    from pdelie.errors import ScopeValidationError
+
+    with pytest.raises(ScopeValidationError, match="names no periodic axis"):
+        ProfileGeometrySpec(
+            profile_id="sinusoidal",
+            periodic_axes=(),
+            smoothness_class="periodic_smooth",
+            seam_continuity_required=True,
+            domain_types_supported=("periodic_uniform",),
+        )
+
+    # With the axis named, the same declaration is coherent and accepted.
+    geometry = ProfileGeometrySpec(
+        profile_id="sinusoidal",
+        periodic_axes=("x",),
+        smoothness_class="periodic_smooth",
+        seam_continuity_required=True,
+        domain_types_supported=("periodic_uniform",),
+    )
+    assert geometry.smoothness_class == "periodic_smooth"
+
+
+def test_periodic_smooth_passes_the_wrapping_action_gate() -> None:
+    """The class exists to make a wrapping action admissible; prove it does."""
+    from pdelie.contracts import ProfileGeometrySpec
+    from pdelie.contracts.profile_geometry_spec import require_compatible_domain
+
+    geometry = ProfileGeometrySpec(
+        profile_id="sinusoidal",
+        periodic_axes=("x",),
+        smoothness_class="periodic_smooth",
+        seam_continuity_required=True,
+        domain_types_supported=("periodic_uniform",),
+    )
+    require_compatible_domain(
+        geometry, "periodic_uniform", spatial_axis="x", action_wraps=True, where="probe"
+    )
+
+
 def test_profile_geometry_refuses_a_nonperiodic_profile_under_a_wrapping_action() -> None:
     from pdelie.contracts import ProfileGeometrySpec
     from pdelie.contracts.profile_geometry_spec import require_compatible_domain
