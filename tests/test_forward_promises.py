@@ -42,8 +42,27 @@ _PROMISE_CUES = (
 
 
 def _packaged_version() -> tuple[int, ...]:
+    """The release version, with any PEP 440 prerelease suffix stripped.
+
+    ``0.38.0a1`` parses as ``(0, 38, 0)``. That is deliberate: an alpha of
+    0.38.0 is *already* 0.38 for the purpose of a forward promise, so a notice
+    saying "v0.38 will require X" comes due at the alpha, not at the final. If
+    the suffix were kept in the comparison, a promise could be carried past
+    every prerelease of the release it names and only fall due at the end --
+    which is exactly the deferral this module exists to prevent.
+
+    The earlier form did ``int(part)`` on each component and raised
+    ``ValueError: invalid literal for int() with base 10: '0a1'`` at the first
+    prerelease the project ever cut.
+    """
     raw = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text())["project"]["version"]
-    return tuple(int(part) for part in raw.split(".")[:3])
+    parts: list[int] = []
+    for part in raw.split(".")[:3]:
+        match = re.match(r"^(\d+)", part)
+        if match is None:
+            raise AssertionError(f"unparseable version component {part!r} in {raw!r}")
+        parts.append(int(match.group(1)))
+    return tuple(parts)
 
 
 def _as_tuple(match: re.Match[str]) -> tuple[int, ...]:

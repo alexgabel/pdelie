@@ -164,7 +164,7 @@ def test_v0_30e_pyproject_now_configures_ruff_mypy_coverage() -> None:
     # (which held through the v0.31a-c1 runtime sub-releases), 0.31.0 at the
     # v0.31.0 release close, and 0.32.0 at the v0.32.0 release close.
     assert pyproject["project"]["version"] in {
-        "0.29.0", "0.30.0", "0.31.0", "0.32.0", "0.33.0", "0.34.0", "0.35.0", "0.36.0", "0.37.0", "0.37.1"
+        "0.29.0", "0.30.0", "0.31.0", "0.32.0", "0.33.0", "0.34.0", "0.35.0", "0.36.0", "0.37.0", "0.37.1", "0.38.0a1"
     }
 
 
@@ -226,14 +226,14 @@ def test_v0_30e_ci_workflow_now_has_lint_typecheck_coverage_jobs_nonblocking() -
     # ``v0_33_0-release-gate``. This guard tracks the
     # current name.
     release_gate_jobs = re.findall(
-        r"^  (v0_\d+(?:_\d+)?[a-z]?-release-gate):",
+        r"^  (v0_\d+(?:_\d+)?(?:[a-z]|a\d+|b\d+|rc\d+)?-release-gate):",
         workflow,
         flags=re.MULTILINE,
     )
     assert release_gate_jobs in (
         ["v0_31-release-gate"],
         ["v0_32-release-gate"],
-        ["v0_37_0-release-gate"],
+        ["v0_38_0a1-release-gate"],
     ), (
         f"expected the current v0.31.x, v0.32 arc, or v0.32.0 release "
         f"close release-gate job; got: {release_gate_jobs}"
@@ -305,7 +305,7 @@ def test_v0_30f_release_gate_consolidation_manifest_exists() -> None:
         "v0_30-release-gate",
         "v0_31-release-gate",
         "v0_32-release-gate",
-        "v0_37_0-release-gate",
+        "v0_38_0a1-release-gate",
     }
     assert manifest["release_count"] == len(manifest["releases"])
 

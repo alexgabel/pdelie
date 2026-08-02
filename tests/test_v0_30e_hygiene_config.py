@@ -124,7 +124,7 @@ def test_package_version_matches_v0_30_close() -> None:
     unchanged (asserted by the sibling guards below).
     """
     assert _pyproject()["project"]["version"] in {
-        "0.29.0", "0.30.0", "0.31.0", "0.32.0", "0.33.0", "0.34.0", "0.35.0", "0.36.0", "0.37.0", "0.37.1"
+        "0.29.0", "0.30.0", "0.31.0", "0.32.0", "0.33.0", "0.34.0", "0.35.0", "0.36.0", "0.37.0", "0.37.1", "0.38.0a1"
     }
 
 
@@ -205,14 +205,14 @@ def test_ci_workflow_release_gate_job_matches_v0_30_close() -> None:
     """
     jobs = _ci_workflow()["jobs"]
     release_gate_jobs = [
-        n for n in jobs if re.match(r"^v0_\d+(?:_\d+)?[a-z]?-release-gate$", n)
+        n for n in jobs if re.match(r"^v0_\d+(?:_\d+)?(?:[a-z]|a\d+|b\d+|rc\d+)?-release-gate$", n)
     ]
     # v0.31.0 close: v0_31-release-gate. v0.32a-d arc: v0_32-release-gate.
     # v0.33.0 consolidated release close: v0_33_0-release-gate.
     assert release_gate_jobs in (
         ["v0_31-release-gate"],
         ["v0_32-release-gate"],
-        ["v0_37_0-release-gate"],
+        ["v0_38_0a1-release-gate"],
     ), (
         f"expected the current v0.31.x, v0.32 arc, or v0.32.0 release "
         f"close release-gate job; got: {release_gate_jobs}"

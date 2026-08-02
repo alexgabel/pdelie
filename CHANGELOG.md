@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased (0.38.0a1)
+## 0.38.0a1
 
 Action-semantics hardening, and one breaking change that keeps a two-release-old
 promise. See [`docs/releases/V0_38_SEED_MIGRATION.md`](docs/releases/V0_38_SEED_MIGRATION.md).
