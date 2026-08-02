@@ -58,6 +58,7 @@ from pdelie.actions.execute import BundleExecutionResult
 from pdelie.actions.execution_config import ActionExecutionConfig
 from pdelie.artifact.semantic_hash import semantic_hash
 from pdelie.errors import ScopeValidationError, ShapeValidationError
+from pdelie.residuals.operator_resolution import ResolvedResidualOperator
 
 __all__ = [
     "BENCHMARK_OUTCOMES",
@@ -190,6 +191,7 @@ def build_residual_commutation_report(
     *,
     runtime_seconds: float,
     provenance: Mapping[str, Any] | None = None,
+    resolved_operator: ResolvedResidualOperator | None = None,
 ) -> dict[str, Any]:
     """Compare two residuals against the bundle's declared relation.
 
@@ -254,8 +256,21 @@ def build_residual_commutation_report(
             relation.expected_operator.parameters["multiplier"]
         )
 
+    # v0.38: the resolved operator, if the caller resolved one. Inside the
+    # scientific payload -- and so inside the scientific hash -- because which
+    # operator produced a number is part of what the number means. The v0.38e
+    # defect was a hash computed over a declaration that named a different
+    # operator than the one evaluated, and a hash that excluded this field would
+    # be unable to tell those two runs apart.
+    operator_block: dict[str, Any] = (
+        {"resolved_operator": None}
+        if resolved_operator is None
+        else {"resolved_operator": resolved_operator.as_dict()}
+    )
+
     scientific_payload: dict[str, Any] = {
         "bundle_hash": bundle.identity(),
+        **operator_block,
         "runtime_path": execution.runtime_path,
         "expected_case": expected_case,
         "observed_relation_status": observed_status,
