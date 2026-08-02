@@ -36,3 +36,4 @@ Once a design is implemented and validated it is folded into the specs.
    v0_38e_hypothesis_freeze
    v0_38e_pilot_report
    v0_38e_confirmatory_freeze
+   FORMATTING_POLICY

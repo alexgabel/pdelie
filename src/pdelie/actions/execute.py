@@ -277,12 +277,10 @@ def _resolve_parameter_targets(
     alphabetically, or the only one that looks like a viscosity, would make the
     executed action depend on a rule written nowhere.
     """
-    from pdelie.actions.coaction_consistency import (
-        PARAMETER_TARGET_KEY,
-        declared_parameter_targets,
-    )
+    from pdelie.actions.coaction_consistency import PARAMETER_TARGET_KEY
 
-    declared = declared_parameter_targets(bundle)
+    action = bundle.parameter_action_spec
+    declared = None if action is None else action.resolved_targets
     if declared is not None:
         return frozenset(declared)
     if len(candidates) == 1:
@@ -312,6 +310,14 @@ class BundleExecutionResult:
     transformed_parameters: Mapping[str, float]
     state_shift_cells: int
     coefficient_shift_cells: Mapping[str, int]
+    #: What the bundle declared, what the executor actually moved, and what it
+    #: deliberately left alone. Three fields rather than one, because "not in
+    #: the transformed list" and "explicitly untouched" read identically to a
+    #: consumer and mean different things -- the second is the negative control
+    #: that catches a rescale leaking onto a parameter nobody named.
+    declared_target_parameters: tuple[str, ...] | None = None
+    parameter_targets_applied: tuple[str, ...] = ()
+    parameters_untouched: tuple[str, ...] = ()
 
     def as_dict(self) -> dict[str, Any]:
         """Strict-JSON summary. Arrays are described, never inlined."""
@@ -321,6 +327,13 @@ class BundleExecutionResult:
             "coefficient_shift_cells": dict(self.coefficient_shift_cells),
             "transformed_parameters": dict(self.transformed_parameters),
             "coefficient_field_names": sorted(self.transformed_coefficients),
+            "declared_target_parameters": (
+                None
+                if self.declared_target_parameters is None
+                else list(self.declared_target_parameters)
+            ),
+            "parameter_targets_applied": list(self.parameter_targets_applied),
+            "parameters_untouched": list(self.parameters_untouched),
         }
 
 
@@ -390,12 +403,18 @@ def execute_bundle(
                 f"parameter action family {bundle.parameter_action.action_family!r} is "
                 f"not executable at v0.37b; only 'scalar_rescale' is."
             )
-        targets = _resolve_parameter_targets(bundle, tuple(sorted(transformed_parameters)))
+        candidates = tuple(sorted(transformed_parameters))
+        targets = _resolve_parameter_targets(bundle, candidates)
         factor = float(bundle.parameter_action.parameters.get("factor", 1.0))
         transformed_parameters = {
             key: (value * factor if key in targets else value)
             for key, value in transformed_parameters.items()
         }
+        parameter_targets_applied = tuple(sorted(targets))
+        parameters_untouched = tuple(k for k in candidates if k not in targets)
+    else:
+        parameter_targets_applied = ()
+        parameters_untouched = tuple(sorted(transformed_parameters))
 
     return BundleExecutionResult(
         runtime_path=runtime_path,
@@ -404,4 +423,11 @@ def execute_bundle(
         transformed_parameters=transformed_parameters,
         state_shift_cells=state_cells,
         coefficient_shift_cells=coefficient_cells,
+        declared_target_parameters=(
+            None
+            if bundle.parameter_action_spec is None
+            else bundle.parameter_action_spec.resolved_targets
+        ),
+        parameter_targets_applied=parameter_targets_applied,
+        parameters_untouched=parameters_untouched,
     )

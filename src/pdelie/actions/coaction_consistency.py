@@ -164,36 +164,15 @@ def declared_parameter_targets(bundle: ProblemActionBundle) -> tuple[str, ...] |
     would mean "declared, and empty". The caller must not conflate them: one is
     an omission and the other is a statement.
     """
-    action = bundle.parameter_action
+    action = bundle.parameter_action_spec
     if action is None:
         return None
-    raw = action.parameters.get(PARAMETER_TARGET_KEY)
-    if raw is None:
-        return None
-    if isinstance(raw, str) or not isinstance(raw, (list, tuple)):
-        raise ScopeValidationError(
-            f"{PARAMETER_TARGET_KEY} must be a sequence of parameter names, not "
-            f"{type(raw).__name__}. A bare string would silently iterate as "
-            f"characters."
-        )
-    names = tuple(str(name) for name in raw)
-    if not names:
-        raise ScopeValidationError(
-            f"{PARAMETER_TARGET_KEY} is empty. An action targeting nothing is not "
-            f"an action; omit the key if there is no target to name."
-        )
-    if len(set(names)) != len(names):
-        raise ScopeValidationError(f"{PARAMETER_TARGET_KEY} repeats a name: {names}.")
-    known = set(bundle.problem_instance.parameters)
-    unknown = sorted(set(names) - known)
-    if unknown:
-        raise ScopeValidationError(
-            f"{PARAMETER_TARGET_KEY} names {unknown}, which are not parameters of "
-            f"this problem ({sorted(known)}). A target that does not exist cannot "
-            f"be acted on, and silently ignoring it would rescale nothing while "
-            f"reporting success."
-        )
-    return tuple(sorted(names))
+    # v0.38: read from the declared field, not from a magic key inside a
+    # free-form mapping. ProblemActionBundle normalises any ActionRef carrying
+    # `target_parameters` into a ParameterActionSpec at construction, so the
+    # shape checks (bare string, empty, duplicates) and the existence check
+    # have both already run by the time anything reaches here.
+    return action.resolved_targets
 
 
 def summarize_coaction_consistency(
