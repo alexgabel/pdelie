@@ -40,6 +40,17 @@ Any test marked `@pytest.mark.load_bearing_analytical` must declare its
 `oracle_source` — which of the three secondary methods was used, and where the
 derivation lives. A bound whose oracle is "we checked it" is undeclared.
 
+The form is `oracle_source="<method>: <location>"`, with `<method>` one of
+`symbolic_expansion`, `manufactured_solution`, `independent_implementation`.
+`tests/test_analytical_oracle_marker.py` enforces all of it: a bare marker with
+no call, a method outside the vocabulary, and a method with no location are each
+refused. It parses the decorator with `ast` rather than scanning text, because a
+scan cannot distinguish a declaration from a discussion of one.
+
+**What it cannot check.** That the oracle is *right*. The v0.37c §6 bound would
+have passed this and still been wrong. It prevents the more common failure —
+never producing a second derivation at all.
+
 ## What this does not cover
 
 **Execution-vs-declaration mismatch.** An oracle checks that a *formula* is
