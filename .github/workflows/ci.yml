@@ -115,6 +115,17 @@ jobs:
           retry 3 python -m pip install -e .[test]
       - name: Ruff lint (blocking as of v0.30.1a)
         run: python -m ruff check .
+      # v0.38 §10: the benchmark case table is generated from the registry, not
+      # written by hand. Regenerating and diffing here is what stops a documented
+      # count drifting from the code -- the failure mode that let a table sit at
+      # 34 against a measured 37 for three payloads.
+      - name: Generated docs are current
+        run: |
+          python -m pdelie.benchmarks.case_registry
+          git diff --exit-code -- docs/design/generated/ || {
+            echo "::error::Generated docs are stale. Run: python -m pdelie.benchmarks.case_registry"
+            exit 1
+          }
   typecheck:
     runs-on: ubuntu-latest
     continue-on-error: true
