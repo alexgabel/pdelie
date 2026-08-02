@@ -74,13 +74,18 @@ def _field():
 
 
 def _run(**kwargs):
+    """v0.38: the seed is required, so the helper supplies a default one.
+
+    ``kwargs`` still wins, so a caller pinning a different seed -- or sweeping
+    several -- overrides it rather than colliding with it.
+    """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         return inspect_pysindy_weak_pde_library(
             _field(),
             task_name="v0_34c",
             library_configuration=_CANONICAL_CONFIG,
-            **kwargs,
+            **{"seed": 13, **kwargs},
         )
 
 
@@ -176,13 +181,33 @@ def test_different_seeds_give_different_reports() -> None:
     assert _run(seed=1234) != _run(seed=99)
 
 
-def test_unseeded_default_behaviour_is_unchanged() -> None:
-    """The default path is left exactly as nondeterministic as it was.
+def test_the_unseeded_path_no_longer_exists() -> None:
+    """Retired at v0.38, and inverted rather than deleted.
 
-    This is deliberate: seeding by default would silently change every existing
-    caller's output. The opt-in seed is what makes reproducibility available.
+    This test used to assert ``_run() != _run()`` -- that the default path was
+    left exactly as nondeterministic as it was, so that adding a seed would not
+    silently change existing callers' output. That was the right call at v0.34c,
+    when the seed was opt-in.
+
+    v0.38 keeps the forward promise made at v0.36e: the seed is required, so
+    there is no unseeded path to be nondeterministic. Asserting the inverse
+    keeps the transition visible in the file that documented the old behaviour,
+    rather than leaving a reader to wonder whether the guarantee was dropped or
+    merely untested.
     """
-    assert _run() != _run()
+    import inspect as _inspect
+
+    signature = _inspect.signature(inspect_pysindy_weak_pde_library)
+    seed_parameter = signature.parameters["seed"]
+    assert seed_parameter.default is _inspect.Parameter.empty, (
+        "seed has a default again; an unseeded path would restore exactly the "
+        "nondeterminism v0.38 removed"
+    )
+    assert seed_parameter.kind is _inspect.Parameter.KEYWORD_ONLY
+
+    # And the consequence the old test was really about: identical inputs now
+    # produce identical output.
+    assert _run() == _run()
 
 
 def test_seeding_does_not_perturb_the_callers_global_rng() -> None:

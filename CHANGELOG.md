@@ -1,5 +1,56 @@
 # Changelog
 
+## Unreleased (0.38.0a1)
+
+Action-semantics hardening, and one breaking change that keeps a two-release-old
+promise. See [`docs/releases/V0_38_SEED_MIGRATION.md`](docs/releases/V0_38_SEED_MIGRATION.md).
+
+### Breaking
+
+- **`inspect_pysindy_weak_pde_library` requires an explicit integer `seed`.**
+  Keyword-only, no default. Omission is a `TypeError` from the signature;
+  `seed=None` — previously "opt into nondeterminism" — raises
+  `ScopeValidationError`; `bool` is refused despite being an `int` subclass,
+  since `seed=True` would silently seed with `1`.
+
+  **There is no undocumented compatibility default.** Retaining one would
+  preserve exactly the nondeterminism this removes.
+
+  Announced at v0.36e naming v0.37, deferred once at v0.37 because an unscoped
+  breaking change during a release close is worse than a deferred one, and kept
+  here. The `FutureWarning` is removed — it now describes a change already made.
+
+  Migration: pass `seed=<int>`. The payload shape is unchanged; the frozen 27/28
+  conditional schema and all seven `seed_provenance` keys are preserved, with
+  `seed_was_omitted` and `nondeterministic_requested` now constant `False`.
+
+### Fixed
+
+- **A parameter action rescaled every numeric parameter.** `ActionRef` carried no
+  target, so a `scalar_rescale` meant for the viscosity also tripled the
+  advection speed on any problem with more than one parameter. No v0.37c case
+  could observe it — each declares exactly one numeric parameter, and on a
+  one-element population "rescale all" and "rescale the declared one" are the
+  same function. Ambiguity is now refused rather than resolved by convention;
+  `target_parameters` names the target explicitly.
+
+- **The benchmark declared the wrong equation form.** `equation_form` was the
+  literal `"nonconservative"` on every case while the evaluators dispatched from
+  provenance and took the **conservative** branch on every variable-coefficient
+  case. The forms differ by exactly `nu' * u_x`, which measures `1.035x` the
+  residual magnitude on the sinusoidal profile. Now derived from provenance.
+  **No measured number changed** — all 125 released measurements are bitwise
+  identical.
+
+### Added
+
+- Two coefficient-array identities, `storage_representation_identity` and
+  `scientific_identity`, as separate helpers with no shared implementation.
+- `ArtifactResolver`, injected explicitly; no module-level registry.
+- `pdelie_action_coaction_consistency`, a 16-key payload reporting whether a
+  bundle's declaration determines what an executor does.
+- Benchmark cases **C-7** and **C-8**, the first with two numeric parameters.
+
 ## 0.37.1
 
 Hotfix. Repairs a semantic mismatch in benchmark case C-5, enforces parameter/coefficient ownership, and reruns the confirmatory freeze on a fresh seed packet. See [`docs/releases/V0_37_C5_ERRATUM.md`](docs/releases/V0_37_C5_ERRATUM.md).

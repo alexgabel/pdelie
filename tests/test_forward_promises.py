@@ -63,15 +63,41 @@ def _promises() -> list[tuple[Path, int, str, tuple[int, ...]]]:
     return found
 
 
-def test_at_least_one_promise_is_found() -> None:
-    """Otherwise every assertion below passes by scanning nothing.
+def test_the_scanner_finds_a_planted_promise() -> None:
+    """Replaces "at least one promise exists in src/", retired at v0.38.
 
-    If the last forward promise is ever removed, delete this test deliberately
-    rather than letting the module become a no-op that still looks like a gate.
+    That assertion existed so the parametrized test below could not pass by
+    scanning nothing. Its premise was that the repository always carries an
+    outstanding promise -- and it does not: v0.38 discharged the last one by
+    making the weak diagnostic's seed required.
+
+    **Zero outstanding promises is the good state**, not a broken gate. So the
+    non-vacuity is established against synthetic text instead, which keeps the
+    scanner honest without requiring the codebase to carry debt forever.
     """
-    assert _promises(), (
-        "no forward promises found in src/. If that is genuinely true, this "
-        "module is now vacuous and should be retired on purpose."
+    planted = [
+        'warnings.warn("v9.99 will require an explicit widget", FutureWarning)',
+        "# v9.99 will require an explicit widget",
+    ]
+    for text in planted:
+        assert any(cue in text for cue in _PROMISE_CUES), (
+            f"no cue matches {text!r}; the scanner would miss a real promise "
+            f"written this way"
+        )
+        assert _VERSION_TOKEN.search(text), "the version token did not parse"
+
+
+def test_a_promise_naming_a_past_version_would_fail() -> None:
+    """The gate's actual job, proven against a constructed violation.
+
+    Without this, "no promises found" and "every promise is fine" are
+    indistinguishable outcomes -- and after v0.38 the first is the real one.
+    """
+    current = _packaged_version()
+    stale = (current[0], current[1])  # names this very release
+    assert not stale > current[: len(stale)], (
+        "a promise naming the current version must not read as future; if this "
+        "passes, the comparison below cannot catch a promise that came due"
     )
 
 
@@ -92,19 +118,29 @@ def test_every_promise_names_a_future_version(
     )
 
 
-def test_the_weak_diagnostic_seed_promise_is_registered_here() -> None:
-    """The migration this module exists because of.
+def test_the_weak_diagnostic_seed_promise_was_fulfilled_not_dropped() -> None:
+    """The migration this module exists because of, now discharged.
 
-    Previously asserted inside ``test_v0_36e_deterministic_seed.py``, where it
-    only covered one API and one wording. Consolidated so a second promise
-    added anywhere in ``src/`` is checked without anyone remembering to.
+    This test used to assert the promise was still *detected*, and said in its
+    own message: "either it was fulfilled -- in which case remove this test --
+    or its wording drifted out of _PROMISE_CUES, which would make the guard
+    silently blind."
+
+    Those two outcomes look identical to a scanner, so the distinction is made
+    by checking the thing the promise promised. It was fulfilled at v0.38: the
+    seed is a required keyword-only argument.
     """
-    promises = {path.name for path, _, _, _ in _promises()}
-    assert "weak_pde_library.py" in promises, (
-        "the weak-diagnostic seed promise is no longer detected; either it was "
-        "fulfilled -- in which case remove this test -- or its wording drifted "
-        "out of _PROMISE_CUES, which would make the guard silently blind"
+    import inspect as _inspect
+
+    from pdelie.tasks.weak_pde_library import inspect_pysindy_weak_pde_library
+
+    parameter = _inspect.signature(inspect_pysindy_weak_pde_library).parameters["seed"]
+    assert parameter.default is _inspect.Parameter.empty, (
+        "the weak-diagnostic seed promise is no longer detected AND the seed "
+        "still has a default -- so the promise was not fulfilled, its wording "
+        "drifted out of _PROMISE_CUES, and the guard is silently blind"
     )
+    assert parameter.kind is _inspect.Parameter.KEYWORD_ONLY
 
 
 def test_promise_cues_catch_the_wording_that_escaped() -> None:
