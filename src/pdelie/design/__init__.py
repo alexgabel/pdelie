@@ -39,6 +39,13 @@ from pdelie.design.lineage import (
     compute_numeric_design_hash,
     compute_semantic_design_hash,
 )
+from pdelie.design.row_mask import (
+    EXCLUSION_REASONS,
+    RowMask,
+    build_row_mask,
+    compose_masks,
+    derive_full_field_derivatives_available,
+)
 from pdelie.design.row_selection import (
     NORM_RECOMPUTE_RATIO,
     ROW_SELECTION_METHODS,
@@ -56,6 +63,7 @@ __all__ = [
     "COMPARATOR_NAMES",
     "DUPLICATE_POLICIES",
     "EXACT_ENUMERATION_MAX_ROWS",
+    "EXCLUSION_REASONS",
     "MANDATORY_ACCESS_KEYS",
     "METHOD_CLASSES",
     "NORM_RECOMPUTE_RATIO",
@@ -63,12 +71,16 @@ __all__ = [
     "DesignBudget",
     "DesignCandidateRecord",
     "DesignRowLineage",
+    "RowMask",
     "attainability_report",
     "budgets_are_equal",
+    "build_row_mask",
+    "compose_masks",
     "compute_numeric_design_hash",
     "compute_semantic_design_hash",
     "d_optimal_exchange_comparator",
     "d_optimal_exchange_row_selection",
+    "derive_full_field_derivatives_available",
     "exact_enumeration_comparator",
     "full_field_design",
     "leverage_row_selection",
