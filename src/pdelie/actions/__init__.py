@@ -36,6 +36,11 @@ from pdelie.actions.execution_config import (
     ActionExecutionConfig,
 )
 from pdelie.actions.interaction_rules import RULE_COUNT, RULES, InteractionRule
+from pdelie.actions.parameter_action_spec import (
+    PARAMETER_ACTION_FAMILIES,
+    ParameterActionSpec,
+    as_parameter_action_spec,
+)
 from pdelie.actions.problem_action_spec import (
     BOUNDARY_RELATIONS,
     COEFFICIENT_RELATIONS,
@@ -85,6 +90,7 @@ __all__ = [
     "EXPECTED_OPERATOR_FAMILIES",
     "INTERPOLATION_BACKENDS",
     "OBSERVED_RELATION_STATUSES",
+    "PARAMETER_ACTION_FAMILIES",
     "PARAMETER_RELATIONS",
     "RULES",
     "RULE_COUNT",
@@ -99,9 +105,11 @@ __all__ = [
     "FittedOperatorDiagnostic",
     "InconsistentBundleError",
     "InteractionRule",
+    "ParameterActionSpec",
     "ProblemActionBundle",
     "ProblemActionSpec",
     "ProblemInstanceSpec",
+    "as_parameter_action_spec",
     "build_residual_commutation_report",
     "classify_runtime_path",
     "execute_bundle",

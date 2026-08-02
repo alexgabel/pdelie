@@ -347,27 +347,51 @@ def test_cr6_absence_is_explicit_and_never_nan() -> None:
 # --------------------------------------------------------------------------
 
 
-def test_a_bare_string_target_is_refused_rather_than_iterated() -> None:
-    bundle = _bundle(
-        {"nu": 0.1},
-        parameter_action=ActionRef(
-            "parameter", "scalar_rescale", "r", {"factor": 2.0, PARAMETER_TARGET_KEY: "nu"}
-        ),
-    )
+# v0.38: these refusals moved from `declared_parameter_targets` to bundle
+# construction. That is strictly stronger -- a malformed target can no longer
+# exist on a constructed bundle at all, so no consumer has to remember to
+# validate before reading it.
+
+
+def test_a_bare_string_target_is_refused_at_construction() -> None:
     with pytest.raises(ScopeValidationError, match="iterate as characters"):
-        declared_parameter_targets(bundle)
+        _bundle(
+            {"nu": 0.1},
+            parameter_action=ActionRef(
+                "parameter",
+                "scalar_rescale",
+                "r",
+                {"factor": 2.0, PARAMETER_TARGET_KEY: "nu"},
+            ),
+        )
 
 
-def test_an_empty_target_list_is_refused() -> None:
-    bundle = _bundle({"nu": 0.1}, parameter_action=_rescale(targets=[]))
+def test_an_empty_target_list_is_refused_at_construction() -> None:
     with pytest.raises(ScopeValidationError, match="targeting nothing"):
-        declared_parameter_targets(bundle)
+        _bundle({"nu": 0.1}, parameter_action=_rescale(targets=[]))
 
 
-def test_a_target_that_is_not_a_parameter_is_refused() -> None:
-    bundle = _bundle({"nu": 0.1}, parameter_action=_rescale(targets=["viscosity"]))
+def test_a_target_that_is_not_a_parameter_is_refused_at_construction() -> None:
     with pytest.raises(ScopeValidationError, match="not parameters of this problem"):
-        declared_parameter_targets(bundle)
+        _bundle({"nu": 0.1}, parameter_action=_rescale(targets=["viscosity"]))
+
+
+def test_a_constructed_bundle_always_has_readable_targets() -> None:
+    """The consequence: reading is now total, never a validation step.
+
+    Because every malformed shape is refused at construction,
+    `declared_parameter_targets` cannot raise on a bundle that exists -- so no
+    caller has to guard it, and none can forget to.
+    """
+    for parameters, action in (
+        ({"nu": 0.1}, None),
+        ({"nu": 0.1}, _rescale()),
+        ({"nu": 0.1, "c": 2.0}, _rescale(targets=["nu"])),
+        ({"nu": 0.1, "c": 2.0}, _rescale(targets=["nu", "c"])),
+    ):
+        bundle = _bundle(parameters, parameter_action=action)
+        targets = declared_parameter_targets(bundle)
+        assert targets is None or isinstance(targets, tuple)
 
 
 def test_booleans_are_not_rescale_candidates() -> None:

@@ -36,6 +36,10 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from pdelie.actions.action_ref import ActionRef
+from pdelie.actions.parameter_action_spec import (
+    ParameterActionSpec,
+    as_parameter_action_spec,
+)
 from pdelie.actions.problem_spec import (
     CoordinateFieldAction,
     ProblemInstanceSpec,
@@ -312,7 +316,7 @@ class ProblemActionBundle:
     boundary_action: ActionRef
     coefficient_field_actions: Mapping[str, CoordinateFieldAction]
     expected_residual_relation: ExpectedResidualRelation
-    parameter_action: ActionRef | None = None
+    parameter_action: ParameterActionSpec | ActionRef | None = None
     bundle_version: str = BUNDLE_SCHEMA_VERSION
 
     def __post_init__(self) -> None:
@@ -322,8 +326,23 @@ class ProblemActionBundle:
             value = getattr(self, name)
             if not isinstance(value, ActionRef):
                 raise ScopeValidationError(f"{name} must be an ActionRef.")
-        if self.parameter_action is not None and not isinstance(self.parameter_action, ActionRef):
-            raise ScopeValidationError("parameter_action must be an ActionRef or None.")
+        # v0.38: normalised to the typed form at construction, so exactly one
+        # representation reaches anything downstream. An ActionRef carrying a
+        # `target_parameters` key is upgraded rather than refused, so v0.38e
+        # call sites keep working.
+        if self.parameter_action is not None:
+            spec = as_parameter_action_spec(self.parameter_action)
+            if spec.target_parameters is not None:
+                known = set(self.problem_instance.parameters)
+                unknown = sorted(set(spec.target_parameters) - known)
+                if unknown:
+                    raise ScopeValidationError(
+                        f"parameter_action targets {unknown}, which are not "
+                        f"parameters of this problem ({sorted(known)}). A target "
+                        f"that does not exist cannot be acted on, and ignoring it "
+                        f"would rescale nothing while reporting success."
+                    )
+            object.__setattr__(self, "parameter_action", spec)
         if not isinstance(self.expected_residual_relation, ExpectedResidualRelation):
             raise ScopeValidationError(
                 "expected_residual_relation must be an ExpectedResidualRelation."
@@ -356,6 +375,22 @@ class ProblemActionBundle:
             )
         object.__setattr__(self, "coefficient_field_actions", actions)
         semantic_hash(self.as_dict())
+
+    @property
+    def parameter_action_spec(self) -> ParameterActionSpec | None:
+        """The parameter action in its one canonical form.
+
+        The field accepts a ``ParameterActionSpec`` or a legacy ``ActionRef``
+        and normalises to the former in ``__post_init__``. This accessor is
+        typed to the stored form, so readers narrow once here rather than at
+        every call site -- and a reader cannot accidentally consume the legacy
+        shape, because by this point none exists.
+        """
+        action = self.parameter_action
+        if action is None:
+            return None
+        assert isinstance(action, ParameterActionSpec)
+        return action
 
     def identity(self) -> str:
         return semantic_hash(self.as_dict())
