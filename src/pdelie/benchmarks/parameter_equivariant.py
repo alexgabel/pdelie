@@ -34,6 +34,7 @@ from typing import Any
 import numpy as np
 
 from pdelie.errors import ScopeValidationError
+from pdelie.residuals.operator_resolution import resolve_residual_operator
 
 __all__ = [
     "BENCHMARK_CASES",
@@ -78,25 +79,6 @@ EXPECTED_CLASSIFICATIONS: tuple[str, ...] = (
     "blocked_ambiguous_parameter_target",
 )
 
-#: Maps the coefficient form the data was generated with onto the equation form
-#: the problem declares. v0.38e: this was a hardcoded "nonconservative" literal,
-#: while the evaluator dispatches on the field's ``nu_form`` provenance tag and
-#: took the CONSERVATIVE branch on every variable-coefficient case, so the
-#: declaration named an operator that produced none of the numbers.
-#:
-#: The two forms differ by exactly ``nu' * u_x`` -- the same term the v0.37c
-#: section-6 bound dropped. On C-3's sinusoidal profile that term measures
-#: 1.035x the residual magnitude itself, so the difference is not a correction
-#: to the operator, it dominates it. (An earlier estimate of 13.8% here was
-#: computed by differencing a spectral u_xx against a finite-difference
-#: gradient, which measures discretization mixing rather than the forms.)
-#:
-#: Deriving it rather than asserting it is C-1 of the v0.38 binding constraints:
-#: a caller-supplied form is a claim about someone else's state.
-_COEFFICIENT_FORM_TO_EQUATION_FORM: dict[str, str] = {
-    "conservative_divergence": "conservative",
-    "nonconservative_nu_uxx": "nonconservative",
-}
 
 
 def _constant(x: np.ndarray) -> np.ndarray:
@@ -497,12 +479,29 @@ def _evaluator(
     )
 
 
+def _resolve_operator(case: BenchmarkCase, field: Any, coefficient: np.ndarray) -> Any:
+    """Resolve the operator ONCE, for both the spec and the report.
+
+    The v0.38e shape derived a form for the declaration and left the report to
+    describe it separately. This returns one object that both consume, so they
+    cannot describe different operators -- which is the whole failure mode.
+    """
+    return resolve_residual_operator(
+        family=case.equation_family,
+        field_provenance=field.metadata,
+        coefficient_is_constant=bool(np.ptp(np.asarray(coefficient)) == 0.0),
+    )
+
+
 def _derive_equation_form(field: Any, coefficient: np.ndarray) -> str:
     """Which equation form the evaluator will actually use, read from provenance.
 
-    Not a declaration. The residual evaluators dispatch on the ``nu_form`` tag
-    the generator wrote, so this asks the same resolver they do and reports what
-    it answers.
+    Not a declaration, and no longer a second mapping. v0.38e kept a local
+    ``_COEFFICIENT_FORM_TO_EQUATION_FORM`` table here; that made this consumer
+    correct and left the next one free to derive the answer slightly
+    differently. It now defers to
+    :func:`~pdelie.residuals.operator_resolution.resolve_residual_operator`,
+    which is the only place the answer is decided.
 
     For a CONSTANT coefficient the two operators coincide -- ``d/dx(nu du/dx)``
     and ``nu u_xx`` are the same expression when ``nu`` does not vary -- so the
@@ -519,12 +518,13 @@ def _derive_equation_form(field: Any, coefficient: np.ndarray) -> str:
         form_tag="nu_form",
         name="benchmark coefficient",
     )
-    if form not in _COEFFICIENT_FORM_TO_EQUATION_FORM:
-        raise ScopeValidationError(
-            f"coefficient form {form!r} has no declared equation_form. Guessing "
-            f"one would put a label on the report that no operator produced."
-        )
-    return _COEFFICIENT_FORM_TO_EQUATION_FORM[form]
+    del form  # resolved below from the same provenance, by the one resolver
+    resolved = resolve_residual_operator(
+        family="benchmark_coefficient",
+        field_provenance=field.metadata,
+        coefficient_is_constant=bool(np.ptp(np.asarray(coefficient)) == 0.0),
+    )
+    return resolved.equation_form.value
 
 
 def _blocked_measurement(
@@ -556,6 +556,8 @@ def _blocked_measurement(
         else None,
         "is_deliberate_obstruction": case.is_deliberate_obstruction,
         "equation_form": None,
+        "operator_resolution_source": None,
+        "operator_agreement_status": None,
         "coaction_consistency_status": consistency["consistency_status"],
         "coaction_diagnosis": consistency["diagnosis"],
         "outcome": "blocked_ambiguous_parameter_target",
@@ -608,12 +610,14 @@ def _measure_case(
         "nu_baseline": PROFILE_REGISTRY[case.profile_id].baseline
     }
     parameters.update({k: float(v) for k, v in case.extra_numeric_parameters.items()})
+    resolved_operator = _resolve_operator(case, field, coefficient)
     problem = ProblemInstanceSpec(
         equation_family=case.equation_family,
         # Derived from the data's provenance, not asserted. See
         # _derive_equation_form: the literal "nonconservative" here named an
         # operator the evaluator never ran on any variable-coefficient case.
-        equation_form=_derive_equation_form(field, coefficient),
+        # The resolved object's form, not a second derivation of it.
+        equation_form=resolved_operator.equation_form.value,
         parameters=parameters,
         coefficient_fields={"nu": reference},
         spatial_axis_name="x",
@@ -740,7 +744,16 @@ def _measure_case(
         )
 
     report = build_residual_commutation_report(
-        bundle, execution, config, expected, transformed, runtime_seconds=0.0
+        bundle,
+        execution,
+        config,
+        expected,
+        transformed,
+        runtime_seconds=0.0,
+        # The same object the ProblemInstanceSpec was built from. Passing it
+        # rather than re-deriving is what makes "declaration and report describe
+        # one operator" structural instead of a convention.
+        resolved_operator=resolved_operator,
     )
     payload = report["scientific_payload"]
     return {
@@ -756,6 +769,8 @@ def _measure_case(
         "rescale_factor": rescale_factor if case.parameter_action_family else None,
         "is_deliberate_obstruction": case.is_deliberate_obstruction,
         "equation_form": problem.equation_form,
+        "operator_resolution_source": resolved_operator.resolution_source,
+        "operator_agreement_status": resolved_operator.agreement_status,
         "coaction_consistency_status": consistency["consistency_status"],
         "coaction_diagnosis": consistency["diagnosis"],
         "outcome": "measured",
