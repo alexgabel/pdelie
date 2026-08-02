@@ -105,7 +105,7 @@
     "ruff"
   ],
   "expected_ci_jobs": [
-    "v0_37_0-release-gate",
+    "v0_38_0a1-release-gate",
     "docs-build",
     "editable-tests",
     "package-smoke"
