@@ -57,6 +57,7 @@ __all__ = [
     "COACTION_STATUSES",
     "LEGAL_STATUS_DIAGNOSIS_PAIRS",
     "PARAMETER_TARGET_KEY",
+    "RESERVED_UNREACHABLE_PAIRS",
     "declared_parameter_targets",
     "summarize_coaction_consistency",
 ]
@@ -113,6 +114,26 @@ LEGAL_STATUS_DIAGNOSIS_PAIRS: frozenset[tuple[str, str]] = frozenset(
         ("indeterminate", "target_ambiguous"),
         ("not_applicable", "declaration_and_execution_agree"),
     }
+)
+
+#: Pairs that are legal vocabulary but that no code path can currently emit.
+#:
+#: v0.38e pilot run 1 BLOCKED on this (criterion B-1). ``executed_not_declared``
+#: sat in the legal table, which reads as a claim it can occur -- and nothing
+#: could produce it, so the vocabulary advertised a distinction the report had
+#: never drawn.
+#:
+#: It is reserved rather than deleted because it names the PRE-v0.38e behaviour
+#: exactly: the executor applied a rescale to a parameter no declaration
+#: mentioned. If a future executor path reintroduces that divergence, the report
+#: must have a name for it; deleting the vocabulary would leave a future defect
+#: unnameable.
+#:
+#: ``test_reserved_pairs_are_genuinely_unreachable`` parses the branches of
+#: :func:`summarize_coaction_consistency` and fails if one ever emits this,
+#: so lifting the reservation is a deliberate act rather than a drift.
+RESERVED_UNREACHABLE_PAIRS: frozenset[tuple[str, str]] = frozenset(
+    {("inconsistent", "executed_not_declared")}
 )
 
 #: How the target was declared. Three states, kept distinct: "absent" on a

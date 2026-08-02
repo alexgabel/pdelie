@@ -34,3 +34,5 @@ Once a design is implemented and validated it is folded into the specs.
    v0_37c_platform_replay
    COEFFICIENT_VALUES_SEMANTICS
    v0_38e_hypothesis_freeze
+   v0_38e_pilot_report
+   v0_38e_confirmatory_freeze

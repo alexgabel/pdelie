@@ -41,6 +41,8 @@ __all__ = [
     "EXPECTED_CLASSIFICATIONS",
     "PILOT_ALPHA_GRID",
     "PROFILE_REGISTRY",
+    "V0_37C_CASE_IDS",
+    "V0_38E_CASE_IDS",
     "BenchmarkCase",
     "CoefficientProfile",
     "alpha_grid",
@@ -68,7 +70,33 @@ EXPECTED_CLASSIFICATIONS: tuple[str, ...] = (
     "invalid_fixed_background_obstruction",
     "invalid_parameter_only_without_state",
     "invalid_state_only_with_localized_coefficient",
+    # v0.38e. The multi-parameter pair. C-7 names its rescale target and is
+    # expected to measure; C-8 does not, on a problem where more than one
+    # parameter is a candidate, and is expected to be REFUSED before any
+    # residual is computed.
+    "valid_named_parameter_target",
+    "blocked_ambiguous_parameter_target",
 )
+
+#: Maps the coefficient form the data was generated with onto the equation form
+#: the problem declares. v0.38e: this was a hardcoded "nonconservative" literal,
+#: while the evaluator dispatches on the field's ``nu_form`` provenance tag and
+#: took the CONSERVATIVE branch on every variable-coefficient case, so the
+#: declaration named an operator that produced none of the numbers.
+#:
+#: The two forms differ by exactly ``nu' * u_x`` -- the same term the v0.37c
+#: section-6 bound dropped. On C-3's sinusoidal profile that term measures
+#: 1.035x the residual magnitude itself, so the difference is not a correction
+#: to the operator, it dominates it. (An earlier estimate of 13.8% here was
+#: computed by differencing a spectral u_xx against a finite-difference
+#: gradient, which measures discretization mixing rather than the forms.)
+#:
+#: Deriving it rather than asserting it is C-1 of the v0.38 binding constraints:
+#: a caller-supplied form is a claim about someone else's state.
+_COEFFICIENT_FORM_TO_EQUATION_FORM: dict[str, str] = {
+    "conservative_divergence": "conservative",
+    "nonconservative_nu_uxx": "nonconservative",
+}
 
 
 def _constant(x: np.ndarray) -> np.ndarray:
@@ -174,6 +202,11 @@ class BenchmarkCase:
     #: Frozen here rather than left to the runner, so the case is fully
     #: self-describing and the value cannot become an implicit constant.
     parameter_action_parameters: Mapping[str, Any] | None = None
+    #: Numeric parameters beyond ``nu_baseline``. v0.38e: every v0.37c case has
+    #: exactly one, which is why the unnamed-rescale-target ambiguity was
+    #: unobservable -- on a one-element population "rescale all" and "rescale the
+    #: declared one" are the same set. C-7/C-8 are the first cases with two.
+    extra_numeric_parameters: Mapping[str, float] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         if self.profile_id not in PROFILE_REGISTRY:
@@ -220,6 +253,7 @@ class BenchmarkCase:
                 if self.parameter_action_parameters is None
                 else dict(self.parameter_action_parameters)
             ),
+            "extra_numeric_parameters": dict(self.extra_numeric_parameters),
         }
 
 
@@ -286,13 +320,69 @@ BENCHMARK_CASES: dict[str, BenchmarkCase] = {
         expected_classification="invalid_state_only_with_localized_coefficient",
         is_deliberate_obstruction=True,
     ),
+    # ---- v0.38e: the multi-parameter pair -------------------------------
+    #
+    # C-7 and C-8 differ in EXACTLY one thing: whether the parameter action
+    # names its target. Everything else -- family, profile, factor, the second
+    # parameter and its value -- is identical, so any difference in outcome is
+    # attributable to the declaration and to nothing else.
+    #
+    # They are the first cases with two numeric parameters, which is the whole
+    # point: with one, an unnamed target is unambiguous by exhaustion and the
+    # defect they exercise cannot occur.
+    "C-7": BenchmarkCase(
+        case_id="C-7",
+        equation_family="advection_diffusion_1d",
+        profile_id="sinusoidal",
+        coefficient_treatment="fixed_background",
+        coefficient_relation="fixed",
+        state_action_family="identity",
+        state_action_parameters={},
+        parameter_action_family="scalar_rescale",
+        parameter_action_parameters={
+            "factor": 2.0,
+            "target_parameters": ["nu_baseline"],
+        },
+        extra_numeric_parameters={"advection_speed": 2.0},
+        expected_operator_family="identity",
+        expected_classification="valid_named_parameter_target",
+        is_deliberate_obstruction=False,
+    ),
+    "C-8": BenchmarkCase(
+        case_id="C-8",
+        equation_family="advection_diffusion_1d",
+        profile_id="sinusoidal",
+        coefficient_treatment="fixed_background",
+        coefficient_relation="fixed",
+        state_action_family="identity",
+        state_action_parameters={},
+        parameter_action_family="scalar_rescale",
+        # No target_parameters. This is the deliberate obstruction: the executor
+        # refuses it rather than rescaling both, so C-8 produces no residual at
+        # all. Its measurement is the refusal.
+        parameter_action_parameters={"factor": 2.0},
+        extra_numeric_parameters={"advection_speed": 2.0},
+        expected_operator_family="identity",
+        expected_classification="blocked_ambiguous_parameter_target",
+        is_deliberate_obstruction=True,
+    ),
 }
+
+
+#: Which freeze governs which case.
+#:
+#: A signed confirmatory freeze covers the population it measured. A later
+#: release adding a case does NOT retroactively extend it, and editing a signed
+#: freeze to mention cases it never measured would make the record false. So the
+#: scope is named here, and a test asserts every case belongs to exactly one.
+V0_37C_CASE_IDS: tuple[str, ...] = ("C-1", "C-2", "C-3", "C-5", "C-6")
+V0_38E_CASE_IDS: tuple[str, ...] = ("C-7", "C-8")
 
 
 def resolve_case(case_id: str) -> BenchmarkCase:
     if case_id not in BENCHMARK_CASES:
         raise ScopeValidationError(
-            f"unknown benchmark case {case_id!r}; the six are "
+            f"unknown benchmark case {case_id!r}; the cases are "
             f"{sorted(BENCHMARK_CASES)}."
         )
     return BENCHMARK_CASES[case_id]
@@ -379,7 +469,19 @@ def _build_field(
     )
 
 
-def _evaluator(equation_family: str, coefficient: np.ndarray | float) -> Any:
+def _evaluator(
+    equation_family: str,
+    coefficient: np.ndarray | float,
+    *,
+    advection_speed: float = 1.0,
+) -> Any:
+    """Build the evaluator for a family.
+
+    ``advection_speed`` is a real parameter of ``advection_diffusion_1d``, not a
+    decoration: v0.38e's C-7/C-8 pair needs a SECOND numeric parameter that
+    actually moves the residual, or the ambiguity they exist to exercise would
+    be unobservable for the same reason it was unobservable in v0.37c.
+    """
     from pdelie.residuals import (
         AdvectionDiffusionResidualEvaluator,
         BurgersResidualEvaluator,
@@ -391,8 +493,77 @@ def _evaluator(equation_family: str, coefficient: np.ndarray | float) -> Any:
     if equation_family == "burgers_1d":
         return BurgersResidualEvaluator(diffusivity=coefficient)
     return AdvectionDiffusionResidualEvaluator(
-        advection_speed=1.0, diffusivity=coefficient
+        advection_speed=advection_speed, diffusivity=coefficient
     )
+
+
+def _derive_equation_form(field: Any, coefficient: np.ndarray) -> str:
+    """Which equation form the evaluator will actually use, read from provenance.
+
+    Not a declaration. The residual evaluators dispatch on the ``nu_form`` tag
+    the generator wrote, so this asks the same resolver they do and reports what
+    it answers.
+
+    For a CONSTANT coefficient the two operators coincide -- ``d/dx(nu du/dx)``
+    and ``nu u_xx`` are the same expression when ``nu`` does not vary -- so the
+    label is unobservable there, and a test asserts that rather than leaving it
+    as an assumption.
+    """
+    from pdelie.residuals._variable_coefficient import resolve_variable_coefficient
+
+    _, _dispatch, form, _matched = resolve_variable_coefficient(
+        coefficient,
+        field=field,
+        parameter_tag="nu",
+        kind_tag="nu_profile_kind",
+        form_tag="nu_form",
+        name="benchmark coefficient",
+    )
+    if form not in _COEFFICIENT_FORM_TO_EQUATION_FORM:
+        raise ScopeValidationError(
+            f"coefficient form {form!r} has no declared equation_form. Guessing "
+            f"one would put a label on the report that no operator produced."
+        )
+    return _COEFFICIENT_FORM_TO_EQUATION_FORM[form]
+
+
+def _blocked_measurement(
+    case: BenchmarkCase, alpha: float, seed: int, consistency: dict[str, Any]
+) -> dict[str, Any]:
+    """A case that was refused before any residual was computed.
+
+    The error fields are ``None``, never NaN and never zero. A zero would read
+    as a perfect measurement and a NaN would not survive strict JSON; ``None``
+    says the number does not exist, which is the fact.
+
+    Same key set as a measured row, so the two are directly comparable and a
+    consumer cannot silently skip the blocked ones by KeyError.
+    """
+    return {
+        "case_id": case.case_id,
+        "alpha": float(alpha),
+        "seed": int(seed),
+        "runtime_path": None,
+        "expected_operator_family": case.expected_operator_family,
+        "absolute_error_l2": None,
+        "absolute_error_linf": None,
+        "comparison_scale": None,
+        "shift_cells": 0,
+        "rescale_factor": float(
+            dict(case.parameter_action_parameters or {}).get("factor", 1.0)
+        )
+        if case.parameter_action_family
+        else None,
+        "is_deliberate_obstruction": case.is_deliberate_obstruction,
+        "equation_form": None,
+        "coaction_consistency_status": consistency["consistency_status"],
+        "coaction_diagnosis": consistency["diagnosis"],
+        "outcome": "blocked_ambiguous_parameter_target",
+        # Nothing was executed, so there are no transformed parameters. An empty
+        # mapping, not None: the key is always a mapping and a consumer never
+        # has to branch on its type.
+        "transformed_parameters": {},
+    }
 
 
 def _measure_case(
@@ -414,6 +585,7 @@ def _measure_case(
         execute_bundle,
         validate_action_bundle,
     )
+    from pdelie.actions.coaction_consistency import summarize_coaction_consistency
 
     field = _build_field(case.equation_family, seed, num_times, num_points)
     axis = field.dims.index("x")
@@ -432,18 +604,24 @@ def _measure_case(
         treatment=case.coefficient_treatment,
         analytical_spec={"profile_id": case.profile_id, "alpha": float(alpha)},
     )
+    parameters: dict[str, Any] = {
+        "nu_baseline": PROFILE_REGISTRY[case.profile_id].baseline
+    }
+    parameters.update({k: float(v) for k, v in case.extra_numeric_parameters.items()})
     problem = ProblemInstanceSpec(
         equation_family=case.equation_family,
-        equation_form="nonconservative",
-        parameters={"nu_baseline": PROFILE_REGISTRY[case.profile_id].baseline},
+        # Derived from the data's provenance, not asserted. See
+        # _derive_equation_form: the literal "nonconservative" here named an
+        # operator the evaluator never ran on any variable-coefficient case.
+        equation_form=_derive_equation_form(field, coefficient),
+        parameters=parameters,
         coefficient_fields={"nu": reference},
         spatial_axis_name="x",
         time_axis_name="t",
         domain_type="periodic_uniform",
     )
-    rescale_factor = float(
-        dict(case.parameter_action_parameters or {}).get("factor", 1.0)
-    )
+    declared_action_parameters = dict(case.parameter_action_parameters or {})
+    rescale_factor = float(declared_action_parameters.get("factor", 1.0))
     operator = ExpectedResidualOperator(family=case.expected_operator_family)
     relation = ExpectedResidualRelation(
         equation_relation=(
@@ -482,7 +660,10 @@ def _measure_case(
                 action_target="parameter",
                 action_family="scalar_rescale",
                 action_parameter_id=f"{case.case_id}_param",
-                parameters={"factor": rescale_factor},
+                # The declared parameters verbatim, so a target_parameters key
+                # reaches the executor rather than being dropped in transit --
+                # dropping it would silently turn C-7 into C-8.
+                parameters=dict(declared_action_parameters),
             )
             if case.parameter_action_family
             else None
@@ -496,11 +677,23 @@ def _measure_case(
         seed=None,
         deterministic_expected=True,
     )
+    # v0.38e: the co-action consistency report is built BEFORE execution, so a
+    # case that is refused still produces a record saying why. A report that
+    # only exists after a successful run cannot describe a blocked one.
+    consistency = summarize_coaction_consistency(
+        bundle, execution_metadata={"case_id": case.case_id, "seed": int(seed)}
+    )
+    if consistency["consistency_status"] == "indeterminate":
+        return _blocked_measurement(case, alpha, seed, consistency)
+
     execution = execute_bundle(
         bundle, field, config, coefficient_values={"nu": coefficient}
     )
 
-    base_evaluator = _evaluator(case.equation_family, coefficient)
+    advection_speed = float(parameters.get("advection_speed", 1.0))
+    base_evaluator = _evaluator(
+        case.equation_family, coefficient, advection_speed=advection_speed
+    )
     original = base_evaluator.evaluate(field).residual
 
     if case.parameter_action_family == "scalar_rescale":
@@ -512,16 +705,32 @@ def _measure_case(
         # v0.37.0 rescaled the STATE here by hand and never read
         # transformed_parameters at all, so C-5 measured R(cu) while declaring a
         # parameter action. See docs/releases/V0_37_C5_ERRATUM.md.
+        # Every transformed parameter is read from the executor, so a case that
+        # rescales something other than nu_baseline is measured as such rather
+        # than assumed away.
         rescaled_nu = float(execution.transformed_parameters["nu_baseline"])
-        transformed = _evaluator(case.equation_family, rescaled_nu).evaluate(field).residual
+        rescaled_speed = float(
+            execution.transformed_parameters.get("advection_speed", advection_speed)
+        )
+        transformed = (
+            _evaluator(
+                case.equation_family, rescaled_nu, advection_speed=rescaled_speed
+            )
+            .evaluate(field)
+            .residual
+        )
         expected = original
     else:
         moved_coefficient = (
             execution.transformed_coefficients["nu"] if co_moves else coefficient
         )
-        transformed = _evaluator(case.equation_family, moved_coefficient).evaluate(
-            execution.transformed_field
-        ).residual
+        transformed = (
+            _evaluator(
+                case.equation_family, moved_coefficient, advection_speed=advection_speed
+            )
+            .evaluate(execution.transformed_field)
+            .residual
+        )
         # The reference side of the comparison: T R(u), what the residual should
         # be if the transformation commutes. Not an application of the action --
         # that went through execute_bundle above, and the shift used here is the
@@ -546,6 +755,16 @@ def _measure_case(
         "shift_cells": cells if translating else 0,
         "rescale_factor": rescale_factor if case.parameter_action_family else None,
         "is_deliberate_obstruction": case.is_deliberate_obstruction,
+        "equation_form": problem.equation_form,
+        "coaction_consistency_status": consistency["consistency_status"],
+        "coaction_diagnosis": consistency["diagnosis"],
+        "outcome": "measured",
+        # What the executor actually did to the parameters. Emitted so a reader
+        # can see that C-7 moved nu_baseline and left advection_speed alone,
+        # rather than inferring it from a residual magnitude.
+        "transformed_parameters": {
+            k: float(v) for k, v in sorted(execution.transformed_parameters.items())
+        },
     }
 
 
