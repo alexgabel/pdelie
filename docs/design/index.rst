@@ -32,3 +32,5 @@ Once a design is implemented and validated it is folded into the specs.
    V0_38_BINDING_DESIGN_CONSTRAINTS
    v0_37c_confirmatory_freeze_v2
    v0_37c_platform_replay
+   COEFFICIENT_VALUES_SEMANTICS
+   v0_38e_hypothesis_freeze

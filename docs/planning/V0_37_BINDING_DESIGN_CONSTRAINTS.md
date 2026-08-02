@@ -252,9 +252,20 @@ Re-measured over the population that matters — dict literals declaring a
 
 | Key | Payloads declaring `summary_type` |
 |---|---:|
-| `summary_schema_version` | **34** |
+| `summary_schema_version` | **38** |
 | `schema_version` | 5 |
 | both | 0 |
+
+These are **live counts**, asserted exactly against the tree by
+`test_c5_summary_payload_convention_is_documented_and_current`. The first grows
+as payloads are added — it read 34 when this correction was written and 38 at
+v0.38e. What C-5 rests on is the *ratio*, not the absolute number.
+
+**The guard that protects this table was itself defective until v0.38e.** It
+asserted `str(count) in text` against the whole document, and this document
+contains "v0.37" sixteen times — so the check passed on the title, whatever the
+count actually was. The table sat at 34 against a measured 37 for three payloads
+with nothing able to notice. The assertion now parses this specific row.
 
 **There is a convention, and it is `summary_schema_version`.** The five
 exceptions are `pdelie.design.attainability`, `pdelie.audit.full_migration_scope`
