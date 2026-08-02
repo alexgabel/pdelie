@@ -1,5 +1,22 @@
 # v0.37c — Confirmatory Freeze (v2)
 
+> **Status at v0.38: `invalidated_declaration_mismatch`.** Superseded by
+> [`v0_38e_confirmatory_freeze.md`](v0_38e_confirmatory_freeze.md); see
+> correction **AC-1** in [`artifact_corrections.json`](../specs/artifact_corrections.json).
+>
+> **Every measured number in this document is still correct and is bitwise
+> identical to the corrected run** (125/125, worst relative gap `0.000e+00`).
+> What is invalid is the *operator declaration*: this freeze describes the
+> residuals as non-conservative, while the evaluators dispatched from the data's
+> provenance and evaluated the **conservative** operator on every
+> variable-coefficient case. The bundle semantic hashes recorded here were
+> computed over that wrong declaration.
+>
+> **Cite the superseding artifact, not this one.** This document is retained
+> unedited below as the record of what was corrected — its original content and
+> its original hash are preserved deliberately, because overwriting either would
+> destroy the evidence that a correction happened.
+
 **Status: SIGNED.**
 
 Supersedes [`v0_37c_confirmatory_freeze.md`](v0_37c_confirmatory_freeze.md) (v1),

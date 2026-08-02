@@ -51,38 +51,71 @@ def _marked_functions(tree: ast.AST) -> list[tuple[str, ast.expr]]:
     return found
 
 
-def _oracle_source(decorator: ast.expr) -> str | None:
-    """Extract a literal ``oracle_source=`` from the decorator, if present.
+def _module_string_constants(tree: ast.AST) -> dict[str, str]:
+    """Module-level ``NAME = "literal"`` bindings, for resolving a shared constant.
+
+    Several tests in one module usually cite the same oracle. Requiring the
+    string inline at each marker means three copies of a path, which is a drift
+    risk of exactly the kind this guard exists to prevent -- so a module-level
+    constant is resolved instead. It stays fully static: only a direct string
+    literal assigned at module scope is accepted, never a computed value.
+    """
+    constants: dict[str, str] = {}
+    for node in getattr(tree, "body", []):
+        if not isinstance(node, ast.Assign) or len(node.targets) != 1:
+            continue
+        target = node.targets[0]
+        if (
+            isinstance(target, ast.Name)
+            and isinstance(node.value, ast.Constant)
+            and isinstance(node.value.value, str)
+        ):
+            constants[target.id] = node.value.value
+    return constants
+
+
+def _oracle_source(decorator: ast.expr, constants: dict[str, str] | None = None) -> str | None:
+    """Extract the ``oracle_source=`` from the decorator, if present.
 
     A bare ``@pytest.mark.load_bearing_analytical`` is not a call and so carries
     no keywords: it claims the bound is load-bearing while declaring nothing
     about how it was checked, which is the exact state this guard exists to
     refuse.
+
+    A ``Name`` is resolved against module-level string constants, and against
+    nothing else -- an expression that has to be executed to know its value is
+    not a static declaration.
     """
     if not isinstance(decorator, ast.Call):
         return None
     for keyword in decorator.keywords:
-        if keyword.arg == "oracle_source":
-            value = keyword.value
-            return value.value if isinstance(value, ast.Constant) else None
+        if keyword.arg != "oracle_source":
+            continue
+        value = keyword.value
+        if isinstance(value, ast.Constant):
+            return value.value if isinstance(value.value, str) else None
+        if isinstance(value, ast.Name) and constants is not None:
+            return constants.get(value.id)
+        return None
     return None
 
 
-def _collect() -> list[tuple[Path, str, ast.expr]]:
-    collected: list[tuple[Path, str, ast.expr]] = []
+def _collect() -> list[tuple[Path, str, ast.expr, dict[str, str]]]:
+    collected: list[tuple[Path, str, ast.expr, dict[str, str]]] = []
     for path in sorted(_TESTS_DIR.rglob("test_*.py")):
         if path.name == Path(__file__).name:
             continue
         tree = ast.parse(path.read_text(), filename=str(path))
+        constants = _module_string_constants(tree)
         for name, decorator in _marked_functions(tree):
-            collected.append((path, name, decorator))
+            collected.append((path, name, decorator, constants))
     return collected
 
 
 def test_every_marked_test_declares_an_oracle_source() -> None:
     """The marker without the field is the failure mode worth catching."""
-    for path, name, decorator in _collect():
-        source = _oracle_source(decorator)
+    for path, name, decorator, constants in _collect():
+        source = _oracle_source(decorator, constants)
         assert source is not None, (
             f"{path.name}::{name} is marked {MARKER} but declares no literal "
             f"oracle_source. Per ANALYTICAL_ORACLE_DISCIPLINE.md the second, "
@@ -92,8 +125,8 @@ def test_every_marked_test_declares_an_oracle_source() -> None:
 
 def test_declared_oracle_methods_are_in_the_closed_vocabulary() -> None:
     """``method: where it lives`` -- both halves are required."""
-    for path, name, decorator in _collect():
-        source = _oracle_source(decorator)
+    for path, name, decorator, constants in _collect():
+        source = _oracle_source(decorator, constants)
         assert source is not None, f"{path.name}::{name}"
         method, _, location = source.partition(":")
         method = method.strip()
@@ -105,6 +138,42 @@ def test_declared_oracle_methods_are_in_the_closed_vocabulary() -> None:
             f"{path.name}::{name} names method {method!r} but no location. "
             f"An unlocatable derivation cannot be reviewed; use "
             f"'{method}: path/to/derivation'."
+        )
+
+
+def test_the_registry_is_not_empty() -> None:
+    """v0.38 §6: at least one genuine load-bearing consumer must exist.
+
+    Until v0.38 the population was empty and every check over it passed
+    vacuously -- the sentinels below established that the guard *could* fire,
+    which is guard mechanics, not integration with a real scientific consumer.
+
+    The first consumer is the operator-form identity
+    (``d/dx(nu*u_x) - nu*u_xx == nu' * u_x``), which two pass/fail verdicts cite
+    and which the equation-form resolver's refusal message depends on.
+    """
+    population = _collect()
+    assert population, (
+        "no test carries the load_bearing_analytical marker. If the last "
+        "consumer was removed, that is a deliberate act: either another bound "
+        "took its place and should be marked, or the decorator now governs "
+        "nothing and ANALYTICAL_ORACLE_DISCIPLINE.md should say so."
+    )
+
+
+def test_every_oracle_source_location_exists() -> None:
+    """A derivation nobody can open has not been produced."""
+
+    repo_root = _TESTS_DIR.parent
+    for path, name, decorator, constants in _collect():
+        source = _oracle_source(decorator, constants)
+        assert source is not None, f"{path.name}::{name}"
+        location = source.partition(":")[2].strip().split("#", 1)[0].strip()
+        assert location, f"{path.name}::{name} names no location"
+        assert (repo_root / location).exists(), (
+            f"{path.name}::{name} cites {location!r}, which does not exist. An "
+            f"unopenable derivation cannot be reviewed, so it is not a second "
+            f"derivation."
         )
 
 
@@ -175,6 +244,63 @@ def test_extraction_sentinel(source: str, expected_oracle: str | None) -> None:
     assert _oracle_source(marked[0][1]) == expected_oracle
 
 
+_VIA_CONSTANT = """
+import pytest
+
+_ORACLE = "manufactured_solution: docs/design/foo.md"
+
+@pytest.mark.load_bearing_analytical(oracle_source=_ORACLE)
+def test_something() -> None:
+    pass
+"""
+
+_VIA_COMPUTED = """
+import pytest
+
+_PREFIX = "manufactured_solution"
+
+@pytest.mark.load_bearing_analytical(oracle_source=_PREFIX + ": docs/design/foo.md")
+def test_something() -> None:
+    pass
+"""
+
+
+def test_a_module_level_constant_resolves() -> None:
+    """The branch added so three tests can share one path without three copies."""
+    tree = ast.parse(_VIA_CONSTANT)
+    constants = _module_string_constants(tree)
+    marked = _marked_functions(tree)
+    assert len(marked) == 1
+    assert (
+        _oracle_source(marked[0][1], constants)
+        == "manufactured_solution: docs/design/foo.md"
+    )
+
+
+def test_a_computed_oracle_source_is_refused() -> None:
+    """Resolution stays static. An expression is not a declaration.
+
+    Without this the Name branch would be an opening for anything that
+    eventually evaluates to a string, and the guard could no longer read the
+    declaration without running the module.
+    """
+    tree = ast.parse(_VIA_COMPUTED)
+    constants = _module_string_constants(tree)
+    marked = _marked_functions(tree)
+    assert len(marked) == 1
+    assert _oracle_source(marked[0][1], constants) is None, (
+        "a concatenated expression resolved; only a direct module-level string "
+        "literal may"
+    )
+
+
+def test_an_unresolvable_name_does_not_silently_pass() -> None:
+    """A name bound nowhere must read as undeclared, not as some default."""
+    tree = ast.parse(_VIA_CONSTANT.replace('_ORACLE = ', '_UNUSED = '))
+    marked = _marked_functions(tree)
+    assert _oracle_source(marked[0][1], _module_string_constants(tree)) is None
+
+
 def test_guard_rejects_each_malformed_shape() -> None:
     """Every rejection path is exercised, not just the happy one."""
     bare = _oracle_source(_marked_functions(ast.parse(_BARE_MARKER))[0][1])
@@ -204,5 +330,5 @@ def test_marker_population_is_reported_not_assumed() -> None:
     """
     population = _collect()
     assert isinstance(population, list)
-    for path, name, _ in population:
+    for path, name, _, _ in population:
         assert path.exists() and name.startswith("test_")
