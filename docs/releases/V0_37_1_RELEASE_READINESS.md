@@ -37,7 +37,7 @@ benchmark discarded it.
 | 1 — C-5 consumes its declared action | **PASS.** Reads `execution.transformed_parameters`; a test asserts it still does, so a repair that deleted the manual rescale without wiring the executor would not pass. |
 | 2 — `parameters ∩ coefficient_fields = ∅` | **PASS.** Enforced in `ProblemInstanceSpec.__post_init__`. |
 | 3 — Confirmatory freeze v2, fresh seeds, five cases | **PASS.** Seeds `13, 17, 19, 23, 29`; PS-1/2/3 evaluated de novo. |
-| 4 — Portable claims pass Linux + macOS | **PASS with a stated limit.** Every number here is macOS/arm64. The Linux replay is Phase 2 and uses this release's seed packet. **This gate is upgraded there, or the discrepancy is recorded as v0.38-blocking.** |
+| 4 — Portable claims pass Linux + macOS | **PASS — measured.** Replayed on `ubuntu-22.04` and `macos-14` with this release's seed packet: classifications agree exactly, signal-case numbers to `1.6e-13` relative, both platforms within the frozen tolerances. Binding margin is Linux's `2.142e+11`. See [`v0_37c_platform_replay.md`](../design/v0_37c_platform_replay.md). |
 | 5 — Historical record retained | **PASS.** v1 of the confirmatory freeze, all v0.37.0 artifacts, and pilot runs 1–3 are unedited; the pilot report's frozen prefix is SHA-256 pinned. |
 
 ## 4. Known limitations carried forward
@@ -46,7 +46,13 @@ Unchanged from v0.37.0, plus:
 
 - **No benchmark case exercises `scalar_multiplier` end to end.** C-5 declared it
   until this release. The family remains contract-tested in the v0.37a suite.
-- **Gate 4 is still argued, not measured.** See above.
+- **Two platforms, not all platforms.** The replay covers `Darwin/arm64` and
+  `Linux/x86_64`, both on NumPy 2.5.1 and CPython 3.12. A different BLAS, NumPy
+  major, or architecture is unmeasured.
+- **Bit-identity is not claimed and is not achieved** — 8 of 125 confirmatory
+  measurements match bitwise, which is what a spectral-derivative chain through
+  FFT and BLAS should produce. The classification is the invariant; the numbers
+  are `tolerance_numeric`.
 
 ## 5. Process note
 

@@ -37,7 +37,7 @@ Populated retroactively from the arc.
 | Escaped specification defects | **1** — the C-5 semantic mismatch escaped the entire arc and was found after the v0.37.0 tag |
 | Invalidated artifacts | **1** — `v0_37c_confirmatory_freeze.md` (v1), invalidated for C-5 by the v0.37.1 erratum; retained unedited |
 | Time to diagnosis | Norm mismatch: same session, ~3 measurements. Nonperiodic profile: same session, after one wrong hypothesis (constant-array dispatch) was measured and rejected. C-5: post-release, external review. |
-| Cross-platform discrepancies | **Unknown** — no Linux measurement of the v0.37c benchmark exists. Deferred to the v0.37.1 replay. |
+| Cross-platform discrepancies | **0, measured** (v0.37.1). Replayed on `Darwin/arm64` and `Linux/x86_64`: classifications agree exactly, signal-case numbers to `1.6e-13` relative. Recorded as unknown until measured. |
 | Failed-run retention rate | **100%** — all three pilot runs retained unedited, enforced by test |
 | Public claims narrowed or retired | **2** — C-4 retired from the benchmark; the v0.37c taxonomy narrowed from six cases to five |
 | Private-API promotion decisions | **1** — point-symmetry registry held private, on the narrowed evidentiary base plus the unchanged v0.35b reason |
@@ -57,6 +57,8 @@ the declared thing was the thing *executed*. That is a whole category of gate
 the arc did not have, and `tests/test_benchmark_action_semantics_guard.py` is
 the first instance of it.
 
-**Cross-platform is recorded as unknown rather than as passing.** The argument
-that eleven-order margins cannot flip a classification is sound and is not a
-measurement.
+**Cross-platform was recorded as unknown rather than as passing**, and then
+measured at v0.37.1. The argument that eleven-order margins cannot flip a
+classification was sound; it was still not a measurement, and the row said so
+until one existed. The measurement agreed with the argument, which is the
+outcome that makes the distinction easy to stop drawing.
