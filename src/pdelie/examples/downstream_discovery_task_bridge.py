@@ -59,6 +59,9 @@ _NUM_TIMES = 64
 _NUM_POINTS = 64
 _TASK_NAME = "downstream_discovery_task_bridge_example_pde_library"
 _WEAK_TASK_NAME = "downstream_discovery_task_bridge_example_weak_diagnostic"
+#: v0.38: the weak diagnostic requires an explicit seed. Frozen here so the
+#: example's payload is reproducible rather than incidentally stable.
+_WEAK_DIAGNOSTIC_SEED = 13
 _WEAK_K = 16
 _POLYNOMIAL_DEGREE = 2
 _DERIVATIVE_ORDER = 2
@@ -200,6 +203,10 @@ def run_downstream_discovery_task_bridge_example() -> dict[str, Any]:
                 derivative_order=_DERIVATIVE_ORDER,
                 num_domain_centers_K=_WEAK_K,
             ),
+            # v0.38: required. The example is executed by a test that compares
+            # its payload against a pinned expectation, so an unseeded call
+            # would make that comparison a coin flip.
+            seed=_WEAK_DIAGNOSTIC_SEED,
         )
 
     payload: dict[str, Any] = {

@@ -79,7 +79,7 @@ def _run_default_diagnostic() -> dict[str, object]:
                 derivative_order=2,
                 num_domain_centers_K=16,
             ),
-        )
+        seed=13)
 
 
 # ---------------------------------------------------------------------------
@@ -194,7 +194,7 @@ def test_14_dirichlet_nonperiodic_field_is_rejected() -> None:
         inspect_pysindy_weak_pde_library(
             dirichlet_field,
             task_name="v0_31b2_dirichlet_rejection",
-        )
+        seed=13)
 
 
 def test_25_no_root_pdelie_export_for_diagnostic_names() -> None:
@@ -347,7 +347,7 @@ def test_3_missing_pysindy_raises_actionable_scope_error(
         inspect_pysindy_weak_pde_library(
             field,
             task_name="v0_31b2_missing_pysindy",
-        )
+        seed=13)
 
 
 def test_4_unsupported_weak_pde_library_signature_raises_scope_error(
@@ -379,7 +379,7 @@ def test_4_unsupported_weak_pde_library_signature_raises_scope_error(
         inspect_pysindy_weak_pde_library(
             field,
             task_name="v0_31b2_signature_drift",
-        )
+        seed=13)
 
 
 # ---------------------------------------------------------------------------
@@ -478,7 +478,7 @@ def test_15_nonuniform_x_grid_rejected() -> None:
     _mutate_coord_to_nonuniform(field, "x")
     with pytest.raises(ScopeValidationError):
         inspect_pysindy_weak_pde_library(
-            field, task_name="v0_31b2_nonuniform_x_rejection"
+            field, task_name="v0_31b2_nonuniform_x_rejection", seed=13
         )
 
 
@@ -488,7 +488,7 @@ def test_16_nonuniform_t_grid_rejected() -> None:
     _mutate_coord_to_nonuniform(field, "time")
     with pytest.raises(ScopeValidationError):
         inspect_pysindy_weak_pde_library(
-            field, task_name="v0_31b2_nonuniform_t_rejection"
+            field, task_name="v0_31b2_nonuniform_t_rejection", seed=13
         )
 
 
@@ -507,7 +507,7 @@ def test_17_multivariable_input_rejected() -> None:
     )
     with pytest.raises(ScopeValidationError):
         inspect_pysindy_weak_pde_library(
-            field, task_name="v0_31b2_multivariable_rejection"
+            field, task_name="v0_31b2_multivariable_rejection", seed=13
         )
 
 
@@ -536,7 +536,7 @@ def test_18_two_dimensional_field_batch_rejected() -> None:
     )
     with pytest.raises(ScopeValidationError):
         inspect_pysindy_weak_pde_library(
-            field, task_name="v0_31b2_two_dimensional_rejection"
+            field, task_name="v0_31b2_two_dimensional_rejection", seed=13
         )
 
 
@@ -559,7 +559,7 @@ def test_19_too_small_grid_rejected_with_actionable_message() -> None:
                 derivative_order=2,
                 num_domain_centers_K=16,
             ),
-        )
+        seed=13)
     message = str(excinfo.value).lower()
     # The message must mention the deficient dimension AND a concrete lower bound.
     assert "x-samples" in message or "x samples" in message, message
@@ -679,7 +679,7 @@ def test_23_validate_strict_json_compatible_called_exactly_once_at_composition_b
         result = inspect_pysindy_weak_pde_library(
             field,
             task_name="v0_31b2_composition_boundary_spy",
-        )
+        seed=13)
 
     composition_boundary_calls = [
         call
@@ -805,11 +805,13 @@ def test_29_supports_weak_derivative_backend_still_scoped_to_weak_1d() -> None:
 # --- v0.36e: three-state seed semantics -------------------------------------
 
 
-def test_v0_36e_omitted_seed_still_produces_the_v0_31b2_schema() -> None:
-    """The transition warning must not change the shipped report shape.
+def test_v0_38_the_seeded_report_keeps_the_v0_31b2_schema() -> None:
+    """Replaces two v0.36e tests whose subject -- the omitted-seed path -- is gone.
 
-    Every payload producible before v0.36e still has exactly 27 top-level keys;
-    ``seed_provenance`` is nested inside the existing ``provenance`` block.
+    They asserted that omitting the seed still produced the 27-key schema and
+    that legacy nondeterminism was retained. v0.38 makes the seed required, so
+    neither has a subject any more. What still matters, and is checked here, is
+    that requiring the seed did not disturb the frozen v0.31b2 shape.
     """
     import warnings as _warnings
 
@@ -818,25 +820,16 @@ def test_v0_36e_omitted_seed_still_produces_the_v0_31b2_schema() -> None:
     )
     with _warnings.catch_warnings(record=True) as captured:
         _warnings.simplefilter("always")
-        report = inspect_pysindy_weak_pde_library(field, task_name="v0_31b2_legacy")
+        report = inspect_pysindy_weak_pde_library(
+            field, task_name="v0_31b2_seeded", seed=13
+        )
 
     assert len(set(report)) == 27
-    assert "seed_provenance" not in report
-    assert [item for item in captured if issubclass(item.category, FutureWarning)]
-
-
-def test_v0_36e_legacy_nondeterminism_is_retained_when_the_seed_is_omitted() -> None:
-    """v0.36e warns; it does not flip the default. The flip is v0.37."""
-    import warnings as _warnings
-
-    field = generate_heat_1d_field_batch(
-        batch_size=1, num_times=64, num_points=64, seed=3120
+    assert not [item for item in captured if issubclass(item.category, FutureWarning)], (
+        "the transition FutureWarning survives a change that has now happened"
     )
-    with _warnings.catch_warnings():
-        _warnings.simplefilter("ignore")
-        report = inspect_pysindy_weak_pde_library(field, task_name="v0_31b2_legacy")
 
     provenance = report["provenance"]["seed_provenance"]
-    assert provenance["seed"] is None
-    assert provenance["seed_was_omitted"] is True
+    assert provenance["seed"] == 13
+    assert provenance["seed_was_omitted"] is False
     assert provenance["nondeterministic_requested"] is False
