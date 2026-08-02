@@ -187,16 +187,48 @@ def _summary_payload_key_counts() -> dict[str, int]:
     return counts
 
 
+def _documented_count(key: str) -> int:
+    """Parse one row of the C-5 table, rather than scanning the document.
+
+    v0.38e repair. This assertion used to be ``str(count) in text`` over the
+    whole file -- which contains "v0.37" sixteen times, so it passed on the
+    title no matter what the count was. The table sat at 34 against a measured
+    37 for three payloads and nothing could notice.
+
+    A number that appears somewhere in a document is not a number the document
+    states. Parsing the row is the difference.
+    """
+    text = _doc()
+    match = re.search(
+        rf"^\|\s*`{re.escape(key)}`\s*\|\s*\**(\d+)\**\s*\|$", text, re.MULTILINE
+    )
+    assert match is not None, f"no C-5 table row for {key!r}"
+    return int(match.group(1))
+
+
 def test_c5_summary_payload_convention_is_documented_and_current() -> None:
     """C-5's conclusion rests on this ratio, so it must not silently drift."""
     counts = _summary_payload_key_counts()
-    text = _doc()
-    assert str(counts["summary_schema_version"]) in text, counts
-    assert str(counts["schema_version"]) in text, counts
+    for key in ("summary_schema_version", "schema_version"):
+        assert _documented_count(key) == counts[key], (
+            f"the C-5 table says {key} is {_documented_count(key)}; the tree "
+            f"measures {counts[key]}. Update the table -- it is a live count."
+        )
     assert counts["summary_schema_version"] > 4 * counts["schema_version"], (
         f"the convention has weakened ({counts}); C-5's resolution assumed "
         f"summary_schema_version was dominant among summary payloads"
     )
+
+
+def test_c5_documented_count_guard_can_actually_fail() -> None:
+    """Sentinel: the parser must not match a number merely present in the text.
+
+    The defect it replaces passed because "37" appears inside "v0.37". A guard
+    that cannot distinguish those two is the guard that let the drift through.
+    """
+    assert re.search(r"v0\.37", _doc()), "premise: the doc does contain v0.37"
+    with pytest.raises(AssertionError, match="no C-5 table row"):
+        _documented_count("not_a_key_in_the_table")
 
 
 def test_c5_names_summary_schema_version_as_the_resolution() -> None:

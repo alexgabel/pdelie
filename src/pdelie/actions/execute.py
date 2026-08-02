@@ -258,6 +258,50 @@ def execute_coefficient_action(
     raise ScopeValidationError(f"unhandled coefficient action family {action.family!r}.")
 
 
+def _resolve_parameter_targets(
+    bundle: ProblemActionBundle, candidates: tuple[str, ...]
+) -> frozenset[str]:
+    """Which parameters a rescale acts on -- refusing rather than guessing.
+
+    v0.38e. Until now this function did not exist and the factor was applied to
+    *every* numeric parameter, because ``ActionRef`` carries no target. Measured
+    on a two-parameter problem, a rescale meant for the viscosity also tripled
+    the advection speed, and nothing in the report said so.
+
+    Every v0.37c case declares exactly one numeric parameter, so "all" and "the
+    declared one" were the same set and the ambiguity was unobservable. This
+    changes no v0.37 result -- the same precedent as the domain gate added at
+    v0.37b, which also closed a gap before it became load-bearing.
+
+    Ambiguity is **refused, not resolved by convention**. Picking the first name
+    alphabetically, or the only one that looks like a viscosity, would make the
+    executed action depend on a rule written nowhere.
+    """
+    from pdelie.actions.coaction_consistency import (
+        PARAMETER_TARGET_KEY,
+        declared_parameter_targets,
+    )
+
+    declared = declared_parameter_targets(bundle)
+    if declared is not None:
+        return frozenset(declared)
+    if len(candidates) == 1:
+        return frozenset(candidates)
+    if not candidates:
+        raise ScopeValidationError(
+            "a parameter action is declared, but the problem has no numeric "
+            "parameter for it to act on."
+        )
+    raise ScopeValidationError(
+        f"the parameter action declares no {PARAMETER_TARGET_KEY} and this "
+        f"problem has {len(candidates)} numeric parameters {list(candidates)}. "
+        f"Which one the action targets is not decidable from the bundle, so it "
+        f"is refused rather than applied to all of them -- applying it to all "
+        f"would transform quantities nobody declared an action on. Name the "
+        f"target: parameters={{{PARAMETER_TARGET_KEY!r}: [...], 'factor': ...}}."
+    )
+
+
 @dataclass(frozen=True)
 class BundleExecutionResult:
     """What executing a bundle produced, plus which path it took."""
@@ -336,7 +380,9 @@ def execute_bundle(
 
     parameters = dict(bundle.problem_instance.parameters)
     transformed_parameters = {
-        key: float(value) for key, value in parameters.items() if isinstance(value, (int, float))
+        key: float(value)
+        for key, value in parameters.items()
+        if isinstance(value, (int, float)) and not isinstance(value, bool)
     }
     if bundle.parameter_action is not None:
         if bundle.parameter_action.action_family != "scalar_rescale":
@@ -344,9 +390,11 @@ def execute_bundle(
                 f"parameter action family {bundle.parameter_action.action_family!r} is "
                 f"not executable at v0.37b; only 'scalar_rescale' is."
             )
+        targets = _resolve_parameter_targets(bundle, tuple(sorted(transformed_parameters)))
         factor = float(bundle.parameter_action.parameters.get("factor", 1.0))
         transformed_parameters = {
-            key: value * factor for key, value in transformed_parameters.items()
+            key: (value * factor if key in targets else value)
+            for key, value in transformed_parameters.items()
         }
 
     return BundleExecutionResult(
