@@ -24,6 +24,7 @@ from pdelie.benchmarks import (
     EXPECTED_CLASSIFICATIONS,
     PILOT_ALPHA_GRID,
     PROFILE_REGISTRY,
+    V0_37C_CASE_IDS,
     alpha_grid,
     build_coefficient_field,
     resolve_case,
@@ -61,10 +62,10 @@ def test_the_freeze_document_exists_and_is_marked_frozen() -> None:
 def test_the_benchmark_cases_match_the_freeze_table() -> None:
     """Five cases since C-4's retirement at pilot 2."""
     rows = _case_rows()
-    assert set(rows) == set(BENCHMARK_CASES) == {"C-1", "C-2", "C-3", "C-5", "C-6"}
+    assert set(rows) == set(V0_37C_CASE_IDS) == {"C-1", "C-2", "C-3", "C-5", "C-6"}
 
 
-@pytest.mark.parametrize("case_id", sorted(BENCHMARK_CASES))
+@pytest.mark.parametrize("case_id", sorted(V0_37C_CASE_IDS))
 def test_each_case_declares_the_operator_family_the_freeze_gives_it(case_id: str) -> None:
     cells = _case_rows()[case_id]
     case = BENCHMARK_CASES[case_id]
@@ -74,7 +75,7 @@ def test_each_case_declares_the_operator_family_the_freeze_gives_it(case_id: str
     )
 
 
-@pytest.mark.parametrize("case_id", sorted(BENCHMARK_CASES))
+@pytest.mark.parametrize("case_id", sorted(V0_37C_CASE_IDS))
 def test_each_case_declares_the_equation_and_profile_the_freeze_gives_it(case_id: str) -> None:
     cells = _case_rows()[case_id]
     case = BENCHMARK_CASES[case_id]
@@ -82,9 +83,27 @@ def test_each_case_declares_the_equation_and_profile_the_freeze_gives_it(case_id
     assert case.profile_id in cells
 
 
-@pytest.mark.parametrize("classification", EXPECTED_CLASSIFICATIONS)
+#: Classifications the v0.37c freeze declares. The vocabulary grows with later
+#: sub-phases -- v0.38e added two for C-7/C-8 -- and the signed v0.37c freeze
+#: cannot mention classifications that did not exist when it was signed.
+_V0_37C_CLASSIFICATIONS: tuple[str, ...] = (
+    "valid_same_target",
+    "valid_equivalence",
+    "invalid_fixed_background_obstruction",
+    "invalid_parameter_only_without_state",
+    "invalid_state_only_with_localized_coefficient",
+)
+
+
+@pytest.mark.parametrize("classification", _V0_37C_CLASSIFICATIONS)
 def test_every_expected_classification_appears_in_the_freeze(classification: str) -> None:
     assert classification in _freeze()
+
+
+def test_the_v0_37c_classification_subset_is_still_a_subset() -> None:
+    """Guard the split: these must remain real values, not a stale copy."""
+    missing = set(_V0_37C_CLASSIFICATIONS) - set(EXPECTED_CLASSIFICATIONS)
+    assert not missing, f"v0.37c classifications no longer declared: {sorted(missing)}"
 
 
 def test_the_operator_family_set_is_exactly_identity() -> None:
@@ -95,7 +114,9 @@ def test_the_operator_family_set_is_exactly_identity() -> None:
     cannot affect this benchmark. If a future case selects it, this fails and
     the gap becomes a blocker that has to be closed first.
     """
-    families = {case.expected_operator_family for case in BENCHMARK_CASES.values()}
+    families = {
+        BENCHMARK_CASES[case_id].expected_operator_family for case_id in V0_37C_CASE_IDS
+    }
     assert families == {"identity"}
     assert "linear_combination_of_derivatives" not in families
     assert "diagnostic_fitted" not in families
@@ -108,7 +129,11 @@ def test_the_operator_family_set_is_exactly_identity() -> None:
 
 def test_three_of_five_cases_are_deliberate_obstructions() -> None:
     """The benchmark distinguishes outcomes; it does not pass tests."""
-    obstructions = [c.case_id for c in BENCHMARK_CASES.values() if c.is_deliberate_obstruction]
+    obstructions = [
+        case_id
+        for case_id in V0_37C_CASE_IDS
+        if BENCHMARK_CASES[case_id].is_deliberate_obstruction
+    ]
     assert sorted(obstructions) == ["C-3", "C-5", "C-6"]
 
 
@@ -196,8 +221,10 @@ def test_the_profiles_match_the_freeze() -> None:
 
 
 def test_unknown_case_and_profile_are_refused() -> None:
+    # C-7 became a real case at v0.38e; C-4 was retired at v0.37c and no case
+    # has ever reused its number, so it is the stable never-existed id.
     with pytest.raises(ScopeValidationError, match="unknown benchmark case"):
-        resolve_case("C-7")
+        resolve_case("C-4")
     with pytest.raises(ScopeValidationError, match="unknown profile"):
         build_coefficient_field("chirp", 0.1, np.linspace(0, 1, 8))
 
@@ -285,7 +312,7 @@ def test_every_frozen_tolerance_cites_a_reference() -> None:
     """PS-2 outlives the pilot: a tolerance without a citation is untraceable."""
     text = CONFIRMATORY.read_text()
     assert "traces to" in text
-    for case_id in BENCHMARK_CASES:
+    for case_id in V0_37C_CASE_IDS:
         assert case_id in text, case_id
     # And the freeze must say what it does NOT establish.
     assert "What this freeze does not establish" in text

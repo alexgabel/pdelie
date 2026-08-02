@@ -23,6 +23,7 @@ from pdelie.actions.coaction_consistency import (
     COACTION_STATUSES,
     LEGAL_STATUS_DIAGNOSIS_PAIRS,
     PARAMETER_TARGET_KEY,
+    RESERVED_UNREACHABLE_PAIRS,
     declared_parameter_targets,
     summarize_coaction_consistency,
 )
@@ -242,8 +243,13 @@ def test_cr3_inconsistent_declared_not_executed_is_reachable() -> None:
     assert payload["diagnosis"] == "declared_not_executed"
 
 
-def test_cr3_every_legal_pair_the_summariser_can_emit_is_covered() -> None:
-    """Guard the coverage claim itself, rather than trusting the list above."""
+def test_cr3_every_reachable_legal_pair_has_a_constructed_case() -> None:
+    """B-1 of the pilot freeze, as a standing test.
+
+    Pilot run 1 blocked here: the legal table advertised a pair nothing could
+    produce. The reserved set is excluded BY NAME, so a pair that quietly stops
+    being producible fails this rather than being absorbed into the exception.
+    """
     emitted = set()
     for parameters, action in (
         ({"nu": 0.1}, None),
@@ -255,12 +261,70 @@ def test_cr3_every_legal_pair_the_summariser_can_emit_is_covered() -> None:
         payload = summarize_coaction_consistency(_bundle(parameters, parameter_action=action))
         emitted.add((payload["consistency_status"], payload["diagnosis"]))
 
-    unreachable = LEGAL_STATUS_DIAGNOSIS_PAIRS - emitted
-    assert unreachable <= {("inconsistent", "executed_not_declared")}, (
-        f"legal pairs with no constructed case: {sorted(unreachable)}"
+    expected = LEGAL_STATUS_DIAGNOSIS_PAIRS - RESERVED_UNREACHABLE_PAIRS
+    assert emitted == expected, (
+        f"not produced: {sorted(expected - emitted)}; "
+        f"produced but not legal: {sorted(emitted - LEGAL_STATUS_DIAGNOSIS_PAIRS)}"
     )
-    assert emitted <= LEGAL_STATUS_DIAGNOSIS_PAIRS, (
-        f"emitted a pair the table calls illegal: {sorted(emitted - LEGAL_STATUS_DIAGNOSIS_PAIRS)}"
+
+
+def test_reserved_pairs_are_genuinely_unreachable() -> None:
+    """Prove the reservation by reading the branches, not by failing to hit one.
+
+    A reserved pair is a claim that no code path emits it. Absence of a test
+    that produces it is not evidence -- that is how the block in run 1 arose in
+    the first place. This parses every literal (status, diagnosis) assignment in
+    the summariser and asserts the reserved pairs are not among them.
+    """
+    import ast
+    from pathlib import Path
+
+    import pdelie.actions.coaction_consistency as module
+
+    tree = ast.parse(Path(module.__file__).read_text())
+    function = next(
+        node
+        for node in ast.walk(tree)
+        if isinstance(node, ast.FunctionDef)
+        and node.name == "summarize_coaction_consistency"
+    )
+    emitted_literals: set[tuple[str, str]] = set()
+    for node in ast.walk(function):
+        if not isinstance(node, ast.Assign):
+            continue
+        target = node.targets[0]
+        if not (isinstance(target, ast.Tuple) and len(target.elts) == 2):
+            continue
+        names = [e.id for e in target.elts if isinstance(e, ast.Name)]
+        if names != ["status", "diagnosis"]:
+            continue
+        if isinstance(node.value, ast.Tuple) and len(node.value.elts) == 2:
+            values = [
+                e.value for e in node.value.elts if isinstance(e, ast.Constant)
+            ]
+            if len(values) == 2:
+                emitted_literals.add((values[0], values[1]))
+
+    assert emitted_literals, "found no (status, diagnosis) assignments to inspect"
+    assert emitted_literals <= LEGAL_STATUS_DIAGNOSIS_PAIRS, (
+        f"the summariser can emit an illegal pair: "
+        f"{sorted(emitted_literals - LEGAL_STATUS_DIAGNOSIS_PAIRS)}"
+    )
+    leaked = emitted_literals & RESERVED_UNREACHABLE_PAIRS
+    assert not leaked, (
+        f"{sorted(leaked)} is reserved as unreachable but the summariser now "
+        f"emits it. Lift the reservation deliberately -- and give it a test "
+        f"case -- rather than leaving the table describing the old behaviour."
+    )
+    assert emitted_literals == LEGAL_STATUS_DIAGNOSIS_PAIRS - RESERVED_UNREACHABLE_PAIRS
+
+
+def test_the_reserved_set_is_a_strict_subset_of_the_legal_set() -> None:
+    """A reservation must reserve something the table actually declares."""
+    assert RESERVED_UNREACHABLE_PAIRS < LEGAL_STATUS_DIAGNOSIS_PAIRS
+    assert RESERVED_UNREACHABLE_PAIRS, (
+        "an empty reserved set means every legal pair is reachable; if that "
+        "becomes true, delete this test rather than leaving it vacuous"
     )
 
 
@@ -352,56 +416,59 @@ def test_a_single_parameter_problem_is_unchanged_by_the_repair() -> None:
     assert result.transformed_parameters == {"nu_baseline": pytest.approx(0.2)}
 
 
-def test_every_shipped_benchmark_case_still_has_one_numeric_parameter() -> None:
-    """The premise the previous test rests on, asserted rather than assumed.
+def test_every_multi_parameter_case_names_a_target_or_expects_a_block() -> None:
+    """The invariant that replaces "every case has one parameter".
 
-    This is the reason the v0.37c suite could not observe the defect: on a
-    one-parameter problem, "rescale all" and "rescale the declared one" are the
-    same set. If a future case adds a second numeric parameter without naming a
-    target, the executor now refuses -- and this test names why before the
-    benchmark run does.
+    That premise was true through v0.37c and is deliberately false from v0.38e:
+    C-7 and C-8 are the first cases with two numeric parameters, which is the
+    only population on which the unnamed-target ambiguity is observable at all.
+
+    What must hold instead is the rule the executor enforces. A case with more
+    than one numeric parameter either names its rescale target, or declares that
+    it expects to be blocked. A case that does neither would raise mid-sweep and
+    take the whole benchmark run down with it.
     """
-    import ast
-    from pathlib import Path
-
     from pdelie.benchmarks.parameter_equivariant import BENCHMARK_CASES
 
     assert BENCHMARK_CASES, "no cases to check"
-
-    # The spec is built inside the runner, so the parameter mapping is read from
-    # the source rather than by executing a benchmark sweep here.
-    source = (
-        Path(__file__).resolve().parents[1]
-        / "src/pdelie/benchmarks/parameter_equivariant.py"
-    ).read_text()
-    tree = ast.parse(source)
-    parameter_mappings = [
-        node
-        for node in ast.walk(tree)
-        if isinstance(node, ast.keyword)
-        and node.arg == "parameters"
-        and isinstance(node.value, ast.Dict)
+    multi = [
+        case
+        for case in BENCHMARK_CASES.values()
+        if 1 + len(case.extra_numeric_parameters) > 1
     ]
-    assert parameter_mappings, "no parameters= mapping found in the benchmark runner"
+    assert multi, (
+        "no multi-parameter case exists; C-7/C-8 are what make the ambiguity "
+        "observable, and without one of them this suite is back where v0.37c was"
+    )
 
-    spec_mappings = [
-        node
-        for node in parameter_mappings
-        if any(
-            isinstance(key, ast.Constant) and key.value == "nu_baseline"
-            for key in node.value.keys  # type: ignore[attr-defined]
+    for case in multi:
+        action_parameters = dict(case.parameter_action_parameters or {})
+        names_target = PARAMETER_TARGET_KEY in action_parameters
+        expects_block = case.expected_classification == "blocked_ambiguous_parameter_target"
+        assert names_target or expects_block or case.parameter_action_family is None, (
+            f"case {case.case_id!r} declares "
+            f"{1 + len(case.extra_numeric_parameters)} numeric parameters and a "
+            f"{case.parameter_action_family!r} action with no "
+            f"{PARAMETER_TARGET_KEY!r}, but does not expect to be blocked. The "
+            f"executor refuses this, so the sweep would raise rather than record."
         )
-    ]
-    assert spec_mappings, "no ProblemInstanceSpec parameters mapping carrying nu_baseline"
-    for mapping in spec_mappings:
-        keys = [
-            key.value
-            for key in mapping.value.keys  # type: ignore[attr-defined]
-            if isinstance(key, ast.Constant)
-        ]
-        assert keys == ["nu_baseline"], (
-            f"a benchmark case now declares parameters {keys}. With more than one "
-            f"numeric parameter an unnamed rescale target is ambiguous and the "
-            f"executor refuses it -- declare "
-            f"{PARAMETER_TARGET_KEY!r} on the parameter action."
+        assert not (names_target and expects_block), (
+            f"case {case.case_id!r} both names a target and expects a block; "
+            f"naming one resolves the ambiguity, so it cannot also be blocked"
+        )
+
+
+def test_the_v0_37c_population_is_still_single_parameter() -> None:
+    """Why v0.37c could not see the defect, kept as a standing statement."""
+    from pdelie.benchmarks.parameter_equivariant import (
+        BENCHMARK_CASES,
+        V0_37C_CASE_IDS,
+    )
+
+    for case_id in V0_37C_CASE_IDS:
+        case = BENCHMARK_CASES[case_id]
+        assert not case.extra_numeric_parameters, (
+            f"{case_id} gained a second numeric parameter. That is allowed, but "
+            f"it changes what the signed v0.37c freeze measured, so the freeze "
+            f"scope must be revisited rather than the case quietly extended."
         )
