@@ -1,0 +1,52 @@
+{
+  "summary_type": "pdelie_artifact_correction_register",
+  "summary_schema_version": "0.1",
+  "register_policy": {
+    "append_only": true,
+    "note": "Entries are added, never edited or removed. A superseded artifact keeps its original content and its original hash: overwriting either would destroy the evidence that a correction happened, and a reader who cited the old identity could no longer tell what they cited."
+  },
+  "corrections": [
+    {
+      "correction_id": "AC-1",
+      "release": "0.38.0a1",
+      "title": "Benchmark equation_form declared an operator that produced none of the numbers",
+      "correction_class": "specification_only",
+      "measurement_relation": "bitwise_identical",
+      "old_scientific_interpretation_valid": false,
+      "superseded_artifact": {
+        "path": "docs/design/v0_37c_confirmatory_freeze_v2.md",
+        "status": "invalidated_declaration_mismatch",
+        "sha256_before_correction": "9abf36ec339a001a777172227c09e10180e84845bcad4658f6718e97c9d09947",
+        "sha256_at_invalidation": "5b870e5dae90133fc20b48dc2564a371ff6cb50c789aa753fbdbf32da3ed6eb3",
+        "retained": true,
+        "body_edited": false
+      },
+      "superseding_artifact": {
+        "path": "docs/design/v0_38e_confirmatory_freeze.md",
+        "relation": "supersedes",
+        "sha256_at_signing": "9b174394fee77758c1958cc641cd55c0c7d83b8c2949e2e7787102291b9ab493"
+      },
+      "changed_fields": [
+        "problem_instance.equation_form",
+        "problem_action_bundle.semantic_hash",
+        "commutation_report.scientific_payload",
+        "commutation_report.scientific_result_hash"
+      ],
+      "unchanged_fields": [
+        "measurement.absolute_error_l2",
+        "measurement.absolute_error_linf",
+        "measurement.comparison_scale",
+        "measurement.expected_classification",
+        "measurement.runtime_path"
+      ],
+      "evidence": {
+        "measurements_compared": 125,
+        "measurements_bitwise_identical": 125,
+        "worst_relative_gap": 0.0,
+        "population": "C-1, C-2, C-3, C-5, C-6 x 5 alpha x 5 seeds (confirmatory grid)"
+      },
+      "why_the_old_interpretation_is_invalid": "The declared equation_form was 'nonconservative' while the evaluators dispatched from provenance and evaluated the conservative operator on every variable-coefficient case. The numbers are valid for the conservative operator. Any statement in the superseded artifact about WHICH operator produced them is wrong, and the semantic hash was computed over the wrong declaration.",
+      "citation_guidance": "Cite the superseding artifact identity only. The superseded one is retained as a record of the correction, not as evidence."
+    }
+  ]
+}

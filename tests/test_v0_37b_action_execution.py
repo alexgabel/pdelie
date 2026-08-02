@@ -316,16 +316,35 @@ def test_execute_bundle_requires_an_execution_config(field, dx: float) -> None:
 
 
 def test_v0_37b_does_not_touch_the_residual_layer() -> None:
-    """v0.34a's dispatch is stable; v0.37b composes with it and changes nothing."""
+    """v0.34a's dispatch is stable; v0.37b composes with it and changes nothing.
+
+    Measured over the **v0.37 range**, ``v0.36.0..v0.37.1``, not against HEAD.
+
+    This is a claim about a completed release: *v0.37* did not touch the
+    residual layer. Measured against HEAD it silently becomes a permanent freeze
+    on the whole layer, and the first later release that legitimately adds a
+    module there fails a test named for v0.37 -- which is what happened when
+    v0.38 added ``operator_resolution.py``. A historical claim is checked
+    against the history it is about.
+    """
     import subprocess
 
+    end = subprocess.run(
+        ["git", "rev-parse", "--verify", "--quiet", "v0.37.1^{commit}"],
+        capture_output=True,
+        text=True,
+        check=False,
+    ).stdout.strip()
+    if not end:  # pragma: no cover - shallow clone without tags
+        pytest.skip("v0.37.1 tag unavailable; the v0.37 range cannot be measured")
+
     changed = subprocess.run(
-        ["git", "diff", "--name-only", "v0.36.0", "--", "src/pdelie/residuals/"],
+        ["git", "diff", "--name-only", "v0.36.0", end, "--", "src/pdelie/residuals/"],
         capture_output=True,
         text=True,
         check=False,
     ).stdout.split()
-    # The two hoists landed in v0.37a; nothing beyond them may change.
+    # The two hoists landed in v0.37a; nothing beyond them changed during v0.37.
     assert all(
         name.endswith(("heat_1d.py", "burgers_1d.py")) for name in changed
     ), f"v0.37 changed residual modules beyond the two constant hoists: {changed}"
