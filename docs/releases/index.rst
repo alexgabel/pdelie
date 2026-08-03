@@ -24,3 +24,4 @@ Release readiness and publishing records.
    archive/index
    V0_38_SEED_MIGRATION
    V0_38_0A1_RELEASE_READINESS
+   V0_38_GATES_A_TO_F

@@ -32,6 +32,11 @@ from pdelie.errors import ScopeValidationError
 __all__ = [
     "EXCLUSION_REASONS",
     "RowMask",
+    # Re-exported by ``pdelie.design``, so it is public whether or not this list
+    # said so. Found by the v0.38 API inventory: a name can be part of a
+    # package's surface while its own module declines to declare it, and then
+    # `from ... import *` and the package export disagree about what exists.
+    "build_row_mask",
     "compose_masks",
     "derive_full_field_derivatives_available",
 ]
