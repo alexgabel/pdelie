@@ -52,7 +52,7 @@ jobs:
       # isolated environments. Without this the run dies at the first call with
       # FileNotFoundError, before any wheel is built.
       - name: Install uv
-        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.1.0
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
 
       - name: Run the full migration orchestrator
         run: |
