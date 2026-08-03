@@ -47,3 +47,6 @@ Once a design is implemented and validated it is folded into the specs.
    v0_38b_pilot_report
    v0_38b_confirmatory_freeze
    FORNBERG_ACCURACY_ORACLE
+   v0_38c_hypothesis_freeze
+   v0_38c_pilot_report
+   v0_38c_confirmatory_freeze
