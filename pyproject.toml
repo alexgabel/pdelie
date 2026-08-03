@@ -116,6 +116,11 @@ markers = [
   # once, looked right, and was not a bound at all. See
   # docs/design/ANALYTICAL_ORACLE_DISCIPLINE.md.
   "load_bearing_analytical: a hand-derived bound gates this test; requires oracle_source",
+  # Requires outbound network. Skipped by default; run before a release. The
+  # offline pin checks compare the workflows against a manifest, so they pass
+  # when both are wrong in the same way -- only this resolves a SHA to its real
+  # tag. See tests/test_github_action_pins.py.
+  "network: needs outbound network; not run by default",
 ]
 
 # v0.30e: cross-cutting hygiene phase 1. All three tools are wired into
