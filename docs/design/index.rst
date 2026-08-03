@@ -50,3 +50,6 @@ Once a design is implemented and validated it is folded into the specs.
    v0_38c_hypothesis_freeze
    v0_38c_pilot_report
    v0_38c_confirmatory_freeze
+   v0_38d_hypothesis_freeze
+   v0_38d_pilot_report
+   v0_38d_confirmatory_freeze
