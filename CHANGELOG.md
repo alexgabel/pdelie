@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.38.0b1
+
+Feature-complete for v0.38. Adds the irregular-grid layer (v0.38a-d) on top of
+the a1 action-semantics work, freezes the public API from a measured inventory,
+and records Gates A-F.
+
+**Still not a release candidate.** Gate F (cross-platform replay) is not met: no
+v0.38 code has been replayed. `rc1` is cut only after it is.
+
+### Added since a1
+
+- **v0.38a** row masks identified by `DesignRowLineage`, with derived
+  `full_field_derivatives_available`.
+- **v0.38b** Fornberg non-uniform finite differences, with a piloted G-5 ratio
+  (`10.0`) and stencil cap (`13`), and four of v0.38a's five exclusion-reason
+  producers.
+- **v0.38c** irregular weak bridge: weak rows are windows in their own identity
+  namespace, quadrature narrowed to two validated rules.
+- **v0.38d** derivative error against a stated reference, with signal-versus-floor
+  regimes and median/IQR timing.
+
+### Public surface
+
+`pdelie.__all__` unchanged at 11. 11 new modules carrying 61 names; 10 promoted
+to package exports; 9 modules deliberately unexported, each with a recorded
+reason. See [`public_api_freeze.v0_38.json`](docs/specs/public_api_freeze.v0_38.json).
+
 ## 0.38.0a1
 
 Action-semantics hardening, and one breaking change that keeps a two-release-old
