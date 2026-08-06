@@ -119,6 +119,34 @@ v0.38b's conditioning numbers and v0.38c's quadrature errors are
 reason classification — are *expected* to agree exactly, which is an argument
 and not a measurement.
 
+### A replay has now been dispatched — and closes only part of this gate
+
+Run `30930069491` was dispatched against `10f8a13` (main, post-API-freeze). It is
+the first time any v0.38 code has been replayed.
+
+**What it covers.** `benchmark_platform_replay.yml` runs
+`run_admissibility_benchmark`, which now includes **C-7 and C-8** alongside the
+v0.37c cases. So it replays the v0.38e benchmark additions and re-checks the 125
+released measurements on a second platform.
+
+**Result: passed, and the numbers agree.** 175 paired measurements. All seven
+`exact_discrete` fields identical across platforms, zero mismatches; C-8 blocked
+on both, all 25 rows. In the signal regime the worst relative gap is
+**`4.485e-15`**. Fifty measurements sit at the spectral floor and their relative
+gaps are deliberately **not** computed — quoting one would reproduce the defect
+the v0.38d pilot blocked on twice. Full record:
+[`v0_38_platform_replay.md`](../design/v0_38_platform_replay.md).
+
+**What it does not cover.** v0.38b's conditioning numbers and v0.38c's quadrature
+errors are not produced by the benchmark, so this lane never touches them — and
+they are the `tolerance_numeric` values most in need of a replay, since both were
+frozen from single-platform pilots. Closing Gate F fully requires extending the
+lane to exercise them.
+
+Recorded here rather than left for a reader to infer from a green check: a lane
+passing is not the same as a gate closing, and the difference is exactly the kind
+of thing this arc has been catching.
+
 ### Why this is not a defect
 
 Gate F failing is the reason the next tag is **`v0.38.0b1`** rather than
