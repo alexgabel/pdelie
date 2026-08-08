@@ -139,15 +139,36 @@ The hook is a courtesy to the maintainer. It is not the enforcement mechanism.
 A release PR runs a single command that produces the same result as CI:
 
 ```bash
-# Runs the same checks CI runs, in the same order, exits nonzero on any failure.
+./scripts/release_gate_local.sh          # exits 0 only if every gate passes
+```
+
+**Correction, made by exercising the script.** This section originally specified
+the chain below, and two of its links are wrong for this repository:
+
+```bash
 python -m ruff check . && \
-python -m mypy src/pdelie && \
+python -m mypy src/pdelie && \          # <- always exits 1 here
 python -m pytest -q && \
 python -m sphinx -W -b html docs /tmp/sphinx-out && \
 python -m build --sdist --wheel && \
-pip install --force-reinstall dist/*.whl && \
+pip install --force-reinstall dist/*.whl && \   # <- clobbers the dev install
 python -c "import pdelie; print(pdelie.__version__)"
 ```
+
+1. **`mypy` always exits 1.** The repository carries a ratcheted baseline of 147
+   errors in 29 files, so a gate keyed on mypy's exit status is **permanently
+   red** — and a gate that can never pass gets disabled, which is worse than no
+   gate at all. The script checks the *fingerprint against the baseline*
+   instead, which is the invariant that actually matters, and reports when the
+   ratchet has improved so the baseline can be lowered deliberately.
+
+2. **`pip install --force-reinstall` clobbers the editable install.** Run in the
+   development environment it replaces the editable `pdelie` with the built
+   wheel, and the next local test run then silently measures the wheel rather
+   than the working tree. The script installs into a throwaway venv.
+
+Both were found by running the script, not by reading it. A procedure that has
+never been executed is a proposal.
 
 The release-close PR body includes each command's output. The pre-release ritual
 is not "I ran the tests"; it is "here is the paste of every gate command's exit
