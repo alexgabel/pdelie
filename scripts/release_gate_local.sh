@@ -82,10 +82,22 @@ if [ "$SKIP_BUILD" -eq 0 ]; then
     # Installed into a throwaway venv rather than the working environment: a
     # --force-reinstall into the dev env replaces the editable install, and the
     # next local test run then silently measures the wheel instead of the tree.
-    run_gate "install (wheel into a clean venv)" bash -c "
-        $PYTHON -m venv '$WORK/venv' >/dev/null 2>&1 &&
-        '$WORK/venv/bin/python' -m pip install -q --disable-pip-version-check '$WORK'/dist/*.whl &&
-        '$WORK/venv/bin/python' -c 'import pdelie; print(\"  imported pdelie\", pdelie.__version__)'
+    # The installed version is read via importlib.metadata, NOT pdelie.__version__.
+    # The package exposes no __version__ attribute -- RELEASE_ENFORCEMENT.md
+    # section 7 specified `print(pdelie.__version__)` and it AttributeErrors,
+    # which means the documented chain could never have completed. Adding the
+    # attribute would widen the frozen root surface to satisfy a check; reading
+    # the installed metadata is both canonical and a stronger assertion, because
+    # it verifies the WHEEL carries the version pyproject declares.
+    run_gate "install (wheel version == pyproject)" bash -c "
+        set -e
+        $PYTHON -m venv '$WORK/venv' >/dev/null 2>&1
+        '$WORK/venv/bin/python' -m pip install -q --disable-pip-version-check '$WORK'/dist/*.whl
+        expected=\$($PYTHON -c \"import tomllib,pathlib; print(tomllib.loads(pathlib.Path('pyproject.toml').read_text())['project']['version'])\")
+        actual=\$('$WORK/venv/bin/python' -c 'import importlib.metadata as m; print(m.version(\"pdelie\"))')
+        echo \"  pyproject=\$expected  installed wheel=\$actual\"
+        [ \"\$expected\" = \"\$actual\" ] || { echo '  MISMATCH'; exit 1; }
+        '$WORK/venv/bin/python' -c 'import pdelie; print(\"  imported pdelie ok,\", len(pdelie.__all__), \"root exports\")'
     "
 else
     NAMES+=("build (sdist+wheel)"); STATUS+=("SKIPPED")

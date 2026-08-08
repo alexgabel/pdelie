@@ -152,7 +152,7 @@ python -m pytest -q && \
 python -m sphinx -W -b html docs /tmp/sphinx-out && \
 python -m build --sdist --wheel && \
 pip install --force-reinstall dist/*.whl && \   # <- clobbers the dev install
-python -c "import pdelie; print(pdelie.__version__)"
+python -c "import pdelie; print(pdelie.__version__)"   # <- AttributeError
 ```
 
 1. **`mypy` always exits 1.** The repository carries a ratcheted baseline of 147
@@ -167,8 +167,18 @@ python -c "import pdelie; print(pdelie.__version__)"
    wheel, and the next local test run then silently measures the wheel rather
    than the working tree. The script installs into a throwaway venv.
 
-Both were found by running the script, not by reading it. A procedure that has
-never been executed is a proposal.
+3. **`pdelie.__version__` does not exist.** The package exposes no such
+   attribute, so the chain's final command raises `AttributeError`. Adding the
+   attribute would widen the root surface the v0.38 API freeze locks, to satisfy
+   a check; the script reads `importlib.metadata.version("pdelie")` from the
+   *installed wheel* instead and compares it against `pyproject`, which is both
+   canonical and a stronger assertion — it verifies the artifact carries the
+   version the project declares, not merely that it imports.
+
+**All three were found by running the script, not by reading it**, and together
+they mean the chain as documented **could never have completed**: three of its
+seven links fail on this repository. A procedure that has never been executed is
+a proposal, and this one had been cited as a control.
 
 The release-close PR body includes each command's output. The pre-release ritual
 is not "I ran the tests"; it is "here is the paste of every gate command's exit
