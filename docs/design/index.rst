@@ -54,3 +54,5 @@ Once a design is implemented and validated it is folded into the specs.
    v0_38d_pilot_report
    v0_38d_confirmatory_freeze
    v0_38_platform_replay
+   v0_38_gate_f_closure_plan
+   RELEASE_ENFORCEMENT
