@@ -342,7 +342,18 @@ pip install -e . --no-deps        # or: uv pip install -e . --no-deps
 ./scripts/release_gate_local.sh            # full run, no --skip-build
 python -m pytest tests/test_branch_protection_policy.py -m network
 python scripts/audit_replay_population.py <artifact-dir>
+
+# AFTER tagging: exercise the tag the way a user would, from a venv that has
+# never seen this working tree.
+uv venv --python 3.12 /tmp/smoke
+VIRTUAL_ENV=/tmp/smoke uv pip install \
+  "git+https://github.com/alexgabel/pdelie.git@<TAG>"
+/tmp/smoke/bin/python scripts/external_smoke.py
 ```
+
+`external_smoke.py` **refuses to run** if PDELie resolves to a source checkout.
+A smoke test that silently measured the working tree would pass on a broken
+wheel, which is the one thing it exists to catch.
 
 **The reinstall is not optional and is easy to skip.** `importlib.metadata`
 reports the version recorded when the package was installed, not the one in
