@@ -16,7 +16,7 @@ def test_current_release_metadata_docs_and_ci_are_aligned() -> None:
     readme = _repo_text("README.md")
     changelog = _repo_text("CHANGELOG.md")
     publishing = _repo_text("docs/releases/PUBLISHING.md")
-    readiness = _repo_text("docs/releases/V0_38_0RC1_RELEASE_READINESS.md")
+    readiness = _repo_text("docs/releases/V0_38_0_RELEASE_READINESS.md")
     plan = _repo_text("docs/planning/PLAN.md")
     roadmap = _repo_text("docs/planning/ROADMAP.md")
     api_stability = _repo_text("docs/specs/API_STABILITY.md")
@@ -38,8 +38,8 @@ def test_current_release_metadata_docs_and_ci_are_aligned() -> None:
         flags=re.MULTILINE,
     )
 
-    assert pyproject["project"]["version"] == "0.38.0rc1"
-    assert 'release = "0.38.0rc1"' in docs_conf
+    assert pyproject["project"]["version"] == "0.38.0"
+    assert 'release = "0.38.0"' in docs_conf
     assert 'version = "0.38"' in docs_conf
     assert release_gate_jobs == ["release-gate"], (
         f"expected exactly one release-gate job named 'release-gate', found "
@@ -133,6 +133,7 @@ def test_current_release_metadata_docs_and_ci_are_aligned() -> None:
     assert "Stable public-surface note for the v0.37.0 release close" in api_stability
 
     assert "archive/index" in planning_index
+    assert "V0_38_0_RELEASE_READINESS" in releases_index
     assert "V0_38_0RC1_RELEASE_READINESS" in releases_index
     assert "V0_38_0B1_RELEASE_READINESS" in releases_index, (
         "the b1 readiness document must stay indexed: it records why that "
