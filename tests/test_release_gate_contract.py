@@ -312,3 +312,36 @@ def test_the_interpreter_abort_uses_a_distinct_exit_code() -> None:
         "re-entry is checked before the interpreter, so the codes should appear "
         "in that order; if this flipped, verify both paths still work"
     )
+
+
+def test_the_external_smoke_refuses_to_measure_the_working_tree() -> None:
+    """The one property that makes it a smoke test rather than a second suite.
+
+    Run against the checkout it would pass on a wheel missing half its modules,
+    because the source tree is importable and every dev dependency is present.
+    That is the environment a release must not be trusted in.
+    """
+    script = REPO_ROOT / "scripts/external_smoke.py"
+    assert script.exists()
+    text = script.read_text()
+    assert "REFUSING TO RUN" in text
+    assert "pyproject.toml" in text, (
+        "the checkout detection must key on something the installed "
+        "distribution does not have"
+    )
+
+
+def test_the_external_smoke_is_not_collected_by_pytest() -> None:
+    """It requires an installed distribution, so as a test it would fail or --
+    worse -- pass against the working tree and mean nothing."""
+    script = REPO_ROOT / "scripts/external_smoke.py"
+    assert not script.name.startswith("test_")
+    assert script.parent.name == "scripts"
+
+
+def test_the_release_checklist_names_the_external_smoke() -> None:
+    text = (REPO_ROOT / "docs/design/RELEASE_ENFORCEMENT.md").read_text()
+    assert "external_smoke.py" in text, (
+        "the release procedure does not run the external smoke, so the tag "
+        "would ship without anyone installing it the way a user would"
+    )
