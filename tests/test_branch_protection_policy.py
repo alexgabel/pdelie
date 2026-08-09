@@ -47,11 +47,27 @@ REQUIRED_CHECKS = {
     "editable-tests (3.13)",
 }
 
-#: The release-gate job carries the release name, so it changes every release.
-#: That is deliberate: renaming the job without updating protection is the
-#: version-literal drift class applied to CI, and this prefix check catches the
-#: rename while the exact-name assertion below catches a stale reference.
-RELEASE_GATE_PREFIX = "v0_38_0b1-release-gate"
+#: The release-gate job name is **stable** and carries no version.
+#:
+#: It used to be versioned -- ``v0_38_0b1-release-gate`` -- on the theory that a
+#: stale required context would prove a rename had been skipped. In practice it
+#: created a deadlock at every release cut:
+#:
+#:   1. protection requires ``v0_38_0b1-release-gate (3.12)`` and ``(3.13)``
+#:   2. the rc1 PR renames the job, so those contexts never report again
+#:   3. the PR cannot merge, and ``enforce_admins: true`` means nobody can
+#:      override it -- including the maintainer who set the rule
+#:
+#: Requiring both names does not help: every PR is then missing one. The only
+#: exit was a three-step protection edit with a window where the release gate
+#: was not required at all, performed correctly, every release, from memory.
+#:
+#: The signal that was lost -- "did the version get bumped everywhere?" -- is
+#: better served by ``tests/test_current_release_gate.py``, which asserts
+#: pyproject, ``docs/conf.py``, ``ci.yml`` and the release-gate manifest agree.
+#: That runs offline on every test invocation, where this audit is
+#: ``network``-marked and deselected by default.
+RELEASE_GATE_JOB = "release-gate"
 
 
 def _protection() -> dict:
@@ -85,20 +101,23 @@ def test_every_required_check_is_required() -> None:
 
 
 @pytest.mark.network
-def test_the_release_gate_is_required_and_names_the_current_release() -> None:
-    """Catches a renamed job left out of protection.
+def test_the_release_gate_is_required_under_its_stable_name() -> None:
+    """And that no *versioned* gate context has crept back in.
 
-    The job name carries the release, so cutting rc1 renames it. If protection
-    still lists the b1 name, the rc1 gate is not required and nothing says so --
-    the drift class this repository has already hit twice with version literals.
+    A versioned context is not merely untidy: protection matches by exact
+    string, so the moment the job is renamed the required check stops reporting
+    and every PR blocks with no override available.
     """
     contexts = set(_protection()["required_status_checks"]["contexts"])
     gate_contexts = {c for c in contexts if "release-gate" in c}
     assert gate_contexts, "no release-gate check is required on main"
-    assert all(c.startswith(RELEASE_GATE_PREFIX) for c in gate_contexts), (
-        f"protection requires {sorted(gate_contexts)} but this module expects "
-        f"{RELEASE_GATE_PREFIX!r}. If the release was renamed, update both the "
-        f"protection contexts and RELEASE_GATE_PREFIX in the same commit."
+
+    versioned = {c for c in gate_contexts if not c.startswith(RELEASE_GATE_JOB)}
+    assert not versioned, (
+        f"protection requires versioned release-gate contexts {sorted(versioned)}. "
+        f"These deadlock the next release cut: renaming the job stops them "
+        f"reporting, and enforce_admins leaves no way through. Replace them with "
+        f"{RELEASE_GATE_JOB!r}."
     )
 
 
@@ -139,17 +158,26 @@ def test_the_required_set_excludes_dispatch_only_lanes() -> None:
         assert "advisory" not in name, f"{name!r} is advisory and must not gate"
 
 
-def test_the_release_gate_prefix_matches_the_packaged_version() -> None:
-    """The prefix and pyproject must not drift apart."""
-    import tomllib
+def test_the_release_gate_job_name_carries_no_version() -> None:
+    """Offline, so the reasoning holds even when the network audit is skipped.
+
+    This is the assertion that replaces the old
+    ``RELEASE_GATE_PREFIX == "v" + version + "-release-gate"`` check. That one
+    kept two version literals in step with each other; it did not ask whether
+    having a version there was a good idea. It was not.
+    """
+    import re
     from pathlib import Path
 
-    version = tomllib.loads(
-        (Path(__file__).resolve().parents[1] / "pyproject.toml").read_text()
-    )["project"]["version"]
-    # 0.38.0b1 -> v0_38_0b1-release-gate
-    expected = "v" + version.replace(".", "_") + "-release-gate"
-    assert RELEASE_GATE_PREFIX == expected, (
-        f"RELEASE_GATE_PREFIX is {RELEASE_GATE_PREFIX!r} but pyproject says "
-        f"{version!r}, which implies {expected!r}. Update both together."
+    assert RELEASE_GATE_JOB == "release-gate"
+    assert not re.search(r"v?0[._]\d+", RELEASE_GATE_JOB), (
+        "the release-gate job name must not carry a version"
+    )
+
+    workflow = (
+        Path(__file__).resolve().parents[1] / ".github/workflows/ci.yml"
+    ).read_text()
+    assert f"\n  {RELEASE_GATE_JOB}:\n" in workflow, (
+        f"ci.yml does not define a job named {RELEASE_GATE_JOB!r}, so the "
+        f"required context can never report"
     )

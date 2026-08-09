@@ -15,8 +15,8 @@ limitation reads as an oversight.
 
 | Item | Disposition |
 |---|---|
-| Nonperiodic domains | **Deferred to v0.41.** `execute_state_action` refuses them today; lifting that needs a crop-based action family, which is its own arc. |
-| Monotone coefficients | **Deferred to v0.41.** Follows the above: a monotone profile is not periodic, so the axis cannot return before nonperiodic actions do. |
+| Nonperiodic domains | **Deferred to [v0.41](../planning/ROADMAP.md).** `execute_state_action` refuses them today; lifting that needs a crop-based action family, which is its own arc. |
+| Monotone coefficients | **Deferred to [v0.41](../planning/ROADMAP.md).** Follows the above: a monotone profile is not periodic, so the axis cannot return before nonperiodic actions do. |
 | `linear_combination_of_derivatives` synthesis | **Consumer-based defer.** No v0.38 consumer identified as of signing. It stays declared-but-unsynthesised, reporting `inconclusive` with a stated reason. If a v0.38 sub-phase selects the family, this defer is void and synthesis becomes in-scope for that sub-phase. |
 
 The third is deliberately conditional rather than dated. Dating a defer nobody

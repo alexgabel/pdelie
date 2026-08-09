@@ -2,7 +2,7 @@
   "summary_schema_version": "0.1",
   "summary_type": "pdelie_declarative_release_gate_manifest",
   "scope": "declarative_release_gate_checks_only",
-  "current_release_gate_job_name": "v0_38_0b1-release-gate",
+  "current_release_gate_job_name": "release-gate",
   "release_count": 25,
   "excluded_functional_release_gate_files": [
     {
@@ -1855,5 +1855,6 @@
         }
       ]
     }
-  ]
+  ],
+  "job_name_policy": "STABLE. The job name no longer carries the release version. A versioned name deadlocked branch protection at every cut: protection required v0_38_0b1-release-gate, the rename PR produced v0_38_0rc1-release-gate, the required context never reported again, and enforce_admins=true left no override. Version drift is caught instead by tests/test_current_release_gate.py, which asserts pyproject, docs/conf.py and this manifest agree -- offline, on every run."
 }

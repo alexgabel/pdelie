@@ -225,20 +225,22 @@ def test_v0_30e_ci_workflow_now_has_lint_typecheck_coverage_jobs_nonblocking() -
     # ``v0_31-release-gate``; the v0.32a-d arc renamed it to
     # ``v0_32-release-gate``; the v0.32.0 consolidated release close
     # renamed it to ``v0_32_0-release-gate``; the v0.33.0 close renamed it to
-    # ``v0_33_0-release-gate``. This guard tracks the
-    # current name.
+    # ``v0_33_0-release-gate``. The lineage ENDS there: from v0.38.0rc1 the
+    # job name is the stable ``release-gate``, because a versioned name
+    # deadlocked branch protection at every cut.
+    # Matches a versioned name too, deliberately. Matching only the stable
+    # name would make a regression surface as an empty list -- a guard failing
+    # for a reason unrelated to what it checks.
     release_gate_jobs = re.findall(
-        r"^  (v0_\d+(?:_\d+)?(?:[a-z]|a\d+|b\d+|rc\d+)?-release-gate):",
+        r"^  ((?:v0_\d+(?:_\d+)?(?:[a-z]|a\d+|b\d+|rc\d+)?-)?release-gate):",
         workflow,
         flags=re.MULTILINE,
     )
-    assert release_gate_jobs in (
-        ["v0_31-release-gate"],
-        ["v0_32-release-gate"],
-        ["v0_38_0b1-release-gate"],
-    ), (
-        f"expected the current v0.31.x, v0.32 arc, or v0.32.0 release "
-        f"close release-gate job; got: {release_gate_jobs}"
+    assert release_gate_jobs == ["release-gate"], (
+        f"expected exactly one job named 'release-gate'; got "
+        f"{release_gate_jobs}. A versioned name must not be reintroduced -- "
+        f"protection requires the context by exact name, so renaming it makes "
+        f"the required check stop reporting and no PR can merge."
     )
 
 
@@ -307,7 +309,7 @@ def test_v0_30f_release_gate_consolidation_manifest_exists() -> None:
         "v0_30-release-gate",
         "v0_31-release-gate",
         "v0_32-release-gate",
-        "v0_38_0b1-release-gate",
+        "release-gate",
     }
     assert manifest["release_count"] == len(manifest["releases"])
 

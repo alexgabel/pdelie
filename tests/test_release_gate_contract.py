@@ -267,3 +267,48 @@ def test_the_replay_lane_audits_its_population_before_upload() -> None:
     assert audit_at < upload_at, (
         "the independent audit must run before the artifact is uploaded"
     )
+
+
+def test_the_gate_checks_its_interpreter_before_running_any_subgate() -> None:
+    """An environment fault must not present as three code faults.
+
+    Running the gate where bare ``python`` is 3.11 reported ruff PASS and
+    mypy/pytest/install FAIL. Nothing was wrong with the code; the package
+    requires >=3.12.
+
+    The wasted run is not the harm. The harm is that a gate failing for
+    environment reasons teaches the operator to re-run it under a different
+    environment until it goes green -- a selection effect operating on the
+    release control itself.
+    """
+    text = SCRIPT.read_text()
+    assert "requires-python" in text, (
+        "the gate does not check its interpreter against pyproject"
+    )
+    assert "NOTHING WAS MEASURED" in text, (
+        "the abort message must say no sub-gate ran, or its output reads like "
+        "a partial result"
+    )
+    assert "exit 3" in text, "the interpreter abort needs its own exit code"
+
+    # Ordering is the load-bearing part: the check must precede the first gate.
+    check_at = text.index("requires-python")
+    first_gate_at = text.index('run_gate "ruff (lint)"')
+    assert check_at < first_gate_at, (
+        "the interpreter check runs after a sub-gate, so a wrong interpreter "
+        "still produces sub-gate output"
+    )
+
+
+def test_the_interpreter_abort_uses_a_distinct_exit_code() -> None:
+    """2 is re-entry, 3 is a bad interpreter, 1 is a genuine gate failure.
+
+    Collapsing them would make "the gate failed" ambiguous in exactly the
+    situation where the distinction matters most.
+    """
+    text = SCRIPT.read_text()
+    assert "exit 2" in text and "exit 3" in text
+    assert text.index("exit 2") < text.index("exit 3"), (
+        "re-entry is checked before the interpreter, so the codes should appear "
+        "in that order; if this flipped, verify both paths still work"
+    )
