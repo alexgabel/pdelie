@@ -206,16 +206,18 @@ def test_ci_workflow_release_gate_job_matches_v0_30_close() -> None:
     guard, which asserted that v0.30e had not preempted v0.30f.
     """
     jobs = _ci_workflow()["jobs"]
+    # Matches a versioned name too, so a regression surfaces as a wrong value
+    # rather than as an empty list.
     release_gate_jobs = [
-        n for n in jobs if re.match(r"^v0_\d+(?:_\d+)?(?:[a-z]|a\d+|b\d+|rc\d+)?-release-gate$", n)
+        n
+        for n in jobs
+        if re.match(
+            r"^(?:v0_\d+(?:_\d+)?(?:[a-z]|a\d+|b\d+|rc\d+)?-)?release-gate$", n
+        )
     ]
     # v0.31.0 close: v0_31-release-gate. v0.32a-d arc: v0_32-release-gate.
     # v0.33.0 consolidated release close: v0_33_0-release-gate.
-    assert release_gate_jobs in (
-        ["v0_31-release-gate"],
-        ["v0_32-release-gate"],
-        ["v0_38_0b1-release-gate"],
-    ), (
+    assert release_gate_jobs == ["release-gate"], (
         f"expected the current v0.31.x, v0.32 arc, or v0.32.0 release "
         f"close release-gate job; got: {release_gate_jobs}"
     )

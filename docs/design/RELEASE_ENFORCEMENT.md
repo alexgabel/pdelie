@@ -27,6 +27,8 @@ Direct push refused for all non-admin contributors. Direct push refused for
 admin contributors by `enforce_admins: true` — the maintainer's admin privilege
 does not silently bypass the protection they configured.
 
+---
+
 ## 2. Required status checks
 
 The following checks must report success on the PR head SHA before a merge is
@@ -41,7 +43,7 @@ permitted. Check names match the canonical CI job names in
 | `docs-build` | `sphinx -W -b html` | Warnings-as-errors |
 | `editable-tests` | Full suite in editable install | Cross-check against wheel behavior |
 | `package-smoke` | Clean-env wheel install + import | Distribution-shape check |
-| **`<current>-release-gate`** | Release-gate manifest replay | Current name is `v0_38_0b1-release-gate`; renamed at each release |
+| **`release-gate`** | Release-gate manifest replay | **Stable name, no version.** See §4a |
 
 **Not required (advisory):**
 
@@ -50,11 +52,13 @@ permitted. Check names match the canonical CI job names in
 
 The release-gate job name changes at each release. The renaming is itself
 required: `v0_37_1-release-gate` → `v0_38_0a1-release-gate` →
-`v0_38_0b1-release-gate` → `v0_38_0rc1-release-gate` → `v0_38_0-release-gate`.
+The rename-at-each-release policy is **retired**; see §4a.
 A protected-branch configuration that references an outdated job name silently
 stops enforcing, which is the version-literal drift class this document exists
 to prevent. Every release-close PR that renames the job must simultaneously
 update the branch-protection required-checks list.
+
+---
 
 ## 3. Additional required conditions
 
@@ -69,6 +73,8 @@ update the branch-protection required-checks list.
   next release cycle opens.
 - `required_conversation_resolution: true`. Review comments must be resolved
   before merge, so a substantive concern raised in a PR cannot be merged past.
+
+---
 
 ## 4. Installation via `gh api`
 
@@ -87,7 +93,8 @@ gh api \
   -f 'required_status_checks[contexts][]=docs-build' \
   -f 'required_status_checks[contexts][]=editable-tests' \
   -f 'required_status_checks[contexts][]=package-smoke' \
-  -f 'required_status_checks[contexts][]=v0_38_0b1-release-gate' \
+  -f 'required_status_checks[contexts][]=release-gate (3.12)' \
+  -f 'required_status_checks[contexts][]=release-gate (3.13)' \
   -f enforce_admins=true \
   -f required_pull_request_reviews[required_approving_review_count]=0 \
   -f required_pull_request_reviews[dismiss_stale_reviews]=true \
@@ -101,6 +108,69 @@ gh api \
 For `release/*` branches, apply the same via a branch-protection rule keyed to
 the pattern `release/*` (GitHub web UI or the equivalent `gh api` call against
 the `rulesets` endpoint).
+
+---
+
+## 4a. Why the release-gate job name is no longer versioned
+
+The job was named for the release — `v0_29-release-gate`, … ,
+`v0_38_0b1-release-gate` — and renamed at each cut. The stated rationale was
+that a stale required context proves the rename was skipped.
+
+**It deadlocks the release instead.** GitHub matches required status checks by
+exact string:
+
+1. protection requires `v0_38_0b1-release-gate (3.12)` and `(3.13)`
+2. the rc1 PR renames the job, so those two contexts never report again
+3. the PR cannot merge — and `enforce_admins: true` means nobody can override,
+   including the maintainer who configured it
+
+Requiring both names does not help: every PR is then missing one. The only exit
+was a three-step protection edit — drop the contexts, merge the rename, re-add
+them — containing a window where the release gate was **not required at all**,
+performed correctly, from memory, at every release.
+
+That is a control whose failure mode is "the repository is bricked until someone
+remembers an undocumented sequence of `gh api` calls."
+
+**The name is now `release-gate`, permanently.** Protection never changes again.
+
+The signal that was lost — *did the version get bumped everywhere?* — is better
+served by `tests/test_current_release_gate.py`, which asserts `pyproject.toml`,
+`docs/conf.py`, `ci.yml`, `README.md`, `CHANGELOG.md` and
+`configs/release_gate_manifest.json` all agree. That runs **offline, on every
+test invocation**. The protection audit it replaces is `network`-marked and
+deselected by default, so it only ever ran when someone remembered — the same
+weakness, one level up.
+
+The three job-name guards now match versioned **and** stable forms deliberately,
+so a regression surfaces as a wrong value rather than as an empty list. A guard
+that reports `[]` when its target disappears is the vacuity defect this
+repository has spent v0.38 removing.
+
+---
+
+## 4b. The gate does not pin its interpreter
+
+`scripts/release_gate_local.sh` uses `PYTHON="${PYTHON:-python}"`. On a machine
+where bare `python` is 3.11, every Python-dependent sub-gate fails, because the
+package requires `>=3.12` — an environment fault presenting as three code
+faults.
+
+The cost is not the wasted run. It is that a gate failing for environment
+reasons trains the operator to re-run it under a different environment until it
+goes green, which is a selection effect operating on the release control itself.
+
+**Closed 2026-08-09.** The gate now reads `requires-python` from
+`pyproject.toml`, compares it to the running interpreter, and aborts with exit
+**3** before any sub-gate runs — distinct from exit 2 (re-entry) and exit 1 (a
+real gate failure). The abort message states *NOTHING WAS MEASURED*, because an
+abort that merely prints an error reads like a partial result.
+
+Asserted by `test_the_gate_checks_its_interpreter_before_running_any_subgate`,
+including the ordering: the check must precede the first `run_gate` call.
+
+---
 
 ## 5. What this does NOT enforce
 
@@ -121,6 +191,8 @@ the `rulesets` endpoint).
   dereferenced commit). A rewritten tag is caught by the release-close PR's
   cross-reference audit.
 
+---
+
 ## 6. Hooks are convenience, not enforcement
 
 `.pre-commit-config.yaml` (existing, if present, else add) runs `ruff check` and
@@ -133,6 +205,8 @@ the `rulesets` endpoint).
   wouldn't have passed anyway; if the hook is skipped, the CI catches it.
 
 The hook is a courtesy to the maintainer. It is not the enforcement mechanism.
+
+---
 
 ## 7. The release procedure that avoids the two recurring defects
 
@@ -188,28 +262,34 @@ and lint was not — no single-command invariant existed.
 A helper script committed to `scripts/release_gate_local.sh` bundles the seven
 commands. The release checklist in the readiness doc references it.
 
+---
+
 ## 8. Current gaps against this document
 
 Recorded here rather than in the release-readiness doc, because they are
 process gaps and not release gaps:
 
-- **`main` branch protection not currently applied** as specified in §4. To be
-  applied by the maintainer via `gh api` before the next release-close PR
-  merges.
-- **`release/*` pattern rule not currently applied.** To be added via the
-  rulesets endpoint or web UI.
-- **`scripts/release_gate_local.sh` does not exist.** To be added as a small,
-  reviewable script.
-- **Pre-existing pre-commit config not audited** against the ruff/mypy versions
-  the CI uses. To be reconciled.
+**Amended 2026-08-09**, after checking each against the live repository rather
+than against this list. Three of the four were already closed and this section
+had not been updated — a stale blocker list either blocks falsely or is ignored
+wholesale, and this one was being read as gating rc1.
 
-None of these gaps affect the v0.38.0b1 tag. They must be closed before
-`v0.38.0-rc1` is cut, per Blocker 2 of the leadership counter-assessment.
+| gap | status |
+|---|---|
+| `main` branch protection not applied | **CLOSED** — `enforce_admins=true`, `allow_force_pushes=false`, `required_linear_history=true`, `strict=true`, audited by `tests/test_branch_protection_policy.py` |
+| `scripts/release_gate_local.sh` does not exist | **CLOSED** — 138 lines, six sub-gates, contract asserted by `tests/test_release_gate_contract.py` |
+| pre-existing pre-commit config not audited | **VOID** — there is no `.pre-commit-config.yaml` in this repository. The gap as written presumed a file that does not exist. If pre-commit is wanted, that is new work, not a reconciliation. |
+| `release/*` pattern rule not applied | **CLOSED 2026-08-09** — ruleset `Protect release branches` (id 20613957): `deletion`, `non_fast_forward`, `pull_request`. Deliberately **no** `required_status_checks`: `release/v0.31.x` runs Python 3.11 / PySINDy 1.7.5 and cannot produce main's 3.12/3.13 contexts, so requiring them would brick the maintenance line the same way the versioned job name bricked `main`. |
 
-## 9. Signature
+**Nothing from this list remains open before `v0.38.0rc1`.**
 
-Written as a policy document. Amendments follow the same rules as
-confirmatory-freeze amendments: dated entries, no restatement.
+Two further gaps were found while checking, neither inherited from the list:
+
+- **§4b, the unpinned gate interpreter** — found by running the gate. Closed.
+- **`required_conversation_resolution`** — §3 specified it; the repository had
+  it `false`. Now `true`, and audited. A control that exists only in prose is
+  the same failure as a gate that exists only in prose, which is why this
+  document exists at all.
 
 ---
 
@@ -255,3 +335,10 @@ than assumed.
 Anyone restoring an "assert the gate passes" test in good faith should read this
 section first: the recursion is not hypothetical, and the fix is not to make the
 test cheaper.
+
+---
+
+## 9. Signature
+
+Written as a policy document. Amendments follow the same rules as
+confirmatory-freeze amendments: dated entries, no restatement.

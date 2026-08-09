@@ -105,9 +105,10 @@
     "ruff"
   ],
   "expected_ci_jobs": [
-    "v0_38_0b1-release-gate",
+    "release-gate",
     "docs-build",
     "editable-tests",
     "package-smoke"
-  ]
+  ],
+  "release_gate_job_name_note": "Stable from v0.38.0rc1. Previously versioned (v0_38_0b1-release-gate), which deadlocked branch protection at every cut: protection matches the required context by exact string, so renaming the job stopped it reporting and enforce_admins left no override."
 }

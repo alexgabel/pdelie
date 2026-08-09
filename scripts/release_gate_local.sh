@@ -35,6 +35,53 @@ fi
 export PDELIE_RELEASE_GATE_RUNNING=1
 
 PYTHON="${PYTHON:-python}"
+
+# The interpreter is checked against pyproject's requires-python BEFORE any
+# sub-gate runs.
+#
+# Without this, running the gate where bare `python` is 3.11 reports ruff PASS
+# and mypy/pytest/install FAIL -- one environment fault wearing the costume of
+# three code faults. That happened on 2026-08-09.
+#
+# The wasted run is not the problem. The problem is that a gate which fails for
+# environment reasons teaches the operator to re-run it under a different
+# environment until it goes green, which is a selection effect operating on the
+# release control itself. So this aborts with a distinct exit code and says
+# plainly that nothing was measured.
+if ! "$PYTHON" - <<'PYEOF'
+import sys, tomllib, pathlib
+
+spec = tomllib.loads(pathlib.Path("pyproject.toml").read_text())["project"]
+requires = spec.get("requires-python", "")
+current = sys.version_info[:3]
+
+floor = None
+for clause in requires.split(","):
+    clause = clause.strip()
+    if clause.startswith(">="):
+        floor = tuple(int(p) for p in clause[2:].strip().split("."))
+if floor is None:
+    print(f"  cannot parse requires-python {requires!r}", file=sys.stderr)
+    sys.exit(1)
+if current < floor + (0,) * (3 - len(floor)):
+    print(
+        f"  interpreter is {'.'.join(map(str, current))}, but {spec['name']} "
+        f"requires-python {requires}.\n"
+        f"  NOTHING WAS MEASURED. This is an environment fault, not a code "
+        f"fault -- do not read the sub-gate results below, there are none.\n"
+        f"  Re-run with a conforming interpreter:\n"
+        f"    PYTHON=/path/to/python3.12 ./scripts/release_gate_local.sh",
+        file=sys.stderr,
+    )
+    sys.exit(1)
+print(f"  interpreter {'.'.join(map(str, current))} satisfies {requires}")
+PYEOF
+then
+    echo "" >&2
+    echo "RELEASE GATE ABORTED before any sub-gate ran." >&2
+    exit 3
+fi
+
 SKIP_BUILD=0
 [ "${1:-}" = "--skip-build" ] && SKIP_BUILD=1
 

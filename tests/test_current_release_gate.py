@@ -22,12 +22,18 @@ def test_current_release_metadata_docs_and_ci_are_aligned() -> None:
     api_stability = _repo_text("docs/specs/API_STABILITY.md")
     planning_index = _repo_text("docs/planning/index.rst")
     releases_index = _repo_text("docs/releases/index.rst")
-    # The trailing group accepts a PEP 440 prerelease suffix (a1, b1, rc1) as
-    # well as the sub-milestone letter. Without it `v0_38_0b1-release-gate`
-    # matches nothing and the assertion below reports an empty list -- a guard
-    # failing for a reason unrelated to what it checks.
+    # The release-gate job name is STABLE: `release-gate`, with no version in
+    # it. A versioned name deadlocked branch protection at every cut --
+    # protection required `v0_38_0b1-release-gate`, the rename PR produced
+    # `v0_38_0rc1-release-gate`, the required context never reported again, and
+    # `enforce_admins: true` left no way through.
+    #
+    # This regex matches BOTH forms deliberately. Matching only the stable name
+    # would make a regression to a versioned name show up as an empty list --
+    # a guard failing for a reason unrelated to what it checks, which is the
+    # defect class this repository has now hit repeatedly.
     release_gate_jobs = re.findall(
-        r"^  (v0_\d+(?:_\d+)?(?:[a-z]|a\d+|b\d+|rc\d+)?-release-gate):",
+        r"^  ((?:v0_\d+(?:_\d+)?(?:[a-z]|a\d+|b\d+|rc\d+)?-)?release-gate):",
         workflow,
         flags=re.MULTILINE,
     )
@@ -35,9 +41,11 @@ def test_current_release_metadata_docs_and_ci_are_aligned() -> None:
     assert pyproject["project"]["version"] == "0.38.0b1"
     assert 'release = "0.38.0b1"' in docs_conf
     assert 'version = "0.38"' in docs_conf
-    # v0.33.0 release close: v0_33_0-release-gate (a single consolidated
-    # release-gate job for the five v0.33 sub-milestones).
-    assert release_gate_jobs == ["v0_38_0b1-release-gate"], release_gate_jobs
+    assert release_gate_jobs == ["release-gate"], (
+        f"expected exactly one release-gate job named 'release-gate', found "
+        f"{release_gate_jobs}. If this is a versioned name, it must not be "
+        f"reintroduced: it deadlocks branch protection at every release cut."
+    )
     for invocation_fragment in (
         "tests/test_current_release_gate.py",
         "tests/test_release_gates.py",
@@ -51,6 +59,7 @@ def test_current_release_metadata_docs_and_ci_are_aligned() -> None:
     # Guard against regression to earlier release-gate job names.
     for stale in (
         "v0_38_0a1-release-gate:",
+        "v0_38_0b1-release-gate:",
         "v0_37_0-release-gate:",
         "v0_29-release-gate:",
         "v0_30-release-gate:",
@@ -125,3 +134,44 @@ def test_current_release_metadata_docs_and_ci_are_aligned() -> None:
     assert "archive/index" in planning_index
     assert "V0_38_0B1_RELEASE_READINESS" in releases_index
     assert "archive/index" in releases_index
+
+
+def test_every_deferral_target_has_a_roadmap_row() -> None:
+    """A deferral pointing at a release that does not exist is a dropped item.
+
+    v0.38 deferred nonperiodic domains and monotone coefficients to `v0.41`,
+    and the roadmap had no v0.41 row -- nor a v0.38 row for the arc being
+    released. Both were invisible to planning while reading as scheduled.
+    """
+    import re
+
+    roadmap = _repo_text("docs/planning/ROADMAP.md")
+    rows = set(re.findall(r"^\| `(v\d+\.\d+)` \|", roadmap, flags=re.MULTILINE))
+
+    targets: set[str] = set()
+    for name in (
+        "docs/design/V0_38_BINDING_DESIGN_CONSTRAINTS.md",
+        "docs/planning/PLAN.md",
+    ):
+        targets |= set(re.findall(r"Deferred to \[?(v\d+\.\d+)", _repo_text(name)))
+
+    assert targets, "no deferrals found; this guard would pass vacuously"
+    missing = sorted(t for t in targets if t not in rows)
+    assert not missing, (
+        f"work is deferred to {missing}, which has no roadmap row. A deferral "
+        f"to a nonexistent release reads as scheduled and is not."
+    )
+
+
+def test_the_release_under_development_has_a_roadmap_row() -> None:
+    """v0.38 shipped a1 and b1 with no row in the roadmap at all."""
+    import re
+    import tomllib
+
+    version = tomllib.loads(_repo_text("pyproject.toml"))["project"]["version"]
+    minor = "v" + ".".join(version.split(".")[:2])
+    roadmap = _repo_text("docs/planning/ROADMAP.md")
+    rows = set(re.findall(r"^\| `(v\d+\.\d+)` \|", roadmap, flags=re.MULTILINE))
+    assert minor in rows, (
+        f"pyproject declares {version!r} but the roadmap has no {minor} row"
+    )

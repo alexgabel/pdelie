@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  v0_38_0b1-release-gate:
+  release-gate:
     # v0.37.0: consolidated release gate. Python 3.12/3.13 blocking (via
     # matrix), Python 3.14 advisory-only in a separate job below.
     # PySINDy is resolved by the [test] extra directly to the declared
