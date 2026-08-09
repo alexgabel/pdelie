@@ -210,3 +210,48 @@ None of these gaps affect the v0.38.0b1 tag. They must be closed before
 
 Written as a policy document. Amendments follow the same rules as
 confirmatory-freeze amendments: dated entries, no restatement.
+
+---
+
+## The release gate is run externally, never from pytest
+
+`scripts/release_gate_local.sh` is invoked **by a human or by CI, from a shell**,
+before tagging. It is **never** invoked from inside the test suite.
+
+The script runs the full test suite. A test that invoked it therefore ran the
+suite, which ran that test, which invoked the script again. This happened:
+`test_the_gate_actually_passes_on_this_tree` recursed **seven levels deep**, each
+level loading numpy/scipy/pysindy, and exhausted system swap (40.9 of 42 GB)
+before it was killed.
+
+Three defences are in place, and all three are needed:
+
+| | |
+|---|---|
+| `PDELIE_RELEASE_GATE_RUNNING` | the script refuses to re-enter, exit 2 |
+| `test_no_test_executes_the_gate_script` | AST scan; no test may spawn it |
+| `addopts = "-m 'not network'"` | markers do **not** deselect without it |
+
+### The gap this leaves, stated plainly
+
+Deleting that test removed the only automated assertion that *the gate passes on
+this tree*. That claim genuinely cannot be made from inside the thing the gate
+runs — it is not a check that was dropped for convenience, it is one that cannot
+exist in that location.
+
+So it is a **release-checklist step**, executed before tagging:
+
+```sh
+./scripts/release_gate_local.sh            # full run, no --skip-build
+python -m pytest tests/test_branch_protection_policy.py -m network
+python scripts/audit_replay_population.py <artifact-dir>
+```
+
+`--skip-build` prints `PASSED WITH SKIPS` and is explicitly *not sufficient for a
+release tag*. The branch-protection audit is `network`-marked and does not run by
+default; **a skipped audit is not a passing audit**, so it is named here rather
+than assumed.
+
+Anyone restoring an "assert the gate passes" test in good faith should read this
+section first: the recursion is not hypothetical, and the fix is not to make the
+test cheaper.

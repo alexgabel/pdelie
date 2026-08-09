@@ -24,6 +24,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import re
 from pathlib import Path
 from typing import Any
 
@@ -40,6 +41,41 @@ def _scope() -> dict:
 
 
 SCOPE = _scope()
+
+
+def _expected() -> dict:
+    """The reviewed row population. F-3 asserts equality against this set."""
+    path = Path(__file__).resolve().parents[1] / "configs/gate_f_expected_rows.json"
+    return json.loads(path.read_text())
+
+
+EXPECTED = _expected()
+EXPECTED_KEYS = {(r["workload"], r["row_key"]) for r in EXPECTED["rows"]}
+EXPECTED_GATE_KEYS = {
+    (r["workload"], r["row_key"])
+    for r in EXPECTED["rows"]
+    if r["gate_use"] == "gate_evidence"
+}
+
+#: Declared per workload family in the scope artifact. A gate row may carry
+#: ``derivative_order: null`` only if its family is listed here.
+NON_ORDER_FAMILIES = set(SCOPE["non_order_parameterized_families"])
+
+_ROW_ID_ORDER = re.compile(r"_d(\d+)$")
+
+
+def parse_row_id_for_audit(row_id: str) -> int | None:
+    """Recover the order a row key *displays*, to audit it against the typed value.
+
+    Never a source. The comparator reads ``derivative_order`` from the row; this
+    only checks the two agree, catching a formatting bug rather than supplying
+    semantics. Duplicated from ``replay_contracts`` deliberately: the comparator
+    must not import the generator, so that an error common to both cannot cancel
+    itself out.
+    """
+    match = _ROW_ID_ORDER.search(row_id)
+    return int(match.group(1)) if match else None
+
 
 # Fields that are classifications, not measurements. Any disagreement is a
 # failure regardless of magnitude.
@@ -139,16 +175,81 @@ def structural_checks(runners: dict[str, dict]) -> list[str]:
                                 f"scope says {classes[r['workload']]!r}")
                 break
 
+        # F-3: exact set equality against the reviewed manifest. Not a count.
+        # A count check passes on the wrong 229 rows, and the population that
+        # broke run 31326189317 had the right total (286) throughout.
+        emitted = {(r["workload"], r["row_key"]) for r in rows}
+        if emitted != EXPECTED_KEYS:
+            missing = sorted(EXPECTED_KEYS - emitted)
+            unexpected = sorted(emitted - EXPECTED_KEYS)
+            problems.append(
+                f"{label}: row population differs from the frozen manifest "
+                f"({len(missing)} missing, {len(unexpected)} unexpected). "
+                f"missing e.g. {missing[:3]}; unexpected e.g. {unexpected[:3]}"
+            )
+
+        # F-3a: the gate/exploratory partition must equal the frozen partition.
+        # Same total, different split, is exactly the failure being corrected.
+        emitted_gate = {
+            (r["workload"], r["row_key"]) for r in rows
+            if r.get("gate_use") == "gate_evidence"
+        }
+        if emitted_gate != EXPECTED_GATE_KEYS:
+            wrongly_gate = sorted(emitted_gate - EXPECTED_GATE_KEYS)
+            wrongly_expl = sorted(EXPECTED_GATE_KEYS - emitted_gate)
+            problems.append(
+                f"{label}: gate/exploratory partition differs from the frozen "
+                f"partition. {len(wrongly_gate)} row(s) claim gate evidence but "
+                f"are frozen exploratory (e.g. {wrongly_gate[:3]}); "
+                f"{len(wrongly_expl)} the reverse (e.g. {wrongly_expl[:3]})"
+            )
+
         for r in rows:
-            if r.get("gate_use") == "gate_evidence":
-                order = r.get("derivative_order")
-                if order is not None and order not in SCOPE["supported_derivative_orders"]:
+            if r.get("gate_use") != "gate_evidence":
+                continue
+            order = r.get("derivative_order")
+
+            # F-4a first. A row whose order is None is in scope only because a
+            # DECLARED non-order-parameterised family permits it -- never because
+            # the value is absent and the check cannot tell. Treating None as
+            # in-scope by default is how F-4 passed vacuously over ten d=4 rows.
+            if order is None:
+                family = r.get("workload_family")
+                if family is None:
                     problems.append(
                         f"{label}: {r['workload']}/{r['row_key']} is gate evidence "
-                        f"at derivative order {order}, outside the frozen scope "
-                        f"{SCOPE['supported_derivative_orders']}"
+                        f"with no derivative_order and no workload_family, so its "
+                        f"scope cannot be established. Refused, not defaulted."
                     )
                     break
+                if family not in NON_ORDER_FAMILIES:
+                    problems.append(
+                        f"{label}: {r['workload']}/{r['row_key']} is gate evidence "
+                        f"with derivative_order null, but family {family!r} IS "
+                        f"order-parameterised. This is the exact defect that put "
+                        f"ten d=4 rows into run 31326189317's gate population."
+                    )
+                    break
+                continue
+
+            # F-4: an order that is present must be in the frozen scope.
+            if order not in SCOPE["supported_derivative_orders"]:
+                problems.append(
+                    f"{label}: {r['workload']}/{r['row_key']} is gate evidence "
+                    f"at derivative order {order}, outside the frozen scope "
+                    f"{SCOPE['supported_derivative_orders']}"
+                )
+                break
+
+            # The displayed key must agree with the typed value. This catches a
+            # formatting bug; it never supplies the order.
+            displayed = parse_row_id_for_audit(r["row_key"])
+            if displayed is not None and displayed != order:
+                problems.append(
+                    f"{label}: {r['workload']}/{r['row_key']} displays derivative "
+                    f"order {displayed} but carries {order}"
+                )
+                break
 
     labels = sorted(key_sets)
     for i, left in enumerate(labels):
@@ -180,10 +281,17 @@ def compare(left_label: str, left: dict, right_label: str, right: dict) -> dict[
     worst_key: str | None = None
     worst_scaled = 0.0
     worst_scaled_key: str | None = None
-    floor_rows = 0
-    signal_rows = 0
-    bitwise = 0
-    numeric_rows = 0
+    # Six independent counters. The previous three conflated "was compared"
+    # with "was comparable under a relative statistic", so a row could be
+    # excluded from the bitwise denominator by a classification unrelated to
+    # whether its bits were equal.
+    numeric_comparisons_total = 0
+    numeric_comparisons_bitwise_equal = 0
+    numeric_comparisons_bitwise_different = 0
+    signal_comparisons = 0
+    floor_comparisons = 0
+    not_comparable = 0
+    bitwise_differences: list[str] = []
 
     for key in keys:
         ra, rb = a[key], b[key]
@@ -200,26 +308,47 @@ def compare(left_label: str, left: dict, right_label: str, right: dict) -> dict[
                     f"{key[0]}/{key[1]}:{field} {ra.get(field)!r} vs {rb.get(field)!r}"
                 )
 
-        # Floor rows: both sides report None for the relative error by design.
-        if ra.get("reporting_regime") == "floor":
-            floor_rows += 1
-            continue
-
         for field in _NUMERIC_FIELDS:
             x, y = ra.get(field), rb.get(field)
             if x is None or y is None:
+                not_comparable += 1
                 continue
-            numeric_rows += 1
+
+            # BITWISE ACCOUNTING RUNS FIRST, AND UNCONDITIONALLY.
+            #
+            # F-6 asks whether two CPython patch releases produced identical
+            # bits. That question is well posed at the numerical floor -- more
+            # so, in fact, since floor values are the ones a libm change would
+            # perturb. The previous ordering classified a comparison as "floor"
+            # and skipped it before counting, so F-6's denominator silently
+            # excluded exactly the rows most likely to differ, and a bitwise
+            # difference there would have been reported as agreement.
+            #
+            # Floor classification governs which *statistic is meaningful*
+            # (absolute, not relative). It has no bearing on whether the bits
+            # were compared.
+            numeric_comparisons_total += 1
             if x == y:
-                bitwise += 1
+                numeric_comparisons_bitwise_equal += 1
+            else:
+                numeric_comparisons_bitwise_different += 1
+                bitwise_differences.append(
+                    f"{key[0]}/{key[1]}:{field} {x!r} vs {y!r}"
+                )
+
             scale = ra.get("reference_scale") or max(abs(x), abs(y))
             if scale == 0.0:
+                not_comparable += 1
                 continue
-            # Signal versus floor, against the v0.38d boundary.
-            if max(abs(x), abs(y)) <= _SQRT_EPS * scale:
-                floor_rows += 1
+            # Signal versus floor, against the v0.38d boundary. This selects the
+            # statistic; the bits above were already accounted for.
+            if (
+                ra.get("reporting_regime") == "floor"
+                or max(abs(x), abs(y)) <= _SQRT_EPS * scale
+            ):
+                floor_comparisons += 1
                 continue
-            signal_rows += 1
+            signal_comparisons += 1
             # PRIMARY: scale-stable. abs difference against the quantity's own
             # reference scale, the definition v0.38d froze.
             scaled = abs(x - y) / scale
@@ -239,10 +368,17 @@ def compare(left_label: str, left: dict, right_label: str, right: dict) -> dict[
         "unpaired_right": only_right,
         "discrete_mismatches": discrete_mismatch,
         "metric_mismatches": metric_mismatch,
-        "numeric_comparisons": numeric_rows,
-        "bitwise_identical": bitwise,
-        "signal_rows": signal_rows,
-        "floor_rows": floor_rows,
+        "numeric_comparisons_total": numeric_comparisons_total,
+        "numeric_comparisons_bitwise_equal": numeric_comparisons_bitwise_equal,
+        "numeric_comparisons_bitwise_different": numeric_comparisons_bitwise_different,
+        "bitwise_differences": bitwise_differences[:20],
+        "signal_comparisons": signal_comparisons,
+        "floor_comparisons": floor_comparisons,
+        "not_comparable": not_comparable,
+        "accounting_identity": (
+            "total == bitwise_equal + bitwise_different; "
+            "total == signal + floor + not_comparable(post-scale)"
+        ),
         # Primary statistic for the gate decision.
         "worst_scaled_difference": worst_scaled,
         "worst_scaled_difference_at": worst_scaled_key,
@@ -300,7 +436,8 @@ def main() -> None:
         d = len(r["discrete_mismatches"]) or "—"
         m = len(r["metric_mismatches"]) or "—"
         print(f"| {r['left']} vs {r['right']} | {r['paired_rows']} | {d} | {m} | "
-              f"{r['signal_rows']} | {r['floor_rows']} | {r['bitwise_identical']} | "
+              f"{r['signal_comparisons']} | {r['floor_comparisons']} | "
+              f"{r['numeric_comparisons_bitwise_equal']}/{r['numeric_comparisons_total']} | "
               f"**`{r['worst_scaled_difference']:.3e}`** | "
               f"`{r['worst_relative_between_errors']:.3e}` |")
     print("\n*Primary statistic is the scaled difference. "
@@ -309,6 +446,17 @@ def main() -> None:
 
     failures = [r for r in results if r["discrete_mismatches"] or r["metric_mismatches"]
                 or r["unpaired_left"] or r["unpaired_right"]]
+
+    # The accounting identity, asserted rather than assumed. If these ever
+    # disagree the counters have drifted apart again and no number above is
+    # trustworthy.
+    for r in results:
+        total = r["numeric_comparisons_total"]
+        assert total == (r["numeric_comparisons_bitwise_equal"]
+                         + r["numeric_comparisons_bitwise_different"]), (
+            f"bitwise counters do not sum to the total for "
+            f"{r['left']} vs {r['right']}"
+        )
     if failures:
         print("\n### Failures\n")
         for r in failures:
