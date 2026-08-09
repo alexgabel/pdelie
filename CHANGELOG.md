@@ -1,5 +1,72 @@
 # Changelog
 
+## 0.38.0rc1
+
+Release candidate. **No library behaviour changed since `0.38.0b1`** — every
+commit is gate, harness, or record.
+
+`b1` withheld the RC designation for one stated reason: Gate F had not passed,
+and no v0.38 code had ever been replayed on a second platform. **Gate F closed**
+on run `31328966332` — three runner cells, 229 gate rows each, worst
+cross-platform scaled difference `4.168e-10` against a derived `1e-8` bound, and
+bitwise-identical (325/325) across a CPython patch bump. From here, defect
+corrections only.
+
+It took three attempts and the two failures are recorded, not hidden:
+Appendix B (a runner cell that does not exist) and **Appendix C** — a gate that
+passed *vacuously*, because ten out-of-scope `d = 4` rows carried
+`derivative_order: null` and F-4 read `null` as in scope. F-4 could not have
+failed; the rows it existed to exclude were invisible to it.
+
+### Fixed
+
+- Row semantics now originate in a typed `ReplayRowSpec`. An order-parameterised
+  row with no order **cannot be constructed**, not merely cannot be emitted. The
+  row key is generated from the spec and never parsed back.
+- New criteria **F-3a** (the gate/exploratory partition equals the frozen
+  partition) and **F-4a** (a `null` order is in scope only where a *declared*
+  order-free family permits it). F-3 now asserts **set equality** against a
+  reviewed manifest rather than a count — the broken population had the correct
+  total (286) throughout.
+- Bitwise comparison runs before and independently of floor classification. The
+  previous ordering skipped floor comparisons before counting them, so F-6's
+  denominator excluded precisely the small-magnitude rows a libm change would
+  perturb first.
+- `scripts/release_gate_local.sh` pins its interpreter against `requires-python`
+  and aborts with exit 3 **before any sub-gate runs**. Previously, running it
+  where bare `python` was 3.11 reported one environment fault as three code
+  faults.
+- The CI release-gate job is renamed to the stable `release-gate`. The versioned
+  name deadlocked branch protection at every cut: GitHub matches required
+  contexts by exact string, so renaming the job left the required check unable
+  to report, with `enforce_admins: true` allowing no override.
+
+### Added
+
+- `scripts/audit_replay_population.py` (**F-11**) — re-derives the scope rules
+  independently and imports neither the generator nor the comparator, so an
+  error common to both cannot cancel itself out. Runs on the runner, before
+  upload.
+- `configs/gate_f_expected_rows.json` — the frozen, reviewed row population.
+- `docs/evidence/v0_38_gate_f/` — the three artifacts verbatim plus the
+  comparison, because GitHub expires action artifacts. The verdict reproduces
+  from those files alone.
+- Roadmap rows for `v0.38` and `v0.41`, both previously absent — the arc being
+  released was missing from planning, and two v0.38 deferrals pointed at a
+  release with no row.
+- `release/*` branch ruleset, and `required_conversation_resolution`, which the
+  policy document specified and the repository did not have.
+
+### Unchanged
+
+- **No tolerance** was widened, narrowed, or reinterpreted. `1e-8` and `0.0`
+  stand exactly as derived.
+- Tags `v0.38.0a1` and `v0.38.0b1` remain published and unmoved.
+- Appendices A, B and C are append-only and were **not** revised when D
+  succeeded.
+- `discovery_task_result` keeps its 22-key schema, frozen since v0.30.1.
+- Git-tag-only; TestPyPI/PyPI publication remains deferred to `v1.0`.
+
 ## 0.38.0b1
 
 Feature-complete for v0.38. Adds the irregular-grid layer (v0.38a-d) on top of

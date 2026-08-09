@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pdelie"
-version = "0.38.0b1"
+version = "0.38.0rc1"
 description = "V0.32 modern Scientific Python + PySINDy 2.1 downstream discovery task bridge — periodic scalar 1D PySINDy PDELibrary task runner (discovery_task_result) and diagnostic-only WeakPDELibrary wrapper (pdelie_weak_pde_library_diagnostic), submodule-only, with a public JSON-only example. Python >=3.12, NumPy 2.x, PySINDy 2.1.x."
 readme = "README.md"
 requires-python = ">=3.12"

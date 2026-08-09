@@ -16,7 +16,7 @@ def test_current_release_metadata_docs_and_ci_are_aligned() -> None:
     readme = _repo_text("README.md")
     changelog = _repo_text("CHANGELOG.md")
     publishing = _repo_text("docs/releases/PUBLISHING.md")
-    readiness = _repo_text("docs/releases/V0_38_0B1_RELEASE_READINESS.md")
+    readiness = _repo_text("docs/releases/V0_38_0RC1_RELEASE_READINESS.md")
     plan = _repo_text("docs/planning/PLAN.md")
     roadmap = _repo_text("docs/planning/ROADMAP.md")
     api_stability = _repo_text("docs/specs/API_STABILITY.md")
@@ -38,8 +38,8 @@ def test_current_release_metadata_docs_and_ci_are_aligned() -> None:
         flags=re.MULTILINE,
     )
 
-    assert pyproject["project"]["version"] == "0.38.0b1"
-    assert 'release = "0.38.0b1"' in docs_conf
+    assert pyproject["project"]["version"] == "0.38.0rc1"
+    assert 'release = "0.38.0rc1"' in docs_conf
     assert 'version = "0.38"' in docs_conf
     assert release_gate_jobs == ["release-gate"], (
         f"expected exactly one release-gate job named 'release-gate', found "
@@ -117,11 +117,12 @@ def test_current_release_metadata_docs_and_ci_are_aligned() -> None:
     assert f"package version: `{current_version}`" in readiness
     assert f"git tag: `v{current_version}`" in readiness
     assert "Do not publish to TestPyPI or PyPI for `v0.38`" in readiness
-    # v0.38 §2: the alpha must say, in the readiness document itself, that it is
-    # not a release candidate. A tag whose status lives only in a PR description
-    # is a tag whose status is lost.
-    assert "not a release candidate" in readiness
-    assert "v0.38.0-rc1" in readiness
+    # rc1 must state, in the readiness document itself, that every gate is met
+    # -- and must name the gate that previously was not, so the claim it
+    # discharges is legible from the tag rather than from a PR description.
+    assert "Gate F closed" in readiness
+    assert "31328966332" in readiness
+    assert "defect corrections only" in readiness
     assert "`v0.37.0`" in publishing
     assert (
         "V0.37.0 Release Close" in plan
@@ -132,7 +133,11 @@ def test_current_release_metadata_docs_and_ci_are_aligned() -> None:
     assert "Stable public-surface note for the v0.37.0 release close" in api_stability
 
     assert "archive/index" in planning_index
-    assert "V0_38_0B1_RELEASE_READINESS" in releases_index
+    assert "V0_38_0RC1_RELEASE_READINESS" in releases_index
+    assert "V0_38_0B1_RELEASE_READINESS" in releases_index, (
+        "the b1 readiness document must stay indexed: it records why that "
+        "tag withheld the RC designation, which is the claim rc1 discharges"
+    )
     assert "archive/index" in releases_index
 
 

@@ -322,10 +322,23 @@ exist in that location.
 So it is a **release-checklist step**, executed before tagging:
 
 ```sh
+# FIRST, after any version bump: refresh the editable install.
+pip install -e . --no-deps        # or: uv pip install -e . --no-deps
+
 ./scripts/release_gate_local.sh            # full run, no --skip-build
 python -m pytest tests/test_branch_protection_policy.py -m network
 python scripts/audit_replay_population.py <artifact-dir>
 ```
+
+**The reinstall is not optional and is easy to skip.** `importlib.metadata`
+reports the version recorded when the package was installed, not the one in
+`pyproject.toml`. After a bump the working environment still reports the *old*
+version, and `test_the_installed_distribution_reports_the_packaged_version`
+fails — correctly, since the environment genuinely does not match the source.
+
+It reads like a code failure at exactly the moment attention is on the release,
+and the temptation is to treat the assertion as over-strict rather than the
+environment as stale. It is the environment. Reinstall, then run the gate.
 
 `--skip-build` prints `PASSED WITH SKIPS` and is explicitly *not sufficient for a
 release tag*. The branch-protection audit is `network`-marked and does not run by
