@@ -5,8 +5,16 @@ The existing replay lane runs ``run_admissibility_benchmark`` only, so the
 conditioning, v0.38c's quadrature, v0.38d's reference errors -- have never been
 measured on a second platform. This produces them.
 
-Populations are fixed by ``docs/design/v0_38_gate_f_closure_plan.md`` section 2:
-183 + 39 + 64 = 286 rows per runner.
+Scope comes from ``configs/gate_f_replay_scope.json`` and is **not restated
+here**. Run 31278210299 swept derivative order 4, which the v0.38b confirmatory
+freeze explicitly disclaims -- and five of its seven cross-platform
+disagreements were at d=4, measured against a bound that was never established.
+A harness that invents its own scope will do that again.
+
+The row count is **derived** from the scope artifact. "286 rows" was an
+invariant of the superseded design and is deliberately not preserved: removing
+d=4 from the gate population changes it, and a count asserted from memory would
+have hidden that.
 
 CI tooling, not library API
 ===========================
@@ -60,8 +68,21 @@ LINF = ErrorMetricSpec(metric_spec_id="replay_linf_absolute", quantity="absolute
 _SEED = 20380
 
 
-def _row(workload: str, key: str, **fields: Any) -> dict[str, Any]:
-    return {"workload": workload, "row_key": key, **fields}
+def _row(workload: str, key: str, *, order: int | None = None, **fields: Any) -> dict[str, Any]:
+    """One measurement row, labelled with whether it may inform a gate.
+
+    ``order=None`` means the row is not order-parameterised and is in scope.
+    """
+    in_scope = order is None or order in _ORDERS
+    return {
+        "workload": workload,
+        "row_key": key,
+        "derivative_order": order,
+        "scope": "in_frozen_scope" if in_scope else "outside_frozen_scope",
+        "gate_use": "gate_evidence" if in_scope else "not_used_for_gate_decision",
+        "portability_class": _SCOPE["portability_classes"][workload],
+        **fields,
+    }
 
 
 def _stretched(count: int, ratio: float) -> np.ndarray:
@@ -76,7 +97,20 @@ def _stretched(count: int, ratio: float) -> np.ndarray:
 # v0.38b -- 183 rows
 # ---------------------------------------------------------------------------
 
-_ORDERS = (1, 2, 3, 4)
+def _scope() -> dict[str, Any]:
+    """The single source of scope. Neither script keeps its own copy."""
+    path = Path(__file__).resolve().parents[1] / "configs/gate_f_replay_scope.json"
+    return json.loads(path.read_text())
+
+
+_SCOPE = _scope()
+
+#: Orders the v0.38b freeze establishes a claim for. Gate rows use only these.
+_ORDERS = tuple(_SCOPE["supported_derivative_orders"])
+
+#: Emitted, labelled, and excluded from any gate decision. Retained because
+#: deleting a real measurement to make a gate pass is the wrong repair.
+_EXPLORATORY_ORDERS = tuple(_SCOPE["exploratory_derivative_orders"])
 
 
 def v0_38b_rows() -> list[dict[str, Any]]:
@@ -84,7 +118,7 @@ def v0_38b_rows() -> list[dict[str, Any]]:
 
     # 4 orders x 3 stencil sizes x 5 nodes = 60
     nodes_pool = np.array([0.0, 0.31, 1.07, 1.13, 2.71, 4.02, 4.15, 6.4, 7.1, 8.3, 9.0, 10.4, 11.9])
-    for order in _ORDERS:
+    for order in _ORDERS + _EXPLORATORY_ORDERS:
         for stencil in (order + 2, order + 4, order + 6):
             stencil = min(stencil, 13)
             for node_index in range(5):
@@ -105,6 +139,7 @@ def v0_38b_rows() -> list[dict[str, Any]]:
                     _row(
                         "fornberg_uniform_polynomial_exactness",
                         f"d{order}_n{stencil}_i{node_index}",
+                        order=order,
                         formal_accuracy=w.formal_accuracy,
                         absolute_error=abs(approx - exact),
                         reference_scale=scale,
@@ -114,7 +149,7 @@ def v0_38b_rows() -> list[dict[str, Any]]:
                 )
 
     # 4 orders x 5 grids x 3 refinements = 60
-    for order in _ORDERS:
+    for order in _ORDERS + _EXPLORATORY_ORDERS:
         for grid_index, ratio in enumerate((1.0, 2.0, 4.0, 7.0, 10.0)):
             for refinement, count in enumerate((81, 121, 161)):
                 x = _stretched(count, ratio) * 2.0 * np.pi
@@ -134,6 +169,7 @@ def v0_38b_rows() -> list[dict[str, Any]]:
                     _row(
                         "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
                         f"d{order}_g{grid_index}_r{refinement}",
+                        order=order,
                         absolute_error=abs(approx - exact),
                         reference_scale=float(2.0**order),
                         spacing_ratio=describe_grid_regularity(x).spacing_ratio,
@@ -143,7 +179,7 @@ def v0_38b_rows() -> list[dict[str, Any]]:
                 )
 
     # 4 orders x 8 grids = 32
-    for order in _ORDERS:
+    for order in _ORDERS + _EXPLORATORY_ORDERS:
         for grid_index, ratio in enumerate((10.0, 40.0, 1e2, 1e3, 1e4, 1e5, 1e6, 1e8)):
             count = 121
             x = _stretched(count, ratio) * 2.0 * np.pi
@@ -163,6 +199,7 @@ def v0_38b_rows() -> list[dict[str, Any]]:
                 _row(
                     "fornberg_pathological_spacing_ratio_10_to_1e8",
                     f"d{order}_g{grid_index}",
+                        order=order,
                     absolute_error=abs(approx - exact),
                     reference_scale=float(2.0**order),
                     spacing_ratio=regularity.spacing_ratio,
@@ -191,7 +228,7 @@ def v0_38b_rows() -> list[dict[str, Any]]:
             )
 
     # 4 orders x 4 boundary positions = 16
-    for order in _ORDERS:
+    for order in _ORDERS + _EXPLORATORY_ORDERS:
         for position_index, offset in enumerate((0, 1, 2, 3)):
             count = 81
             x = _stretched(count, 4.0) * 2.0 * np.pi
@@ -207,6 +244,7 @@ def v0_38b_rows() -> list[dict[str, Any]]:
                 _row(
                     "fornberg_boundary_stencils_second_order",
                     f"d{order}_p{position_index}",
+                        order=order,
                     absolute_error=abs(approx - exact),
                     reference_scale=float(2.0**order),
                     error_metric_spec_id=LINF.metric_spec_id,
@@ -358,7 +396,7 @@ def v0_38d_rows() -> list[dict[str, Any]]:
 
     for kind_label, reference_kind in (("analytical", "analytical"), ("manufactured", "refined_grid")):
         for name, (f, ders, scale) in _FUNCS.items():
-            for order in _ORDERS:
+            for order in _ORDERS + _EXPLORATORY_ORDERS:
                 if ders[order] is None:
                     continue
                 i = int(0.37 * x.size)
@@ -384,7 +422,7 @@ def v0_38d_rows() -> list[dict[str, Any]]:
 
     # floor regime: evaluate where the reference is ~0
     for name, (f, ders, scale) in _FUNCS.items():
-        for order in _ORDERS:
+        for order in _ORDERS + _EXPLORATORY_ORDERS:
             if ders[order] is None:
                 continue
             zeros = np.abs(ders[order](x))
@@ -400,6 +438,7 @@ def v0_38d_rows() -> list[dict[str, Any]]:
                 _row(
                     "deriv_ref_floor_regime",
                     f"{name}_d{order}",
+                    order=order,
                     reporting_regime=report.reporting_regime,
                     absolute_error=report.absolute_error,
                     relative_error=report.relative_error,

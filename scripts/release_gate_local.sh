@@ -16,6 +16,24 @@
 
 set -uo pipefail
 
+# Recursion guard.
+#
+# This script runs the full pytest suite. If anything inside that suite invokes
+# the script again, the result is unbounded recursion: pytest -> gate -> pytest
+# -> gate, each level loading numpy/scipy/pysindy. That happened -- seven levels
+# deep, ~35 minutes, and it exhausted system swap.
+#
+# The offending test is gone, but the guard stays: it makes the failure mode
+# impossible rather than merely absent, and the next caller who reaches for this
+# script from a test gets a clear refusal instead of a dead machine.
+if [ "${PDELIE_RELEASE_GATE_RUNNING:-}" = "1" ]; then
+    echo "release_gate_local.sh is already running in this process tree." >&2
+    echo "It runs the full test suite, so invoking it from inside that suite" >&2
+    echo "recurses without bound. Refusing to re-enter." >&2
+    exit 2
+fi
+export PDELIE_RELEASE_GATE_RUNNING=1
+
 PYTHON="${PYTHON:-python}"
 SKIP_BUILD=0
 [ "${1:-}" = "--skip-build" ] && SKIP_BUILD=1
