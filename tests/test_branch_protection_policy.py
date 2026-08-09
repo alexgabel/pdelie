@@ -230,6 +230,13 @@ def test_release_branches_cannot_be_deleted_or_force_pushed() -> None:
     assert "deletion" in rules
     assert "non_fast_forward" in rules
     assert "pull_request" in rules
+    assert "creation" in rules, (
+        "without a creation rule, a mistyped branch name lands permanently in "
+        "the protected namespace: creation is allowed, deletion is not. That "
+        "happened once -- a PR branch named release/v0.38.0rc1 -- and clearing "
+        "it required disabling the ruleset, which is exactly the habit a "
+        "protection rule must not teach."
+    )
 
 
 @pytest.mark.network
