@@ -459,3 +459,32 @@ def test_the_comparator_rejects_a_row_key_disagreeing_with_its_typed_order() -> 
             break
     problems = _check(rows)
     assert problems, "a row key contradicting its typed order was accepted"
+
+
+def test_the_comparator_asserts_both_accounting_identities() -> None:
+    """Both, and with ``fields_absent`` kept out of them.
+
+    The first version of these counters asserted only
+    ``total == equal + different``. The second identity was *documented* but
+    not checked, and it was documented wrongly: it included ``fields_absent``,
+    which counts row/field slots holding no pair to compare rather than
+    comparisons. The Gate F replay of 2026-08-09 exposed it as
+    ``325 != 76 + 249 + 1049``.
+
+    That is the conflation defect again -- "we could not compare these two
+    values" merged with "there were no two values" -- inside the counter set
+    introduced to end conflation. Hence both identities are now executed.
+    """
+    text = (REPO_ROOT / "scripts/compare_replay.py").read_text()
+    assert "fields_absent" in text, "absent fields are still counted as comparisons"
+    assert text.count("assert total == (") == 2, (
+        "both accounting identities must be asserted, not merely described"
+    )
+    assert 'r["signal_comparisons"] + r["floor_comparisons"]' in text
+
+    absent_at = text.index("fields_absent += 1")
+    nc_at = text.index("not_comparable += 1")
+    assert absent_at < nc_at, (
+        "the absent-field branch must be distinct from, and precede, the "
+        "zero-scale branch; merging them is what produced 1049"
+    )

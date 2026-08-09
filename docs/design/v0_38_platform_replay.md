@@ -285,3 +285,135 @@ display identifier is not a data contract.
 
 Appendices A and B are unchanged. A successful replacement replay belongs in
 **Appendix D**.
+
+---
+
+# Appendix D — replacement confirmatory replay (run `31328966332`)
+
+**Outcome: Gate F CLOSES.** All thirteen criteria pass on measurements, with one
+post-run correction to analysis code disclosed in §D6.
+
+Appendices A, B and C are unchanged. C records why the previous attempt failed;
+it is not revised, and this appendix does not replace it.
+
+## D1. Provenance
+
+| | |
+|---|---|
+| run | [`31328966332`](https://github.com/alexgabel/pdelie/actions/runs/31328966332) |
+| commit | `8195c5f` — PR #175 merged to `main` |
+| dispatched | 2026-08-09T18:24:55Z |
+| seeds | `13,17,19,23,29` — the frozen packet, **unchanged** |
+| phase | `confirmatory` |
+| runners | the three frozen cells; `validate-matrix` passed before dispatch |
+| runs dispatched | **one** |
+
+Seeds were deliberately not resampled. The correction between C and D was an
+instrumentation and population-classification fix, not a new statistical
+sample-selection exercise, so changing the packet would have confounded the two.
+
+## D2. Population — the criterion that failed in Appendix C
+
+| runner | rows | gate | exploratory | gate rows by order |
+|---|---:|---:|---:|---|
+| `Darwin/arm64-py3.12.10` | 286 | 229 | 57 | `{1: 57, 2: 57, 3: 57, None: 58}` |
+| `Linux/x86_64-py3.12.10` | 286 | 229 | 57 | `{1: 57, 2: 57, 3: 57, None: 58}` |
+| `Linux/x86_64-py3.12.13` | 286 | 229 | 57 | `{1: 57, 2: 57, 3: 57, None: 58}` |
+
+Every runner matches [`gate_f_expected_rows.json`](../../configs/gate_f_expected_rows.json)
+by **set equality**, not by count. The 58 `null`-order gate rows are exactly the
+`weak` (39), `grid` (15) and `reference_kind` (4) workloads — families *declared*
+order-free, which is what makes F-4a a real check rather than a restatement of
+F-4's blind spot.
+
+The ten `deriv_ref_signal_regime_*` rows at `d = 4` that leaked into run
+`31326189317`'s gate population now classify as exploratory. They are still
+emitted and still retained.
+
+## D3. Results
+
+| pair | isolates | gate rows | discrete | metric | signal | floor | bitwise | **worst scaled diff** |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| macOS/3.12.10 vs Linux/3.12.10 | platform | 229 | 0 | 0 | 76 | 249 | 122/325 | **`4.168e-10`** |
+| macOS/3.12.10 vs Linux/3.12.13 | platform + patch | 229 | 0 | 0 | 76 | 249 | 122/325 | **`4.168e-10`** |
+| Linux/3.12.10 vs Linux/3.12.13 | Python patch | 229 | 0 | 0 | 76 | 249 | **325/325** | **`0.000e+00`** |
+
+Worst cross-platform value: `4.168e-10` on
+`fornberg_pathological_spacing_ratio_10_to_1e8/g7_d3:absolute_error` — the
+pathological grid at spacing ratio `1e8`, which is where the derivation in the
+freeze §4 predicted the largest amplification. It is **24× inside** the `1e-8`
+bound and lands on an in-scope `d = 3` row, not a leaked one.
+
+Patch drift is **exactly zero** across all 325 numeric comparisons, with zero
+bitwise differences — the bitwise identity the freeze requires, not a tolerance.
+
+## D4. Criteria
+
+| | criterion | result |
+|---|---|---|
+| F-1 | all runners initialize | PASS — 4/4 jobs |
+| F-2 | artifacts uploaded | PASS — 3/3 |
+| F-3 | row set **equals** the frozen manifest | PASS — set equality, all runners |
+| F-3a | partition equals the frozen partition | PASS — 229/57, all runners |
+| F-4 | no gate row outside orders 1–3 | PASS — **non-vacuously**; 171 gate rows carry an order |
+| F-4a | every `null` order in a declared order-free family | PASS — 58/58 |
+| F-5 | `exact_discrete` fields agree exactly | PASS — 0 mismatches |
+| F-6 | patch pair bitwise identical | PASS — 325/325, 0 different |
+| F-7 | cross-platform ≤ `1e-8` | PASS — `4.168e-10` |
+| F-8 | no non-finite metric, no missing provenance | PASS — 0 and 0 |
+| F-9 | full release gate, no `--skip-build` | PASS — all six sub-gates |
+| F-10 | no threshold or workload definition changed after dispatch | PASS — see §D6 |
+| F-11 | independent audit passes | PASS — on-runner and locally |
+
+**Why F-4 is non-vacuous here.** In Appendix C it passed over a population where
+the rows it targeted carried `null`. Here 171 of 229 gate rows carry an explicit
+order in `{1, 2, 3}`, and the 57 `d = 4` rows are classified exploratory *by
+construction* — a `ReplayRowSpec` with `derivative_order=4` and
+`gate_use="gate_evidence"` cannot be built. The criterion now has a population it
+could fail on.
+
+## D5. Tolerances — unchanged
+
+`1e-8` and `0.0`, exactly as derived in the amended freeze §4. **No tolerance was
+widened, narrowed, or reinterpreted.** The observed values sit inside the bounds
+rather than the bounds having been fitted to them.
+
+## D6. Disclosure — one post-run correction to analysis code
+
+After the run, verifying the reported accounting revealed that
+`compare_replay.py` counted `not_comparable = 1049` where
+`signal + floor + not_comparable` should equal the 325 comparisons made. The
+counter was incrementing once per *row/field slot that held no value* — 229 gate
+rows × 6 numeric fields − 325 = 1049 — conflating "we could not compare these two
+values" with "there were no two values". That is the conflation defect, inside
+the counter set introduced in PR #175 to end conflation.
+
+It was corrected by splitting `fields_absent` out of `not_comparable`, and both
+accounting identities are now **executed** rather than described.
+
+**This is disclosed rather than absorbed**, because it is a change to analysis
+code made after seeing results. Three things bound it:
+
+1. It touches **no threshold and no workload definition**, so F-10 holds.
+2. The raw measurement artifacts were **not regenerated**. The comparator was
+   re-run over the same three uploaded JSON files.
+3. Every gate-relevant statistic was compared before and after and is
+   **bit-identical** — `paired_rows`, both mismatch lists, all bitwise counters,
+   `signal`, `floor`, `worst_scaled_difference` and its location. The corrected
+   counter is diagnostic and appears in no criterion.
+
+A reader who distrusts the correction can reach the same verdict from the
+Appendix C-era comparator: the numbers deciding F-5 through F-8 are unchanged.
+
+## D7. What closes, and what does not
+
+Gate F closes. That licenses `v0.38.0rc1`, and no more:
+
+* The four-class portability taxonomy is **corroborated on three platform/patch
+  cells**, not established in general.
+* `d = 4` remains **outside** the supported scope. The 57 exploratory rows are
+  evidence about future work, not about this release.
+* macOS/arm64 at CPython 3.12.11+ remains an **impossible cell**; the 2×2 corner
+  was never measured and is not claimed.
+* The `1e-8` bound is derived for the workloads in scope. It is not a general
+  claim about PDELie's cross-platform reproducibility.
