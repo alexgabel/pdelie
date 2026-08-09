@@ -27,6 +27,20 @@ import math
 from pathlib import Path
 from typing import Any
 
+
+def _scope() -> dict:
+    """The single source of scope, shared with replay_workloads.py.
+
+    Neither script keeps its own list. Run 31278210299 failed to close Gate F
+    partly because the harness swept derivative order 4 on its own authority,
+    against a bound the v0.38b freeze explicitly declines to make.
+    """
+    path = Path(__file__).resolve().parents[1] / "configs/gate_f_replay_scope.json"
+    return json.loads(path.read_text())
+
+
+SCOPE = _scope()
+
 # Fields that are classifications, not measurements. Any disagreement is a
 # failure regardless of magnitude.
 _DISCRETE_FIELDS = (
@@ -70,9 +84,93 @@ def _index(payload: dict[str, Any]) -> dict[tuple[str, str], dict[str, Any]]:
     return {(r["workload"], r["row_key"]): r for r in payload["rows"]}
 
 
+def structural_checks(runners: dict[str, dict]) -> list[str]:
+    """Fail before comparing numbers if the populations are not what was frozen.
+
+    A comparison over the wrong rows produces a number, and a number is what a
+    reader trusts. These run first.
+    """
+    problems: list[str] = []
+    frozen_workloads = set(SCOPE["workload_ids"])
+    classes = SCOPE["portability_classes"]
+    key_sets: dict[str, set] = {}
+
+    for label, payload in runners.items():
+        rows = payload["rows"]
+
+        # Artifacts produced before the scope contract carry no gate_use or
+        # derivative_order. Treating their rows as gate evidence by default is
+        # exactly the defect this contract exists to prevent, so it is refused
+        # rather than defaulted -- an unlabelled row cannot be shown to be in
+        # scope, and "cannot be shown" is not "is".
+        unlabelled = [r for r in rows if "gate_use" not in r or "scope" not in r]
+        if unlabelled:
+            problems.append(
+                f"{label}: {len(unlabelled)} row(s) carry no scope label, so this "
+                f"artifact predates configs/gate_f_replay_scope.json. It cannot be "
+                f"used for a gate decision; re-run the lane with the current "
+                f"harness. (e.g. {unlabelled[0]['workload']}/{unlabelled[0]['row_key']})"
+            )
+            continue
+
+        keys = [(r["workload"], r["row_key"]) for r in rows]
+        duplicates = sorted({k for k in keys if keys.count(k) > 1})
+        if duplicates:
+            problems.append(f"{label}: duplicate row keys {duplicates[:5]}")
+        key_sets[label] = set(keys)
+
+        seen = {r["workload"] for r in rows}
+        missing = sorted(frozen_workloads - seen)
+        if missing:
+            problems.append(f"{label}: frozen workloads absent {missing}")
+        extra = sorted(seen - frozen_workloads)
+        if extra:
+            problems.append(f"{label}: workloads not in the frozen scope {extra}")
+
+        for r in rows:
+            cls = r.get("portability_class")
+            if cls not in ("exact_discrete", "tolerance_numeric",
+                           "platform_specific_diagnostic"):
+                problems.append(f"{label}: unknown portability class {cls!r} "
+                                f"on {r['workload']}/{r['row_key']}")
+                break
+            if classes.get(r["workload"]) not in (None, cls):
+                problems.append(f"{label}: {r['workload']} declares {cls!r}, "
+                                f"scope says {classes[r['workload']]!r}")
+                break
+
+        for r in rows:
+            if r.get("gate_use") == "gate_evidence":
+                order = r.get("derivative_order")
+                if order is not None and order not in SCOPE["supported_derivative_orders"]:
+                    problems.append(
+                        f"{label}: {r['workload']}/{r['row_key']} is gate evidence "
+                        f"at derivative order {order}, outside the frozen scope "
+                        f"{SCOPE['supported_derivative_orders']}"
+                    )
+                    break
+
+    labels = sorted(key_sets)
+    for i, left in enumerate(labels):
+        for right in labels[i + 1:]:
+            if key_sets[left] != key_sets[right]:
+                only_l = sorted(key_sets[left] - key_sets[right])[:3]
+                only_r = sorted(key_sets[right] - key_sets[left])[:3]
+                problems.append(
+                    f"row-key populations differ: {left} vs {right}; "
+                    f"only-left {only_l}, only-right {only_r}"
+                )
+    return problems
+
+
 def compare(left_label: str, left: dict, right_label: str, right: dict) -> dict[str, Any]:
     a, b = _index(left), _index(right)
-    keys = sorted(set(a) & set(b))
+    # GATE ROWS ONLY. Exploratory rows are emitted and labelled by the harness;
+    # including them here is what produced the 2.478e-01 headline from d=4.
+    keys = sorted(
+        k for k in set(a) & set(b)
+        if a[k].get("gate_use", "gate_evidence") == "gate_evidence"
+    )
     only_left = sorted(set(a) - set(b))
     only_right = sorted(set(b) - set(a))
 
@@ -80,6 +178,8 @@ def compare(left_label: str, left: dict, right_label: str, right: dict) -> dict[
     metric_mismatch: list[str] = []
     worst_rel = 0.0
     worst_key: str | None = None
+    worst_scaled = 0.0
+    worst_scaled_key: str | None = None
     floor_rows = 0
     signal_rows = 0
     bitwise = 0
@@ -120,6 +220,12 @@ def compare(left_label: str, left: dict, right_label: str, right: dict) -> dict[
                 floor_rows += 1
                 continue
             signal_rows += 1
+            # PRIMARY: scale-stable. abs difference against the quantity's own
+            # reference scale, the definition v0.38d froze.
+            scaled = abs(x - y) / scale
+            if scaled > worst_scaled:
+                worst_scaled, worst_scaled_key = scaled, f"{key[0]}/{key[1]}:{field}"
+            # SECONDARY, diagnostic only: unstable near the floor.
             denominator = max(abs(x), abs(y))
             rel = abs(x - y) / denominator if denominator else 0.0
             if rel > worst_rel:
@@ -137,8 +243,17 @@ def compare(left_label: str, left: dict, right_label: str, right: dict) -> dict[
         "bitwise_identical": bitwise,
         "signal_rows": signal_rows,
         "floor_rows": floor_rows,
-        "worst_relative_gap": worst_rel,
-        "worst_relative_gap_at": worst_key,
+        # Primary statistic for the gate decision.
+        "worst_scaled_difference": worst_scaled,
+        "worst_scaled_difference_at": worst_scaled_key,
+        "scaled_difference_formula": "abs(left - right) / reference_scale",
+        # Secondary. Named with its limitation so it cannot be quoted bare.
+        "worst_relative_between_errors": worst_rel,
+        "worst_relative_between_errors_at": worst_key,
+        "relative_between_errors_labels": [
+            "unstable_near_numerical_floor",
+            "not_used_for_gate_decision",
+        ],
     }
 
 
@@ -151,6 +266,17 @@ def main() -> None:
     runners = _load(args.directory)
     if len(runners) < 2:
         raise SystemExit(f"need at least two runners, found {sorted(runners)}")
+
+    # Structure before numbers. A comparison over the wrong population still
+    # produces a number, and a number is what a reader trusts.
+    structural = structural_checks(runners)
+    if structural:
+        print("### Structural failures\n")
+        for problem in structural:
+            print(f"- {problem}")
+        print("\nNo comparison performed: the populations are not what the "
+              "frozen scope declares.")
+        raise SystemExit(1)
 
     labels = sorted(runners)
     results = []
@@ -167,14 +293,19 @@ def main() -> None:
               f"({counts['v0_38b']} b / {counts['v0_38c']} c / {counts['v0_38d']} d)")
 
     print(f"\n### Pairwise comparisons ({len(results)})\n")
-    print("| pair | paired | discrete | metric | signal | floor | bitwise | worst rel gap |")
-    print("|---|---:|---:|---:|---:|---:|---:|---:|")
+    print("| pair | gate rows | discrete | metric | signal | floor | bitwise | "
+          "**worst scaled diff** | rel-between-errors |")
+    print("|---|---:|---:|---:|---:|---:|---:|---:|---:|")
     for r in results:
         d = len(r["discrete_mismatches"]) or "—"
         m = len(r["metric_mismatches"]) or "—"
         print(f"| {r['left']} vs {r['right']} | {r['paired_rows']} | {d} | {m} | "
               f"{r['signal_rows']} | {r['floor_rows']} | {r['bitwise_identical']} | "
-              f"`{r['worst_relative_gap']:.3e}` |")
+              f"**`{r['worst_scaled_difference']:.3e}`** | "
+              f"`{r['worst_relative_between_errors']:.3e}` |")
+    print("\n*Primary statistic is the scaled difference. "
+          "`rel-between-errors` is unstable near the numerical floor and is not "
+          "used for the gate decision.*")
 
     failures = [r for r in results if r["discrete_mismatches"] or r["metric_mismatches"]
                 or r["unpaired_left"] or r["unpaired_right"]]

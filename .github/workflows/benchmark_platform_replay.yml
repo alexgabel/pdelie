@@ -34,8 +34,23 @@ permissions:
   contents: read
 
 jobs:
+  # Fails in seconds if a requested platform/version/arch tuple does not exist,
+  # rather than after the matrix has launched. Run 31278210299 spent a job-hour
+  # and produced a misleading secondary artifact-upload error before anyone
+  # learned the cell was impossible.
+  validate-matrix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+      - name: Every requested runner cell must exist
+        run: python scripts/validate_runner_matrix.py
+
   replay:
-    name: replay (${{ matrix.os }} py${{ matrix.python }})
+    needs: validate-matrix
+    name: replay (${{ matrix.os }} py${{ matrix.python }} ${{ matrix.role }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     strategy:
@@ -49,19 +64,25 @@ jobs:
         # Run 30930069491 compared macOS/3.12.10 against Linux/3.12.13, which is
         # end-to-end reproducibility rather than a controlled platform check. The
         # two matched diagonals establish whether patch drift is load-bearing.
+        # Three runners, matching configs/gate_f_replay_scope.json. The
+        # originally specified 2x2 corner is NOT constructible: macOS/arm64 has
+        # no CPython 3.12.11+, so `macos-14 x 3.12.13` failed at setup-python in
+        # run 31278210299 and no re-run will produce it.
+        #
+        # These three are a better design anyway -- each pair isolates ONE
+        # variable, where the 2x2 had two mixed cells:
+        #   macOS/3.12.10 vs Linux/3.12.10  -> platform isolated
+        #   Linux/3.12.10 vs Linux/3.12.13  -> python patch isolated
         include:
           - os: macos-14
             python: "3.12.10"
-            corner: existing_anchor
-          - os: ubuntu-22.04
-            python: "3.12.13"
-            corner: current_linux
+            role: platform_comparison
           - os: ubuntu-22.04
             python: "3.12.10"
-            corner: matched_diagonal_linux
-          - os: macos-14
+            role: platform_comparison
+          - os: ubuntu-22.04
             python: "3.12.13"
-            corner: matched_diagonal_macos
+            role: patch_comparison
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
@@ -110,8 +131,12 @@ jobs:
       - name: Run the Gate F closure workloads
         run: python scripts/replay_workloads.py gate_f_replay.json
 
+      # `always()` reported "No files were found" on a runner that failed at
+      # setup-python, which read as a second, unrelated defect. The setup
+      # failure is still a first-class job failure -- this step simply stops
+      # adding a misleading one on top of it.
       - name: Upload measurements
-        if: always()
+        if: hashFiles('replay.json', 'gate_f_replay.json') != ''
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: replay-${{ matrix.os }}-py${{ matrix.python }}

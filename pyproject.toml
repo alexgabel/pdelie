@@ -103,6 +103,10 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# Network-marked tests are opt-in: run them with `-m network`. Without this,
+# markers do NOT deselect, which is what let a network-marked test execute
+# during an ordinary suite run and recurse into the release gate.
+addopts = "-m 'not network'"
 markers = [
   # v0.36 day-zero: the cross-platform portability lane. Tests carrying this
   # marker run on Linux AND macOS via .github/workflows/portability.yml. The

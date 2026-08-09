@@ -100,6 +100,15 @@ tolerance" — bitwise.
 
 ## Gate F — cross-platform replay: **NOT MET**
 
+**Update after the extended lane (run `31278210299`).** Three of four runners
+completed; the fourth requested a Python patch that does not exist for
+macOS/arm64. Patch drift was established as **not load-bearing** (`0.000e+00`,
+410 bitwise identical), and every `exact_discrete` field agreed across all
+pairs — but the workloads probe `d = 4`, which the v0.38b freeze explicitly
+disclaims, and the pass criterion cites a cross-platform bound that was never
+frozen. Four amendments are required before a re-run can close this gate. Full
+record: [Appendix B](../design/v0_38_platform_replay.md).
+
 The only replay run recorded is at `30a5e1b`, the v0.37.1 replay-lane commit —
 **17 commits before HEAD**. No v0.38 code has ever been replayed.
 

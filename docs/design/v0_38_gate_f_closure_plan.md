@@ -1,5 +1,17 @@
 # v0.38 Gate F — Closure Plan
 
+> **Status: amended.** §3 (the 2×2 corner) and §6 (the pass criteria) are
+> **superseded** by
+> [`v0_38_gate_f_amended_freeze.md`](v0_38_gate_f_amended_freeze.md), after run
+> `31278210299` showed the specified gate could not be executed as written:
+> the corner requires a `macos-14 × CPython 3.12.13` cell that does not exist,
+> §2's workloads swept a derivative order the v0.38b freeze disclaims, and
+> criterion 2 required a cross-platform bound that had never been frozen.
+>
+> §2's workload *definitions* stand, restricted to derivative orders 1–3.
+>
+> This document is retained unedited below as the record of what was corrected.
+
 **Status: frozen. Written before the extended replay lane runs.**
 
 Gate F is `NOT MET` at `v0.38.0b1`. This document specifies what an extended

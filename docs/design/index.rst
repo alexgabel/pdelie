@@ -56,3 +56,4 @@ Once a design is implemented and validated it is folded into the specs.
    v0_38_platform_replay
    v0_38_gate_f_closure_plan
    RELEASE_ENFORCEMENT
+   v0_38_gate_f_amended_freeze

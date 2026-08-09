@@ -1,0 +1,108 @@
+{
+  "summary_type": "pdelie_gate_f_replay_scope",
+  "summary_schema_version": "0.1",
+  "release": "0.38.0",
+  "status": "frozen",
+  "note": "The single source of scope for the Gate F replay. Both scripts/replay_workloads.py and scripts/compare_replay.py consume this; neither keeps its own list. Run 31278210299 swept derivative order 4, which the v0.38b confirmatory freeze explicitly disclaims -- five of its seven cross-platform disagreements were at d=4, measured against a bound that was never established.",
+  "supported_derivative_orders": [
+    1,
+    2,
+    3
+  ],
+  "exploratory_derivative_orders": [
+    4
+  ],
+  "exploratory_policy": {
+    "emitted": true,
+    "label": "outside_frozen_scope",
+    "gate_use": "not_used_for_gate_decision",
+    "rationale": "Retained as exploratory evidence because deleting it would discard a real measurement. Marked so it can never be read as gate evidence."
+  },
+  "runners": [
+    {
+      "os": "macos-14",
+      "python": "3.12.10",
+      "role": "platform_comparison"
+    },
+    {
+      "os": "ubuntu-22.04",
+      "python": "3.12.10",
+      "role": "platform_comparison"
+    },
+    {
+      "os": "ubuntu-22.04",
+      "python": "3.12.13",
+      "role": "patch_comparison"
+    }
+  ],
+  "runner_constraint": "macOS/arm64 has no CPython 3.12.11 or later in the actions/python-versions manifest; 3.12.11-13 are Linux-only. The originally specified 2x2 corner is not constructible on hosted runners and no re-run will produce it.",
+  "comparison_pairs": [
+    {
+      "left": "macos-14/3.12.10",
+      "right": "ubuntu-22.04/3.12.10",
+      "isolates": "platform",
+      "criterion": "cross_platform"
+    },
+    {
+      "left": "ubuntu-22.04/3.12.10",
+      "right": "ubuntu-22.04/3.12.13",
+      "isolates": "python_patch",
+      "criterion": "patch_drift"
+    }
+  ],
+  "workload_ids": [
+    "fornberg_uniform_polynomial_exactness",
+    "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+    "fornberg_pathological_spacing_ratio_10_to_1e8",
+    "fornberg_fn_12_uniform_spacing_ratio",
+    "fornberg_boundary_stencils_second_order",
+    "weak_constant_exactness_nonuniform_trapezoidal",
+    "weak_user_supplied_validation",
+    "weak_linear_exactness_report",
+    "weak_overlap_declaration",
+    "deriv_ref_signal_regime_analytical",
+    "deriv_ref_signal_regime_manufactured",
+    "deriv_ref_floor_regime",
+    "deriv_ref_none_kind"
+  ],
+  "portability_classes": {
+    "fornberg_uniform_polynomial_exactness": "tolerance_numeric",
+    "fornberg_perturbed_uniform_spacing_ratio_1_to_10": "tolerance_numeric",
+    "fornberg_pathological_spacing_ratio_10_to_1e8": "tolerance_numeric",
+    "fornberg_fn_12_uniform_spacing_ratio": "tolerance_numeric",
+    "fornberg_boundary_stencils_second_order": "tolerance_numeric",
+    "weak_constant_exactness_nonuniform_trapezoidal": "tolerance_numeric",
+    "weak_user_supplied_validation": "exact_discrete",
+    "weak_linear_exactness_report": "tolerance_numeric",
+    "weak_overlap_declaration": "exact_discrete",
+    "deriv_ref_signal_regime_analytical": "tolerance_numeric",
+    "deriv_ref_signal_regime_manufactured": "tolerance_numeric",
+    "deriv_ref_floor_regime": "tolerance_numeric",
+    "deriv_ref_none_kind": "exact_discrete"
+  },
+  "statistics": {
+    "primary": {
+      "name": "scaled_difference",
+      "formula": "abs(left - right) / reference_scale",
+      "rationale": "Stable near the numerical floor. Every tolerance_numeric row carries reference_scale, defined as the characteristic magnitude of the quantity over its domain -- the same definition v0.38d froze."
+    },
+    "secondary": {
+      "name": "relative_between_errors",
+      "formula": "abs(left - right) / max(abs(left), abs(right))",
+      "labels": [
+        "unstable_near_numerical_floor",
+        "not_used_for_gate_decision"
+      ],
+      "rationale": "Retained as a diagnostic. It produced the 2.478e-01 headline in run 31278210299 from two absolute errors of 3.0e-06 and 4.0e-06."
+    }
+  },
+  "tolerances": {
+    "note": "Frozen in docs/design/v0_38_gate_f_amended_freeze.md section 4, DERIVED from IEEE-754 accumulation bounds rather than read off the pilot. Run 31278210299's in-scope worst of 1.014e-10 sits ~100x inside the cross-platform bound and is corroboration, not the derivation.",
+    "cross_platform_scaled_difference": 1e-08,
+    "cross_platform_derivation": "n*eps*scale at n=13 (2.9e-15), amplified by a conservative 1e6 stencil condition bound at spacing ratio 1e8",
+    "patch_drift_scaled_difference": 0.0,
+    "patch_drift_derivation": "same platform/arch/libm/BLAS; a CPython patch changes no floating-point semantics, so bitwise identity is the correct expectation and any nonzero tolerance would accept a real regression"
+  },
+  "expected_gate_rows_per_runner": 239,
+  "expected_exploratory_rows_per_runner": 47
+}
