@@ -291,6 +291,7 @@ def compare(left_label: str, left: dict, right_label: str, right: dict) -> dict[
     signal_comparisons = 0
     floor_comparisons = 0
     not_comparable = 0
+    fields_absent = 0
     bitwise_differences: list[str] = []
 
     for key in keys:
@@ -311,7 +312,13 @@ def compare(left_label: str, left: dict, right_label: str, right: dict) -> dict[
         for field in _NUMERIC_FIELDS:
             x, y = ra.get(field), rb.get(field)
             if x is None or y is None:
-                not_comparable += 1
+                # NOT a comparison. Most rows carry two or three of the six
+                # numeric fields, so this fires ~1049 times over 229 gate rows
+                # and means only "this row has no such field". Counting it as
+                # not_comparable conflated "we could not compare these two
+                # values" with "there were no two values" -- the same
+                # conflation this counter set was introduced to end.
+                fields_absent += 1
                 continue
 
             # BITWISE ACCOUNTING RUNS FIRST, AND UNCONDITIONALLY.
@@ -338,6 +345,7 @@ def compare(left_label: str, left: dict, right_label: str, right: dict) -> dict[
 
             scale = ra.get("reference_scale") or max(abs(x), abs(y))
             if scale == 0.0:
+                # A real comparison with no usable reference scale.
                 not_comparable += 1
                 continue
             # Signal versus floor, against the v0.38d boundary. This selects the
@@ -375,9 +383,16 @@ def compare(left_label: str, left: dict, right_label: str, right: dict) -> dict[
         "signal_comparisons": signal_comparisons,
         "floor_comparisons": floor_comparisons,
         "not_comparable": not_comparable,
+        "fields_absent": fields_absent,
+        # Both asserted in main(). The second was stated wrongly on first
+        # writing -- it included fields_absent, which counts absent fields
+        # rather than comparisons -- and the Gate F replay of 2026-08-09
+        # exposed it as 325 != 76 + 249 + 1049.
         "accounting_identity": (
-            "total == bitwise_equal + bitwise_different; "
-            "total == signal + floor + not_comparable(post-scale)"
+            "numeric_comparisons_total == bitwise_equal + bitwise_different; "
+            "numeric_comparisons_total == signal + floor + not_comparable; "
+            "fields_absent counts row/field slots that held no pair to compare "
+            "and is deliberately outside both identities"
         ),
         # Primary statistic for the gate decision.
         "worst_scaled_difference": worst_scaled,
@@ -456,6 +471,13 @@ def main() -> None:
                          + r["numeric_comparisons_bitwise_different"]), (
             f"bitwise counters do not sum to the total for "
             f"{r['left']} vs {r['right']}"
+        )
+        assert total == (r["signal_comparisons"] + r["floor_comparisons"]
+                         + r["not_comparable"]), (
+            f"regime counters do not sum to the total for "
+            f"{r['left']} vs {r['right']}: {total} != "
+            f"{r['signal_comparisons']} + {r['floor_comparisons']} + "
+            f"{r['not_comparable']}"
         )
     if failures:
         print("\n### Failures\n")

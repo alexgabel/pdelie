@@ -37,6 +37,13 @@ exclude_patterns = [
     "_build",
     "Thumbs.db",
     ".DS_Store",
+    # Raw measurement artifacts archived for reproducibility, not prose. Their
+    # README is written to be read beside the JSON on GitHub; rendering it into
+    # the docs site would put a data-directory note in the navigation. Excluded
+    # rather than added to a toctree, and excluded explicitly rather than via
+    # suppress_warnings, so `sphinx -W` keeps failing on a genuinely orphaned
+    # document elsewhere.
+    "evidence/**",
 ]
 
 html_theme = "pydata_sphinx_theme"
