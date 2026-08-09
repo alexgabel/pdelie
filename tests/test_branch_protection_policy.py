@@ -181,3 +181,70 @@ def test_the_release_gate_job_name_carries_no_version() -> None:
         f"ci.yml does not define a job named {RELEASE_GATE_JOB!r}, so the "
         f"required context can never report"
     )
+
+
+@pytest.mark.network
+def test_a_substantive_review_concern_cannot_be_merged_past() -> None:
+    """`required_conversation_resolution`, which §3 claimed and did not have.
+
+    The policy document specified it; the repository had it set to ``false``.
+    A control that exists only in prose is the same failure as a gate that
+    exists only in prose, and this module exists because of the last one.
+    """
+    assert _protection()["required_conversation_resolution"]["enabled"] is True
+
+
+def _rulesets() -> list[dict]:
+    result = subprocess.run(
+        ["gh", "api", f"repos/{REPO}/rulesets"],
+        capture_output=True, text=True, check=False,
+    )
+    if result.returncode != 0:
+        pytest.skip(f"GitHub API unavailable: {result.stderr.strip()[:120]}")
+    return json.loads(result.stdout)
+
+
+def _release_ruleset() -> dict:
+    for ruleset in _rulesets():
+        detail = subprocess.run(
+            ["gh", "api", f"repos/{REPO}/rulesets/{ruleset['id']}"],
+            capture_output=True, text=True, check=False,
+        )
+        if detail.returncode != 0:
+            continue
+        payload = json.loads(detail.stdout)
+        includes = payload.get("conditions", {}).get("ref_name", {}).get("include", [])
+        if any("release/" in ref for ref in includes):
+            return payload
+    pytest.fail("no ruleset targets refs/heads/release/*")
+
+
+@pytest.mark.network
+def test_release_branches_cannot_be_deleted_or_force_pushed() -> None:
+    """`release/v0.31.x` is the live 3.11 maintenance branch.
+
+    Losing it would strand the legacy users the README points at, and a force
+    push would rewrite security-fix history.
+    """
+    rules = {rule["type"] for rule in _release_ruleset()["rules"]}
+    assert "deletion" in rules
+    assert "non_fast_forward" in rules
+    assert "pull_request" in rules
+
+
+@pytest.mark.network
+def test_the_release_ruleset_does_not_require_mains_status_checks() -> None:
+    """The deadlock lesson, applied one branch over.
+
+    `release/v0.31.x` runs Python 3.11 with PySINDy 1.7.5. Requiring
+    `release-gate (3.12)` there would demand a context that branch can never
+    produce -- bricking the maintenance line exactly as the versioned job name
+    bricked `main`, and for the same reason: a required context matched by
+    exact string against a job that does not exist.
+    """
+    for rule in _release_ruleset()["rules"]:
+        assert rule["type"] != "required_status_checks", (
+            "the release/* ruleset requires status checks. The 3.11 maintenance "
+            "branch cannot produce main's 3.12/3.13 contexts, so this would "
+            "block it permanently with no override."
+        )

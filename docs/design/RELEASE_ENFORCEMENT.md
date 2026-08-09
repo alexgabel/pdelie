@@ -279,12 +279,17 @@ wholesale, and this one was being read as gating rc1.
 | `main` branch protection not applied | **CLOSED** — `enforce_admins=true`, `allow_force_pushes=false`, `required_linear_history=true`, `strict=true`, audited by `tests/test_branch_protection_policy.py` |
 | `scripts/release_gate_local.sh` does not exist | **CLOSED** — 138 lines, six sub-gates, contract asserted by `tests/test_release_gate_contract.py` |
 | pre-existing pre-commit config not audited | **VOID** — there is no `.pre-commit-config.yaml` in this repository. The gap as written presumed a file that does not exist. If pre-commit is wanted, that is new work, not a reconciliation. |
-| `release/*` pattern rule not applied | **OPEN** — only the "Protect main" ruleset exists |
+| `release/*` pattern rule not applied | **CLOSED 2026-08-09** — ruleset `Protect release branches` (id 20613957): `deletion`, `non_fast_forward`, `pull_request`. Deliberately **no** `required_status_checks`: `release/v0.31.x` runs Python 3.11 / PySINDy 1.7.5 and cannot produce main's 3.12/3.13 contexts, so requiring them would brick the maintenance line the same way the versioned job name bricked `main`. |
 
-Remaining before `v0.38.0rc1`: the `release/*` ruleset, and nothing else.
+**Nothing from this list remains open before `v0.38.0rc1`.**
 
-The release-gate interpreter gap (§4b) was **not** inherited from this list — it
-was found by running the gate — and is now closed.
+Two further gaps were found while checking, neither inherited from the list:
+
+- **§4b, the unpinned gate interpreter** — found by running the gate. Closed.
+- **`required_conversation_resolution`** — §3 specified it; the repository had
+  it `false`. Now `true`, and audited. A control that exists only in prose is
+  the same failure as a gate that exists only in prose, which is why this
+  document exists at all.
 
 ---
 
