@@ -1,6 +1,12 @@
 # v0.38 Gate F — Amended Confirmatory Freeze
 
-**Status:** frozen. Written **before** any further replay dispatch.
+**Status:** frozen, **amended once** after run `31326189317`. Written before any
+further replay dispatch.
+
+The amendment adds **F-3a**, **F-4a** and **F-11**, corrects the gate/exploratory
+partition from 239/47 to 229/57, and separates bitwise accounting from floor
+classification. It changes **no tolerance** — §8's no-widening rule holds, and
+`1e-8` / `0.0` stand exactly as derived.
 
 Supersedes the criteria in
 [`v0_38_gate_f_closure_plan.md`](v0_38_gate_f_closure_plan.md) §3 and §6. The
@@ -40,15 +46,19 @@ d=4 sweep.
 |---|---|
 | gate derivative orders | **1, 2, 3** — matching the v0.38b freeze verbatim |
 | exploratory orders | **4** — emitted, labelled `outside_frozen_scope`, `not_used_for_gate_decision` |
-| gate rows per runner | **239** (derived from the manifest, not asserted) |
-| exploratory rows | 47 |
+| gate rows per runner | **229** (derived from the manifest, not asserted — see §6) |
+| exploratory rows | 57 |
 
 The d=4 rows are **retained**. Deleting a real measurement to make a gate pass is
 the wrong repair; labelling it so it can never be mistaken for gate evidence is
 the right one.
 
-**The "286 rows" invariant is deliberately not preserved.** Removing d=4 from the
-gate population changes the count, and an asserted count would have hidden that.
+**No count is asserted as an invariant.** The 286-row total happens to be
+unchanged by the correction — the ten leaked rows were reclassified, not removed
+— and that is exactly why a count check is worthless here: the broken population
+had the right total at every moment. F-3 asserts **set equality** against a
+reviewed manifest; the counts in this table are derived from it and reported for
+review only.
 
 ---
 
@@ -125,20 +135,76 @@ Setting a nonzero tolerance here would accept a real regression.
 
 ---
 
-## 6. Pass criteria — all ten required
+## 6. Pass criteria — all thirteen required
 
 | | criterion |
 |---|---|
 | **F-1** | all requested runners initialize successfully |
 | **F-2** | all expected artifacts are uploaded |
-| **F-3** | all runners emit exactly the frozen row-key population |
-| **F-4** | no gate row lies outside derivative orders 1–3 |
+| **F-3** | every runner's row set **equals** [`gate_f_expected_rows.json`](../../configs/gate_f_expected_rows.json) — set equality, not a count |
+| **F-3a** | the gate/exploratory **partition** equals the frozen partition |
+| **F-4** | no gate row carrying a derivative order lies outside 1–3 |
+| **F-4a** | every gate row with `derivative_order: null` belongs to a **declared** order-free family |
 | **F-5** | every `exact_discrete` field agrees exactly |
-| **F-6** | Linux 3.12.10 vs 3.12.13 is **bitwise identical** |
+| **F-6** | Linux 3.12.10 vs 3.12.13 is **bitwise identical**, over *every* numeric comparison |
 | **F-7** | macOS vs Linux `scaled_difference` ≤ `1e-8` |
 | **F-8** | no non-finite metric, no missing provenance value |
 | **F-9** | the full release gate passes **without** `--skip-build` |
 | **F-10** | no threshold or workload definition changed after the run began |
+| **F-11** | `audit_replay_population.py` passes, importing neither generator nor comparator |
+
+### Why F-3a and F-4a exist
+
+Run `31326189317` satisfied F-1 … F-10 as written and **still could not close the
+gate**. Appendix C records it in full; the mechanism:
+
+The harness swept derivative orders 1–4. Threading the order through the call
+sites was done with a regex, which matched the `floor_regime` and `none_kind`
+constructors and missed the two `signal_regime` ones. Ten rows — 2 reference
+kinds × 5 functions, all at `d = 4` — emitted `derivative_order: null`.
+
+F-4 read *"no gate row lies outside derivative orders 1–3"* and treated `null` as
+in scope. So the ten rows counted as gate evidence, F-4 passed, and F-7's worst
+observed value (`3.199e-09`) landed on one of them.
+
+**F-4 could not have failed.** Not *did not* — *could not*. The rows it existed
+to exclude were invisible to it in precisely the way that made them dangerous.
+A criterion that can only pass is not a criterion.
+
+F-4a closes it by inverting the default: `null` is acceptable **only** where a
+declared contract says the family carries no derivative order, never because the
+value is absent. F-3a closes the companion hole — the broken population had the
+correct total (286) throughout, so any count-based check passed. Only the split
+was wrong.
+
+### Why the row count changed, and why `239` was not preserved
+
+| | gate | exploratory | total |
+|---|---:|---:|---:|
+| as run in `31326189317` | 239 | 47 | 286 |
+| corrected | **229** | **57** | 286 |
+
+The delta is exactly the ten leaked rows. **The total is unchanged**: no
+measurement was added or deleted, only correctly classified. The d=4 rows are
+still emitted and still retained.
+
+`239` was the defect's own arithmetic. Re-asserting it would have frozen the bug
+into the contract meant to catch it, so the corrected counts are **derived** from
+the reviewed manifest and reported for review — F-3 asserts set equality, never
+an integer.
+
+### Bitwise accounting (F-6)
+
+Bit comparison now runs **before, and independently of,** floor classification.
+The previous ordering classified a comparison as floor and `continue`d before
+counting, so F-6's denominator silently excluded exactly the small-magnitude
+rows a libm change would perturb first — a bitwise difference there would have
+been reported as agreement.
+
+Floor classification governs *which statistic is meaningful* (absolute, not
+relative). It has no bearing on whether the bits were compared. Six independent
+counters, with the identity `total == bitwise_equal + bitwise_different`
+asserted at report time.
 
 ---
 

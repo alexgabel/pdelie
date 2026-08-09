@@ -226,3 +226,44 @@ def test_the_impossible_runner_cell_is_recorded() -> None:
     """So nobody re-specifies the 2x2 without learning why it was dropped."""
     constraint = _scope()["runner_constraint"]
     assert "3.12.11" in constraint and "macOS" in constraint
+
+
+def test_the_release_checklist_states_the_gate_runs_externally() -> None:
+    """The claim removed from pytest must live somewhere that is actually read.
+
+    ``test_the_gate_actually_passes_on_this_tree`` was deleted because it ran
+    the gate script, which runs this suite, which ran that test -- seven levels
+    of recursion before it exhausted system swap.
+
+    Deleting it left a real gap: nothing asserted the gate passes. That claim
+    cannot be made from inside the thing the gate runs, so it belongs in the
+    release procedure, executed before tagging. This test checks the procedure
+    still says so, rather than the gap quietly closing over.
+    """
+    text = (REPO_ROOT / "docs/design/RELEASE_ENFORCEMENT.md").read_text()
+    assert "release_gate_local.sh" in text, (
+        "the release procedure does not name the gate script"
+    )
+    lowered = text.lower()
+    assert "never from pytest" in lowered or "not from pytest" in lowered, (
+        "the release procedure must state that the gate is run externally, "
+        "never from inside the test suite -- otherwise the recursion that "
+        "exhausted system swap gets reintroduced by someone restoring the "
+        "'assert the gate passes' test in good faith"
+    )
+
+
+def test_the_replay_lane_audits_its_population_before_upload() -> None:
+    """F-11, checked at the point of production.
+
+    A malformed population must fail on the runner that made it, not be
+    discovered during comparison -- by which point the artifact exists, looks
+    complete, and invites being compared anyway.
+    """
+    workflow = (REPO_ROOT / ".github/workflows/benchmark_platform_replay.yml").read_text()
+    assert "audit_replay_population.py" in workflow
+    audit_at = workflow.index("audit_replay_population.py")
+    upload_at = workflow.index("Upload measurements")
+    assert audit_at < upload_at, (
+        "the independent audit must run before the artifact is uploaded"
+    )

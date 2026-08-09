@@ -1,0 +1,2636 @@
+{
+  "purpose": "Frozen expected-row population for Gate F. Reviewed as a whole, once. A replay artifact must match the `rows` set EXACTLY -- not a superset, not a subset, not a count. Counts below are DERIVED from that set and are reported for review, not asserted independently.",
+  "derived_from": "scripts/replay_workloads.py via typed ReplayRowSpec construction",
+  "why_not_239": "The prior hand-written invariant of 239 gate rows is the defect's own arithmetic. Ten deriv_ref_signal_regime_* rows at derivative order 4 emitted derivative_order: null and were counted as gate evidence. With the order threaded through the typed spec they classify as exploratory, so the correct partition is 229/57. The total, 286, is unchanged -- no measurement was added or deleted, only correctly classified. Preserving 239 would have re-frozen the bug.",
+  "totals": {
+    "all_rows": 286,
+    "gate_evidence": 229,
+    "exploratory_only": 57
+  },
+  "gate_evidence": {
+    "total": 229,
+    "by_family": {
+      "deriv": 45,
+      "fornberg": 126,
+      "grid": 15,
+      "reference_kind": 4,
+      "weak": 39
+    },
+    "by_derivative_order": {
+      "1": 57,
+      "2": 57,
+      "3": 57,
+      "null": 58
+    },
+    "by_workload": {
+      "deriv_ref_floor_regime": 15,
+      "deriv_ref_none_kind": 4,
+      "deriv_ref_signal_regime_analytical": 15,
+      "deriv_ref_signal_regime_manufactured": 15,
+      "fornberg_boundary_stencils_second_order": 12,
+      "fornberg_fn_12_uniform_spacing_ratio": 15,
+      "fornberg_pathological_spacing_ratio_10_to_1e8": 24,
+      "fornberg_perturbed_uniform_spacing_ratio_1_to_10": 45,
+      "fornberg_uniform_polynomial_exactness": 45,
+      "weak_constant_exactness_nonuniform_trapezoidal": 15,
+      "weak_linear_exactness_report": 10,
+      "weak_overlap_declaration": 6,
+      "weak_user_supplied_validation": 8
+    }
+  },
+  "exploratory_only": {
+    "total": 57,
+    "by_family": {
+      "deriv": 15,
+      "fornberg": 42
+    },
+    "by_derivative_order": {
+      "4": 57
+    },
+    "by_workload": {
+      "deriv_ref_floor_regime": 5,
+      "deriv_ref_signal_regime_analytical": 5,
+      "deriv_ref_signal_regime_manufactured": 5,
+      "fornberg_boundary_stencils_second_order": 4,
+      "fornberg_pathological_spacing_ratio_10_to_1e8": 8,
+      "fornberg_perturbed_uniform_spacing_ratio_1_to_10": 15,
+      "fornberg_uniform_polynomial_exactness": 15
+    }
+  },
+  "rows": [
+    {
+      "workload": "deriv_ref_floor_regime",
+      "row_key": "cosx_d1",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_floor_regime",
+      "row_key": "cosx_d2",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_floor_regime",
+      "row_key": "cosx_d3",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_floor_regime",
+      "row_key": "cosx_d4",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_floor_regime",
+      "row_key": "expx3_d1",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_floor_regime",
+      "row_key": "expx3_d2",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_floor_regime",
+      "row_key": "expx3_d3",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_floor_regime",
+      "row_key": "expx3_d4",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_floor_regime",
+      "row_key": "gauss_d1",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_floor_regime",
+      "row_key": "gauss_d2",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_floor_regime",
+      "row_key": "gauss_d3",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_floor_regime",
+      "row_key": "gauss_d4",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_floor_regime",
+      "row_key": "poly_d1",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_floor_regime",
+      "row_key": "poly_d2",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_floor_regime",
+      "row_key": "poly_d3",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_floor_regime",
+      "row_key": "poly_d4",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_floor_regime",
+      "row_key": "sin2x_d1",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_floor_regime",
+      "row_key": "sin2x_d2",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_floor_regime",
+      "row_key": "sin2x_d3",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_floor_regime",
+      "row_key": "sin2x_d4",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_none_kind",
+      "row_key": "case0",
+      "workload_family": "reference_kind",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "exact_discrete"
+    },
+    {
+      "workload": "deriv_ref_none_kind",
+      "row_key": "case1",
+      "workload_family": "reference_kind",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "exact_discrete"
+    },
+    {
+      "workload": "deriv_ref_none_kind",
+      "row_key": "case2",
+      "workload_family": "reference_kind",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "exact_discrete"
+    },
+    {
+      "workload": "deriv_ref_none_kind",
+      "row_key": "case3",
+      "workload_family": "reference_kind",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "exact_discrete"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_analytical",
+      "row_key": "cosx_d1",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_analytical",
+      "row_key": "cosx_d2",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_analytical",
+      "row_key": "cosx_d3",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_analytical",
+      "row_key": "cosx_d4",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_analytical",
+      "row_key": "expx3_d1",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_analytical",
+      "row_key": "expx3_d2",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_analytical",
+      "row_key": "expx3_d3",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_analytical",
+      "row_key": "expx3_d4",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_analytical",
+      "row_key": "gauss_d1",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_analytical",
+      "row_key": "gauss_d2",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_analytical",
+      "row_key": "gauss_d3",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_analytical",
+      "row_key": "gauss_d4",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_analytical",
+      "row_key": "poly_d1",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_analytical",
+      "row_key": "poly_d2",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_analytical",
+      "row_key": "poly_d3",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_analytical",
+      "row_key": "poly_d4",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_analytical",
+      "row_key": "sin2x_d1",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_analytical",
+      "row_key": "sin2x_d2",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_analytical",
+      "row_key": "sin2x_d3",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_analytical",
+      "row_key": "sin2x_d4",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_manufactured",
+      "row_key": "cosx_d1",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_manufactured",
+      "row_key": "cosx_d2",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_manufactured",
+      "row_key": "cosx_d3",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_manufactured",
+      "row_key": "cosx_d4",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_manufactured",
+      "row_key": "expx3_d1",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_manufactured",
+      "row_key": "expx3_d2",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_manufactured",
+      "row_key": "expx3_d3",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_manufactured",
+      "row_key": "expx3_d4",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_manufactured",
+      "row_key": "gauss_d1",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_manufactured",
+      "row_key": "gauss_d2",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_manufactured",
+      "row_key": "gauss_d3",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_manufactured",
+      "row_key": "gauss_d4",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_manufactured",
+      "row_key": "poly_d1",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_manufactured",
+      "row_key": "poly_d2",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_manufactured",
+      "row_key": "poly_d3",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_manufactured",
+      "row_key": "poly_d4",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_manufactured",
+      "row_key": "sin2x_d1",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_manufactured",
+      "row_key": "sin2x_d2",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_manufactured",
+      "row_key": "sin2x_d3",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "deriv_ref_signal_regime_manufactured",
+      "row_key": "sin2x_d4",
+      "workload_family": "deriv",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_boundary_stencils_second_order",
+      "row_key": "p0_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_boundary_stencils_second_order",
+      "row_key": "p0_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_boundary_stencils_second_order",
+      "row_key": "p0_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_boundary_stencils_second_order",
+      "row_key": "p0_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_boundary_stencils_second_order",
+      "row_key": "p1_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_boundary_stencils_second_order",
+      "row_key": "p1_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_boundary_stencils_second_order",
+      "row_key": "p1_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_boundary_stencils_second_order",
+      "row_key": "p1_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_boundary_stencils_second_order",
+      "row_key": "p2_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_boundary_stencils_second_order",
+      "row_key": "p2_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_boundary_stencils_second_order",
+      "row_key": "p2_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_boundary_stencils_second_order",
+      "row_key": "p2_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_boundary_stencils_second_order",
+      "row_key": "p3_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_boundary_stencils_second_order",
+      "row_key": "p3_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_boundary_stencils_second_order",
+      "row_key": "p3_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_boundary_stencils_second_order",
+      "row_key": "p3_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_fn_12_uniform_spacing_ratio",
+      "row_key": "n1024_s0",
+      "workload_family": "grid",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_fn_12_uniform_spacing_ratio",
+      "row_key": "n1024_s1",
+      "workload_family": "grid",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_fn_12_uniform_spacing_ratio",
+      "row_key": "n1024_s2",
+      "workload_family": "grid",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_fn_12_uniform_spacing_ratio",
+      "row_key": "n129_s0",
+      "workload_family": "grid",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_fn_12_uniform_spacing_ratio",
+      "row_key": "n129_s1",
+      "workload_family": "grid",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_fn_12_uniform_spacing_ratio",
+      "row_key": "n129_s2",
+      "workload_family": "grid",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_fn_12_uniform_spacing_ratio",
+      "row_key": "n17_s0",
+      "workload_family": "grid",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_fn_12_uniform_spacing_ratio",
+      "row_key": "n17_s1",
+      "workload_family": "grid",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_fn_12_uniform_spacing_ratio",
+      "row_key": "n17_s2",
+      "workload_family": "grid",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_fn_12_uniform_spacing_ratio",
+      "row_key": "n33_s0",
+      "workload_family": "grid",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_fn_12_uniform_spacing_ratio",
+      "row_key": "n33_s1",
+      "workload_family": "grid",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_fn_12_uniform_spacing_ratio",
+      "row_key": "n33_s2",
+      "workload_family": "grid",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_fn_12_uniform_spacing_ratio",
+      "row_key": "n4096_s0",
+      "workload_family": "grid",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_fn_12_uniform_spacing_ratio",
+      "row_key": "n4096_s1",
+      "workload_family": "grid",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_fn_12_uniform_spacing_ratio",
+      "row_key": "n4096_s2",
+      "workload_family": "grid",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
+      "row_key": "g0_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
+      "row_key": "g0_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
+      "row_key": "g0_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
+      "row_key": "g0_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
+      "row_key": "g1_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
+      "row_key": "g1_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
+      "row_key": "g1_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
+      "row_key": "g1_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
+      "row_key": "g2_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
+      "row_key": "g2_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
+      "row_key": "g2_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
+      "row_key": "g2_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
+      "row_key": "g3_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
+      "row_key": "g3_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
+      "row_key": "g3_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
+      "row_key": "g3_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
+      "row_key": "g4_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
+      "row_key": "g4_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
+      "row_key": "g4_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
+      "row_key": "g4_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
+      "row_key": "g5_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
+      "row_key": "g5_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
+      "row_key": "g5_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
+      "row_key": "g5_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
+      "row_key": "g6_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
+      "row_key": "g6_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
+      "row_key": "g6_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
+      "row_key": "g6_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
+      "row_key": "g7_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
+      "row_key": "g7_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
+      "row_key": "g7_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
+      "row_key": "g7_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g0_r0_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g0_r0_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g0_r0_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g0_r0_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g0_r1_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g0_r1_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g0_r1_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g0_r1_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g0_r2_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g0_r2_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g0_r2_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g0_r2_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g1_r0_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g1_r0_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g1_r0_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g1_r0_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g1_r1_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g1_r1_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g1_r1_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g1_r1_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g1_r2_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g1_r2_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g1_r2_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g1_r2_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g2_r0_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g2_r0_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g2_r0_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g2_r0_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g2_r1_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g2_r1_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g2_r1_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g2_r1_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g2_r2_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g2_r2_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g2_r2_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g2_r2_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g3_r0_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g3_r0_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g3_r0_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g3_r0_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g3_r1_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g3_r1_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g3_r1_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g3_r1_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g3_r2_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g3_r2_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g3_r2_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g3_r2_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g4_r0_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g4_r0_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g4_r0_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g4_r0_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g4_r1_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g4_r1_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g4_r1_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g4_r1_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g4_r2_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g4_r2_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g4_r2_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
+      "row_key": "g4_r2_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n10_i0_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n10_i1_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n10_i2_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n10_i3_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n10_i4_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n3_i0_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n3_i1_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n3_i2_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n3_i3_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n3_i4_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n4_i0_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n4_i1_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n4_i2_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n4_i3_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n4_i4_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n5_i0_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n5_i0_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n5_i1_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n5_i1_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n5_i2_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n5_i2_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n5_i3_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n5_i3_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n5_i4_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n5_i4_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n6_i0_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n6_i0_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n6_i1_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n6_i1_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n6_i2_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n6_i2_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n6_i3_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n6_i3_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n6_i4_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n6_i4_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n7_i0_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n7_i0_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n7_i1_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n7_i1_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n7_i2_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n7_i2_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n7_i3_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n7_i3_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n7_i4_d1",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 1,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n7_i4_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n8_i0_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n8_i0_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n8_i1_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n8_i1_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n8_i2_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n8_i2_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n8_i3_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n8_i3_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n8_i4_d2",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 2,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n8_i4_d4",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 4,
+      "gate_use": "exploratory_only",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n9_i0_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n9_i1_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n9_i2_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n9_i3_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "fornberg_uniform_polynomial_exactness",
+      "row_key": "n9_i4_d3",
+      "workload_family": "fornberg",
+      "order_parameterized": true,
+      "derivative_order": 3,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "weak_constant_exactness_nonuniform_trapezoidal",
+      "row_key": "r0_n0",
+      "workload_family": "weak",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "weak_constant_exactness_nonuniform_trapezoidal",
+      "row_key": "r0_n1",
+      "workload_family": "weak",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "weak_constant_exactness_nonuniform_trapezoidal",
+      "row_key": "r0_n2",
+      "workload_family": "weak",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "weak_constant_exactness_nonuniform_trapezoidal",
+      "row_key": "r1_n0",
+      "workload_family": "weak",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "weak_constant_exactness_nonuniform_trapezoidal",
+      "row_key": "r1_n1",
+      "workload_family": "weak",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "weak_constant_exactness_nonuniform_trapezoidal",
+      "row_key": "r1_n2",
+      "workload_family": "weak",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "weak_constant_exactness_nonuniform_trapezoidal",
+      "row_key": "r2_n0",
+      "workload_family": "weak",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "weak_constant_exactness_nonuniform_trapezoidal",
+      "row_key": "r2_n1",
+      "workload_family": "weak",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "weak_constant_exactness_nonuniform_trapezoidal",
+      "row_key": "r2_n2",
+      "workload_family": "weak",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "weak_constant_exactness_nonuniform_trapezoidal",
+      "row_key": "r3_n0",
+      "workload_family": "weak",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "weak_constant_exactness_nonuniform_trapezoidal",
+      "row_key": "r3_n1",
+      "workload_family": "weak",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "weak_constant_exactness_nonuniform_trapezoidal",
+      "row_key": "r3_n2",
+      "workload_family": "weak",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "weak_constant_exactness_nonuniform_trapezoidal",
+      "row_key": "r4_n0",
+      "workload_family": "weak",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "weak_constant_exactness_nonuniform_trapezoidal",
+      "row_key": "r4_n1",
+      "workload_family": "weak",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "weak_constant_exactness_nonuniform_trapezoidal",
+      "row_key": "r4_n2",
+      "workload_family": "weak",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "weak_linear_exactness_report",
+      "row_key": "r0_w0",
+      "workload_family": "weak",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "weak_linear_exactness_report",
+      "row_key": "r0_w1",
+      "workload_family": "weak",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "weak_linear_exactness_report",
+      "row_key": "r1_w0",
+      "workload_family": "weak",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "weak_linear_exactness_report",
+      "row_key": "r1_w1",
+      "workload_family": "weak",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "weak_linear_exactness_report",
+      "row_key": "r2_w0",
+      "workload_family": "weak",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "weak_linear_exactness_report",
+      "row_key": "r2_w1",
+      "workload_family": "weak",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "weak_linear_exactness_report",
+      "row_key": "r3_w0",
+      "workload_family": "weak",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "weak_linear_exactness_report",
+      "row_key": "r3_w1",
+      "workload_family": "weak",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "weak_linear_exactness_report",
+      "row_key": "r4_w0",
+      "workload_family": "weak",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "weak_linear_exactness_report",
+      "row_key": "r4_w1",
+      "workload_family": "weak",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "tolerance_numeric"
+    },
+    {
+      "workload": "weak_overlap_declaration",
+      "row_key": "p0",
+      "workload_family": "weak",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "exact_discrete"
+    },
+    {
+      "workload": "weak_overlap_declaration",
+      "row_key": "p1",
+      "workload_family": "weak",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "exact_discrete"
+    },
+    {
+      "workload": "weak_overlap_declaration",
+      "row_key": "p2",
+      "workload_family": "weak",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "exact_discrete"
+    },
+    {
+      "workload": "weak_overlap_declaration",
+      "row_key": "p3",
+      "workload_family": "weak",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "exact_discrete"
+    },
+    {
+      "workload": "weak_overlap_declaration",
+      "row_key": "p4",
+      "workload_family": "weak",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "exact_discrete"
+    },
+    {
+      "workload": "weak_overlap_declaration",
+      "row_key": "p5",
+      "workload_family": "weak",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "exact_discrete"
+    },
+    {
+      "workload": "weak_user_supplied_validation",
+      "row_key": "case0",
+      "workload_family": "weak",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "exact_discrete"
+    },
+    {
+      "workload": "weak_user_supplied_validation",
+      "row_key": "case1",
+      "workload_family": "weak",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "exact_discrete"
+    },
+    {
+      "workload": "weak_user_supplied_validation",
+      "row_key": "case2",
+      "workload_family": "weak",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "exact_discrete"
+    },
+    {
+      "workload": "weak_user_supplied_validation",
+      "row_key": "case3",
+      "workload_family": "weak",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "exact_discrete"
+    },
+    {
+      "workload": "weak_user_supplied_validation",
+      "row_key": "case4",
+      "workload_family": "weak",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "exact_discrete"
+    },
+    {
+      "workload": "weak_user_supplied_validation",
+      "row_key": "case5",
+      "workload_family": "weak",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "exact_discrete"
+    },
+    {
+      "workload": "weak_user_supplied_validation",
+      "row_key": "case6",
+      "workload_family": "weak",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "exact_discrete"
+    },
+    {
+      "workload": "weak_user_supplied_validation",
+      "row_key": "case7",
+      "workload_family": "weak",
+      "order_parameterized": false,
+      "derivative_order": null,
+      "gate_use": "gate_evidence",
+      "portability_class": "exact_discrete"
+    }
+  ]
+}

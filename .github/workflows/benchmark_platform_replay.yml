@@ -127,9 +127,22 @@ jobs:
           PHASE: ${{ inputs.phase }}
 
       # Gate F closure: the v0.38b/c/d tolerance_numeric workloads the
-      # benchmark lane never touches. 286 rows per runner.
+      # benchmark lane never touches. 286 rows per runner, 229 of them gate
+      # evidence -- the split is what matters, not the total.
       - name: Run the Gate F closure workloads
         run: python scripts/replay_workloads.py gate_f_replay.json
+
+      # F-11. Runs ON THE RUNNER, before the artifact is uploaded, so a
+      # malformed population is caught where it was produced rather than
+      # discovered later during comparison.
+      #
+      # This script imports neither the generator nor the comparator. Run
+      # 31326189317 produced a population the generator built and the comparator
+      # accepted, because both consulted the same broken understanding of what a
+      # row means; a checker sharing a helper with the thing it checks cannot
+      # detect an error in that helper.
+      - name: Audit the emitted population independently
+        run: python scripts/audit_replay_population.py gate_f_replay.json
 
       # `always()` reported "No files were found" on a runner that failed at
       # setup-python, which read as a second, unrelated defect. The setup

@@ -104,5 +104,78 @@
     "patch_drift_derivation": "same platform/arch/libm/BLAS; a CPython patch changes no floating-point semantics, so bitwise identity is the correct expectation and any nonzero tolerance would accept a real regression"
   },
   "expected_gate_rows_per_runner": 239,
-  "expected_exploratory_rows_per_runner": 47
+  "expected_exploratory_rows_per_runner": 47,
+  "workload_declarations": {
+    "fornberg_uniform_polynomial_exactness": {
+      "family": "fornberg",
+      "order_parameterized": true
+    },
+    "fornberg_perturbed_uniform_spacing_ratio_1_to_10": {
+      "family": "fornberg",
+      "order_parameterized": true
+    },
+    "fornberg_pathological_spacing_ratio_10_to_1e8": {
+      "family": "fornberg",
+      "order_parameterized": true
+    },
+    "fornberg_fn_12_uniform_spacing_ratio": {
+      "family": "grid",
+      "order_parameterized": false
+    },
+    "fornberg_boundary_stencils_second_order": {
+      "family": "fornberg",
+      "order_parameterized": true
+    },
+    "weak_constant_exactness_nonuniform_trapezoidal": {
+      "family": "weak",
+      "order_parameterized": false
+    },
+    "weak_user_supplied_validation": {
+      "family": "weak",
+      "order_parameterized": false
+    },
+    "weak_linear_exactness_report": {
+      "family": "weak",
+      "order_parameterized": false
+    },
+    "weak_overlap_declaration": {
+      "family": "weak",
+      "order_parameterized": false
+    },
+    "deriv_ref_signal_regime_analytical": {
+      "family": "deriv",
+      "order_parameterized": true
+    },
+    "deriv_ref_signal_regime_manufactured": {
+      "family": "deriv",
+      "order_parameterized": true
+    },
+    "deriv_ref_floor_regime": {
+      "family": "deriv",
+      "order_parameterized": true
+    },
+    "deriv_ref_none_kind": {
+      "family": "reference_kind",
+      "order_parameterized": false
+    }
+  },
+  "order_parameterized_families": [
+    "fornberg",
+    "deriv"
+  ],
+  "non_order_parameterized_families": [
+    "weak",
+    "grid",
+    "reference_kind"
+  ],
+  "family_note": "Declared PER WORKLOAD, not derived from a name prefix. fornberg_fn_12_uniform_spacing_ratio shares the fornberg prefix and measures the GRID's spacing ratio, which carries no derivative order; deriv_ref_none_kind likewise. A prefix heuristic mislabels both, and prefix-derived semantics is the defect class this whole correction is about.",
+  "expected_rows_manifest": "configs/gate_f_expected_rows.json",
+  "row_counts": {
+    "note": "Derived from the expected-row manifest, reported for review. F-3 asserts SET EQUALITY against that manifest, never these integers -- a count check passes on the wrong 229 rows.",
+    "gate_evidence": 229,
+    "exploratory_only": 57,
+    "total": 286,
+    "superseded_gate_count": 239,
+    "superseded_reason": "included ten d=4 rows carrying derivative_order null"
+  }
 }

@@ -44,8 +44,13 @@ from pathlib import Path
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import numpy as np
+from replay_contracts import (
+    ReplayRowSpec,
+    declaration_for,
+)
 
 from pdelie.contracts.error_metric_spec import ErrorMetricSpec
 from pdelie.differentiation.error_reference import (
@@ -68,21 +73,33 @@ LINF = ErrorMetricSpec(metric_spec_id="replay_linf_absolute", quantity="absolute
 _SEED = 20380
 
 
-def _row(workload: str, key: str, *, order: int | None = None, **fields: Any) -> dict[str, Any]:
-    """One measurement row, labelled with whether it may inform a gate.
+def _row(workload: str, label: str, *, order: int | None = None, **fields: Any) -> dict[str, Any]:
+    """One measurement row, built from a typed spec.
 
-    ``order=None`` means the row is not order-parameterised and is in scope.
+    ``order`` is NOT optional metadata a caller may forget. If the workload's
+    family is order-parameterised, :class:`ReplayRowSpec` refuses to construct
+    without it -- so a call site that omits it fails loudly at build time
+    rather than emitting a row with ``derivative_order: None`` that the gate
+    then silently accepts.
+
+    That omission, on ten ``deriv_ref_signal_regime_*`` rows, is exactly why the
+    confirmatory replay `31326189317` could not close Gate F.
     """
-    in_scope = order is None or order in _ORDERS
-    return {
-        "workload": workload,
-        "row_key": key,
-        "derivative_order": order,
-        "scope": "in_frozen_scope" if in_scope else "outside_frozen_scope",
-        "gate_use": "gate_evidence" if in_scope else "not_used_for_gate_decision",
-        "portability_class": _SCOPE["portability_classes"][workload],
-        **fields,
-    }
+    family, order_parameterized = declaration_for(workload)
+    spec = ReplayRowSpec(
+        workload_id=workload,
+        workload_family=family,
+        order_parameterized=order_parameterized,
+        derivative_order=order,
+        portability_class=_SCOPE["portability_classes"][workload],
+        gate_use=(
+            "exploratory_only"
+            if order is not None and order not in _ORDERS
+            else "gate_evidence"
+        ),
+        label=label,
+    )
+    return spec.as_row(**fields)
 
 
 def _stretched(count: int, ratio: float) -> np.ndarray:
@@ -138,7 +155,7 @@ def v0_38b_rows() -> list[dict[str, Any]]:
                 rows.append(
                     _row(
                         "fornberg_uniform_polynomial_exactness",
-                        f"d{order}_n{stencil}_i{node_index}",
+                        f"n{stencil}_i{node_index}",
                         order=order,
                         formal_accuracy=w.formal_accuracy,
                         absolute_error=abs(approx - exact),
@@ -168,7 +185,7 @@ def v0_38b_rows() -> list[dict[str, Any]]:
                 rows.append(
                     _row(
                         "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
-                        f"d{order}_g{grid_index}_r{refinement}",
+                        f"g{grid_index}_r{refinement}",
                         order=order,
                         absolute_error=abs(approx - exact),
                         reference_scale=float(2.0**order),
@@ -198,7 +215,7 @@ def v0_38b_rows() -> list[dict[str, Any]]:
             rows.append(
                 _row(
                     "fornberg_pathological_spacing_ratio_10_to_1e8",
-                    f"d{order}_g{grid_index}",
+                    f"g{grid_index}",
                         order=order,
                     absolute_error=abs(approx - exact),
                     reference_scale=float(2.0**order),
@@ -243,7 +260,7 @@ def v0_38b_rows() -> list[dict[str, Any]]:
             rows.append(
                 _row(
                     "fornberg_boundary_stencils_second_order",
-                    f"d{order}_p{position_index}",
+                    f"p{position_index}",
                         order=order,
                     absolute_error=abs(approx - exact),
                     reference_scale=float(2.0**order),
@@ -410,7 +427,8 @@ def v0_38d_rows() -> list[dict[str, Any]]:
                 rows.append(
                     _row(
                         f"deriv_ref_signal_regime_{kind_label}",
-                        f"{name}_d{order}",
+                        f"{name}",
+                        order=order,
                         reporting_regime=report.reporting_regime,
                         absolute_error=report.absolute_error,
                         relative_error=report.relative_error,
@@ -437,7 +455,7 @@ def v0_38d_rows() -> list[dict[str, Any]]:
             rows.append(
                 _row(
                     "deriv_ref_floor_regime",
-                    f"{name}_d{order}",
+                    f"{name}",
                     order=order,
                     reporting_regime=report.reporting_regime,
                     absolute_error=report.absolute_error,

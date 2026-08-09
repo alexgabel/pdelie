@@ -172,3 +172,116 @@ Gate F is open. The criterion refers to a number that does not exist.
 
 Gate F remains **NOT MET**. It is not met for reasons that were discoverable only
 by running the lane, which is what the lane is for.
+
+---
+
+# Appendix C — Confirmatory replay, run `31326189317`
+
+**Outcome: Gate F remains open because the confirmatory replay's gate population
+violated the frozen derivative-order scope.**
+
+Dispatched against `5929c10e` (main, post-`#174`). Three runners, all initialized.
+
+## 1. What succeeded
+
+**All three requested runners initialized and emitted artifacts.** The
+pre-dispatch matrix validator passed in CI for the first time, confirming every
+cell exists before any runner started.
+
+| runner | role |
+|---|---|
+| `macos-14` py3.12.10 | platform_comparison |
+| `ubuntu-22.04` py3.12.10 | platform_comparison |
+| `ubuntu-22.04` py3.12.13 | patch_comparison |
+
+**Linux 3.12.10 vs 3.12.13 was bitwise identical on all 345 compared numeric
+values.** Zero differing bits. Python patch drift is not load-bearing, now
+measured on the corrected harness rather than the superseded one.
+
+**Exact-discrete fields agreed across all three runner pairs.** Zero mismatches.
+
+**F-10 held.** All four frozen files — the scope artifact, the amended freeze,
+and both scripts — were SHA-256 verified unchanged after execution. The run was
+evaluated against the specification it began with.
+
+## 2. Why the gate does not close
+
+**Ten `d = 4` rows were incorrectly labelled `gate_evidence`.**
+
+The `order=` metadata was threaded into the `deriv_ref_*` row constructors by
+pattern substitution. It matched the `floor_regime` and `none_kind` call sites
+and **missed the `signal_regime` ones**, which therefore emit
+`derivative_order: None`.
+
+F-4 then accepted them. Its check was effectively
+`derivative_order in {None, 1, 2, 3}`, and `None` was read as *"not
+order-parameterised, therefore in scope"* — true for the `weak_*` family, false
+here.
+
+**The worst cross-platform discrepancy landed on one of the leaked rows**:
+`deriv_ref_signal_regime_analytical/expx3_d4.relative_error` at `3.199e-09`.
+
+That is not a coincidence to argue past. It is the frozen scope's exclusion of
+`d = 4` doing exactly what it was written to do, on a row that should never have
+been in the population.
+
+## 3. The post-hoc in-scope figure is diagnostic only
+
+Excluding the leaked rows gives a worst scaled difference of `1.014e-10` at
+`fornberg_pathological_spacing_ratio_10_to_1e8/d3_g7.absolute_error`.
+
+**This cannot close the gate.** Both figures sit inside the `1e-8` bound, and
+that is irrelevant: the gate certifies a *population*, and this population
+contained rows the v0.38b freeze explicitly disclaims. Accepting the run because
+the number happens to pass would be redefining the population after seeing the
+data.
+
+## 4. A second, smaller defect — in the comparator
+
+`compare_replay.py` displayed **`339/345`** bitwise for the Linux pair. An
+independent pass over the same artifacts found **`345/345`**.
+
+The counter is wrong: rows short-circuited by the numerical-floor branch return
+before reaching it, so floor-classified values are silently excluded from the
+bitwise denominator. A floor-classified value may legitimately be excluded from
+F-7's scaled-difference statistic, but it still counts toward F-6 bitwise
+identity.
+
+**Not repaired during evaluation.** `compare_replay.py` is one of the four
+F-10-fingerprinted files, and altering the instrument while reading it is what
+F-10 exists to prevent.
+
+## 5. Criteria as reported, and what that reporting was worth
+
+| | reported | actual standing |
+|---|---|---|
+| F-1 runners initialized | PASS | PASS |
+| F-2 artifacts uploaded | PASS | PASS |
+| F-3 row-key population | PASS | population *identical across runners*, but not the frozen one |
+| **F-4 no gate row outside d 1–3** | **PASS** | **VACUOUS — 10 leaked rows** |
+| F-5 exact_discrete agrees | PASS | PASS |
+| F-6 patch drift bitwise | PASS | PASS (345/345, independently verified) |
+| F-7 cross-platform ≤ 1e-8 | PASS | measured on a wrong population |
+| F-8 no nonfinite / missing | PASS | PASS |
+| F-9 full release gate | PASS | PASS |
+| F-10 nothing changed | PASS | PASS (4/4 hashes) |
+
+Ten criteria reported PASS. One was vacuous, and it invalidated two others.
+
+## 6. The engineering lesson
+
+This is the **second** appearance of one defect class: scope metadata repaired
+by pattern matching rather than originating in typed data.
+
+The first was `_ORDERS = (1, 2, 3, 4)` swept on the harness's own authority. The
+repair threaded `order=` through call sites with a regex — and a regex that
+matches most call sites is a repair that works most of the time.
+
+> "By construction" must mean semantics originate in typed workload data, not
+> that they are reconstructed more carefully from strings.
+
+Deriving the order from the row key would repeat the mistake in a new costume: a
+display identifier is not a data contract.
+
+Appendices A and B are unchanged. A successful replacement replay belongs in
+**Appendix D**.
