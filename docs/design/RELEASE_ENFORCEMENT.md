@@ -279,7 +279,21 @@ wholesale, and this one was being read as gating rc1.
 | `main` branch protection not applied | **CLOSED** — `enforce_admins=true`, `allow_force_pushes=false`, `required_linear_history=true`, `strict=true`, audited by `tests/test_branch_protection_policy.py` |
 | `scripts/release_gate_local.sh` does not exist | **CLOSED** — 138 lines, six sub-gates, contract asserted by `tests/test_release_gate_contract.py` |
 | pre-existing pre-commit config not audited | **VOID** — there is no `.pre-commit-config.yaml` in this repository. The gap as written presumed a file that does not exist. If pre-commit is wanted, that is new work, not a reconciliation. |
-| `release/*` pattern rule not applied | **CLOSED 2026-08-09** — ruleset `Protect release branches` (id 20613957): `deletion`, `non_fast_forward`, `pull_request`. Deliberately **no** `required_status_checks`: `release/v0.31.x` runs Python 3.11 / PySINDy 1.7.5 and cannot produce main's 3.12/3.13 contexts, so requiring them would brick the maintenance line the same way the versioned job name bricked `main`. |
+| `release/*` pattern rule not applied | **CLOSED 2026-08-09** — ruleset `Protect release branches` (id 20613957): `creation`, `deletion`, `non_fast_forward`, `pull_request`. Deliberately **no** `required_status_checks`: `release/v0.31.x` runs Python 3.11 / PySINDy 1.7.5 and cannot produce main's 3.12/3.13 contexts, so requiring them would brick the maintenance line the same way the versioned job name bricked `main`. |
+
+**`release/*` is a protected namespace. Do not name a PR branch `release/…`.**
+
+Creation is blocked, so this is now refused rather than permanent. It was not
+always: a PR branch named `release/v0.38.0rc1` was created while only
+`deletion`, `non_fast_forward` and `pull_request` were in force. Creation
+succeeded, deletion was refused, and clearing it required disabling the ruleset
+— which is precisely the habit a protection rule must not teach. Adding
+`creation` closes the asymmetry.
+
+Creating a genuine maintenance branch (`release/v0.38.x`) is therefore a
+deliberate act requiring the ruleset to be disabled briefly. That is correct:
+it happens roughly once per release line, and it should be visible in the audit
+log.
 
 **Nothing from this list remains open before `v0.38.0rc1`.**
 
