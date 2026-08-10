@@ -170,7 +170,7 @@ def test_v0_31_version_pin_matches_scope_config() -> None:
     assert pyproject_version in {
         "0.30.0", "0.31.0", "0.32.0", "0.33.0", "0.34.0",
         "0.35.0", "0.36.0", "0.37.0", "0.37.1",
-        "0.38.0a1", "0.38.0b1", "0.38.0rc1",
+        "0.38.0a1", "0.38.0b1", "0.38.0rc1", "0.38.0",
     }, (
         f"pdelie version must be 0.30.0 (pre-close), 0.31.0 (release "
         f"close), or 0.32.0 (v0.32.0 consolidated release close); got "

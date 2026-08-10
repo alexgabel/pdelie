@@ -166,7 +166,7 @@ def test_v0_30e_pyproject_now_configures_ruff_mypy_coverage() -> None:
     assert pyproject["project"]["version"] in {
         "0.29.0", "0.30.0", "0.31.0", "0.32.0", "0.33.0",
         "0.34.0", "0.35.0", "0.36.0", "0.37.0", "0.37.1",
-        "0.38.0a1", "0.38.0b1", "0.38.0rc1",
+        "0.38.0a1", "0.38.0b1", "0.38.0rc1", "0.38.0",
     }
 
 

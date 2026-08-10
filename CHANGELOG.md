@@ -1,5 +1,59 @@
 # Changelog
 
+## 0.38.0
+
+Irregular grids, declared parameter-action targets, and one resolved residual
+operator. **No library behaviour changed since `0.38.0rc1`** — the candidate
+promised defect corrections only and no defect was found.
+
+All six gates A–F pass. Gate F closed on run `31328966332`: three runner cells,
+229 gate rows each, worst cross-platform scaled difference `4.168e-10` against a
+derived `1e-8` bound, and `0.000e+00` across a CPython patch bump with 325/325
+comparisons bitwise identical.
+
+### Breaking
+
+- `inspect_pysindy_weak_pde_library` requires an explicit integer `seed`. A
+  default seed is an unrecorded choice. See
+  [`V0_38_SEED_MIGRATION.md`](docs/releases/V0_38_SEED_MIGRATION.md).
+
+### Added
+
+- Fornberg finite-difference weights on arbitrary node sets, reporting
+  `formal_accuracy = n − d` rather than assuming it; grid-regularity
+  description; irregular row masks; a non-uniform weak-form bridge whose
+  quadrature weights are validated rather than trusted.
+- `ParameterActionSpec` with `declared_target_parameters`,
+  `transformed_parameters` and `untouched_parameters`, so a declared rescale
+  cannot silently touch every numeric parameter.
+- A single `EquationForm` resolver consumed by both the evaluator and the
+  report, which **blocks** when declaration and data provenance disagree
+  instead of choosing one.
+- Signal-versus-floor error reporting: at the numerical floor the relative
+  statistic is withheld rather than reported, because a ratio between two
+  numbers that are both `~1e-16` is not a number.
+- `scripts/external_smoke.py`, which exercises an installed distribution and
+  refuses to run against a source checkout.
+
+### Known limitations
+
+The portability taxonomy is corroborated on three cells, not established;
+macOS/arm64 at CPython 3.12.11+ does not exist, so the 2×2 corner was never
+measured. Derivative order 4 stays outside the supported scope. The `1e-8`
+bound is derived for the workloads in scope. Nonperiodic domains and monotone
+coefficients are deferred to `v0.41`.
+
+### Record
+
+Gate F took three attempts. Appendix B records a run that specified a runner
+cell that does not exist; **Appendix C** records a gate that passed *vacuously*,
+because ten out-of-scope `d = 4` rows carried `derivative_order: null` and the
+criterion read `null` as in scope. Appendices A, B and C were not revised when D
+succeeded.
+
+Tags `v0.38.0a1`, `v0.38.0b1` and `v0.38.0rc1` remain published and unmoved.
+Git-tag-only; TestPyPI/PyPI publication remains deferred to `v1.0`.
+
 ## 0.38.0rc1
 
 Release candidate. **No library behaviour changed since `0.38.0b1`** — every
