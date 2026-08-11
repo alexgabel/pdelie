@@ -43,7 +43,12 @@ def _prose() -> str:
     it couples a check to a presentation detail. ``was **not**\nperformed``
     and ``was not performed`` are the same claim.
     """
-    text = re.sub(r"[*`_]", "", _text())
+    # NOT `_`: these documents use `*` for emphasis, and stripping
+    # underscores would destroy every snake_case identifier the
+    # assertions look for -- `spectral_periodic_uniform` became
+    # `spectralperiodicuniform` and eight tests failed for a reason
+    # unrelated to the document's content.
+    text = re.sub(r"[*`]", "", _text())
     return re.sub(r"\s+", " ", text).lower()
 
 
