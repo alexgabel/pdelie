@@ -25,4 +25,5 @@ and API stability pages when changing runtime behavior or public interfaces.
    planning/index
    design/index
    releases/index
+   audits/index
    strategy/index

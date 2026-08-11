@@ -90,6 +90,7 @@ trap 'rm -rf "$WORK"' EXIT
 
 declare -a NAMES=() STATUS=()
 FAILED=0
+KILLED=0
 
 run_gate() {
     local name="$1"; shift
@@ -98,7 +99,25 @@ run_gate() {
         NAMES+=("$name"); STATUS+=("PASS")
     else
         local code=$?
-        NAMES+=("$name"); STATUS+=("FAIL($code)")
+        # Exit codes above 128 mean the process was KILLED BY A SIGNAL, not
+        # that it failed. 143 is SIGTERM -- on this project that has meant the
+        # OS reclaiming memory while swap was nearly exhausted.
+        #
+        # Reporting that as FAIL(143) puts an environmental fault in the same
+        # column as a genuine test failure, and the natural response is to
+        # re-run until it goes green. That is a selection effect operating on
+        # the release control itself, which is the exact failure the
+        # interpreter check above was added to prevent.
+        if [ "$code" -gt 128 ]; then
+            local signal=$((code - 128))
+            NAMES+=("$name"); STATUS+=("KILLED(SIG$signal)")
+            KILLED=1
+            echo "  KILLED BY SIGNAL $signal -- this is NOT a test result."
+            echo "  Nothing was measured by this gate. Check memory pressure:"
+            echo "    sysctl vm.swapusage"
+        else
+            NAMES+=("$name"); STATUS+=("FAIL($code)")
+        fi
         FAILED=1
         # Keep going rather than aborting: a release engineer needs the whole
         # picture, not the first thing that broke. The exit status still refuses.
@@ -174,6 +193,16 @@ for i in "${!NAMES[@]}"; do
     printf '  %-38s %s\n' "${NAMES[$i]}" "${STATUS[$i]}"
 done
 
+if [ "$KILLED" -ne 0 ]; then
+    printf '\n\033[33mRELEASE GATE INCONCLUSIVE.\033[0m A sub-gate was killed by a signal.\n'
+    printf 'This is NOT a failing result and NOT a passing one -- it is an\n'
+    printf 'environmental fault, and nothing above it was measured.\n\n'
+    printf 'Most likely cause on this project: memory pressure. Check\n'
+    printf '  sysctl vm.swapusage\n'
+    printf 'and re-run once the machine has headroom. Do not read the table above\n'
+    printf 'as evidence either way, and do not tag on it.\n'
+    exit 4
+fi
 if [ "$FAILED" -ne 0 ]; then
     printf '\n\033[31mRELEASE GATE FAILED.\033[0m Do not tag.\n'
     exit 1

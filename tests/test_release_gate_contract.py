@@ -345,3 +345,37 @@ def test_the_release_checklist_names_the_external_smoke() -> None:
         "the release procedure does not run the external smoke, so the tag "
         "would ship without anyone installing it the way a user would"
     )
+
+
+def test_the_gate_separates_a_signal_kill_from_a_test_failure() -> None:
+    """Exit 143 is SIGTERM, not 143 failing tests.
+
+    The gate once reported ``pytest FAIL(143)`` while a direct run of the same
+    suite passed 3098 tests. The OS had killed pytest under memory pressure
+    (swap at 13.5 of 14.3 GB). Putting that in the same column as a genuine
+    failure invites re-running until it goes green, which is a selection effect
+    operating on the release control itself.
+    """
+    text = SCRIPT.read_text()
+    assert "-gt 128" in text, (
+        "the gate does not detect signal termination, so a killed sub-gate "
+        "reports as an ordinary failure"
+    )
+    assert "KILLED(SIG" in text
+    assert "INCONCLUSIVE" in text, (
+        "a killed run must not resolve to PASSED or FAILED; neither was measured"
+    )
+    assert "exit 4" in text, "the inconclusive verdict needs its own exit code"
+
+
+def test_the_gate_exit_codes_are_all_distinct() -> None:
+    """2 re-entry, 3 bad interpreter, 4 inconclusive, 1 real failure, 0 pass.
+
+    Collapsing any pair makes 'the gate failed' ambiguous in exactly the
+    situations where the distinction decides what to do next.
+    """
+    text = SCRIPT.read_text()
+    codes = {"exit 2": "re-entry", "exit 3": "interpreter", "exit 4": "inconclusive"}
+    for literal, meaning in codes.items():
+        assert literal in text, f"no {meaning} exit path"
+    assert len(set(codes)) == 3
