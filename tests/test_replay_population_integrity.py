@@ -408,6 +408,12 @@ def test_the_comparator_rejects_the_exact_leaked_population() -> None:
 
 
 def test_the_comparator_rejects_a_d4_row_admitted_as_gate_evidence() -> None:
+    """Flipping an exploratory row to gate evidence trips the PARTITION check.
+
+    Asserted specifically, because the looser form -- accepting either the
+    partition message or the scope message -- let this test stand in for a
+    check of F-4 that it never performed. See the test below.
+    """
     rows = _frozen_rows()
     for row in rows:
         if row["derivative_order"] == 4:
@@ -415,7 +421,42 @@ def test_the_comparator_rejects_a_d4_row_admitted_as_gate_evidence() -> None:
             row["scope"] = "in_frozen_scope"
             break
     problems = _check(rows)
-    assert any("outside the frozen scope" in p or "partition" in p for p in problems), problems
+    assert any("partition" in p for p in problems), problems
+
+
+def test_f4_rejects_an_out_of_scope_order_on_its_own() -> None:
+    """F-4's own branch, exercised where nothing else can fire first.
+
+    ``scripts/verify_guard_nonvacuity.py`` found F-4 to be VACUOUS: removing
+    the comparator's order check turned zero tests red. Not because F-4 was
+    wrong, but because every mutation reaching it tripped F-3 or F-3a first and
+    short-circuited. A guard that no input can reach is dead code wearing a
+    criterion's name.
+
+    So this mutates the ORDER on a row that is already frozen gate evidence,
+    leaving `row_key` and `gate_use` untouched:
+
+      * F-3  set equality  -- row identity unchanged, passes
+      * F-3a partition     -- gate_use unchanged, passes
+      * F-4  order in {1,2,3} -- 4 is not, FIRES
+
+    and asserts the scope message specifically, not merely that something
+    complained.
+    """
+    rows = _frozen_rows()
+    target = next(
+        r for r in rows
+        if r["gate_use"] == "gate_evidence" and r["derivative_order"] == 2
+    )
+    target["derivative_order"] = 4
+
+    problems = _check(rows)
+    scope_failures = [p for p in problems if "outside the frozen scope" in p]
+    assert scope_failures, (
+        f"F-4 did not fire on a gate row at derivative order 4. Other problems "
+        f"reported: {problems}"
+    )
+    assert target["row_key"] in scope_failures[0]
 
 
 def test_the_comparator_rejects_a_changed_partition_at_the_same_total() -> None:
