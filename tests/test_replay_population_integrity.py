@@ -408,6 +408,12 @@ def test_the_comparator_rejects_the_exact_leaked_population() -> None:
 
 
 def test_the_comparator_rejects_a_d4_row_admitted_as_gate_evidence() -> None:
+    """Flipping an exploratory row to gate evidence trips the PARTITION check.
+
+    Asserted specifically, because the looser form -- accepting either the
+    partition message or the scope message -- let this test stand in for a
+    check of F-4 that it never performed. See the test below.
+    """
     rows = _frozen_rows()
     for row in rows:
         if row["derivative_order"] == 4:
@@ -415,7 +421,42 @@ def test_the_comparator_rejects_a_d4_row_admitted_as_gate_evidence() -> None:
             row["scope"] = "in_frozen_scope"
             break
     problems = _check(rows)
-    assert any("outside the frozen scope" in p or "partition" in p for p in problems), problems
+    assert any("partition" in p for p in problems), problems
+
+
+def test_f4_rejects_an_out_of_scope_order_on_its_own() -> None:
+    """F-4's own branch, exercised where nothing else can fire first.
+
+    ``scripts/verify_guard_nonvacuity.py`` found F-4 to be VACUOUS: removing
+    the comparator's order check turned zero tests red. Not because F-4 was
+    wrong, but because every mutation reaching it tripped F-3 or F-3a first and
+    short-circuited. A guard that no input can reach is dead code wearing a
+    criterion's name.
+
+    So this mutates the ORDER on a row that is already frozen gate evidence,
+    leaving `row_key` and `gate_use` untouched:
+
+      * F-3  set equality  -- row identity unchanged, passes
+      * F-3a partition     -- gate_use unchanged, passes
+      * F-4  order in {1,2,3} -- 4 is not, FIRES
+
+    and asserts the scope message specifically, not merely that something
+    complained.
+    """
+    rows = _frozen_rows()
+    target = next(
+        r for r in rows
+        if r["gate_use"] == "gate_evidence" and r["derivative_order"] == 2
+    )
+    target["derivative_order"] = 4
+
+    problems = _check(rows)
+    scope_failures = [p for p in problems if "outside the frozen scope" in p]
+    assert scope_failures, (
+        f"F-4 did not fire on a gate row at derivative order 4. Other problems "
+        f"reported: {problems}"
+    )
+    assert target["row_key"] in scope_failures[0]
 
 
 def test_the_comparator_rejects_a_changed_partition_at_the_same_total() -> None:
@@ -488,3 +529,107 @@ def test_the_comparator_asserts_both_accounting_identities() -> None:
         "the absent-field branch must be distinct from, and precede, the "
         "zero-scale branch; merging them is what produced 1049"
     )
+
+
+# --------------------------------------------------------------------------
+# Behavioural mutations for the bitwise accounting.
+#
+# The test above this block asserts the comparator's SHAPE: that the six
+# counters exist and that the bitwise increment precedes the floor branch.
+# That is worth keeping, but it is not a test of behaviour -- it would pass on
+# a comparator whose counters were correctly named, correctly ordered, and
+# wrong.
+#
+# Substituting a shape assertion for a behaviour assertion is the same defect
+# as F-4 accepting `None`: the check cannot fail for the reason it names. So
+# the three below drive `compare()` with constructed floor-regime values and
+# read the counters back.
+# --------------------------------------------------------------------------
+
+
+def _floor_row(row_key: str, absolute_error: float) -> dict:
+    """A gate row whose numeric value sits at the numerical floor.
+
+    ``reference_scale`` of 1.0 with an error near 1e-18 is far below
+    ``sqrt(eps) * scale``, so the comparator classifies it as floor and the
+    relative statistic is meaningless. Whether the BITS matched is still a
+    well-posed question -- more so here than anywhere else, since these are the
+    values a libm change perturbs first.
+    """
+    return {
+        "workload": "deriv_ref_floor_regime",
+        "row_key": row_key,
+        "workload_family": "deriv",
+        "order_parameterized": True,
+        "derivative_order": 2,
+        "gate_use": "gate_evidence",
+        "scope": "in_frozen_scope",
+        "portability_class": "tolerance_numeric",
+        "error_metric_spec_id": "replay_linf_absolute",
+        "reporting_regime": "floor",
+        "reference_scale": 1.0,
+        "absolute_error": absolute_error,
+    }
+
+
+def _compare(left_error: float, right_error: float) -> dict:
+    import compare_replay
+
+    return compare_replay.compare(
+        "Linux/x86_64-py3.12.10", _payload([_floor_row("f0_d2", left_error)]),
+        "Linux/x86_64-py3.12.13", _payload([_floor_row("f0_d2", right_error)]),
+    )
+
+
+def test_9_a_floor_classified_equal_value_still_counts_toward_the_denominator() -> None:
+    """F-6's denominator must not be narrowed by floor classification.
+
+    Previously the comparator classified a comparison as floor and `continue`d
+    *before* counting it, so the bitwise denominator silently excluded exactly
+    the small-magnitude rows most likely to differ across libm versions.
+    """
+    result = _compare(1e-18, 1e-18)
+    assert result["numeric_comparisons_total"] == 1, result
+    assert result["numeric_comparisons_bitwise_equal"] == 1, result
+    assert result["numeric_comparisons_bitwise_different"] == 0, result
+    assert result["floor_comparisons"] == 1, "the row should still classify as floor"
+    assert result["signal_comparisons"] == 0
+
+
+def test_10_a_floor_classified_unequal_value_breaks_bitwise_identity() -> None:
+    """F-6 must FAIL here. This is the case the old ordering silently passed.
+
+    Two different bits at the floor is a real cross-version difference. Under
+    the previous accounting it was invisible: the comparison never reached a
+    counter, so `bitwise_identical` equalled the (reduced) total and the pair
+    read as identical.
+    """
+    result = _compare(1e-18, 2e-18)
+    assert result["numeric_comparisons_total"] == 1, result
+    assert result["numeric_comparisons_bitwise_different"] == 1, (
+        "a floor-classified value differing in its bits was not counted as a "
+        "bitwise difference, so F-6 would pass on a real cross-version change"
+    )
+    assert result["numeric_comparisons_bitwise_equal"] == 0, result
+    assert result["bitwise_differences"], "the differing row must be named"
+    assert "absolute_error" in result["bitwise_differences"][0]
+
+    # And the floor classification is still applied -- it governs which
+    # statistic is meaningful, not whether the bits were compared.
+    assert result["floor_comparisons"] == 1
+    assert result["worst_scaled_difference"] == 0.0, (
+        "a floor row must contribute nothing to F-7's scaled-difference "
+        "statistic; that part of the separation must survive"
+    )
+
+
+def test_6_a_duplicated_row_identity_is_rejected() -> None:
+    """The comparator has carried this check untested.
+
+    A duplicate makes every count ambiguous: the same identity appearing twice
+    can satisfy a total while corrupting a pairing.
+    """
+    rows = _frozen_rows()
+    rows.append(dict(rows[0]))
+    problems = _check(rows)
+    assert any("duplicate" in p for p in problems), problems
