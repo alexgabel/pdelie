@@ -57,3 +57,4 @@ Once a design is implemented and validated it is folded into the specs.
    v0_38_gate_f_closure_plan
    RELEASE_ENFORCEMENT
    v0_38_gate_f_amended_freeze
+   v0_39_0_derivative_reference_hypothesis_freeze
