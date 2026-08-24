@@ -348,8 +348,14 @@ def _payload(rows: list[dict]) -> dict:
 
 
 def _frozen_rows() -> list[dict]:
-    """The exact frozen population, as a runner would emit it."""
-    return [
+    """The exact frozen population, as a runner would emit it.
+
+    Carries the numeric values the manifest freezes. Before the starved-
+    population defect was found this fixture emitted metadata only, and every
+    test built on it therefore exercised a population the gate could not have
+    compared -- which is precisely the defect it failed to catch.
+    """
+    rows = [
         {
             "workload": r["workload"],
             "row_key": r["row_key"],
@@ -366,6 +372,14 @@ def _frozen_rows() -> list[dict]:
         }
         for r in EXPECTED["rows"]
     ]
+    for row, spec in zip(rows, EXPECTED["rows"], strict=True):
+        for field in spec.get("numeric_fields", []):
+            row[field] = 1.0
+        if spec.get("has_metric_spec"):
+            row["error_metric_spec_id"] = "replay_linf_absolute"
+        row["reporting_regime"] = "signal"
+        row["reference_scale"] = 1.0
+    return rows
 
 
 def _check(rows: list[dict]) -> list[str]:
@@ -633,3 +647,105 @@ def test_6_a_duplicated_row_identity_is_rejected() -> None:
     rows.append(dict(rows[0]))
     problems = _check(rows)
     assert any("duplicate" in p for p in problems), problems
+
+
+# --------------------------------------------------------------------------
+# The starved-population defect.
+#
+# An external audit found, and this reproduced, that renaming the numeric
+# fields in replay_workloads.py produced a run where all 229 gate rows paired,
+# `numeric_comparisons_total` was 0, the accounting identity held at
+# `0 == 0 + 0`, and the comparator exited 0 declaring cross-platform agreement
+# HAVING COMPARED NOTHING.
+#
+# Every check that existed passed. The row set was right, the partition was
+# right, the orders were right, the discrete fields agreed. What was missing
+# was any assertion that the rows still carried the values the gate exists to
+# compare.
+# --------------------------------------------------------------------------
+
+
+def test_renaming_every_numeric_field_is_refused() -> None:
+    """The exact reproduction. 229 rows pair; nothing is compared."""
+    rows = _frozen_rows()
+    for row in rows:
+        for field in list(row):
+            if field in {
+                "absolute_error", "relative_error", "linear_exactness_relative",
+                "ratio_minus_one", "spacing_ratio", "overlap_fraction",
+            }:
+                row[field + "_RENAMED"] = row.pop(field)
+    problems = _check(rows)
+    assert problems, "a population carrying no comparable value was accepted"
+    assert any("carries numeric fields []" in p for p in problems), problems
+
+
+def test_dropping_one_numeric_field_is_refused() -> None:
+    """Partial starvation. Harder than a rename, because most rows still work."""
+    rows = _frozen_rows()
+    for row in rows:
+        if row.get("relative_error") is not None:
+            row["relative_error"] = None
+            break
+    problems = _check(rows)
+    assert any("frozen as" in p for p in problems), problems
+
+
+def test_losing_the_metric_spec_is_refused() -> None:
+    """`None != None` is False, so two rows that both lost it compare as equal.
+
+    The metric-presence expectation is FROZEN rather than inferred: the obvious
+    rule -- a numeric value requires an error metric -- is wrong, and the
+    archived Gate F evidence disproved it on the first run.
+    `weak_overlap_declaration` carries `overlap_fraction`, a diagnostic
+    quantity, and needs no metric spec.
+    """
+    rows = _frozen_rows()
+    for row in rows:
+        if row.get("error_metric_spec_id") is not None:
+            row["error_metric_spec_id"] = None
+            break
+    assert any("error_metric_spec_id" in p for p in _check(rows)), _check(rows)
+
+
+def test_a_diagnostic_quantity_is_not_required_to_carry_a_metric_spec() -> None:
+    """The false-positive the control caught, asserted so it cannot return."""
+    overlap = [
+        r for r in EXPECTED["rows"] if r["workload"] == "weak_overlap_declaration"
+    ]
+    assert overlap, "the fixture this guards has disappeared"
+    for row in overlap:
+        assert "overlap_fraction" in row["numeric_fields"]
+        assert row["has_metric_spec"] is False, (
+            "overlap_fraction is a diagnostic quantity, not an error; requiring "
+            "a metric spec here would reject the real archived evidence"
+        )
+
+
+def test_the_expected_comparison_count_matches_the_closing_replay() -> None:
+    """325 is what run 31328966332 actually compared.
+
+    The frozen expectation is not a fresh invention: it agrees with the
+    population that closed Gate F.
+    """
+    assert EXPECTED["expected_gate_numeric_comparisons"] == 325
+    assert EXPECTED["expected_gate_rows_with_no_numeric_value"] == 12
+
+
+def test_the_floor_is_equality_not_a_positive_count() -> None:
+    """`> 0` passes on 1 comparison where 325 were owed.
+
+    That is the same defect with a smaller number, so the comparator asserts
+    equality against the frozen expectation.
+    """
+    text = (REPO_ROOT / "scripts/compare_replay.py").read_text()
+    assert "EXPECTED_GATE_NUMERIC_COMPARISONS" in text
+    assert "!= EXPECTED_GATE_NUMERIC_COMPARISONS" in text, (
+        "the comparison-count floor is not an equality check"
+    )
+    # Matched as separate fragments: the sentence wraps in the source, and a
+    # contiguous match would fail on a reflow rather than on a regression.
+    # This is the third time an assertion here has been written against wrapped
+    # source text.
+    assert "starved" in text
+    assert "did not perform the" in text

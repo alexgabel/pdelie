@@ -65,7 +65,11 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_floor_regime",
@@ -74,7 +78,11 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_floor_regime",
@@ -83,7 +91,11 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_floor_regime",
@@ -92,7 +104,11 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_floor_regime",
@@ -101,7 +117,12 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_floor_regime",
@@ -110,7 +131,12 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_floor_regime",
@@ -119,7 +145,12 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_floor_regime",
@@ -128,7 +159,12 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_floor_regime",
@@ -137,7 +173,12 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_floor_regime",
@@ -146,7 +187,12 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_floor_regime",
@@ -155,7 +201,12 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_floor_regime",
@@ -164,7 +215,12 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_floor_regime",
@@ -173,7 +229,12 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_floor_regime",
@@ -182,7 +243,12 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_floor_regime",
@@ -191,7 +257,12 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_floor_regime",
@@ -200,7 +271,12 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_floor_regime",
@@ -209,7 +285,11 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_floor_regime",
@@ -218,7 +298,11 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_floor_regime",
@@ -227,7 +311,11 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_floor_regime",
@@ -236,7 +324,11 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_none_kind",
@@ -245,7 +337,9 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "exact_discrete"
+      "portability_class": "exact_discrete",
+      "numeric_fields": [],
+      "has_metric_spec": false
     },
     {
       "workload": "deriv_ref_none_kind",
@@ -254,7 +348,9 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "exact_discrete"
+      "portability_class": "exact_discrete",
+      "numeric_fields": [],
+      "has_metric_spec": false
     },
     {
       "workload": "deriv_ref_none_kind",
@@ -263,7 +359,9 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "exact_discrete"
+      "portability_class": "exact_discrete",
+      "numeric_fields": [],
+      "has_metric_spec": false
     },
     {
       "workload": "deriv_ref_none_kind",
@@ -272,7 +370,9 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "exact_discrete"
+      "portability_class": "exact_discrete",
+      "numeric_fields": [],
+      "has_metric_spec": false
     },
     {
       "workload": "deriv_ref_signal_regime_analytical",
@@ -281,7 +381,12 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_signal_regime_analytical",
@@ -290,7 +395,12 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_signal_regime_analytical",
@@ -299,7 +409,12 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_signal_regime_analytical",
@@ -308,7 +423,12 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_signal_regime_analytical",
@@ -317,7 +437,12 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_signal_regime_analytical",
@@ -326,7 +451,12 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_signal_regime_analytical",
@@ -335,7 +465,12 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_signal_regime_analytical",
@@ -344,7 +479,12 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_signal_regime_analytical",
@@ -353,7 +493,12 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_signal_regime_analytical",
@@ -362,7 +507,12 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_signal_regime_analytical",
@@ -371,7 +521,12 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_signal_regime_analytical",
@@ -380,7 +535,12 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_signal_regime_analytical",
@@ -389,7 +549,12 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_signal_regime_analytical",
@@ -398,7 +563,12 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_signal_regime_analytical",
@@ -407,7 +577,12 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_signal_regime_analytical",
@@ -416,7 +591,12 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_signal_regime_analytical",
@@ -425,7 +605,12 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_signal_regime_analytical",
@@ -434,7 +619,12 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_signal_regime_analytical",
@@ -443,7 +633,12 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_signal_regime_analytical",
@@ -452,7 +647,12 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_signal_regime_manufactured",
@@ -461,7 +661,12 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_signal_regime_manufactured",
@@ -470,7 +675,12 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_signal_regime_manufactured",
@@ -479,7 +689,12 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_signal_regime_manufactured",
@@ -488,7 +703,12 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_signal_regime_manufactured",
@@ -497,7 +717,12 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_signal_regime_manufactured",
@@ -506,7 +731,12 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_signal_regime_manufactured",
@@ -515,7 +745,12 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_signal_regime_manufactured",
@@ -524,7 +759,12 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_signal_regime_manufactured",
@@ -533,7 +773,12 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_signal_regime_manufactured",
@@ -542,7 +787,12 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_signal_regime_manufactured",
@@ -551,7 +801,12 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_signal_regime_manufactured",
@@ -560,7 +815,12 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_signal_regime_manufactured",
@@ -569,7 +829,12 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_signal_regime_manufactured",
@@ -578,7 +843,12 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_signal_regime_manufactured",
@@ -587,7 +857,12 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_signal_regime_manufactured",
@@ -596,7 +871,12 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_signal_regime_manufactured",
@@ -605,7 +885,12 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_signal_regime_manufactured",
@@ -614,7 +899,12 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_signal_regime_manufactured",
@@ -623,7 +913,12 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "deriv_ref_signal_regime_manufactured",
@@ -632,7 +927,12 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "relative_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_boundary_stencils_second_order",
@@ -641,7 +941,11 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_boundary_stencils_second_order",
@@ -650,7 +954,11 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_boundary_stencils_second_order",
@@ -659,7 +967,11 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_boundary_stencils_second_order",
@@ -668,7 +980,11 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_boundary_stencils_second_order",
@@ -677,7 +993,11 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_boundary_stencils_second_order",
@@ -686,7 +1006,11 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_boundary_stencils_second_order",
@@ -695,7 +1019,11 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_boundary_stencils_second_order",
@@ -704,7 +1032,11 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_boundary_stencils_second_order",
@@ -713,7 +1045,11 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_boundary_stencils_second_order",
@@ -722,7 +1058,11 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_boundary_stencils_second_order",
@@ -731,7 +1071,11 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_boundary_stencils_second_order",
@@ -740,7 +1084,11 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_boundary_stencils_second_order",
@@ -749,7 +1097,11 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_boundary_stencils_second_order",
@@ -758,7 +1110,11 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_boundary_stencils_second_order",
@@ -767,7 +1123,11 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_boundary_stencils_second_order",
@@ -776,7 +1136,11 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_fn_12_uniform_spacing_ratio",
@@ -785,7 +1149,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "ratio_minus_one"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_fn_12_uniform_spacing_ratio",
@@ -794,7 +1162,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "ratio_minus_one"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_fn_12_uniform_spacing_ratio",
@@ -803,7 +1175,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "ratio_minus_one"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_fn_12_uniform_spacing_ratio",
@@ -812,7 +1188,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "ratio_minus_one"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_fn_12_uniform_spacing_ratio",
@@ -821,7 +1201,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "ratio_minus_one"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_fn_12_uniform_spacing_ratio",
@@ -830,7 +1214,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "ratio_minus_one"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_fn_12_uniform_spacing_ratio",
@@ -839,7 +1227,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "ratio_minus_one"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_fn_12_uniform_spacing_ratio",
@@ -848,7 +1240,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "ratio_minus_one"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_fn_12_uniform_spacing_ratio",
@@ -857,7 +1253,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "ratio_minus_one"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_fn_12_uniform_spacing_ratio",
@@ -866,7 +1266,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "ratio_minus_one"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_fn_12_uniform_spacing_ratio",
@@ -875,7 +1279,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "ratio_minus_one"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_fn_12_uniform_spacing_ratio",
@@ -884,7 +1292,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "ratio_minus_one"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_fn_12_uniform_spacing_ratio",
@@ -893,7 +1305,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "ratio_minus_one"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_fn_12_uniform_spacing_ratio",
@@ -902,7 +1318,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "ratio_minus_one"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_fn_12_uniform_spacing_ratio",
@@ -911,7 +1331,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "ratio_minus_one"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
@@ -920,7 +1344,12 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
@@ -929,7 +1358,12 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
@@ -938,7 +1372,12 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
@@ -947,7 +1386,12 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
@@ -956,7 +1400,12 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
@@ -965,7 +1414,12 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
@@ -974,7 +1428,12 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
@@ -983,7 +1442,12 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
@@ -992,7 +1456,12 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
@@ -1001,7 +1470,12 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
@@ -1010,7 +1484,12 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
@@ -1019,7 +1498,12 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
@@ -1028,7 +1512,12 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
@@ -1037,7 +1526,12 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
@@ -1046,7 +1540,12 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
@@ -1055,7 +1554,12 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
@@ -1064,7 +1568,12 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
@@ -1073,7 +1582,12 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
@@ -1082,7 +1596,12 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
@@ -1091,7 +1610,12 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
@@ -1100,7 +1624,12 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
@@ -1109,7 +1638,12 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
@@ -1118,7 +1652,12 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
@@ -1127,7 +1666,12 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
@@ -1136,7 +1680,12 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
@@ -1145,7 +1694,12 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
@@ -1154,7 +1708,12 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
@@ -1163,7 +1722,12 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
@@ -1172,7 +1736,12 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
@@ -1181,7 +1750,12 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
@@ -1190,7 +1764,12 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_pathological_spacing_ratio_10_to_1e8",
@@ -1199,7 +1778,12 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1208,7 +1792,12 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1217,7 +1806,12 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1226,7 +1820,12 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1235,7 +1834,12 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1244,7 +1848,12 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1253,7 +1862,12 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1262,7 +1876,12 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1271,7 +1890,12 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1280,7 +1904,12 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1289,7 +1918,12 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1298,7 +1932,12 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1307,7 +1946,12 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1316,7 +1960,12 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1325,7 +1974,12 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1334,7 +1988,12 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1343,7 +2002,12 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1352,7 +2016,12 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1361,7 +2030,12 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1370,7 +2044,12 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1379,7 +2058,12 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1388,7 +2072,12 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1397,7 +2086,12 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1406,7 +2100,12 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1415,7 +2114,12 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1424,7 +2128,12 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1433,7 +2142,12 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1442,7 +2156,12 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1451,7 +2170,12 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1460,7 +2184,12 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1469,7 +2198,12 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1478,7 +2212,12 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1487,7 +2226,12 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1496,7 +2240,12 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1505,7 +2254,12 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1514,7 +2268,12 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1523,7 +2282,12 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1532,7 +2296,12 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1541,7 +2310,12 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1550,7 +2324,12 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1559,7 +2338,12 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1568,7 +2352,12 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1577,7 +2366,12 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1586,7 +2380,12 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1595,7 +2394,12 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1604,7 +2408,12 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1613,7 +2422,12 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1622,7 +2436,12 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1631,7 +2450,12 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1640,7 +2464,12 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1649,7 +2478,12 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1658,7 +2492,12 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1667,7 +2506,12 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1676,7 +2520,12 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1685,7 +2534,12 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1694,7 +2548,12 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1703,7 +2562,12 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1712,7 +2576,12 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1721,7 +2590,12 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1730,7 +2604,12 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_perturbed_uniform_spacing_ratio_1_to_10",
@@ -1739,7 +2618,12 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error",
+        "spacing_ratio"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -1748,7 +2632,11 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -1757,7 +2645,11 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -1766,7 +2658,11 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -1775,7 +2671,11 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -1784,7 +2684,11 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -1793,7 +2697,11 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -1802,7 +2710,11 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -1811,7 +2723,11 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -1820,7 +2736,11 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -1829,7 +2749,11 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -1838,7 +2762,11 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -1847,7 +2775,11 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -1856,7 +2788,11 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -1865,7 +2801,11 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -1874,7 +2814,11 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -1883,7 +2827,11 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -1892,7 +2840,11 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -1901,7 +2853,11 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -1910,7 +2866,11 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -1919,7 +2879,11 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -1928,7 +2892,11 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -1937,7 +2905,11 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -1946,7 +2918,11 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -1955,7 +2931,11 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -1964,7 +2944,11 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -1973,7 +2957,11 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -1982,7 +2970,11 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -1991,7 +2983,11 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -2000,7 +2996,11 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -2009,7 +3009,11 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -2018,7 +3022,11 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -2027,7 +3035,11 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -2036,7 +3048,11 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -2045,7 +3061,11 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -2054,7 +3074,11 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -2063,7 +3087,11 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -2072,7 +3100,11 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -2081,7 +3113,11 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -2090,7 +3126,11 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -2099,7 +3139,11 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -2108,7 +3152,11 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -2117,7 +3165,11 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -2126,7 +3178,11 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -2135,7 +3191,11 @@
       "order_parameterized": true,
       "derivative_order": 1,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -2144,7 +3204,11 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -2153,7 +3217,11 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -2162,7 +3230,11 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -2171,7 +3243,11 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -2180,7 +3256,11 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -2189,7 +3269,11 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -2198,7 +3282,11 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -2207,7 +3295,11 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -2216,7 +3308,11 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -2225,7 +3321,11 @@
       "order_parameterized": true,
       "derivative_order": 2,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -2234,7 +3334,11 @@
       "order_parameterized": true,
       "derivative_order": 4,
       "gate_use": "exploratory_only",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -2243,7 +3347,11 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -2252,7 +3360,11 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -2261,7 +3373,11 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -2270,7 +3386,11 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "fornberg_uniform_polynomial_exactness",
@@ -2279,7 +3399,11 @@
       "order_parameterized": true,
       "derivative_order": 3,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "weak_constant_exactness_nonuniform_trapezoidal",
@@ -2288,7 +3412,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "weak_constant_exactness_nonuniform_trapezoidal",
@@ -2297,7 +3425,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "weak_constant_exactness_nonuniform_trapezoidal",
@@ -2306,7 +3438,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "weak_constant_exactness_nonuniform_trapezoidal",
@@ -2315,7 +3451,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "weak_constant_exactness_nonuniform_trapezoidal",
@@ -2324,7 +3464,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "weak_constant_exactness_nonuniform_trapezoidal",
@@ -2333,7 +3477,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "weak_constant_exactness_nonuniform_trapezoidal",
@@ -2342,7 +3490,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "weak_constant_exactness_nonuniform_trapezoidal",
@@ -2351,7 +3503,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "weak_constant_exactness_nonuniform_trapezoidal",
@@ -2360,7 +3516,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "weak_constant_exactness_nonuniform_trapezoidal",
@@ -2369,7 +3529,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "weak_constant_exactness_nonuniform_trapezoidal",
@@ -2378,7 +3542,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "weak_constant_exactness_nonuniform_trapezoidal",
@@ -2387,7 +3555,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "weak_constant_exactness_nonuniform_trapezoidal",
@@ -2396,7 +3568,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "weak_constant_exactness_nonuniform_trapezoidal",
@@ -2405,7 +3581,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "weak_constant_exactness_nonuniform_trapezoidal",
@@ -2414,7 +3594,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "absolute_error"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "weak_linear_exactness_report",
@@ -2423,7 +3607,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "linear_exactness_relative"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "weak_linear_exactness_report",
@@ -2432,7 +3620,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "linear_exactness_relative"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "weak_linear_exactness_report",
@@ -2441,7 +3633,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "linear_exactness_relative"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "weak_linear_exactness_report",
@@ -2450,7 +3646,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "linear_exactness_relative"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "weak_linear_exactness_report",
@@ -2459,7 +3659,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "linear_exactness_relative"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "weak_linear_exactness_report",
@@ -2468,7 +3672,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "linear_exactness_relative"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "weak_linear_exactness_report",
@@ -2477,7 +3685,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "linear_exactness_relative"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "weak_linear_exactness_report",
@@ -2486,7 +3698,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "linear_exactness_relative"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "weak_linear_exactness_report",
@@ -2495,7 +3711,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "linear_exactness_relative"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "weak_linear_exactness_report",
@@ -2504,7 +3724,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "tolerance_numeric"
+      "portability_class": "tolerance_numeric",
+      "numeric_fields": [
+        "linear_exactness_relative"
+      ],
+      "has_metric_spec": true
     },
     {
       "workload": "weak_overlap_declaration",
@@ -2513,7 +3737,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "exact_discrete"
+      "portability_class": "exact_discrete",
+      "numeric_fields": [
+        "overlap_fraction"
+      ],
+      "has_metric_spec": false
     },
     {
       "workload": "weak_overlap_declaration",
@@ -2522,7 +3750,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "exact_discrete"
+      "portability_class": "exact_discrete",
+      "numeric_fields": [
+        "overlap_fraction"
+      ],
+      "has_metric_spec": false
     },
     {
       "workload": "weak_overlap_declaration",
@@ -2531,7 +3763,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "exact_discrete"
+      "portability_class": "exact_discrete",
+      "numeric_fields": [
+        "overlap_fraction"
+      ],
+      "has_metric_spec": false
     },
     {
       "workload": "weak_overlap_declaration",
@@ -2540,7 +3776,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "exact_discrete"
+      "portability_class": "exact_discrete",
+      "numeric_fields": [
+        "overlap_fraction"
+      ],
+      "has_metric_spec": false
     },
     {
       "workload": "weak_overlap_declaration",
@@ -2549,7 +3789,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "exact_discrete"
+      "portability_class": "exact_discrete",
+      "numeric_fields": [
+        "overlap_fraction"
+      ],
+      "has_metric_spec": false
     },
     {
       "workload": "weak_overlap_declaration",
@@ -2558,7 +3802,11 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "exact_discrete"
+      "portability_class": "exact_discrete",
+      "numeric_fields": [
+        "overlap_fraction"
+      ],
+      "has_metric_spec": false
     },
     {
       "workload": "weak_user_supplied_validation",
@@ -2567,7 +3815,9 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "exact_discrete"
+      "portability_class": "exact_discrete",
+      "numeric_fields": [],
+      "has_metric_spec": false
     },
     {
       "workload": "weak_user_supplied_validation",
@@ -2576,7 +3826,9 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "exact_discrete"
+      "portability_class": "exact_discrete",
+      "numeric_fields": [],
+      "has_metric_spec": false
     },
     {
       "workload": "weak_user_supplied_validation",
@@ -2585,7 +3837,9 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "exact_discrete"
+      "portability_class": "exact_discrete",
+      "numeric_fields": [],
+      "has_metric_spec": false
     },
     {
       "workload": "weak_user_supplied_validation",
@@ -2594,7 +3848,9 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "exact_discrete"
+      "portability_class": "exact_discrete",
+      "numeric_fields": [],
+      "has_metric_spec": false
     },
     {
       "workload": "weak_user_supplied_validation",
@@ -2603,7 +3859,9 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "exact_discrete"
+      "portability_class": "exact_discrete",
+      "numeric_fields": [],
+      "has_metric_spec": false
     },
     {
       "workload": "weak_user_supplied_validation",
@@ -2612,7 +3870,9 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "exact_discrete"
+      "portability_class": "exact_discrete",
+      "numeric_fields": [],
+      "has_metric_spec": false
     },
     {
       "workload": "weak_user_supplied_validation",
@@ -2621,7 +3881,9 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "exact_discrete"
+      "portability_class": "exact_discrete",
+      "numeric_fields": [],
+      "has_metric_spec": false
     },
     {
       "workload": "weak_user_supplied_validation",
@@ -2630,7 +3892,12 @@
       "order_parameterized": false,
       "derivative_order": null,
       "gate_use": "gate_evidence",
-      "portability_class": "exact_discrete"
+      "portability_class": "exact_discrete",
+      "numeric_fields": [],
+      "has_metric_spec": false
     }
-  ]
+  ],
+  "numeric_field_policy": "Frozen PER ROW, not per workload -- deriv_ref_floor_regime carries two different signatures. A comparator that pairs 229 rows and finds none of these fields reports agreement having compared nothing, which is what renaming a field in replay_workloads.py would silently produce.",
+  "expected_gate_numeric_comparisons": 325,
+  "expected_gate_rows_with_no_numeric_value": 12
 }

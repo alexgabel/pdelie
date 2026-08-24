@@ -2,8 +2,8 @@
 
 [![CI](https://github.com/alexgabel/pdelie/actions/workflows/ci.yml/badge.svg)](https://github.com/alexgabel/pdelie/actions/workflows/ci.yml)
 [![Documentation Status](https://readthedocs.org/projects/pdelie/badge/?version=latest)](https://pdelie.readthedocs.io/en/latest/?badge=latest)
-![Python](https://img.shields.io/badge/python-%3E%3D3.11-blue)
-![Version](https://img.shields.io/badge/version-0.29.0-blue)
+![Python](https://img.shields.io/badge/python-%3E%3D3.12-blue)
+![Version](https://img.shields.io/badge/version-0.38.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 PDELie is a research library for empirical Lie-symmetry diagnostics on controlled PDE time-series data. It turns canonical scalar 1D periodic fields into residuals, generator candidates, configured validation, finite-transform verification, confidence summaries, supportability reports, invariant/orbit diagnostics, and downstream discovery reports.
