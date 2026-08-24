@@ -181,3 +181,100 @@ def test_the_release_under_development_has_a_roadmap_row() -> None:
     assert minor in rows, (
         f"pyproject declares {version!r} but the roadmap has no {minor} row"
     )
+
+
+def test_the_documented_contributor_environment_can_install_the_package() -> None:
+    """environment.yml pinned 3.11 while the package required >=3.12.
+
+    A contributor following the documented setup got an environment in which
+    `pip install -e .` fails. The blind spot was exact: this module aligned
+    version strings across README, CHANGELOG, CI and the readiness docs, and
+    never looked at the interpreter the environment file pins.
+    """
+    import re
+    import tomllib
+
+    requires = tomllib.loads(_repo_text("pyproject.toml"))["project"]["requires-python"]
+    floor = tuple(int(p) for p in re.search(r">=\s*(\d+\.\d+)", requires).group(1).split("."))
+
+    pinned = re.search(r"python\s*=\s*(\d+\.\d+)", _repo_text("environment.yml"))
+    assert pinned, "environment.yml does not pin a Python version"
+    assert tuple(int(p) for p in pinned.group(1).split(".")) >= floor, (
+        f"environment.yml pins python={pinned.group(1)} but the package "
+        f"requires {requires}; the documented contributor environment cannot "
+        f"install the package"
+    )
+
+
+def test_every_workflow_builds_on_a_supported_interpreter() -> None:
+    """The publish lane built the release artifact on 3.11.
+
+    Checked across all workflows rather than the one that was wrong, because a
+    guard written against a specific defect only catches that defect.
+    """
+    import re
+    import tomllib
+    from pathlib import Path
+
+    requires = tomllib.loads(_repo_text("pyproject.toml"))["project"]["requires-python"]
+    floor = tuple(int(p) for p in re.search(r">=\s*(\d+\.\d+)", requires).group(1).split("."))
+
+    root = Path(__file__).resolve().parents[1]
+    workflows = sorted((root / ".github/workflows").glob("*.yml"))
+    assert workflows, "no workflows found; this guard would pass vacuously"
+
+    offenders: list[str] = []
+    checked = 0
+    for path in workflows:
+        lines = path.read_text().splitlines()
+        for index, line in enumerate(lines):
+            match = re.search(r'python-version:\s*"?(\d+\.\d+)(?:\.\d+)?"?', line)
+            if not match:
+                continue
+            checked += 1
+            if tuple(int(p) for p in match.group(1).split(".")) >= floor:
+                continue
+            # A sub-floor pin is permitted only where it is DECLARED. The
+            # migration lanes provision a v0.22.0-era 3.11 environment on
+            # purpose. Keying the exception on the marker rather than the
+            # filename means a NEW undeclared sub-floor pin in those same files
+            # is still caught.
+            window = "\n".join(lines[max(0, index - 5):index])
+            if "legacy-interpreter:" in window:
+                continue
+            offenders.append(f"{path.name}:{index + 1}: {match.group(1)}")
+
+    assert checked > 0, (
+        "no python-version pins found in any workflow; this guard would pass "
+        "having checked nothing"
+    )
+    assert not offenders, (
+        f"workflows target interpreters below requires-python {requires}: {offenders}"
+    )
+
+
+def test_the_readme_badges_track_the_packaged_version() -> None:
+    """The badge sat at 0.29.0 across nine releases.
+
+    A reader sees the badge before the prose, so a stale badge misinforms
+    first.
+    """
+    import re
+    import tomllib
+
+    version = tomllib.loads(_repo_text("pyproject.toml"))["project"]["version"]
+    readme = _repo_text("README.md")
+
+    badge = re.search(r"badge/version-([0-9][^-\s)]*)-", readme)
+    assert badge, "no version badge found in README"
+    assert badge.group(1) == version, (
+        f"README badge says {badge.group(1)}, pyproject says {version}"
+    )
+
+    requires = tomllib.loads(_repo_text("pyproject.toml"))["project"]["requires-python"]
+    floor = re.search(r">=\s*(\d+\.\d+)", requires).group(1)
+    py_badge = re.search(r"badge/python-%3E%3D([0-9.]+)-", readme)
+    assert py_badge, "no python badge found in README"
+    assert py_badge.group(1) == floor, (
+        f"README python badge says >={py_badge.group(1)}, pyproject says {requires}"
+    )

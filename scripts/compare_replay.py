@@ -57,6 +57,33 @@ EXPECTED_GATE_KEYS = {
     if r["gate_use"] == "gate_evidence"
 }
 
+#: The numeric fields each row is frozen to carry, keyed by row identity.
+#:
+#: Frozen PER ROW rather than per workload: ``deriv_ref_floor_regime`` emits two
+#: different signatures, so a per-workload expectation would have to accept
+#: either and would therefore catch neither.
+#:
+#: Without this, renaming a numeric field in ``replay_workloads.py`` produces a
+#: run where all 229 gate rows pair, every field takes the "absent" branch, the
+#: accounting identity holds at ``0 == 0 + 0``, and the comparator exits 0
+#: declaring cross-platform agreement **having compared nothing**. That was
+#: reproduced, not hypothesised.
+EXPECTED_NUMERIC_FIELDS = {
+    (r["workload"], r["row_key"]): frozenset(r.get("numeric_fields", []))
+    for r in EXPECTED["rows"]
+}
+
+#: Whether each row carries an ``error_metric_spec_id``, frozen from a
+#: reviewed artifact. Not all numeric quantities are errors: ``overlap_fraction``
+#: and ``spacing_ratio`` are diagnostics and carry no metric spec.
+EXPECTED_METRIC_PRESENCE = {
+    (r["workload"], r["row_key"]): bool(r.get("has_metric_spec", False))
+    for r in EXPECTED["rows"]
+}
+
+#: Total numeric comparisons a complete gate population must produce.
+EXPECTED_GATE_NUMERIC_COMPARISONS = EXPECTED["expected_gate_numeric_comparisons"]
+
 #: Declared per workload family in the scope artifact. A gate row may carry
 #: ``derivative_order: null`` only if its family is listed here.
 NON_ORDER_FAMILIES = set(SCOPE["non_order_parameterized_families"])
@@ -261,6 +288,50 @@ def structural_checks(runners: dict[str, dict]) -> list[str]:
                     f"row-key populations differ: {left} vs {right}; "
                     f"only-left {only_l}, only-right {only_r}"
                 )
+        # Numeric-field set equality, per row. The row population being right
+        # says nothing about whether the rows still carry the values the gate
+        # exists to compare.
+        for r in rows:
+            key = (r["workload"], r["row_key"])
+            expected_fields = EXPECTED_NUMERIC_FIELDS.get(key)
+            if expected_fields is None:
+                continue  # unexpected row; already reported by the F-3 check
+            emitted_fields = frozenset(
+                f for f in _NUMERIC_FIELDS if r.get(f) is not None
+            )
+            if emitted_fields != expected_fields:
+                problems.append(
+                    f"{label}: {key[0]}/{key[1]} carries numeric fields "
+                    f"{sorted(emitted_fields)}, frozen as {sorted(expected_fields)}. "
+                    f"A renamed or dropped field makes the gate compare nothing "
+                    f"while every row still pairs."
+                )
+                break
+
+            # Metric-spec presence is FROZEN, not inferred.
+            #
+            # The obvious rule -- "a numeric value requires an error metric" --
+            # is wrong, and the archived Gate F evidence proved it on the first
+            # run: `weak_overlap_declaration` carries `overlap_fraction`, a
+            # diagnostic quantity rather than an error, and needs no metric
+            # spec. Same for `spacing_ratio` and `ratio_minus_one`.
+            #
+            # So the manifest records which rows carry one, and this asserts
+            # the emitted artifact agrees. That closes the `None != None`
+            # hole -- a row cannot silently lose its metric id -- without
+            # inventing a rule about which quantities ought to have one.
+            expected_metric = EXPECTED_METRIC_PRESENCE.get(key)
+            if expected_metric is not None:
+                has_metric = r.get("error_metric_spec_id") is not None
+                if has_metric != expected_metric:
+                    problems.append(
+                        f"{label}: {key[0]}/{key[1]} "
+                        f"{'lost' if expected_metric else 'gained'} its "
+                        f"error_metric_spec_id. `None != None` is False, so two "
+                        f"rows that both lost one would compare as if they agreed."
+                    )
+                    break
+
     return problems
 
 
@@ -455,9 +526,40 @@ def main() -> None:
               f"{r['numeric_comparisons_bitwise_equal']}/{r['numeric_comparisons_total']} | "
               f"**`{r['worst_scaled_difference']:.3e}`** | "
               f"`{r['worst_relative_between_errors']:.3e}` |")
+    print(f"\n*{results[0]['numeric_comparisons_total']} numeric comparisons per "
+          f"pair, against a frozen expectation of "
+          f"{EXPECTED_GATE_NUMERIC_COMPARISONS}.*")
     print("\n*Primary statistic is the scaled difference. "
           "`rel-between-errors` is unstable near the numerical floor and is not "
           "used for the gate decision.*")
+
+    # ZERO-COMPARISON FLOOR.
+    #
+    # A pair that compared nothing cannot have found agreement. Before this
+    # existed, renaming the numeric fields produced 229 paired rows, zero
+    # comparisons, and exit 0 -- reproduced, not hypothesised.
+    #
+    # The floor is EQUALITY against the frozen expectation, not `> 0`: a bare
+    # positive floor passes on 1 comparison where 325 were owed, which is the
+    # same defect with a smaller number.
+    starved = []
+    for r in results:
+        total = r["numeric_comparisons_total"]
+        if total != EXPECTED_GATE_NUMERIC_COMPARISONS:
+            starved.append(
+                f"{r['left']} vs {r['right']}: {total} numeric comparisons, "
+                f"frozen expectation {EXPECTED_GATE_NUMERIC_COMPARISONS}"
+            )
+    if starved:
+        print("\n### Comparison-count failures\n")
+        for problem in starved:
+            print(f"- {problem}")
+        print(
+            "\nNo verdict is available: the comparator did not perform the "
+            "comparisons the frozen population owes. Agreement over a starved "
+            "population is not agreement."
+        )
+        raise SystemExit(1)
 
     failures = [r for r in results if r["discrete_mismatches"] or r["metric_mismatches"]
                 or r["unpaired_left"] or r["unpaired_right"]]
